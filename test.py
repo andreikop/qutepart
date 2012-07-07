@@ -9,6 +9,11 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QApplication, QPlainTextEdit, QSyntaxHighlighter, \
     QTextCharFormat, QTextBlockUserData
 
+class _TextBlockUserData(QTextBlockUserData):
+    def __init__(self, quoteIsOpened):
+        QTextBlockUserData.__init__(self)
+        self.quoteIsOpened = quoteIsOpened
+
 
 class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, *args):
@@ -17,49 +22,32 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self._red.setForeground(Qt.red)
     
     def highlightBlock(self, text):
-        inside = False
-        """
-        prevData = self._prevData()
-        if prevData is not None:
-            inside = prevData.inside
-        """
-        print 'enter', self.currentBlock().position()
-        block = self.currentBlock().next()
-        if block.isValid():
-            self.rehighlightBlock(block)        
-        print 'exit'
-        return
-        
         prevIndex = 0
         index = text.find("'")
+        
+        prevData = self._prevData()
+        if prevData is not None:
+            quoteIsOpened = prevData.quoteIsOpened
+        else:
+            quoteIsOpened = False
+
         while index != -1:
-            if not inside:
-                inside = True
-                self._rehighlightNext()
+            if not quoteIsOpened:
+                quoteIsOpened = True
             else:
-                #self.setFormat(prevIndex, index - prevIndex + 1, self._red)
-                self._rehighlightPrev()
-                inside = False
+                self.setFormat(prevIndex, index - prevIndex + 1, self._red)
+                quoteIsOpened = False
             prevIndex = index
             index = text.find("'", index + 1)
-        """
-        data = QTextBlockUserData()
-        data.inside = inside
-        self.setCurrentBlockUserData(data)
-        """
+        if quoteIsOpened:
+            self.setFormat(prevIndex, len(text) - prevIndex, self._red)
+        
+        self.setCurrentBlockUserData(_TextBlockUserData(quoteIsOpened))
+        self.setCurrentBlockState(quoteIsOpened)
 
     def _prevData(self):
         return self.currentBlock().previous().userData()
-    
-    def _rehighlightNext(self):
-        block = self.currentBlock().next()
-        if block.isValid():
-            self.rehighlightBlock(block)
-    
-    def _rehighlightPrev(self):
-        block = self.currentBlock().previous()
-        if block.isValid():
-            self.rehighlightBlock(block)        
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
