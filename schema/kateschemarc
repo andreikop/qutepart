@@ -1,0 +1,22 @@
+[kate - Normal]
+Color Background=255,255,255
+Color Highlighted Bracket=237,249,255
+Color Highlighted Line=248,247,246
+Color Icon Bar=214,210,208
+Color Line Number=34,31,30
+Color MarkType1=0,0,255
+Color MarkType2=255,0,0
+Color MarkType3=255,255,0
+Color MarkType4=255,0,255
+Color MarkType5=160,160,164
+Color MarkType6=0,255,0
+Color MarkType7=255,0,0
+Color Selection=67,172,232
+Color Spelling Mistake Line=255,0,0
+Color Tab Marker=210,210,210
+Color Template Background=204,204,204
+Color Template Editable Placeholder=204,255,204
+Color Template Focused Editable Placeholder=102,255,102
+Color Template Not Editable Placeholder=255,204,204
+Color Word Wrap Marker=237,237,237
+Font=Monospace,9,-1,2,50,0,0,0,0,0
