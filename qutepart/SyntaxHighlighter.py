@@ -1,6 +1,7 @@
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QSyntaxHighlighter, QTextCharFormat, QTextBlockUserData
 
+from ColorTheme import ColorTheme
 
 class _TextBlockUserData(QTextBlockUserData):
     def __init__(self, quoteIsOpened):
@@ -11,8 +12,7 @@ class _TextBlockUserData(QTextBlockUserData):
 class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, *args):
         QSyntaxHighlighter.__init__(self, *args)
-        self._red = QTextCharFormat()
-        self._red.setForeground(Qt.red)
+        self._theme = ColorTheme()
     
     def highlightBlock(self, text):
         prevIndex = 0
@@ -28,12 +28,12 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             if not quoteIsOpened:
                 quoteIsOpened = True
             else:
-                self.setFormat(prevIndex, index - prevIndex + 1, self._red)
+                self.setFormat(prevIndex, index - prevIndex + 1, self._theme.getFormat('String'))
                 quoteIsOpened = False
             prevIndex = index
             index = text.find("'", index + 1)
         if quoteIsOpened:
-            self.setFormat(prevIndex, len(text) - prevIndex, self._red)
+            self.setFormat(prevIndex, len(text) - prevIndex, self._theme.getFormat('String'))
         
         self.setCurrentBlockUserData(_TextBlockUserData(quoteIsOpened))
         self.setCurrentBlockState(quoteIsOpened)
