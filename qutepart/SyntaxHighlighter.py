@@ -2,6 +2,7 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QSyntaxHighlighter, QTextCharFormat, QTextBlockUserData
 
 from ColorTheme import ColorTheme
+from Syntax import Syntax
 
 class _TextBlockUserData(QTextBlockUserData):
     def __init__(self, quoteIsOpened):
@@ -13,6 +14,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, *args):
         QSyntaxHighlighter.__init__(self, *args)
         self._theme = ColorTheme()
+        self._syntax = Syntax('debianchangelog.xml')
     
     def highlightBlock(self, text):
         prevIndex = 0
