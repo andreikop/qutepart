@@ -17,28 +17,11 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self._syntax = Syntax('debianchangelog.xml')
     
     def highlightBlock(self, text):
-        prevIndex = 0
-        index = text.find("'")
+        currentContext = self._syntax.defaultContext
         
-        prevData = self._prevData()
-        if prevData is not None:
-            quoteIsOpened = prevData.quoteIsOpened
-        else:
-            quoteIsOpened = False
-
-        while index != -1:
-            if not quoteIsOpened:
-                quoteIsOpened = True
-            else:
-                self.setFormat(prevIndex, index - prevIndex + 1, self._theme.getFormat('String'))
-                quoteIsOpened = False
-            prevIndex = index
-            index = text.find("'", index + 1)
-        if quoteIsOpened:
-            self.setFormat(prevIndex, len(text) - prevIndex, self._theme.getFormat('String'))
-        
-        self.setCurrentBlockUserData(_TextBlockUserData(quoteIsOpened))
-        self.setCurrentBlockState(quoteIsOpened)
+        for characterIndex, character in enumerate(text):
+            for rule in currentContext.rules:
+                matchedIndex = rule.findMatch(text[characterIndex:])
 
     def _prevData(self):
         return self.currentBlock().previous().userData()

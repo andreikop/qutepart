@@ -4,17 +4,20 @@ if you want to understand something
 """
 
 import os.path
+import re
 import xml.etree.ElementTree
 
 class AbstractRule:
     """Base class for rule classes
     """
-    def __init__(self, xmlElement):
+    def __init__(self, context, xmlElement):
         """Parse XML definition
         """
+        self.context = context
+
         for key, value in xmlElement.items():
             setattr(self, key, value)
-    
+
     def __str__(self):
         """Serialize.
         For debug logs
@@ -23,10 +26,20 @@ class AbstractRule:
         for name, value in vars(self).iteritems():
             res += '\t\t\t%s: %s\n' % (name, value)
         return res
+    
+    def findMatch(self, text):
+        """Try to find themselves in the text.
+        Returns matched length, or None if not matched
+        """
+        raise NotImplementedFault()
 
 
 class DetectChar(AbstractRule):
-    pass
+    def findMatch(self, text):
+        if text[0] == self.char:
+            return 1
+        return None
+
 class Detect2Chars(AbstractRule):
     pass
 class AnyChar(AbstractRule):
@@ -35,10 +48,40 @@ class StringDetect(AbstractRule):
     pass
 class WordDetect(AbstractRule):
     pass
+
+
 class RegExpr(AbstractRule):
-    pass
+    """TODO if regexp starts with ^ - match only column 0
+    TODO support "minimal" flag
+    """
+    def __init__(self, *args):
+        self.insensitive = False  # default value
+        
+        AbstractRule.__init__(self, *args)
+        
+        flags = 0
+        if self.insensitive:
+            flags = re.IGNORECASE
+        
+        self._regExp = re.compile(self.String)
+
+    def findMatch(self, text):
+        match = self._regExp.match(text)
+        if match is not None:
+            return len(match.group(0))
+
+
 class keyword(AbstractRule):
-    pass
+    def findMatch(self, text):
+        if not self.context.syntax.casesensetive:
+            text = text.lower()
+        
+        for word in self.context.syntax.lists[self.String]:
+            if text.startswith(word):
+                return len(word)
+        
+        return None
+
 class Int(AbstractRule):
     pass
 class Float(AbstractRule):
@@ -68,9 +111,11 @@ _ruleClasses = (DetectChar, Detect2Chars, AnyChar, StringDetect, WordDetect, Reg
 
 
 class Context:
-    def __init__(self, xmlElement):
+    def __init__(self, syntax, xmlElement):
         """Construct context from XML element
         """
+        self.syntax = syntax
+
         # Default values for optional attributes
         self.lineBeginContext = '#stay'
         self.fallthrough = False
@@ -90,7 +135,7 @@ class Context:
         for ruleElement in xmlElement.getchildren():
             if not ruleElement.tag in ruleClassDict:
                 raise ValueError("Not supported rule '%s'" % ruleElement.tag)
-            rule = ruleClassDict[ruleElement.tag](ruleElement)
+            rule = ruleClassDict[ruleElement.tag](self, ruleElement)
             self.rules.append(rule)
     
     def __str__(self):
@@ -109,10 +154,24 @@ class Context:
 
 class Syntax:
     """Syntax file parser and container
+    
+    Public attributes:
+        lists - Keyword lists as dictionary "list name" : "list value"
+        contexts - Context list as dictionary "context name" : context
+        defaultContext - Default context object
+        deliminatorSet - Set of deliminator characters
+        caseSensetive - Keywords are case sensetive. Global flag, every keyword might have own value
     """
+    
+    _DEFAULT_DELIMINATOR = " \t.():!+,-<=>%&*/;?[]^{|}~\\"
+
     def __init__(self, fileName):
         """Parse XML definition
         """
+        # Default parameters
+        self.deliminatorSet = set(Syntax._DEFAULT_DELIMINATOR)
+        self.casesensitive = True
+        
         modulePath = os.path.dirname(__file__)
         dataFilePath = os.path.join(modulePath, "syntax", fileName)
         with open(dataFilePath, 'r') as dataFile:
@@ -125,19 +184,25 @@ class Syntax:
         hlgElement = root.find('highlighting')
         
         # parse lists
-        self._lists = {}  # list name: list
+        self.lists = {}  # list name: list
         for listElement in hlgElement.findall('list'):
             items = [item.text \
                         for item in listElement.findall('item')]
-            self._lists[listElement.attrib['name']] = items
-
+            self.lists[listElement.attrib['name']] = items
+        
+        # Make all keywords lowercase, if syntax is not case sensetive
+        if not self.casesensitive:
+            for keywordList in self.lists.items():
+                for index, keyword in enumerate(keywordList):
+                    keywordList[index] = keyword.lower()
+        
         # parse contexts
-        self._contexts = {}
+        self.contexts = {}
         contextsElement = hlgElement.find('contexts')
         firstContext = True
         for contextElement in contextsElement.findall('context'):
-            context = Context(contextElement)
-            self._contexts[context.name] = context
+            context = Context(self, contextElement)
+            self.contexts[context.name] = context
             if firstContext:
                 firstContext = False
                 self.defaultContext = context
@@ -156,11 +221,11 @@ class Syntax:
         
         res += '\tDefault context: %s\n' % self.defaultContext.name
 
-        for listName, listValue in self._lists.iteritems():
+        for listName, listValue in self.lists.iteritems():
             res += '\tList %s: %s\n' % (listName, listValue)
         
         
-        for context in self._contexts.values():
+        for context in self.contexts.values():
             res += str(context)
         
         return res
