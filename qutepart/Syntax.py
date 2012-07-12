@@ -10,10 +10,15 @@ class AbstractRule:
     """Base class for rule classes
     """
     def __init__(self, xmlElement):
+        """Parse XML definition
+        """
         for key, value in xmlElement.items():
             setattr(self, key, value)
     
     def __str__(self):
+        """Serialize.
+        For debug logs
+        """
         res = '\t\tRule %s\n' % self.__class__.__name__
         for name, value in vars(self).iteritems():
             res += '\t\t\t%s: %s\n' % (name, value)
@@ -89,6 +94,9 @@ class Context:
             self.rules.append(rule)
     
     def __str__(self):
+        """Serialize.
+        For debug logs
+        """
         res = '\tContext %s\n' % self.name
         for name, value in vars(self).iteritems():
             if name != 'rules':
@@ -103,6 +111,8 @@ class Syntax:
     """Syntax file parser and container
     """
     def __init__(self, fileName):
+        """Parse XML definition
+        """
         modulePath = os.path.dirname(__file__)
         dataFilePath = os.path.join(modulePath, "syntax", fileName)
         with open(dataFilePath, 'r') as dataFile:
@@ -135,6 +145,9 @@ class Syntax:
         # TODO parse itemData
 
     def __str__(self):
+        """Serialize.
+        For debug logs
+        """
         res = 'Syntax %s\n' % self.name
         for name, value in vars(self).iteritems():
             if not name.startswith('_') and \
