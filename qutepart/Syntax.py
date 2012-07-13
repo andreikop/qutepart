@@ -9,14 +9,24 @@ import xml.etree.ElementTree
 
 class AbstractRule:
     """Base class for rule classes
+    
+    Public properties:
+        formatName - Format name for matched text
     """
     def __init__(self, context, xmlElement):
         """Parse XML definition
         """
         self.context = context
+        
+        # default values
+        self.column = None
 
         for key, value in xmlElement.items():
             setattr(self, key, value)
+        
+        # Convert attribute name to format name
+        self.formatName = context.syntax.formatNameMap[self.attribute]
+        del self.attribute  # not needed
 
     def __str__(self):
         """Serialize.
@@ -24,7 +34,10 @@ class AbstractRule:
         """
         res = '\t\tRule %s\n' % self.__class__.__name__
         for name, value in vars(self).iteritems():
-            res += '\t\t\t%s: %s\n' % (name, value)
+            if not name == 'context' and \
+               not name.startswith('_') and\
+               value is not None:
+                res += '\t\t\t%s: %s\n' % (name, value)
         return res
     
     def findMatch(self, text):
@@ -32,6 +45,7 @@ class AbstractRule:
         Returns matched length, or None if not matched
         """
         raise NotImplementedFault()
+    
 
 
 class DetectChar(AbstractRule):
@@ -111,6 +125,12 @@ _ruleClasses = (DetectChar, Detect2Chars, AnyChar, StringDetect, WordDetect, Reg
 
 
 class Context:
+    """Highlighting context
+    
+    Public attributes:
+        formatName - format name, which is used if no rules match
+    """
+    
     def __init__(self, syntax, xmlElement):
         """Construct context from XML element
         """
@@ -125,6 +145,10 @@ class Context:
         # Read attributes, overwrite defaults, if attribute is set
         for key, value in xmlElement.items():
             setattr(self, key, value)
+        
+        # Convert attribute name to format name
+        self.formatName = syntax.formatNameMap[self.attribute]
+        del self.attribute  # not needed
         
         self.rules = []
 
@@ -144,7 +168,7 @@ class Context:
         """
         res = '\tContext %s\n' % self.name
         for name, value in vars(self).iteritems():
-            if name != 'rules':
+            if not name in ('rules', 'syntax'):
                 res += '\t\t%s: %s\n' % (name, value)
         
         for rule in self.rules:
@@ -156,11 +180,15 @@ class Syntax:
     """Syntax file parser and container
     
     Public attributes:
-        lists - Keyword lists as dictionary "list name" : "list value"
-        contexts - Context list as dictionary "context name" : context
-        defaultContext - Default context object
         deliminatorSet - Set of deliminator characters
         caseSensetive - Keywords are case sensetive. Global flag, every keyword might have own value
+
+        formatNameMap - dictionary "attribute" : "format name"
+        
+        lists - Keyword lists as dictionary "list name" : "list value"
+        
+        defaultContext - Default context object
+        contexts - Context list as dictionary "context name" : context
     """
     
     _DEFAULT_DELIMINATOR = " \t.():!+,-<=>%&*/;?[]^{|}~\\"
@@ -196,6 +224,12 @@ class Syntax:
                 for index, keyword in enumerate(keywordList):
                     keywordList[index] = keyword.lower()
         
+        # parse itemData
+        self.formatNameMap = {}
+        itemDatasElement = hlgElement.find('itemDatas')
+        for item in itemDatasElement.findall('itemData'):
+            self.formatNameMap[item.get('name')] = item.get('defStyleNum')
+        
         # parse contexts
         self.contexts = {}
         contextsElement = hlgElement.find('contexts')
@@ -216,7 +250,7 @@ class Syntax:
         res = 'Syntax %s\n' % self.name
         for name, value in vars(self).iteritems():
             if not name.startswith('_') and \
-               not name in ('defaultContext'):
+               not name in ('defaultContext', 'deliminatorSet', 'contexts'):
                 res += '\t%s: %s\n' % (name, value)
         
         res += '\tDefault context: %s\n' % self.defaultContext.name
