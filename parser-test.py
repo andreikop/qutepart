@@ -5,9 +5,11 @@ import sys
 import sip
 sip.setapi('QString', 2)
 
-
 from qutepart.Syntax import Syntax
 
 if __name__ == '__main__':
-    syntax = Syntax('debianchangelog.xml')
+    if len(sys.argv) > 1:
+        syntax = Syntax(sys.argv[1])
+    else:
+        syntax = Syntax('debiancontrol.xml')
     print syntax

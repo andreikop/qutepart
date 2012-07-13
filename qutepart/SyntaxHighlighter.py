@@ -11,10 +11,10 @@ class _TextBlockUserData(QTextBlockUserData):
 
 
 class SyntaxHighlighter(QSyntaxHighlighter):
-    def __init__(self, *args):
+    def __init__(self, syntaxFileName, *args):
         QSyntaxHighlighter.__init__(self, *args)
         self._theme = ColorTheme()
-        self._syntax = Syntax('debianchangelog.xml')
+        self._syntax = Syntax(syntaxFileName)
     
     def highlightBlock(self, text):
         currentContext = self._syntax.defaultContext

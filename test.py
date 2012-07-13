@@ -28,6 +28,6 @@ if __name__ == '__main__':
     
     pte = QPlainTextEdit()
     pte.setPlainText(text2)
-    hl = SyntaxHighlighter(pte.document())
+    hl = SyntaxHighlighter('debianchangelog.xml', pte.document())
     pte.show()
     app.exec_()
