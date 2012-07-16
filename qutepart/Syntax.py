@@ -7,6 +7,7 @@ import os.path
 import re
 import xml.etree.ElementTree
 
+
 class AbstractRule:
     """Base class for rule classes
     
@@ -46,6 +47,11 @@ class AbstractRule:
         """
         raise NotImplementedFault()
     
+    def shortId(self):
+        """Get short ID string of the rule. Used for logs
+        i.e. "DetectChar(x)"
+        """
+        raise NotImplementedFault()
 
 
 class DetectChar(AbstractRule):
@@ -83,6 +89,9 @@ class RegExpr(AbstractRule):
         match = self._regExp.match(text)
         if match is not None:
             return len(match.group(0))
+    
+    def shortId(self):
+        return 'RegExpr(%s)' % self.String
 
 
 class keyword(AbstractRule):
@@ -95,6 +104,10 @@ class keyword(AbstractRule):
                 return len(word)
         
         return None
+
+    def shortId(self):
+        return 'keyword(%s)' % repr(self.String)
+
 
 class Int(AbstractRule):
     pass
@@ -263,3 +276,40 @@ class Syntax:
             res += str(context)
         
         return res
+
+    def parseBlock(self, text):
+        """Parse block and return next structure:
+            [ (Context, length, [matchedRules]), ...]
+        where matchedRule is:
+            (Rule, pos, length)
+        """
+        currentContext = self.defaultContext
+        
+        matchedRules = []
+        
+        currentColumnIndex = 0
+        while currentColumnIndex < len(text):
+            for rule in currentContext.rules:
+                # Skip if column doesn't match
+                if rule.column is not None and \
+                   not rule.column == currentColumnIndex:
+                    continue
+                
+                # Try to find rule match
+                count = rule.findMatch(text[currentColumnIndex:])
+                if count is not None:
+                    matchedRules.append((rule, currentColumnIndex, count))
+                    currentColumnIndex += count
+                    break
+
+            currentColumnIndex += 1
+        
+        return [(currentContext, len(text), matchedRules)]
+
+    def parseBlockTextualResults(self, text):
+        """Execute parseBlock() and return textual results.
+        For debugging"""
+        parseBlockResult = self.parseBlock(text)
+        return [ (context.name, contextLength, [ (rule.shortId(), pos, length) \
+                                                    for rule, pos, length in matchedRules]) \
+                    for context, contextLength, matchedRules in parseBlockResult]

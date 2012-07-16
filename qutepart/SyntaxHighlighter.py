@@ -1,3 +1,7 @@
+"""QSyntaxHighlighter implementation
+Uses Syntax module for doing the job
+"""
+
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QSyntaxHighlighter, QTextCharFormat, QTextBlockUserData
 
@@ -17,27 +21,11 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self._syntax = Syntax(syntaxFileName)
     
     def highlightBlock(self, text):
-        currentContext = self._syntax.defaultContext
-        
-        currentColumnIndex = 0
-        while currentColumnIndex < len(text):
-            for rule in currentContext.rules:
-                
-                # Skip if column doesn't match
-                if rule.column is not None and \
-                   not rule.column == currentColumnIndex:
-                    continue
-                
-                # Try to find rule match
-                count = rule.findMatch(text[currentColumnIndex:])
-                if count is not None:
-                    print 'match', rule
-                    self.setFormat(currentColumnIndex, count, self._theme.getFormat(rule.formatName))
-                    currentColumnIndex += count
-                    break
-            else:
-                self.setFormat(currentColumnIndex, 1, self._theme.getFormat(currentContext.formatName))
-                currentColumnIndex += 1
+        print self._syntax.parseBlockTextualResults(text)
+        for context, contextLength, matchedRules in self._syntax.parseBlock(text):
+            self.setFormat(0, contextLength, self._theme.getFormat(context.formatName))
+            for rule, pos, ruleLength in matchedRules:
+                self.setFormat(pos, ruleLength, self._theme.getFormat(rule.formatName))
 
     def _prevData(self):
         return self.currentBlock().previous().userData()
