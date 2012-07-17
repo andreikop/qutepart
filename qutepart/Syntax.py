@@ -61,11 +61,27 @@ class DetectChar(AbstractRule):
         return None
 
 class Detect2Chars(AbstractRule):
-    pass
+    def __init__(self, *args):
+        AbstractRule.__init__(self, *args)
+        self._string = self.char + self.char1
+    
+    def findMatch(self, text):
+        if text.startswith(self._string):
+            return len(self._string)
+        
+        return None
+
+
 class AnyChar(AbstractRule):
     pass
+
 class StringDetect(AbstractRule):
-    pass
+    def findMatch(self, text):
+        if text.startswith(self.String):
+            return len(self.String)
+    
+        return None
+
 class WordDetect(AbstractRule):
     pass
 
