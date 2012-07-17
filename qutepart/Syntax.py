@@ -14,10 +14,10 @@ class AbstractRule:
     Public properties:
         formatName - Format name for matched text
     """
-    def __init__(self, context, xmlElement):
+    def __init__(self, parentContext, xmlElement):
         """Parse XML definition
         """
-        self.context = context
+        self.parentContext = parentContext
         
         # default values
         self.column = None
@@ -25,8 +25,11 @@ class AbstractRule:
         for key, value in xmlElement.items():
             setattr(self, key, value)
         
+        if self.column is not None:
+            self.column = int(self.column)
+        
         # Convert attribute name to format name
-        self.formatName = context.syntax.formatNameMap[self.attribute]
+        self.formatName = parentContext.syntax.formatNameMap[self.attribute]
         del self.attribute  # not needed
 
     def __str__(self):
@@ -35,10 +38,10 @@ class AbstractRule:
         """
         res = '\t\tRule %s\n' % self.__class__.__name__
         for name, value in vars(self).iteritems():
-            if not name == 'context' and \
-               not name.startswith('_') and\
+            if not name == 'parentContext' and \
+               not name.startswith('_') and \
                value is not None:
-                res += '\t\t\t%s: %s\n' % (name, value)
+                res += '\t\t\t%s: %s\n' % (name, repr(value))
         return res
     
     def tryMatch(self, text):
@@ -59,6 +62,9 @@ class DetectChar(AbstractRule):
         if text[0] == self.char:
             return 1
         return None
+    
+    def shortId(self):
+        return 'DetectChar(%s)' % self.char
 
 class Detect2Chars(AbstractRule):
     def __init__(self, *args):
@@ -70,6 +76,9 @@ class Detect2Chars(AbstractRule):
             return len(self._string)
         
         return None
+    
+    def shortId(self):
+        return 'Detect2Chars(%s)' % self._string
 
 
 class AnyChar(AbstractRule):
@@ -81,6 +90,9 @@ class StringDetect(AbstractRule):
             return len(self.String)
     
         return None
+        
+    def shortId(self):
+        return 'StringDetect(%s)' % self.String
 
 class WordDetect(AbstractRule):
     pass
@@ -105,6 +117,8 @@ class RegExpr(AbstractRule):
         match = self._regExp.match(text)
         if match is not None:
             return len(match.group(0))
+        
+        return None
     
     def shortId(self):
         return 'RegExpr(%s)' % self.String
@@ -112,10 +126,10 @@ class RegExpr(AbstractRule):
 
 class keyword(AbstractRule):
     def tryMatch(self, text):
-        if not self.context.syntax.casesensetive:
+        if not self.parentContext.syntax.casesensetive:
             text = text.lower()
         
-        for word in self.context.syntax.lists[self.String]:
+        for word in self.parentContext.syntax.lists[self.String]:
             if text.startswith(word):
                 return len(word)
         
@@ -197,8 +211,8 @@ class Context:
         """
         res = '\tContext %s\n' % self.name
         for name, value in vars(self).iteritems():
-            if not name in ('rules', 'syntax'):
-                res += '\t\t%s: %s\n' % (name, value)
+            if not name in ('rules', 'syntax', 'name'):
+                res += '\t\t%s: %s\n' % (name, repr(value))
         
         for rule in self.rules:
             res += str(rule)
@@ -280,7 +294,7 @@ class Syntax:
         for name, value in vars(self).iteritems():
             if not name.startswith('_') and \
                not name in ('defaultContext', 'deliminatorSet', 'contexts'):
-                res += '\t%s: %s\n' % (name, value)
+                res += '\t%s: %s\n' % (name, repr(value))
         
         res += '\tDefault context: %s\n' % self.defaultContext.name
 
@@ -305,10 +319,11 @@ class Syntax:
         
         currentColumnIndex = 0
         while currentColumnIndex < len(text):
+            
             for rule in currentContext.rules:
                 # Skip if column doesn't match
                 if rule.column is not None and \
-                   not rule.column == currentColumnIndex:
+                   rule.column != currentColumnIndex:
                     continue
                 
                 # Try to find rule match
