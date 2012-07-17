@@ -14,24 +14,24 @@ class RulesTestCase(unittest.TestCase):
     
     def test_DetectChar(self):
         rule = self._getRule('debiancontrol.xml', 'Variable', 0)
-        self.assertEqual(rule.findMatch('}'), 1)
-        self.assertEqual(rule.findMatch('x'), None)
+        self.assertEqual(rule.tryMatch('}'), 1)
+        self.assertEqual(rule.tryMatch('x'), None)
 
     def test_RegExpr(self):
         rule = self._getRule('debiancontrol.xml', 'Field', 0)
-        self.assertEqual(rule.findMatch('<sadf@example.com> bla bla'), len('<sadf@example.com>'))
-        self.assertEqual(rule.findMatch('<sadf@example.com bla bla'), None)
+        self.assertEqual(rule.tryMatch('<sadf@example.com> bla bla'), len('<sadf@example.com>'))
+        self.assertEqual(rule.tryMatch('<sadf@example.com bla bla'), None)
         
         rule = self._getRule('debiancontrol.xml', 'INIT', -2)
-        self.assertEqual(rule.findMatch('Depends: xxx'), len('Depends:'))
+        self.assertEqual(rule.tryMatch('Depends: xxx'), len('Depends:'))
     
     def test_StringDetect(self):
         rule = self._getRule('debiancontrol.xml', 'INIT', 1)
-        self.assertEqual(rule.findMatch('Recommends: xxx'), len('Recommends:'))
+        self.assertEqual(rule.tryMatch('Recommends: xxx'), len('Recommends:'))
 
     def test_Detect2Chars(self):
         rule = self._getRule('debiancontrol.xml', 'Field', 1)
-        self.assertEqual(rule.findMatch('${xxx}'), 2)
+        self.assertEqual(rule.tryMatch('${xxx}'), 2)
 
 if __name__ == '__main__':
     unittest.main()

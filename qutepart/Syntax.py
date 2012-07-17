@@ -41,7 +41,7 @@ class AbstractRule:
                 res += '\t\t\t%s: %s\n' % (name, value)
         return res
     
-    def findMatch(self, text):
+    def tryMatch(self, text):
         """Try to find themselves in the text.
         Returns matched length, or None if not matched
         """
@@ -55,7 +55,7 @@ class AbstractRule:
 
 
 class DetectChar(AbstractRule):
-    def findMatch(self, text):
+    def tryMatch(self, text):
         if text[0] == self.char:
             return 1
         return None
@@ -65,7 +65,7 @@ class Detect2Chars(AbstractRule):
         AbstractRule.__init__(self, *args)
         self._string = self.char + self.char1
     
-    def findMatch(self, text):
+    def tryMatch(self, text):
         if text.startswith(self._string):
             return len(self._string)
         
@@ -76,7 +76,7 @@ class AnyChar(AbstractRule):
     pass
 
 class StringDetect(AbstractRule):
-    def findMatch(self, text):
+    def tryMatch(self, text):
         if text.startswith(self.String):
             return len(self.String)
     
@@ -101,7 +101,7 @@ class RegExpr(AbstractRule):
         
         self._regExp = re.compile(self.String)
 
-    def findMatch(self, text):
+    def tryMatch(self, text):
         match = self._regExp.match(text)
         if match is not None:
             return len(match.group(0))
@@ -111,7 +111,7 @@ class RegExpr(AbstractRule):
 
 
 class keyword(AbstractRule):
-    def findMatch(self, text):
+    def tryMatch(self, text):
         if not self.context.syntax.casesensetive:
             text = text.lower()
         
@@ -312,7 +312,7 @@ class Syntax:
                     continue
                 
                 # Try to find rule match
-                count = rule.findMatch(text[currentColumnIndex:])
+                count = rule.tryMatch(text[currentColumnIndex:])
                 if count is not None:
                     matchedRules.append((rule, currentColumnIndex, count))
                     currentColumnIndex += count
