@@ -13,6 +13,8 @@ class AbstractRule:
     
     Public properties:
         formatName - Format name for matched text
+        contextOperation - String, which represents context modification, which shall be applied, if rule matched
+                  None, if not set
     """
     def __init__(self, parentContext, xmlElement):
         """Parse XML definition
@@ -31,6 +33,11 @@ class AbstractRule:
         # Convert attribute name to format name
         self.formatName = parentContext.syntax.formatNameMap[self.attribute]
         del self.attribute  # not needed
+        
+        # rename .context property
+        if hasattr(self, 'context'):
+            self.contextOperation = self.context
+            del self.context
 
     def __str__(self):
         """Serialize.
@@ -126,7 +133,7 @@ class RegExpr(AbstractRule):
 
 class keyword(AbstractRule):
     def tryMatch(self, text):
-        if not self.parentContext.syntax.casesensetive:
+        if not self.parentContext.syntax.casesensitive:
             text = text.lower()
         
         for word in self.parentContext.syntax.lists[self.String]:
@@ -224,7 +231,7 @@ class Syntax:
     
     Public attributes:
         deliminatorSet - Set of deliminator characters
-        caseSensetive - Keywords are case sensetive. Global flag, every keyword might have own value
+        casesensitive - Keywords are case sensetive. Global flag, every keyword might have own value
 
         formatNameMap - dictionary "attribute" : "format name"
         
@@ -313,11 +320,32 @@ class Syntax:
         where matchedRule is:
             (Rule, pos, length)
         """
-        currentContext = self.defaultContext
+        contextStack = [self.defaultContext]
         
-        matchedRules = []
+        matchedContexts = []
         
         currentColumnIndex = 0
+        while currentColumnIndex < len(text):
+            length, newContextStack, matchedRules = \
+                        self._parseBlockWithContextStack(contextStack, currentColumnIndex, text)
+            
+            matchedContexts.append((contextStack[-1], length, matchedRules))
+            
+            contextStack = newContextStack
+            currentColumnIndex += length
+        
+        return matchedContexts
+
+    def _parseBlockWithContextStack(self, contextStack, currentColumnIndex, text):
+        """Parse block, using context
+        Returns (length, newContextStack, matchedRules)
+        where matchedRules is:
+            (Rule, pos, length)
+        """
+        currentContext = contextStack[-1]
+        
+        startColumnIndex = currentColumnIndex
+        matchedRules = []
         while currentColumnIndex < len(text):
             
             for rule in currentContext.rules:
@@ -331,11 +359,16 @@ class Syntax:
                 if count is not None:
                     matchedRules.append((rule, currentColumnIndex, count))
                     currentColumnIndex += count
+                    
+                    if rule.contextOperation is not None:
+                        newContextStack = self._generateNextContextStack(contextStack, rule.contextOperation)
+                        return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
+                    
                     break
 
             currentColumnIndex += 1
         
-        return [(currentContext, len(text), matchedRules)]
+        return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
 
     def parseBlockTextualResults(self, text):
         """Execute parseBlock() and return textual results.
@@ -344,3 +377,20 @@ class Syntax:
         return [ (context.name, contextLength, [ (rule.shortId(), pos, length) \
                                                     for rule, pos, length in matchedRules]) \
                     for context, contextLength, matchedRules in parseBlockResult]
+
+    def _generateNextContextStack(self, currentStack, operation):
+        """Apply context modification to the context stack.
+        Returns new object, if stack has been modified
+        """
+        # FIXME context name and pops count validation
+        
+        if not operation:
+            return currentStack
+
+        if operation == '#stay':
+            return currentStack
+        elif operation.startswith('#pop'):
+            return self._generateNextContextStack(currentStack[1:], operation[len ('#pop'):])
+        else:  # context name
+            return currentStack + [self.contexts[operation]]  # no .append, shall not modify current stack
+        # FIXME doPopsAndPush not supported. I can't understand kate code

@@ -22,10 +22,12 @@ class SyntaxHighlighter(QSyntaxHighlighter):
     
     def highlightBlock(self, text):
         print self._syntax.parseBlockTextualResults(text)
+        contextAreaStartPos = 0
         for context, contextLength, matchedRules in self._syntax.parseBlock(text):
-            self.setFormat(0, contextLength, self._theme.getFormat(context.formatName))
+            self.setFormat(contextAreaStartPos, contextLength, self._theme.getFormat(context.formatName))
             for rule, pos, ruleLength in matchedRules:
-                self.setFormat(pos, ruleLength, self._theme.getFormat(rule.formatName))
+                self.setFormat(contextAreaStartPos + pos, ruleLength, self._theme.getFormat(rule.formatName))
+            contextAreaStartPos += contextLength
 
     def _prevData(self):
         return self.currentBlock().previous().userData()
