@@ -127,7 +127,7 @@ void KateHighlighting::cleanup ()
 
 KateHlContext *KateHighlighting::generateContextStack (QVector<short> &contextStack,
                                                        KateHlContextModification modification,
-                                                       int &indexLastContextPreviousLine)
+                                                       int &previousLineContextIndexInTheStack)
 {
   while (true)
   {
@@ -170,10 +170,10 @@ KateHlContext *KateHighlighting::generateContextStack (QVector<short> &contextSt
         contextStack.resize ((modification.pops >= contextStack.size()) ? 0 : (contextStack.size() - modification.pops));
 
         // handling of context of previous line....
-        if (indexLastContextPreviousLine >= (contextStack.size()-1))
+        if (previousLineContextIndexInTheStack >= (contextStack.size()-1))
         {
           // set new index, if stack is empty, this is -1, done for eternity...
-          indexLastContextPreviousLine = contextStack.size() - 1;
+          previousLineContextIndexInTheStack = contextStack.size() - 1;
 
           // stack already empty, nothing to do...
           if ( contextStack.isEmpty() )
@@ -259,9 +259,9 @@ void KateHighlighting::doHighlight ( Kate::TextLineData *prevLineObject,
                                      bool &ctxChanged )
 {
   // duplicate the vectorOfContextIndexes stack, only once !
-  QVector<short> vectorOfContextIndexes (prevLineObject->ctxArray());
+  QVector<short> vectorOfContextIndexes (prevLineObject->contextStack());
 
-  int previousLineContextIndex = -1;
+  int previousLineContextIndexInTheStack = -1;
   KateHlContext *currentLineContextObject;
 
   if (vectorOfContextIndexes.isEmpty())
@@ -276,7 +276,7 @@ void KateHighlighting::doHighlight ( Kate::TextLineData *prevLineObject,
 
     //kDebug(13010)<<"test1-2-1-text2";
 
-    previousLineContextIndex = vectorOfContextIndexes.size()-1; //position of the last context ID of th previous line within the stack
+    previousLineContextIndexInTheStack = vectorOfContextIndexes.size()-1; //position of the last context ID of th previous line within the stack
 
     if (prevLineObject->hlLineContinue())
     {
@@ -284,7 +284,7 @@ void KateHighlighting::doHighlight ( Kate::TextLineData *prevLineObject,
     }
     else
     {
-      currentLineContextObject = generateContextStack(vectorOfContextIndexes, currentLineContextObject->lineEndContext, previousLineContextIndex); //get stack ID to use
+      currentLineContextObject = generateContextStack(vectorOfContextIndexes, currentLineContextObject->lineEndContext, previousLineContextIndexInTheStack); //get stack ID to use
     }
 
     //if (lineContinue)   kDebug(13010)<<QString("The new context is %1").arg((int)ctxNum);
@@ -407,7 +407,7 @@ void KateHighlighting::doHighlight ( Kate::TextLineData *prevLineObject,
       }
 
       // regenerate context stack if needed
-      currentLineContextObject = generateContextStack (vectorOfContextIndexes, item->ctx, previousLineContextIndex);
+      currentLineContextObject = generateContextStack (vectorOfContextIndexes, item->ctx, previousLineContextIndexInTheStack);
 
       // dynamic context: substitute the model with an 'instance'
       if (currentLineContextObject->dynamic)
@@ -456,7 +456,7 @@ void KateHighlighting::doHighlight ( Kate::TextLineData *prevLineObject,
     if ( currentLineContextObject->fallthrough )
     {
     // set context to context->ftctx.
-      currentLineContextObject=generateContextStack(vectorOfContextIndexes, currentLineContextObject->ftctx, previousLineContextIndex);  //regenerate context stack
+      currentLineContextObject=generateContextStack(vectorOfContextIndexes, currentLineContextObject->ftctx, previousLineContextIndexInTheStack);  //regenerate context stack
 
     //kDebug(13010)<<"context num after fallthrough at col "<<z<<": "<<ctxNum;
     // the next is necessary, as otherwise keyword (or anything using the std delimitor check)
@@ -480,7 +480,7 @@ void KateHighlighting::doHighlight ( Kate::TextLineData *prevLineObject,
   }
 
   // has the context stack changed ?
-  if (vectorOfContextIndexes == textLine->ctxArray())
+  if (vectorOfContextIndexes == textLine->contextStack())
   {
     ctxChanged = false;
   }
@@ -489,7 +489,7 @@ void KateHighlighting::doHighlight ( Kate::TextLineData *prevLineObject,
     ctxChanged = true;
 
     // assign vectorOfContextIndexes stack !
-    textLine->setContext(vectorOfContextIndexes);
+    textLine->setContextStack(vectorOfContextIndexes);
   }
 
   // write hl continue flag

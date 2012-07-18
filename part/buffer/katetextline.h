@@ -249,7 +249,7 @@ class KATEPART_TESTS_EXPORT TextLineData {
      * context stack
      * @return context stack
      */
-    const QVector<short> &ctxArray () const { return m_ctx; }
+    const QVector<short> &contextStack () const { return m_ctx; }
 
     /**
      * @return true if any context at the line end has the noIndentBasedFolding flag set
@@ -316,7 +316,7 @@ class KATEPART_TESTS_EXPORT TextLineData {
      * Sets the syntax highlight context number
      * @param val new context array
      */
-    void setContext (QVector<short> &val) { m_ctx = val; }
+    void setContextStack (QVector<short> &val) { m_ctx = val; }
 
     /**
      * sets if for the next line indent based folding should be disabled
