@@ -9,9 +9,9 @@ from ColorTheme import ColorTheme
 from Syntax import Syntax
 
 class _TextBlockUserData(QTextBlockUserData):
-    def __init__(self, quoteIsOpened):
+    def __init__(self, data):
         QTextBlockUserData.__init__(self)
-        self.quoteIsOpened = quoteIsOpened
+        self.data = data
 
 
 class SyntaxHighlighter(QSyntaxHighlighter):
@@ -21,13 +21,26 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self._syntax = Syntax(syntaxFileName)
     
     def highlightBlock(self, text):
-        print self._syntax.parseBlockTextualResults(text)
+        print '~~~~~'
+        #print self._syntax.parseBlockTextualResults(text)
+        #print self._syntax.parseBlockContextStackTextual(text)
+        #print self._prevData()
+        
+        lineData, matchedContexts = self._syntax.parseBlock(text, self._prevData())
+        
         contextAreaStartPos = 0
-        for context, contextLength, matchedRules in self._syntax.parseBlock(text):
+        for context, contextLength, matchedRules in matchedContexts:
             self.setFormat(contextAreaStartPos, contextLength, self._theme.getFormat(context.formatName))
             for rule, pos, ruleLength in matchedRules:
                 self.setFormat(pos, ruleLength, self._theme.getFormat(rule.formatName))
             contextAreaStartPos += contextLength
+        
+        self.setCurrentBlockUserData(_TextBlockUserData(lineData))
 
     def _prevData(self):
-        return self.currentBlock().previous().userData()
+        prevBlock = self.currentBlock().previous()
+        if prevBlock.isValid():
+            dataObject = prevBlock.userData()
+            if dataObject is not None:
+                return dataObject.data
+        return None

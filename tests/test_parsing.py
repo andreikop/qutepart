@@ -42,5 +42,24 @@ class RulesTestCase(unittest.TestCase):
                           ('Field', 3, [('Detect2Chars(${)', 6, 2)]),
                           ('Variable', 2, [('DetectChar(})', 9, 1)])])
 
+    def test_return_context_stack(self):
+        """Checks if parser returns valid context stack
+        """
+        syntax = Syntax('debianchangelog.xml')
+
+        self.assertEqual(syntax.parseBlockContextStackTextual('mksv3 (12.06.2-1~ppa1) lucid; urgency=low'),
+                         ['INIT', 'Head'])
+
+    def test_use_previous_line_data(self):
+        """Pass previous line data to the parser and check, if it uses it
+        """
+        syntax = Syntax('debianchangelog.xml')
+        
+        contextStack = [syntax.contexts['INIT'], syntax.contexts['Head']]
+        text = ' -- Andrei Kopats <hlamer@tut.by>  Mon, 18 Jun 2012 08:10:32 +0300'
+        self.assertEqual(syntax.parseBlockTextualResults(text, contextStack),
+                         [])
+
+
 if __name__ == '__main__':
     unittest.main()

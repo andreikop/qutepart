@@ -300,7 +300,7 @@ class Syntax:
         res = 'Syntax %s\n' % self.name
         for name, value in vars(self).iteritems():
             if not name.startswith('_') and \
-               not name in ('defaultContext', 'deliminatorSet', 'contexts'):
+               not name in ('defaultContext', 'deliminatorSet', 'contexts', 'lists'):
                 res += '\t%s: %s\n' % (name, repr(value))
         
         res += '\tDefault context: %s\n' % self.defaultContext.name
@@ -314,13 +314,18 @@ class Syntax:
         
         return res
 
-    def parseBlock(self, text):
-        """Parse block and return next structure:
+    def parseBlock(self, text, prevLineData):
+        """Parse block and return touple:
+            (lineData, matchedRules)
+        where matchedContexts is:
             [ (Context, length, [matchedRules]), ...]
         where matchedRule is:
             (Rule, pos, length)
         """
-        contextStack = [self.defaultContext]
+        if prevLineData is not None:
+            contextStack = prevLineData
+        else:
+            contextStack = [self.defaultContext]
         
         matchedContexts = []
         
@@ -334,7 +339,7 @@ class Syntax:
             contextStack = newContextStack
             currentColumnIndex += length
         
-        return matchedContexts
+        return contextStack, matchedContexts
 
     def _parseBlockWithContextStack(self, contextStack, currentColumnIndex, text):
         """Parse block, using last context in the stack.
@@ -363,21 +368,34 @@ class Syntax:
                     
                     if rule.contextOperation is not None:
                         newContextStack = self._generateNextContextStack(contextStack, rule.contextOperation)
-                        return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
+                        if newContextStack != contextStack:
+                            return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
                     
                     break
 
             currentColumnIndex += 1
-        
+
         return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
 
-    def parseBlockTextualResults(self, text):
+    def parseBlockTextualResults(self, text, prevLineData=None):
         """Execute parseBlock() and return textual results.
         For debugging"""
-        parseBlockResult = self.parseBlock(text)
-        return [ (context.name, contextLength, [ (rule.shortId(), pos, length) \
+        lineData, matchedContexts = self.parseBlock(text, prevLineData)
+        lineDataTextual = [context.name for context in lineData]
+        matchedContextsTextual = \
+         [ (context.name, contextLength, [ (rule.shortId(), pos, length) \
                                                     for rule, pos, length in matchedRules]) \
-                    for context, contextLength, matchedRules in parseBlockResult]
+                    for context, contextLength, matchedRules in matchedContexts]
+        
+        return matchedContextsTextual
+
+    def parseBlockContextStackTextual(self, text, prevLineData=None):
+        """Execute parseBlock() and return context stack as list of context names
+        For debugging"""
+        lineData, matchedContexts = self.parseBlock(text, prevLineData)
+        lineDataTextual = [context.name for context in lineData]
+        
+        return lineDataTextual
 
     def _generateNextContextStack(self, currentStack, operation):
         """Apply context modification to the context stack.
