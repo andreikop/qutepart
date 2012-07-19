@@ -37,7 +37,7 @@ Description: Simple programmers text editor
 
 
 text2 = \
-"""<hlamer@tut.by>"""
+""" ${a} ${b}"""
 
 
 
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     
     pte = QPlainTextEdit()
-    pte.setPlainText(text)
+    pte.setPlainText(text2)
     hl = SyntaxHighlighter('debiancontrol.xml', pte.document())
     pte.show()
     app.exec_()

@@ -30,5 +30,17 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(syntax.parseBlockTextualResults('Provides: xxx'),
                          [('INIT', 9, [('StringDetect(Provides:)', 0, 9)]), ('DependencyField', 4, [])])
 
+    def test_pop_context(self):
+        """Checks if #pop operation works correctly
+        """
+        syntax = Syntax('debiancontrol.xml')
+
+        self.assertEqual(syntax.parseBlockTextualResults(' ${a} ${b}'),
+                         [('INIT', 1, [('DetectChar( )', 0, 1)]), 
+                          ('Field', 2, [('Detect2Chars(${)', 1, 2)]),
+                          ('Variable', 2, [('DetectChar(})', 4, 1)]),
+                          ('Field', 3, [('Detect2Chars(${)', 6, 2)]),
+                          ('Variable', 2, [('DetectChar(})', 9, 1)])])
+
 if __name__ == '__main__':
     unittest.main()

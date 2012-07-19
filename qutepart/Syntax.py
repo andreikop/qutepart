@@ -337,7 +337,8 @@ class Syntax:
         return matchedContexts
 
     def _parseBlockWithContextStack(self, contextStack, currentColumnIndex, text):
-        """Parse block, using context
+        """Parse block, using last context in the stack.
+        Exits, when reached end of the text, or when context is switched
         Returns (length, newContextStack, matchedRules)
         where matchedRules is:
             (Rule, pos, length)
@@ -390,7 +391,7 @@ class Syntax:
         if operation == '#stay':
             return currentStack
         elif operation.startswith('#pop'):
-            return self._generateNextContextStack(currentStack[1:], operation[len ('#pop'):])
+            return self._generateNextContextStack(currentStack[:-1], operation[len ('#pop'):])
         else:  # context name
             return currentStack + [self.contexts[operation]]  # no .append, shall not modify current stack
         # FIXME doPopsAndPush not supported. I can't understand kate code
