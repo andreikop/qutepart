@@ -26,7 +26,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         for context, contextLength, matchedRules in self._syntax.parseBlock(text):
             self.setFormat(contextAreaStartPos, contextLength, self._theme.getFormat(context.formatName))
             for rule, pos, ruleLength in matchedRules:
-                self.setFormat(contextAreaStartPos + pos, ruleLength, self._theme.getFormat(rule.formatName))
+                self.setFormat(pos, ruleLength, self._theme.getFormat(rule.formatName))
             contextAreaStartPos += contextLength
 
     def _prevData(self):
