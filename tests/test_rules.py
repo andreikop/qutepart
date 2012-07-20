@@ -21,6 +21,10 @@ class RulesTestCase(unittest.TestCase):
         rule = self._getRule('debiancontrol.xml', 'Field', 0)
         self.assertEqual(rule.tryMatch('<sadf@example.com> bla bla'), len('<sadf@example.com>'))
         self.assertEqual(rule.tryMatch('<sadf@example.com bla bla'), None)
+        self.assertEqual(rule.tryMatch('<sadf@example.com bla bla'), None)
+        
+        rule = self._getRule('debianchangelog.xml', 'INIT', 0)
+        self.assertEqual(rule.tryMatch(' <hlamer@tut.by>'), None)  # must not capture 0 symbols
         
         rule = self._getRule('debiancontrol.xml', 'INIT', -2)
         self.assertEqual(rule.tryMatch('Depends: xxx'), len('Depends:'))

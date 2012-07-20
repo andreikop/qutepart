@@ -122,7 +122,7 @@ class RegExpr(AbstractRule):
 
     def tryMatch(self, text):
         match = self._regExp.match(text)
-        if match is not None:
+        if match is not None and match.group(0):
             return len(match.group(0))
         
         return None
