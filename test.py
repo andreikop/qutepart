@@ -19,7 +19,8 @@ text = """mksv3 (12.06.2-1~ppa1) lucid; urgency=low
 
 
 text2 = \
-"""mksv3 urgency=low"""
+"""mksv3 
+ <hlamer@tut.by>"""
 
 
 

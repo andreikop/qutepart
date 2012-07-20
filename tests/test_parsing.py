@@ -45,20 +45,19 @@ class RulesTestCase(unittest.TestCase):
     def test_return_context_stack(self):
         """Checks if parser returns valid context stack
         """
-        syntax = Syntax('debianchangelog.xml')
+        syntax = Syntax('debiancontrol.xml')
 
-        self.assertEqual(syntax.parseBlockContextStackTextual('mksv3 (12.06.2-1~ppa1) lucid; urgency=low'),
-                         ['INIT', 'Head'])
+        self.assertEqual(syntax.parseBlockContextStackTextual('Source: mksv3'),
+                         ['INIT'])
 
-    def test_use_previous_line_data(self):
-        """Pass previous line data to the parser and check, if it uses it
+    def test_line_end_context_switch(self):
+        """Switch context, if line end reached, and current context has lineEndContext attribute
         """
         syntax = Syntax('debianchangelog.xml')
         
-        contextStack = [syntax.contexts['INIT'], syntax.contexts['Head']]
-        text = ' -- Andrei Kopats <hlamer@tut.by>  Mon, 18 Jun 2012 08:10:32 +0300'
-        self.assertEqual(syntax.parseBlockTextualResults(text, contextStack),
-                         [])
+        text = 'mksv3 '
+        self.assertEqual(syntax.parseBlockContextStackTextual(text),
+                         ['INIT'])
 
 
 if __name__ == '__main__':

@@ -179,6 +179,9 @@ class Context:
     
     Public attributes:
         formatName - format name, which is used if no rules match
+        
+        lineEndContext - conext operation. context the highlight system switches to 
+                         if it reaches the end of a line
     """
     
     def __init__(self, syntax, xmlElement):
@@ -191,6 +194,7 @@ class Context:
         self.fallthrough = False
         self.dynamic = False
         self.fallthroughContext = ''
+        self.lineEndContext = None
         
         # Read attributes, overwrite defaults, if attribute is set
         for key, value in xmlElement.items():
@@ -358,7 +362,7 @@ class Syntax:
                 # Skip if column doesn't match
                 if rule.column is not None and \
                    rule.column != currentColumnIndex:
-                    continue
+                    continue  # for loop iteration
                 
                 # Try to find rule match
                 count = rule.tryMatch(text[currentColumnIndex:])
@@ -371,10 +375,13 @@ class Syntax:
                         if newContextStack != contextStack:
                             return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
                     
-                    break
+                    break  # for loop
 
             currentColumnIndex += 1
 
+        if contextStack[-1].lineEndContext is not None:
+            contextStack = self._generateNextContextStack(contextStack, contextStack[-1].lineEndContext)
+        
         return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
 
     def parseBlockTextualResults(self, text, prevLineData=None):

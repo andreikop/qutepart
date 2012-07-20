@@ -21,13 +21,8 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self._syntax = Syntax(syntaxFileName)
     
     def highlightBlock(self, text):
-        print '~~~~~'
-        #print self._syntax.parseBlockTextualResults(text)
-        #print self._syntax.parseBlockContextStackTextual(text)
-        #print self._prevData()
-        
         lineData, matchedContexts = self._syntax.parseBlock(text, self._prevData())
-        
+        print self._syntax.parseBlockTextualResults(text, self._prevData())
         contextAreaStartPos = 0
         for context, contextLength, matchedRules in matchedContexts:
             self.setFormat(contextAreaStartPos, contextLength, self._theme.getFormat(context.formatName))
