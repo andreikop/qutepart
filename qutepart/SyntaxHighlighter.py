@@ -27,7 +27,8 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         for context, contextLength, matchedRules in matchedContexts:
             self.setFormat(contextAreaStartPos, contextLength, self._theme.getFormat(context.formatName))
             for rule, pos, ruleLength in matchedRules:
-                self.setFormat(pos, ruleLength, self._theme.getFormat(rule.formatName))
+                if rule.formatName is not None:
+                    self.setFormat(pos, ruleLength, self._theme.getFormat(rule.formatName))
             contextAreaStartPos += contextLength
         
         self.setCurrentBlockUserData(_TextBlockUserData(lineData))

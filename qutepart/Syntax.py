@@ -5,6 +5,7 @@ if you want to understand something
 
 import os.path
 import re
+import copy
 import xml.etree.ElementTree
 
 
@@ -12,7 +13,7 @@ class AbstractRule:
     """Base class for rule classes
     
     Public properties:
-        formatName - Format name for matched text
+        formatName - Format name for matched text. If None - use parent context attribute
         contextOperation - String, which represents context modification, which shall be applied, if rule matched
                   None, if not set
     """
@@ -23,6 +24,7 @@ class AbstractRule:
         
         # default values
         self.column = None
+        self.attribute = None
 
         for key, value in xmlElement.items():
             setattr(self, key, value)
@@ -31,7 +33,10 @@ class AbstractRule:
             self.column = int(self.column)
         
         # Convert attribute name to format name
-        self.formatName = parentContext.syntax.formatNameMap[self.attribute]
+        if self.attribute is not None:
+            self.formatName = parentContext.syntax.formatNameMap[self.attribute]
+        else:
+            self.formatName = None
         del self.attribute  # not needed
         
         # rename .context property
@@ -247,6 +252,24 @@ class Syntax:
     
     _DEFAULT_DELIMINATOR = " \t.():!+,-<=>%&*/;?[]^{|}~\\"
 
+    _DEFAULT_FORMAT_NAME_MAP = \
+    {
+        'Alert' : 'dsAlert',
+        'Base-N Integer' : 'dsBaseN',
+        'Character' : 'dsChar',
+        'Comment' : 'dsComment',
+        'Data Type' : 'dsDataType',
+        'Decimal/Value' : 'dsDecVal',
+        'Error' : 'dsError',
+        'Floating Point' : 'dsFloat',
+        'Function' : 'dsFunction',
+        'Keyword' : 'dsKeyword',
+        'Normal' : 'dsNormal',
+        'Others' : 'dsOthers',
+        'Region Marker' : 'dsRegionMarker',
+        'String' : 'dsString'
+    }
+
     def __init__(self, fileName):
         """Parse XML definition
         """
@@ -279,7 +302,7 @@ class Syntax:
                     keywordList[index] = keyword.lower()
         
         # parse itemData
-        self.formatNameMap = {}
+        self.formatNameMap = copy.copy(self._DEFAULT_FORMAT_NAME_MAP)
         itemDatasElement = hlgElement.find('itemDatas')
         for item in itemDatasElement.findall('itemData'):
             self.formatNameMap[item.get('name')] = item.get('defStyleNum')
