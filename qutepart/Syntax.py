@@ -226,20 +226,19 @@ class Context:
         """
         self.syntax = syntax
 
-        # Default values for optional attributes
-        self.lineBeginContext = '#stay'
-        self.fallthrough = False
-        self.dynamic = False
-        self.fallthroughContext = ''
-        self.lineEndContext = None
+        self.name = xmlElement.attrib['name']
         
-        # Read attributes, overwrite defaults, if attribute is set
-        for key, value in xmlElement.items():
-            setattr(self, key, value)
+        self.formatName = syntax._getFormatName(xmlElement.attrib['attribute'])
         
-        # Convert attribute name to format name
-        self.formatName = syntax._getFormatName(self.attribute)
-        del self.attribute  # not needed
+        self.lineEndContext = xmlElement.attrib.get('lineEndContext', '#stay')
+        self.lineBeginContext = xmlElement.attrib.get('lineEndContext', '#stay')
+        
+        if xmlElement.attrib.get('fallthrough', 'false') == 'true':
+            self.fallthroughContext = xmlElement.attrib['fallthroughContext']
+        else:
+            self.fallthroughContext = None
+        
+        self.dynamic = xmlElement.attrib.get('dynamic', False)
         
         self.rules = []
 
@@ -258,9 +257,12 @@ class Context:
         For debug logs
         """
         res = '\tContext %s\n' % self.name
-        for name, value in vars(self).iteritems():
-            if not name in ('rules', 'syntax', 'name'):
-                res += '\t\t%s: %s\n' % (name, repr(value))
+        res += '\t\t%s: %s\n' % ('attribute', self.formatName)
+        res += '\t\t%s: %s\n' % ('lineEndContext', self.lineEndContext)
+        res += '\t\t%s: %s\n' % ('lineBeginContext', self.lineBeginContext)
+        if self.fallthroughContext is not None:
+            res += '\t\t%s: %s\n' % ('fallthroughContext', self.fallthroughContext)
+        res += '\t\t%s: %s\n' % ('dynamic', self.dynamic)
         
         for rule in self.rules:
             res += str(rule)
