@@ -22,38 +22,38 @@ class AbstractRule:
         """
         self.parentContext = parentContext
         
-        # default values
-        self.column = None
-        self.attribute = None
-
-        for key, value in xmlElement.items():
-            setattr(self, key, value)
-        
-        if self.column is not None:
-            self.column = int(self.column)
-        
-        # Convert attribute name to format name
-        if self.attribute is not None:
-            self.formatName = parentContext.syntax._getFormatName(self.attribute)
+        # attribute
+        attribute = xmlElement.attrib.get("attribute", None)
+        if attribute is not None:
+            self.formatName = parentContext.syntax._getFormatName(attribute)
         else:
             self.formatName = None
-        del self.attribute  # not needed
-        
-        # rename .context property
-        if hasattr(self, 'context'):
-            self.contextOperation = self.context
-            del self.context
 
+        # context
+        context = xmlElement.attrib.get("context", None)
+        if context is not None:
+            self.contextOperation = context
+        else:
+            self.contextOperation = None
+    
+        # TODO beginRegion
+        # TODO endRegion
+        # TODO lookAhead
+        # TODO firstNonSpace
+        
+        column = xmlElement.attrib.get("column", None)
+        if column is not None:
+            self.column = int(column)
+        else:
+            self.column = None
+        
     def __str__(self):
         """Serialize.
         For debug logs
         """
-        res = '\t\tRule %s\n' % self.__class__.__name__
-        for name, value in vars(self).iteritems():
-            if not name == 'parentContext' and \
-               not name.startswith('_') and \
-               value is not None:
-                res += '\t\t\t%s: %s\n' % (name, repr(value))
+        res = '\t\tRule %s\n' % self.shortId()
+        res += '\t\t\tformatName: %s\n' % self.formatName
+        res += '\t\t\tcontextOperation: %s\n' % self.contextOperation
         return res
     
     def tryMatch(self, text):
@@ -70,18 +70,22 @@ class AbstractRule:
 
 
 class DetectChar(AbstractRule):
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+        self._char = xmlElement.attrib["char"]
+    
     def tryMatch(self, text):
-        if text[0] == self.char:
+        if text[0] == self._char:
             return 1
         return None
     
     def shortId(self):
-        return 'DetectChar(%s)' % self.char
+        return 'DetectChar(%s)' % self._char
 
-class Detect2Chars(AbstractRule):
-    def __init__(self, *args):
-        AbstractRule.__init__(self, *args)
-        self._string = self.char + self.char1
+class Detect2Chars(AbstractRule):    
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+        self._string = xmlElement.attrib['char'] + xmlElement.attrib['char1']
     
     def tryMatch(self, text):
         if text.startswith(self._string):
@@ -97,14 +101,18 @@ class AnyChar(AbstractRule):
     pass
 
 class StringDetect(AbstractRule):
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+        self._string = xmlElement.attrib['String']
+
     def tryMatch(self, text):
-        if text.startswith(self.String):
-            return len(self.String)
+        if text.startswith(self._string):
+            return len(self._string)
     
         return None
         
     def shortId(self):
-        return 'StringDetect(%s)' % self.String
+        return 'StringDetect(%s)' % self._string
 
 class WordDetect(AbstractRule):
     pass
@@ -114,20 +122,23 @@ class RegExpr(AbstractRule):
     """TODO if regexp starts with ^ - match only column 0
     TODO support "minimal" flag
     """
-    def __init__(self, *args):
-        self.insensitive = False  # default value
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+        self._string = xmlElement.attrib['String']
         
-        AbstractRule.__init__(self, *args)
+        insensitive = xmlElement.attrib.get('insensitive', False)
         
         flags = 0
-        if self.insensitive:
+        if insensitive:
             flags = re.IGNORECASE
         
-        self.String = self._processCraracterCodes(self.String)
+        string = xmlElement.attrib['String']
+        string = self._processCraracterCodes(string)
+        
         try:
-            self._regExp = re.compile(self.String)
+            self._regExp = re.compile(string)
         except re.error as ex:
-            raise UserWarning("Invalid pattern '%s': %s" % (self.String, str(ex)))
+            raise UserWarning("Invalid pattern '%s': %s" % (string, str(ex)))
 
     def _processCraracterCodes(self, text):
         """QRegExp use \0ddd notation for character codes, where d in octal digit
@@ -149,22 +160,27 @@ class RegExpr(AbstractRule):
         return None
     
     def shortId(self):
-        return 'RegExpr(%s)' % self.String
+        return 'RegExpr(%s)' % self._regExp.pattern
 
 
 class keyword(AbstractRule):
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+        
+        self._string = xmlElement.attrib['String']
+
     def tryMatch(self, text):
         if not self.parentContext.syntax.casesensitive:
             text = text.lower()
         
-        for word in self.parentContext.syntax.lists[self.String]:
+        for word in self.parentContext.syntax.lists[self._string]:
             if text.startswith(word):
                 return len(word)
         
         return None
 
     def shortId(self):
-        return 'keyword(%s)' % repr(self.String)
+        return 'keyword(%s)' % repr(self._string)
 
 
 class Int(AbstractRule):
@@ -201,7 +217,7 @@ class Context:
     Public attributes:
         formatName - format name, which is used if no rules match
         
-        lineEndContext - conext operation. context the highlight system switches to 
+        lineEndContext - context operation. context the highlight system switches to 
                          if it reaches the end of a line
     """
     
@@ -385,7 +401,7 @@ class Syntax:
         if not attribute.lower() in self._formatNameMap:
             raise UserWarning("Unknown attribute '%s'" % attribute)
         
-        # attribite names are not case sensetive
+        # attribute names are not case sensetive
         return self._formatNameMap[attribute.lower()]
 
     def parseBlock(self, text, prevLineData):
