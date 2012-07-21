@@ -271,6 +271,7 @@ class Syntax:
         'alert' : 'dsAlert',
         'base-n integer' : 'dsBaseN',
         'character' : 'dsChar',
+        'string char': 'dsChar',
         'comment' : 'dsComment',
         'data type' : 'dsDataType',
         'decimal/value' : 'dsDecVal',
