@@ -268,20 +268,20 @@ class Syntax:
 
     _DEFAULT_FORMAT_NAME_MAP = \
     {
-        'Alert' : 'dsAlert',
-        'Base-N Integer' : 'dsBaseN',
-        'Character' : 'dsChar',
-        'Comment' : 'dsComment',
-        'Data Type' : 'dsDataType',
-        'Decimal/Value' : 'dsDecVal',
-        'Error' : 'dsError',
-        'Floating Point' : 'dsFloat',
-        'Function' : 'dsFunction',
-        'Keyword' : 'dsKeyword',
-        'Normal' : 'dsNormal',
-        'Others' : 'dsOthers',
-        'Region Marker' : 'dsRegionMarker',
-        'String' : 'dsString'
+        'alert' : 'dsAlert',
+        'base-n integer' : 'dsBaseN',
+        'character' : 'dsChar',
+        'comment' : 'dsComment',
+        'data type' : 'dsDataType',
+        'decimal/value' : 'dsDecVal',
+        'error' : 'dsError',
+        'floating point' : 'dsFloat',
+        'function' : 'dsFunction',
+        'keyword' : 'dsKeyword',
+        'normal' : 'dsNormal',
+        'others' : 'dsOthers',
+        'region marker' : 'dsRegionMarker',
+        'string' : 'dsString'
     }
     
     _KNOWN_FORMAT_NAMES = set(["dsNormal",
@@ -331,12 +331,13 @@ class Syntax:
                     keywordList[index] = keyword.lower()
         
         # parse itemData
-        self._formatNameMap = self._DEFAULT_FORMAT_NAME_MAP
+        self._formatNameMap = copy.copy(self._DEFAULT_FORMAT_NAME_MAP)
         itemDatasElement = hlgElement.find('itemDatas')
         for item in itemDatasElement.findall('itemData'):
             name, formatName = item.get('name'), item.get('defStyleNum')
             if not formatName in self._KNOWN_FORMAT_NAMES:
                 raise UserWarning("Unknown default format name '%s'" % formatName)
+            name = name.lower()  # format names are not case sensetive
             self._formatNameMap[name] = formatName
         
         # parse contexts
@@ -376,10 +377,11 @@ class Syntax:
     def _getFormatName(self, attribute):
         """Maps 'attribute' field of a Context and a Rule to format name
         """
-        if not attribute in self._formatNameMap:
-            raise UserWarning('Unknown attribute (format name) %s' % attribute)
+        if not attribute.lower() in self._formatNameMap:
+            raise UserWarning("Unknown attribute '%s'" % attribute)
         
-        return self._formatNameMap[attribute]
+        # attribite names are not case sensetive
+        return self._formatNameMap[attribute.lower()]
 
     def parseBlock(self, text, prevLineData):
         """Parse block and return touple:
