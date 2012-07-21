@@ -25,9 +25,9 @@ class AbstractRule:
         # attribute
         attribute = xmlElement.attrib.get("attribute", None)
         if attribute is not None:
-            self.formatName = parentContext.syntax._getFormatName(attribute)
+            self.mappedAttribute = parentContext.syntax._getFormatName(attribute)
         else:
-            self.formatName = None
+            self.mappedAttribute = None
 
         # context
         context = xmlElement.attrib.get("context", None)
@@ -52,7 +52,7 @@ class AbstractRule:
         For debug logs
         """
         res = '\t\tRule %s\n' % self.shortId()
-        res += '\t\t\tformatName: %s\n' % self.formatName
+        res += '\t\t\tformatName: %s\n' % self.mappedAttribute
         res += '\t\t\tcontextOperation: %s\n' % self.contextOperation
         return res
     
@@ -228,7 +228,7 @@ class Context:
 
         self.name = xmlElement.attrib['name']
         
-        self.formatName = syntax._getFormatName(xmlElement.attrib['attribute'])
+        self.mappedAttribute = syntax._getFormatName(xmlElement.attrib['attribute'])
         
         self.lineEndContext = xmlElement.attrib.get('lineEndContext', '#stay')
         self.lineBeginContext = xmlElement.attrib.get('lineEndContext', '#stay')
@@ -257,7 +257,7 @@ class Context:
         For debug logs
         """
         res = '\tContext %s\n' % self.name
-        res += '\t\t%s: %s\n' % ('attribute', self.formatName)
+        res += '\t\t%s: %s\n' % ('attribute', self.mappedAttribute)
         res += '\t\t%s: %s\n' % ('lineEndContext', self.lineEndContext)
         res += '\t\t%s: %s\n' % ('lineBeginContext', self.lineBeginContext)
         if self.fallthroughContext is not None:
