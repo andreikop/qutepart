@@ -3,8 +3,8 @@ Read http://kate-editor.org/2005/03/24/writing-a-syntax-highlighting-file/
 if you want to understand something
 
 
-"attribute" attribute of rules and contexts contains not an original string, 
-but value from itemDatas section
+"attribute" property of rules and contexts contains not an original string, 
+but value from itemDatas section (style name)
 """
 
 import os.path
@@ -66,7 +66,7 @@ class AbstractRule:
         For debug logs
         """
         res = '\t\tRule %s\n' % self.shortId()
-        res += '\t\t\tformatName: %s\n' % self.attribute
+        res += '\t\t\tstyleName: %s\n' % self.attribute
         res += '\t\t\tcontext: %s\n' % self.context
         return res
     
@@ -316,7 +316,7 @@ class Syntax:
     
     _DEFAULT_DELIMINATOR = " \t.():!+,-<=>%&*/;?[]^{|}~\\"
 
-    _DEFAULT_FORMAT_NAME_MAP = \
+    _DEFAULT_ATTRIBUTE_TO_STYLE_MAP = \
     {
         'alert' : 'dsAlert',
         'base-n integer' : 'dsBaseN',
@@ -396,19 +396,19 @@ class Syntax:
                     keywordList[index] = keyword.lower()
         
         # parse itemData
-        self._formatNameMap = copy.copy(self._DEFAULT_FORMAT_NAME_MAP)
+        self._styleNameMap = copy.copy(self._DEFAULT_ATTRIBUTE_TO_STYLE_MAP)
         itemDatasElement = hlgElement.find('itemDatas')
         for item in itemDatasElement.findall('itemData'):
-            name, formatName = item.get('name'), item.get('defStyleNum')
+            name, styleName = item.get('name'), item.get('defStyleNum')
             
-            if formatName is None:  # custom format
-                formatName = 'CustomTmpForDebugging'
+            if styleName is None:  # custom format
+                styleName = 'CustomTmpForDebugging'
             
-            if not formatName in self._KNOWN_STYLES:
-                print >> sys.stderr, "Unknown default style '%s'" % formatName
-                formatName = 'dsNormal'
+            if not styleName in self._KNOWN_STYLES:
+                print >> sys.stderr, "Unknown default style '%s'" % styleName
+                styleName = 'dsNormal'
             name = name.lower()  # format names are not case sensetive
-            self._formatNameMap[name] = formatName
+            self._styleNameMap[name] = styleName
         
         # parse contexts
         self.contexts = {}
@@ -448,12 +448,12 @@ class Syntax:
     def _mapAttributeToStyle(self, attribute):
         """Maps 'attribute' field of a Context and a Rule to style
         """
-        if not attribute.lower() in self._formatNameMap:
+        if not attribute.lower() in self._styleNameMap:
             print >> sys.stderr, "Unknown attribute '%s'" % attribute
-            return self._formatNameMap['normal']
+            return self._styleNameMap['normal']
         
         # attribute names are not case sensetive
-        return self._formatNameMap[attribute.lower()]
+        return self._styleNameMap[attribute.lower()]
 
     def parseBlock(self, text, prevLineData):
         """Parse block and return touple:

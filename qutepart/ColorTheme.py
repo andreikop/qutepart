@@ -4,24 +4,25 @@ from PyQt4.QtGui import QBrush, QColor, QFont, QTextCharFormat
 class ColorTheme:
     """Color theme.
     """
-    _COMMON_FORMAT = ("dsNormal",
-                      "dsKeyword",
-                      "dsDataType",
-                      "dsDecVal",
-                      "dsBaseN",
-                      "dsFloat",
-                      "dsChar",
-                      "dsString",
-                      "dsComment",
-                      "dsOthers",
-                      "dsAlert",
-                      "dsFunction",
-                      "dsRegionMarker",
-                      "dsError")
+    _DEFAULT_STYLE_NAMES = \
+     ("dsNormal",
+      "dsKeyword",
+      "dsDataType",
+      "dsDecVal",
+      "dsBaseN",
+      "dsFloat",
+      "dsChar",
+      "dsString",
+      "dsComment",
+      "dsOthers",
+      "dsAlert",
+      "dsFunction",
+      "dsRegionMarker",
+      "dsError")
     def __init__(self):
         
         self._format = {}
-        for format in ColorTheme._COMMON_FORMAT:
+        for format in ColorTheme._DEFAULT_STYLE_NAMES:
             self._format[format] = QTextCharFormat()
         
         self._format['dsKeyword'].setFontWeight(QFont.Bold)
@@ -51,7 +52,7 @@ class ColorTheme:
         
         self._format['dsError'].setForeground(QBrush(QColor('#e1eaf8')))
     
-    def getFormat(self, formatName):
+    def getFormat(self, styleName):
         """Returns QTextCharFormat for particular style
         """
-        return self._format[formatName]
+        return self._format[styleName]
