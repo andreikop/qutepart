@@ -8,8 +8,8 @@ sip.setapi('QString', 2)
 from qutepart.Syntax import Syntax
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        syntax = Syntax(sys.argv[1])
+    if len(sys.argv) != 2:
+        print 'Usage:\n\t%s SYNTAX_FILE_NAME' % sys.argv[0]
     else:
-        syntax = Syntax('debianchangelog.xml')
+        syntax = Syntax(sys.argv[1])
     print syntax
