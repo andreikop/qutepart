@@ -25,10 +25,10 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         print self._syntax.parseBlockTextualResults(text, self._prevData())
         contextAreaStartPos = 0
         for context, contextLength, matchedRules in matchedContexts:
-            self.setFormat(contextAreaStartPos, contextLength, self._theme.getFormat(context.mappedAttribute))
+            self.setFormat(contextAreaStartPos, contextLength, self._theme.getFormat(context.attribute))
             for rule, pos, ruleLength in matchedRules:
-                if rule.mappedAttribute is not None:
-                    self.setFormat(pos, ruleLength, self._theme.getFormat(rule.mappedAttribute))
+                if rule.attribute is not None:
+                    self.setFormat(pos, ruleLength, self._theme.getFormat(rule.attribute))
             contextAreaStartPos += contextLength
         
         self.setCurrentBlockUserData(_TextBlockUserData(lineData))

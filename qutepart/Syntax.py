@@ -1,6 +1,10 @@
 """Kate syntax definition parser and representation
 Read http://kate-editor.org/2005/03/24/writing-a-syntax-highlighting-file/ 
 if you want to understand something
+
+
+"attribute" attribute of rules and contexts contains not an original string, 
+but value from itemDatas section
 """
 
 import os.path
@@ -19,11 +23,6 @@ def _parseBoolAttribute(value):
 
 class AbstractRule:
     """Base class for rule classes
-    
-    Public properties:
-        formatName - Format name for matched text. If None - use parent context attribute
-        contextOperation - String, which represents context modification, which shall be applied, if rule matched
-                  None, if not set
     """
     def __init__(self, parentContext, xmlElement):
         """Parse XML definition
@@ -33,16 +32,16 @@ class AbstractRule:
         # attribute
         attribute = xmlElement.attrib.get("attribute", None)
         if attribute is not None:
-            self.mappedAttribute = parentContext.syntax._getFormatName(attribute)
+            self.attribute = parentContext.syntax._getFormatName(attribute)
         else:
-            self.mappedAttribute = None
+            self.attribute = None
 
         # context
         context = xmlElement.attrib.get("context", None)
         if context is not None:
-            self.contextOperation = context
+            self.context = context
         else:
-            self.contextOperation = None
+            self.context = None
     
         # TODO beginRegion
         # TODO endRegion
@@ -60,8 +59,8 @@ class AbstractRule:
         For debug logs
         """
         res = '\t\tRule %s\n' % self.shortId()
-        res += '\t\t\tformatName: %s\n' % self.mappedAttribute
-        res += '\t\t\tcontextOperation: %s\n' % self.contextOperation
+        res += '\t\t\tformatName: %s\n' % self.attribute
+        res += '\t\t\tcontext: %s\n' % self.context
         return res
     
     def tryMatch(self, text):
@@ -221,12 +220,6 @@ _ruleClasses = (DetectChar, Detect2Chars, AnyChar, StringDetect, WordDetect, Reg
 
 class Context:
     """Highlighting context
-    
-    Public attributes:
-        formatName - format name, which is used if no rules match
-        
-        lineEndContext - context operation. context the highlight system switches to 
-                         if it reaches the end of a line
     """
     
     def __init__(self, syntax, xmlElement):
@@ -236,7 +229,7 @@ class Context:
 
         self.name = xmlElement.attrib['name']
         
-        self.mappedAttribute = syntax._getFormatName(xmlElement.attrib['attribute'])
+        self.attribute = syntax._getFormatName(xmlElement.attrib['attribute'])
         
         self.lineEndContext = xmlElement.attrib.get('lineEndContext', '#stay')
         self.lineBeginContext = xmlElement.attrib.get('lineEndContext', '#stay')
@@ -265,7 +258,7 @@ class Context:
         For debug logs
         """
         res = '\tContext %s\n' % self.name
-        res += '\t\t%s: %s\n' % ('attribute', self.mappedAttribute)
+        res += '\t\t%s: %s\n' % ('attribute', self.attribute)
         res += '\t\t%s: %s\n' % ('lineEndContext', self.lineEndContext)
         res += '\t\t%s: %s\n' % ('lineBeginContext', self.lineBeginContext)
         if self.fallthroughContext is not None:
@@ -479,8 +472,8 @@ class Syntax:
                     matchedRules.append((rule, currentColumnIndex, count))
                     currentColumnIndex += count
                     
-                    if rule.contextOperation is not None:
-                        newContextStack = self._generateNextContextStack(contextStack, rule.contextOperation)
+                    if rule.context is not None:
+                        newContextStack = self._generateNextContextStack(contextStack, rule.context)
                         if newContextStack != contextStack:
                             return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
                     
