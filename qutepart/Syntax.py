@@ -34,7 +34,7 @@ class AbstractRule:
         
         # Convert attribute name to format name
         if self.attribute is not None:
-            self.formatName = parentContext.syntax.formatNameMap[self.attribute]
+            self.formatName = parentContext.syntax._getFormatName(self.attribute)
         else:
             self.formatName = None
         del self.attribute  # not needed
@@ -206,7 +206,7 @@ class Context:
             setattr(self, key, value)
         
         # Convert attribute name to format name
-        self.formatName = syntax.formatNameMap[self.attribute]
+        self.formatName = syntax._getFormatName(self.attribute)
         del self.attribute  # not needed
         
         self.rules = []
@@ -242,8 +242,6 @@ class Syntax:
         deliminatorSet - Set of deliminator characters
         casesensitive - Keywords are case sensetive. Global flag, every keyword might have own value
 
-        formatNameMap - dictionary "attribute" : "format name"
-        
         lists - Keyword lists as dictionary "list name" : "list value"
         
         defaultContext - Default context object
@@ -269,6 +267,21 @@ class Syntax:
         'Region Marker' : 'dsRegionMarker',
         'String' : 'dsString'
     }
+    
+    _KNOWN_FORMAT_NAMES = set(["dsNormal",
+                               "dsKeyword",
+                               "dsDataType",
+                               "dsDecVal",
+                               "dsBaseN",
+                               "dsFloat",
+                               "dsChar",
+                               "dsString",
+                               "dsComment",
+                               "dsOthers",
+                               "dsAlert",
+                               "dsFunction",
+                               "dsRegionMarker",
+                               "dsError"])
 
     def __init__(self, fileName):
         """Parse XML definition
@@ -302,10 +315,13 @@ class Syntax:
                     keywordList[index] = keyword.lower()
         
         # parse itemData
-        self.formatNameMap = copy.copy(self._DEFAULT_FORMAT_NAME_MAP)
+        self._formatNameMap = self._DEFAULT_FORMAT_NAME_MAP
         itemDatasElement = hlgElement.find('itemDatas')
         for item in itemDatasElement.findall('itemData'):
-            self.formatNameMap[item.get('name')] = item.get('defStyleNum')
+            name, formatName = item.get('name'), item.get('defStyleNum')
+            if not formatName in self._KNOWN_FORMAT_NAMES:
+                raise UserWarning("Unknown default format name '%s'" % formatName)
+            self._formatNameMap[name] = formatName
         
         # parse contexts
         self.contexts = {}
@@ -340,6 +356,14 @@ class Syntax:
             res += str(context)
         
         return res
+    
+    def _getFormatName(self, attribute):
+        """Maps 'attribute' field of a Context and a Rule to format name
+        """
+        if not attribute in self._formatNameMap:
+            raise UserWarning('Unknown attribute (format name) %s' % attribute)
+        
+        return self._formatNameMap[attribute]
 
     def parseBlock(self, text, prevLineData):
         """Parse block and return touple:
