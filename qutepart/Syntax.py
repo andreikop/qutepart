@@ -336,6 +336,10 @@ class Syntax:
         itemDatasElement = hlgElement.find('itemDatas')
         for item in itemDatasElement.findall('itemData'):
             name, formatName = item.get('name'), item.get('defStyleNum')
+            
+            if formatName is None:  # custom format
+                formatName = 'dsNormal'
+            
             if not formatName in self._KNOWN_FORMAT_NAMES:
                 raise UserWarning("Unknown default format name '%s'" % formatName)
             name = name.lower()  # format names are not case sensetive
