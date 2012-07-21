@@ -358,7 +358,7 @@ class Syntax:
         
         # Make all keywords lowercase, if syntax is not case sensetive
         if not self.casesensitive:
-            for keywordList in self.lists.items():
+            for keywordList in self.lists.values():
                 for index, keyword in enumerate(keywordList):
                     keywordList[index] = keyword.lower()
         
