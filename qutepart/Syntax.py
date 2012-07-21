@@ -8,6 +8,7 @@ but value from itemDatas section
 """
 
 import os.path
+import sys
 import re
 import copy
 import xml.etree.ElementTree
@@ -20,6 +21,12 @@ def _parseBoolAttribute(value):
     else:
         raise UserWarning("Invalid bool attribute value '%s'" % value)
 
+def _safeGetRequiredAttribute(xmlElement, name, default):
+    if name in xmlElement.attrib:
+        return xmlElement.attrib[name]
+    else:
+        print >> sys.stderr, "Required attribute '%s' is not set for element '%s'" % (name, xmlElement.tag)
+        return default
 
 class AbstractRule:
     """Base class for rule classes
@@ -32,7 +39,7 @@ class AbstractRule:
         # attribute
         attribute = xmlElement.attrib.get("attribute", None)
         if attribute is not None:
-            self.attribute = parentContext.syntax._getFormatName(attribute)
+            self.attribute = parentContext.syntax._mapAttributeToStyle(attribute)
         else:
             self.attribute = None
 
@@ -79,9 +86,12 @@ class AbstractRule:
 class DetectChar(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._char = xmlElement.attrib["char"]
+        self._char = _safeGetRequiredAttribute(xmlElement, "char", None)
     
     def tryMatch(self, text):
+        if self._char is None:
+            return None
+        
         if text[0] == self._char:
             return 1
         return None
@@ -92,9 +102,18 @@ class DetectChar(AbstractRule):
 class Detect2Chars(AbstractRule):    
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._string = xmlElement.attrib['char'] + xmlElement.attrib['char1']
+        
+        char = _safeGetRequiredAttribute(xmlElement, 'char', None)
+        char1 = _safeGetRequiredAttribute(xmlElement, 'char1', None)
+        if char is None or char1 is None:
+            self._string = None
+        else:
+            self._string = char + char1
     
     def tryMatch(self, text):
+        if self._string is None:
+            return None
+        
         if text.startswith(self._string):
             return len(self._string)
         
@@ -110,9 +129,12 @@ class AnyChar(AbstractRule):
 class StringDetect(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._string = xmlElement.attrib['String']
+        self._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
 
     def tryMatch(self, text):
+        if self._string is None:
+            return
+        
         if text.startswith(self._string):
             return len(self._string)
     
@@ -131,21 +153,23 @@ class RegExpr(AbstractRule):
     """
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._string = xmlElement.attrib['String']
+        
+        string = _safeGetRequiredAttribute(xmlElement, 'String', None)        
+        if string is None:
+            self._regExp = None
+            return
+        string = self._processCraracterCodes(string)
         
         insensitive = xmlElement.attrib.get('insensitive', False)
-        
         flags = 0
         if insensitive:
             flags = re.IGNORECASE
         
-        string = xmlElement.attrib['String']
-        string = self._processCraracterCodes(string)
-        
         try:
             self._regExp = re.compile(string)
-        except re.error as ex:
-            raise UserWarning("Invalid pattern '%s': %s" % (string, str(ex)))
+        except (re.error, AssertionError) as ex:
+            print >> sys.stderr, "Invalid pattern '%s': %s" % (string, str(ex))
+            self._regExp = None
 
     def _processCraracterCodes(self, text):
         """QRegExp use \0ddd notation for character codes, where d in octal digit
@@ -160,6 +184,9 @@ class RegExpr(AbstractRule):
         return re.sub(r"\\0\d\d\d", replFunc, text)
         
     def tryMatch(self, text):
+        if self._regExp is None:
+            return None
+
         match = self._regExp.match(text)
         if match is not None and match.group(0):
             return len(match.group(0))
@@ -174,9 +201,12 @@ class keyword(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
         
-        self._string = xmlElement.attrib['String']
+        self._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
 
     def tryMatch(self, text):
+        if self._string is None:
+            return None
+
         if not self.parentContext.syntax.casesensitive:
             text = text.lower()
         
@@ -227,15 +257,16 @@ class Context:
         """
         self.syntax = syntax
 
-        self.name = xmlElement.attrib['name']
+        self.name = _safeGetRequiredAttribute(xmlElement, 'name', 'Error: context name is not set!!!')
         
-        self.attribute = syntax._getFormatName(xmlElement.attrib['attribute'])
+        attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', 'normal')
+        self.attribute = syntax._mapAttributeToStyle(attribute)
         
         self.lineEndContext = xmlElement.attrib.get('lineEndContext', '#stay')
         self.lineBeginContext = xmlElement.attrib.get('lineEndContext', '#stay')
         
         if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
-            self.fallthroughContext = xmlElement.attrib['fallthroughContext']
+            self.fallthroughContext = _safeGetRequiredAttribute(xmlElement, 'fallthroughContext', None)
         else:
             self.fallthroughContext = None
         
@@ -304,20 +335,21 @@ class Syntax:
         'string' : 'dsString'
     }
     
-    _KNOWN_FORMAT_NAMES = set(["dsNormal",
-                               "dsKeyword",
-                               "dsDataType",
-                               "dsDecVal",
-                               "dsBaseN",
-                               "dsFloat",
-                               "dsChar",
-                               "dsString",
-                               "dsComment",
-                               "dsOthers",
-                               "dsAlert",
-                               "dsFunction",
-                               "dsRegionMarker",
-                               "dsError"])
+    _KNOWN_STYLES = set([  "dsNormal",
+                           "dsKeyword",
+                           "dsDataType",
+                           "dsDecVal",
+                           "dsBaseN",
+                           "dsFloat",
+                           "dsChar",
+                           "dsString",
+                           "dsComment",
+                           "dsOthers",
+                           "dsAlert",
+                           "dsFunction",
+                           "dsRegionMarker",
+                           "dsError",
+                           "CustomTmpForDebugging"])
 
     def __init__(self, fileName):
         """Parse XML definition
@@ -328,10 +360,10 @@ class Syntax:
         with open(dataFilePath, 'r') as dataFile:
             root = xml.etree.ElementTree.parse(dataFile).getroot()
 
-        self.name = root.attrib['name']
+        self.name = _safeGetRequiredAttribute(root, 'name', 'Error: Syntax name is not set!!!')
         
-        self.section = root.attrib['section']
-        self.extensions = root.attrib['extensions'].split(';')
+        self.section = _safeGetRequiredAttribute(root, 'section', 'Error: Section is not set!!!')
+        self.extensions = _safeGetRequiredAttribute(root, 'extensions', '')
         
         self.mimetype = root.attrib.get('mimetype', None)
         self.version = root.attrib.get('version', None)
@@ -354,7 +386,8 @@ class Syntax:
         for listElement in hlgElement.findall('list'):
             items = [item.text \
                         for item in listElement.findall('item')]
-            self.lists[listElement.attrib['name']] = items
+            name = _safeGetRequiredAttribute(listElement, 'name', 'Error: list name is not set!!!')
+            self.lists[name] = items
         
         # Make all keywords lowercase, if syntax is not case sensetive
         if not self.casesensitive:
@@ -369,10 +402,11 @@ class Syntax:
             name, formatName = item.get('name'), item.get('defStyleNum')
             
             if formatName is None:  # custom format
-                formatName = 'dsNormal'
+                formatName = 'CustomTmpForDebugging'
             
-            if not formatName in self._KNOWN_FORMAT_NAMES:
-                raise UserWarning("Unknown default format name '%s'" % formatName)
+            if not formatName in self._KNOWN_STYLES:
+                print >> sys.stderr, "Unknown default style '%s'" % formatName
+                formatName = 'dsNormal'
             name = name.lower()  # format names are not case sensetive
             self._formatNameMap[name] = formatName
         
@@ -411,11 +445,12 @@ class Syntax:
         
         return res
     
-    def _getFormatName(self, attribute):
-        """Maps 'attribute' field of a Context and a Rule to format name
+    def _mapAttributeToStyle(self, attribute):
+        """Maps 'attribute' field of a Context and a Rule to style
         """
         if not attribute.lower() in self._formatNameMap:
-            raise UserWarning("Unknown attribute '%s'" % attribute)
+            print >> sys.stderr, "Unknown attribute '%s'" % attribute
+            return self._formatNameMap['normal']
         
         # attribute names are not case sensetive
         return self._formatNameMap[attribute.lower()]
