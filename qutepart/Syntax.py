@@ -3,8 +3,11 @@ Read http://kate-editor.org/2005/03/24/writing-a-syntax-highlighting-file/
 if you want to understand something
 
 
-"attribute" property of rules and contexts contains not an original string, 
+'attribute' property of rules and contexts contains not an original string, 
 but value from itemDatas section (style name)
+
+'context', 'lineBeginContext', 'lineEndContext', 'fallthroughContext' properties
+contain not a text value, but _ContextSwitcher object
 """
 
 import os.path
@@ -28,6 +31,52 @@ def _safeGetRequiredAttribute(xmlElement, name, default):
         print >> sys.stderr, "Required attribute '%s' is not set for element '%s'" % (name, xmlElement.tag)
         return default
 
+
+class _ContextSwitcher:
+    """Class parses 'context', 'lineBeginContext', 'lineEndContext', 'fallthroughContext'
+    and modifies context stack according to context operation
+    """
+    def __init__(self, contextOperation, contexts):
+        self._contextOperation = contextOperation
+        
+        self._popsCount = 0
+        self._contextToSwitch = None
+        
+        rest = contextOperation
+        while rest.startswith('#pop'):
+            self._popsCount += 1
+            rest = rest[len('#pop'):]
+        
+        if rest == '#stay':
+            if self._popsCount:
+                print >> sys.stderr, "Invalid context operation '%s'" % contextOperation
+        elif rest in contexts:
+            self._contextToSwitch = contexts[rest]
+        elif rest.startswith('##'):
+            pass  # TODO implement IncludeRules
+        elif rest:
+            print >> sys.stderr, "Unknown context '%s'" % rest
+    
+    def __str__(self):
+        return self._contextOperation
+        
+    def getNextContextStack(self, contextStack):
+        """Apply modification to the contextStack.
+        This method never modifies input parameter list
+        """
+        if self._popsCount:
+            if len(contextStack) < self._popsCount or \
+               len(contextStack) == self._popsCount and self._contextToSwitch is None:
+                print >> sys.stderr, "Error: #pop value is too big"
+            
+            contextStack = contextStack[:-self._popsCount]
+        
+        if self._contextToSwitch is not None:
+            return contextStack + [self._contextToSwitch]
+        else:
+            return contextStack
+        
+    
 class AbstractRule:
     """Base class for rule classes
     """
@@ -44,11 +93,8 @@ class AbstractRule:
             self.attribute = None
 
         # context
-        context = xmlElement.attrib.get("context", None)
-        if context is not None:
-            self.context = context
-        else:
-            self.context = None
+        contextText = xmlElement.attrib.get("context", '#stay')
+        self.context = _ContextSwitcher(contextText, parentContext.syntax.contexts)
     
         # TODO beginRegion
         # TODO endRegion
@@ -251,26 +297,31 @@ _ruleClasses = (DetectChar, Detect2Chars, AnyChar, StringDetect, WordDetect, Reg
 class Context:
     """Highlighting context
     """
-    
     def __init__(self, syntax, xmlElement):
-        """Construct context from XML element
-        """
         self.syntax = syntax
-
         self.name = _safeGetRequiredAttribute(xmlElement, 'name', 'Error: context name is not set!!!')
+        self._xmlElement = xmlElement
+
+    def load(self):
+        """Construct context from XML element
+        Contexts are at first constructed, and only then loaded, because when loading context,
+        _ContextSwitcher must have references to all defined contexts
+        """
+        attribute = _safeGetRequiredAttribute(self._xmlElement, 'attribute', 'normal')
+        self.attribute = self.syntax._mapAttributeToStyle(attribute)
         
-        attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', 'normal')
-        self.attribute = syntax._mapAttributeToStyle(attribute)
+        lineEndContextText = self._xmlElement.attrib.get('lineEndContext', '#stay')
+        self.lineEndContext = _ContextSwitcher(lineEndContextText,  self.syntax.contexts)
+        lineBeginContextText = self._xmlElement.attrib.get('lineEndContext', '#stay')
+        self.lineBeginContext = _ContextSwitcher(lineBeginContextText, self.syntax.contexts)
         
-        self.lineEndContext = xmlElement.attrib.get('lineEndContext', '#stay')
-        self.lineBeginContext = xmlElement.attrib.get('lineEndContext', '#stay')
-        
-        if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
-            self.fallthroughContext = _safeGetRequiredAttribute(xmlElement, 'fallthroughContext', None)
+        if _parseBoolAttribute(self._xmlElement.attrib.get('fallthrough', 'false')):
+            fallthroughContextText = _safeGetRequiredAttribute(self._xmlElement, 'fallthroughContext', '#stay')
+            self.fallthroughContext = _ContextSwitcher(fallthroughContextText, self.syntax.contexts)
         else:
             self.fallthroughContext = None
         
-        self.dynamic = xmlElement.attrib.get('dynamic', False)
+        self.dynamic = self._xmlElement.attrib.get('dynamic', False)
         
         self.rules = []
 
@@ -278,7 +329,7 @@ class Context:
         for ruleClass in _ruleClasses:
             ruleClassDict[ruleClass.__name__] = ruleClass
         
-        for ruleElement in xmlElement.getchildren():
+        for ruleElement in self._xmlElement.getchildren():
             if not ruleElement.tag in ruleClassDict:
                 raise ValueError("Not supported rule '%s'" % ruleElement.tag)
             rule = ruleClassDict[ruleElement.tag](self, ruleElement)
@@ -410,10 +461,11 @@ class Syntax:
             name = name.lower()  # format names are not case sensetive
             self._styleNameMap[name] = styleName
         
-        # parse contexts
+        # parse contexts stage 1: create objects
         self.contexts = {}
         contextsElement = hlgElement.find('contexts')
         firstContext = True
+        
         for contextElement in contextsElement.findall('context'):
             context = Context(self, contextElement)
             self.contexts[context.name] = context
@@ -421,7 +473,9 @@ class Syntax:
                 firstContext = False
                 self.defaultContext = context
         
-        # TODO parse itemData
+        # parse contexts stage 2: load contexts
+        for context in self.contexts.values():
+            context.load()
 
     def __str__(self):
         """Serialize.
@@ -508,7 +562,7 @@ class Syntax:
                     currentColumnIndex += count
                     
                     if rule.context is not None:
-                        newContextStack = self._generateNextContextStack(contextStack, rule.context)
+                        newContextStack = rule.context.getNextContextStack(contextStack)
                         if newContextStack != contextStack:
                             return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
                     
@@ -517,7 +571,7 @@ class Syntax:
             currentColumnIndex += 1
 
         if contextStack[-1].lineEndContext is not None:
-            contextStack = self._generateNextContextStack(contextStack, contextStack[-1].lineEndContext)
+            contextStack = contextStack[-1].lineEndContext.getNextContextStack(contextStack)
         
         return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
 
@@ -540,20 +594,3 @@ class Syntax:
         lineDataTextual = [context.name for context in lineData]
         
         return lineDataTextual
-
-    def _generateNextContextStack(self, currentStack, operation):
-        """Apply context modification to the context stack.
-        Returns new object, if stack has been modified
-        """
-        # FIXME context name and pops count validation
-        
-        if not operation:
-            return currentStack
-
-        if operation == '#stay':
-            return currentStack
-        elif operation.startswith('#pop'):
-            return self._generateNextContextStack(currentStack[:-1], operation[len ('#pop'):])
-        else:  # context name
-            return currentStack + [self.contexts[operation]]  # no .append, shall not modify current stack
-        # FIXME doPopsAndPush not supported. I can't understand kate code
