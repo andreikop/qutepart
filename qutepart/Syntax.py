@@ -123,7 +123,10 @@ class RegExpr(AbstractRule):
         if self.insensitive:
             flags = re.IGNORECASE
         
-        self._regExp = re.compile(self.String)
+        try:
+            self._regExp = re.compile(self.String)
+        except re.error as ex:
+            raise UserWarning("Invalid pattern '%s': %s" % (self.String, str(ex)))
 
     def tryMatch(self, text):
         match = self._regExp.match(text)
