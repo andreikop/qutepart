@@ -28,6 +28,9 @@ class RulesTestCase(unittest.TestCase):
         
         rule = self._getRule('debiancontrol.xml', 'INIT', -2)
         self.assertEqual(rule.tryMatch('Depends: xxx'), len('Depends:'))
+        
+        rule = self._getRule('fsharp.xml', 'ModuleEnv2', 0)
+        self.assertEqual(rule.String, u"[A-Z][A-Za-z\xc0-\xd6\xd8-\xf6\xf8-\xff0-9_']*")
     
     def test_StringDetect(self):
         rule = self._getRule('debiancontrol.xml', 'INIT', 1)

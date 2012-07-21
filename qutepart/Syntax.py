@@ -123,11 +123,24 @@ class RegExpr(AbstractRule):
         if self.insensitive:
             flags = re.IGNORECASE
         
+        self.String = self._processCraracterCodes(self.String)
         try:
             self._regExp = re.compile(self.String)
         except re.error as ex:
             raise UserWarning("Invalid pattern '%s': %s" % (self.String, str(ex)))
 
+    def _processCraracterCodes(self, text):
+        """QRegExp use \0ddd notation for character codes, where d in octal digit
+        i.e. \0377 is character with code 255 in the unicode table
+        Convert such notation to unicode text
+        """
+        text = unicode(text)
+        def replFunc(matchObj):
+            matchText = matchObj.group(0)
+            charCode = eval(matchText[1:])
+            return chr(charCode).decode('latin1')
+        return re.sub(r"\\0\d\d\d", replFunc, text)
+        
     def tryMatch(self, text):
         match = self._regExp.match(text)
         if match is not None and match.group(0):
