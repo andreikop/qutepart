@@ -8,6 +8,14 @@ import re
 import copy
 import xml.etree.ElementTree
 
+def _parseBoolAttribute(value):
+    if value in ('true', '1'):
+        return True
+    elif value in ('false', '0'):
+        return False
+    else:
+        raise UserWarning("Invalid bool attribute value '%s'" % value)
+
 
 class AbstractRule:
     """Base class for rule classes
@@ -233,7 +241,7 @@ class Context:
         self.lineEndContext = xmlElement.attrib.get('lineEndContext', '#stay')
         self.lineBeginContext = xmlElement.attrib.get('lineEndContext', '#stay')
         
-        if xmlElement.attrib.get('fallthrough', 'false') == 'true':
+        if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
             self.fallthroughContext = xmlElement.attrib['fallthroughContext']
         else:
             self.fallthroughContext = None
@@ -321,18 +329,30 @@ class Syntax:
     def __init__(self, fileName):
         """Parse XML definition
         """
-        # Default parameters
-        self.deliminatorSet = set(Syntax._DEFAULT_DELIMINATOR)
-        self.casesensitive = True
         
         modulePath = os.path.dirname(__file__)
         dataFilePath = os.path.join(modulePath, "syntax", fileName)
         with open(dataFilePath, 'r') as dataFile:
             root = xml.etree.ElementTree.parse(dataFile).getroot()
+
+        self.name = root.attrib['name']
         
-        # read attributes
-        for key, value in root.items():
-            setattr(self, key, value)
+        self.section = root.attrib['section']
+        self.extensions = root.attrib['extensions'].split(';')
+        
+        self.mimetype = root.attrib.get('mimetype', None)
+        self.version = root.attrib.get('version', None)
+        self.kateversion = root.attrib.get('kateversion', None)
+        
+        self.casesensitive = _parseBoolAttribute(root.attrib.get('casesensitive', 'true'))
+        
+        self.priority = root.attrib.get('priority', None)
+        self.author = root.attrib.get('author', None)
+        self.license = root.attrib.get('license', None)
+        
+        self.hidden = _parseBoolAttribute(root.attrib.get('hidden', 'false'))
+        
+        self.deliminatorSet = set(Syntax._DEFAULT_DELIMINATOR)
         
         hlgElement = root.find('highlighting')
         
@@ -383,8 +403,9 @@ class Syntax:
         res = 'Syntax %s\n' % self.name
         for name, value in vars(self).iteritems():
             if not name.startswith('_') and \
-               not name in ('defaultContext', 'deliminatorSet', 'contexts', 'lists'):
-                res += '\t%s: %s\n' % (name, repr(value))
+               not name in ('defaultContext', 'deliminatorSet', 'contexts', 'lists') and \
+               not value is None:
+                res += '\t%s: %s\n' % (name, value)
         
         res += '\tDefault context: %s\n' % self.defaultContext.name
 
