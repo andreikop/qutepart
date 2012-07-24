@@ -522,6 +522,10 @@ class Syntax:
         else:
             contextStack = [self.defaultContext]
         
+        # this code is not tested, because lineBeginContext is not defined by any xml file
+        if contextStack[-1].lineBeginContext is not None:
+            contextStack = contextStack[-1].lineBeginContext.getNextContextStack(contextStack)
+        
         matchedContexts = []
         
         currentColumnIndex = 0
@@ -533,6 +537,9 @@ class Syntax:
             
             contextStack = newContextStack
             currentColumnIndex += length
+
+        if contextStack[-1].lineEndContext is not None:
+            contextStack = contextStack[-1].lineEndContext.getNextContextStack(contextStack)
         
         return contextStack, matchedContexts
 
@@ -570,9 +577,6 @@ class Syntax:
 
             currentColumnIndex += 1
 
-        if contextStack[-1].lineEndContext is not None:
-            contextStack = contextStack[-1].lineEndContext.getNextContextStack(contextStack)
-        
         return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
 
     def parseBlockTextualResults(self, text, prevLineData=None):
