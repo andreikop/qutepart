@@ -59,6 +59,17 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(syntax.parseBlockContextStackTextual(text),
                          ['INIT'])
 
+    '''
+    def test_fallgrhough(self):
+        """Switch context, if no rules matched
+        """
+        syntax = Syntax('yacc.xml')
+        
+        text = 'mksv3 '
+        self.assertEqual(syntax.parseBlockContextStackTextual(text),
+                         ['INIT'])
+    '''
+
 
 if __name__ == '__main__':
     unittest.main()

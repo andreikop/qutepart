@@ -14,31 +14,31 @@ class RulesTestCase(unittest.TestCase):
     
     def test_DetectChar(self):
         rule = self._getRule('debiancontrol.xml', 'Variable', 0)
-        self.assertEqual(rule.tryMatch('}'), 1)
-        self.assertEqual(rule.tryMatch('x'), None)
+        self.assertEqual(rule.tryMatch(0, '}')[0], 1)
+        self.assertEqual(rule.tryMatch(0, 'x')[0], None)
 
     def test_RegExpr(self):
         rule = self._getRule('debiancontrol.xml', 'Field', 0)
-        self.assertEqual(rule.tryMatch('<sadf@example.com> bla bla'), len('<sadf@example.com>'))
-        self.assertEqual(rule.tryMatch('<sadf@example.com bla bla'), None)
-        self.assertEqual(rule.tryMatch('<sadf@example.com bla bla'), None)
+        self.assertEqual(rule.tryMatch(0, '<sadf@example.com> bla bla')[0], len('<sadf@example.com>'))
+        self.assertEqual(rule.tryMatch(0, '<sadf@example.com bla bla')[0], None)
+        self.assertEqual(rule.tryMatch(0, '<sadf@example.com bla bla')[0], None)
         
         rule = self._getRule('debianchangelog.xml', 'INIT', 0)
-        self.assertEqual(rule.tryMatch(' <hlamer@tut.by>'), None)  # must not capture 0 symbols
+        self.assertEqual(rule.tryMatch(0, ' <hlamer@tut.by>')[0], None)  # must not capture 0 symbols
         
         rule = self._getRule('debiancontrol.xml', 'INIT', -2)
-        self.assertEqual(rule.tryMatch('Depends: xxx'), len('Depends:'))
+        self.assertEqual(rule.tryMatch(0, 'Depends: xxx')[0], len('Depends:'))
         
         rule = self._getRule('fsharp.xml', 'ModuleEnv2', 0)
         self.assertEqual(rule._regExp.pattern, u"[A-Z][A-Za-z\xc0-\xd6\xd8-\xf6\xf8-\xff0-9_']*")
     
     def test_StringDetect(self):
         rule = self._getRule('debiancontrol.xml', 'INIT', 1)
-        self.assertEqual(rule.tryMatch('Recommends: xxx'), len('Recommends:'))
+        self.assertEqual(rule.tryMatch(0, 'Recommends: xxx')[0], len('Recommends:'))
 
     def test_Detect2Chars(self):
         rule = self._getRule('debiancontrol.xml', 'Field', 1)
-        self.assertEqual(rule.tryMatch('${xxx}'), 2)
+        self.assertEqual(rule.tryMatch(0, '${xxx}')[0], 2)
 
 if __name__ == '__main__':
     unittest.main()

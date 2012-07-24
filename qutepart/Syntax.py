@@ -116,9 +116,26 @@ class AbstractRule:
         res += '\t\t\tcontext: %s\n' % self.context
         return res
     
-    def tryMatch(self, text):
+    def tryMatch(self, currentColumnIndex, text):
         """Try to find themselves in the text.
-        Returns matched length, or None if not matched
+        Returns (count, matchedRule) or (None, None) if doesn't match
+        
+        IncludeRules reimplements this method
+        """
+        # Skip if column doesn't match
+        if self.column is not None and \
+           self.column != currentColumnIndex:
+            return None, None
+        
+        count = self._tryMatch(text)
+        if count is not None:
+            return count, self
+        else:
+            return None, None
+
+    def _tryMatch(self, text):
+        """Simple tryMatch method. Checks if text matches.
+        Shall be reimplemented by child classes
         """
         raise NotImplementedFault()
     
@@ -126,7 +143,7 @@ class AbstractRule:
         """Get short ID string of the rule. Used for logs
         i.e. "DetectChar(x)"
         """
-        raise NotImplementedFault()
+        raise NotImplementedError(str(self.__class__))
 
 
 class DetectChar(AbstractRule):
@@ -134,7 +151,7 @@ class DetectChar(AbstractRule):
         AbstractRule.__init__(self, parentContext, xmlElement)
         self._char = _safeGetRequiredAttribute(xmlElement, "char", None)
     
-    def tryMatch(self, text):
+    def _tryMatch(self, text):
         if self._char is None:
             return None
         
@@ -156,7 +173,7 @@ class Detect2Chars(AbstractRule):
         else:
             self._string = char + char1
     
-    def tryMatch(self, text):
+    def _tryMatch(self, text):
         if self._string is None:
             return None
         
@@ -177,7 +194,7 @@ class StringDetect(AbstractRule):
         AbstractRule.__init__(self, parentContext, xmlElement)
         self._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
 
-    def tryMatch(self, text):
+    def _tryMatch(self, text):
         if self._string is None:
             return
         
@@ -229,7 +246,7 @@ class RegExpr(AbstractRule):
             return chr(charCode).decode('latin1')
         return re.sub(r"\\0\d\d\d", replFunc, text)
         
-    def tryMatch(self, text):
+    def _tryMatch(self, text):
         if self._regExp is None:
             return None
 
@@ -249,7 +266,7 @@ class keyword(AbstractRule):
         
         self._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
 
-    def tryMatch(self, text):
+    def _tryMatch(self, text):
         if self._string is None:
             return None
 
@@ -282,8 +299,11 @@ class RangeDetect(AbstractRule):
     pass
 class LineContinue(AbstractRule):
     pass
+
 class IncludeRules(AbstractRule):
-    pass
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+
 class DetectSpaces(AbstractRule):
     pass
 class DetectIdentifier(AbstractRule):
@@ -323,6 +343,7 @@ class Context:
         
         self.dynamic = self._xmlElement.attrib.get('dynamic', False)
         
+        # load rules
         self.rules = []
 
         ruleClassDict = {}
@@ -557,23 +578,22 @@ class Syntax:
         while currentColumnIndex < len(text):
             
             for rule in currentContext.rules:
-                # Skip if column doesn't match
-                if rule.column is not None and \
-                   rule.column != currentColumnIndex:
-                    continue  # for loop iteration
-                
-                # Try to find rule match
-                count = rule.tryMatch(text[currentColumnIndex:])
+                count, matchedRule = rule.tryMatch(currentColumnIndex, text[currentColumnIndex:])
                 if count is not None:
-                    matchedRules.append((rule, currentColumnIndex, count))
+                    matchedRules.append((matchedRule, currentColumnIndex, count))
                     currentColumnIndex += count
                     
-                    if rule.context is not None:
-                        newContextStack = rule.context.getNextContextStack(contextStack)
+                    if matchedRule.context is not None:
+                        newContextStack = matchedRule.context.getNextContextStack(contextStack)
                         if newContextStack != contextStack:
                             return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
                     
-                    break  # for loop
+                    break  # for loop                    
+            else:
+                if currentContext.fallthroughContext is not None:
+                    newContextStack = currentContext.fallthroughContext.getNextContextStack(contextStack)
+                    if newContextStack != contextStack:
+                        return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
 
             currentColumnIndex += 1
 
