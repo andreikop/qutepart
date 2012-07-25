@@ -187,7 +187,19 @@ class Detect2Chars(AbstractRule):
 
 
 class AnyChar(AbstractRule):
-    pass
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+        self._string = _safeGetRequiredAttribute(xmlElement, 'String', '')
+    
+    def _tryMatch(self, text):
+        if text[0] in self._string:
+            return 1
+        
+        return None
+
+    def shortId(self):
+        return 'AnyChar(%s)' % self._string
+
 
 class StringDetect(AbstractRule):
     def __init__(self, parentContext, xmlElement):

@@ -48,5 +48,10 @@ class RulesTestCase(unittest.TestCase):
         rule = self._getRule('yacc.xml', 'Rule In', 0)
         self.assertEqual(rule.tryMatch(0, '/* xxx */')[0], 2)
 
+    def test_AnyChar(self):
+        rule = self._getRule('asp.xml', 'aspsource', 12)
+        self.assertEqual(rule.tryMatch(0, 'xyz')[0], None)
+        self.assertEqual(rule.tryMatch(0, '{}=')[0], 1)
+
 if __name__ == '__main__':
     unittest.main()
