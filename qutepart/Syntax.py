@@ -303,9 +303,50 @@ class LineContinue(AbstractRule):
 class IncludeRules(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
+        self._contextName = _safeGetRequiredAttribute(xmlElement, "context", None)
+        if self._contextName is not None:
+            if self._contextName in self.parentContext.syntax.contexts:
+                self.context = self.parentContext.syntax.contexts[self._contextName]
+            else:
+                print >> sys.stderr, "Reference to unknown context", self._contextName
+                self.context = self.parentContext.syntax.defaultContext
+        else:
+            self.context = self.parentContext.syntax.defaultContext
+
+    def __str__(self):
+        """Serialize.
+        For debug logs
+        """
+        res = '\t\tRule %s\n' % self.shortId()
+        res += '\t\t\tstyleName: %s\n' % self.attribute
+        return res
+
+    def shortId(self):
+        return "IncludeRules(%s)" % self._contextName
+    
+    def tryMatch(self, currentColumnIndex, text):
+        """Try to find themselves in the text.
+        Returns (count, matchedRule) or (None, None) if doesn't match
+        """
+        for rule in self.context.rules:
+            columnIndex, text = rule.tryMatch(currentColumnIndex, text)
+            if columnIndex is not None:
+                return (columnIndex, text)
+        else:
+            return None, None
+
 
 class DetectSpaces(AbstractRule):
-    pass
+    def shortId(self):
+        return 'DetectSpaces()'
+
+    def _tryMatch(self, text):
+        spaceLen = len(text) - len(text.lstrip())
+        if spaceLen:
+            return spaceLen
+        else:
+            return None
+        
 class DetectIdentifier(AbstractRule):
     pass
 
@@ -435,7 +476,7 @@ class Syntax:
         self.name = _safeGetRequiredAttribute(root, 'name', 'Error: Syntax name is not set!!!')
         
         self.section = _safeGetRequiredAttribute(root, 'section', 'Error: Section is not set!!!')
-        self.extensions = _safeGetRequiredAttribute(root, 'extensions', '')
+        self.extensions = _safeGetRequiredAttribute(root, 'extensions', '').split(';')
         
         self.mimetype = root.attrib.get('mimetype', None)
         self.version = root.attrib.get('version', None)

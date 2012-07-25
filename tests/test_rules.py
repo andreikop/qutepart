@@ -40,5 +40,13 @@ class RulesTestCase(unittest.TestCase):
         rule = self._getRule('debiancontrol.xml', 'Field', 1)
         self.assertEqual(rule.tryMatch(0, '${xxx}')[0], 2)
 
+    def test_DetectSpaces(self):
+        rule = self._getRule('yacc.xml', 'Pre Start', 1)
+        self.assertEqual(rule.tryMatch(0, '   asdf fdafasd  ')[0], 3)
+
+    def test_IncludeRules(self):
+        rule = self._getRule('yacc.xml', 'Rule In', 0)
+        self.assertEqual(rule.tryMatch(0, '/* xxx */')[0], 2)
+
 if __name__ == '__main__':
     unittest.main()
