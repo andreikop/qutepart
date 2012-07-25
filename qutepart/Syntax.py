@@ -127,7 +127,7 @@ class AbstractRule:
            self.column != currentColumnIndex:
             return None, None
         
-        count = self._tryMatch(text)
+        count = self._tryMatch(text[currentColumnIndex:])
         if count is not None:
             return count, self
         else:
@@ -219,8 +219,39 @@ class StringDetect(AbstractRule):
         return 'StringDetect(%s)' % self._string
 
 class WordDetect(AbstractRule):
-    pass
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+        
+        self._string = _safeGetRequiredAttribute(xmlElement, "String", "")
+        self._insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
+    
+    def tryMatch(self, currentColumnIndex, text):
+        # Skip if column doesn't match
+        if self.column is not None and \
+           self.column != currentColumnIndex:
+            return None, None
+        
+        wordStart = currentColumnIndex == 0 or \
+                    text[currentColumnIndex - 1].isspace() or \
+                    text[currentColumnIndex - 1] in self.parentContext.syntax.deliminatorSet
+        
+        if not wordStart:
+            return None, None
+        
+        textToCheck = text[currentColumnIndex:]
+        
+        if not textToCheck.startswith(self._string):
+            return None, None
+            
+        stringLen = len(self._string)
+        wordEnd   = stringLen == len(textToCheck) or \
+                    textToCheck[stringLen].isspace() or \
+                    textToCheck[stringLen] in self.parentContext.syntax.deliminatorSet
+        
+        if not wordEnd:
+            return None, None
 
+        return (stringLen, self)
 
 class RegExpr(AbstractRule):
     """TODO if regexp starts with ^ - match only column 0
@@ -631,7 +662,7 @@ class Syntax:
         while currentColumnIndex < len(text):
             
             for rule in currentContext.rules:
-                count, matchedRule = rule.tryMatch(currentColumnIndex, text[currentColumnIndex:])
+                count, matchedRule = rule.tryMatch(currentColumnIndex, text)
                 if count is not None:
                     matchedRules.append((matchedRule, currentColumnIndex, count))
                     currentColumnIndex += count

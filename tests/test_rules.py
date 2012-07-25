@@ -53,5 +53,18 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(rule.tryMatch(0, 'xyz')[0], None)
         self.assertEqual(rule.tryMatch(0, '{}=')[0], 1)
 
+    def test_WordDetect(self):
+        rule = self._getRule('qml.xml', 'Normal', 1)
+        self.assertEqual(rule.tryMatch(0, 'import')[0], 6)
+        self.assertEqual(rule.tryMatch(0, ' import')[0], None)
+        
+        self.assertEqual(rule.tryMatch(1, ' import')[0], 6)
+        self.assertEqual(rule.tryMatch(1, '.import')[0], 6)
+        self.assertEqual(rule.tryMatch(1, 'ximport')[0], None)
+
+        self.assertEqual(rule.tryMatch(1, ' import.')[0], 6)
+        self.assertEqual(rule.tryMatch(1, '.import ')[0], 6)
+        self.assertEqual(rule.tryMatch(1, '-importx')[0], None)
+
 if __name__ == '__main__':
     unittest.main()
