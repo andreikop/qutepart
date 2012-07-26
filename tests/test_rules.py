@@ -66,5 +66,14 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(rule.tryMatch(1, '.import ')[0], 6)
         self.assertEqual(rule.tryMatch(1, '-importx')[0], None)
 
+    def test_Int(self):
+        rule = self._getRule('apache.xml', 'Integer Directives', 1)
+        self.assertEqual(rule.tryMatch(0, '756 items')[0], 3)
+        self.assertEqual(rule.tryMatch(0, 'x756 items')[0], None)
+        
+        rule = self._getRule('c.xml', 'Normal', 13)
+        self.assertEqual(rule.tryMatch(0, '756LUL')[0], 6)
+        self.assertEqual(rule.tryMatch(0, '756LOL')[0], 4)
+
 if __name__ == '__main__':
     unittest.main()

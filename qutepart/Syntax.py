@@ -107,6 +107,8 @@ class AbstractRule:
         else:
             self.column = None
         
+        self._childRules = _getChildRules(parentContext, xmlElement)
+        
     def __str__(self):
         """Serialize.
         For debug logs
@@ -120,7 +122,7 @@ class AbstractRule:
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
         
-        IncludeRules reimplements this method
+        This is basic implementation. IncludeRules, WordDetect, Int, Float reimplements this method
         """
         # Skip if column doesn't match
         if self.column is not None and \
@@ -327,7 +329,31 @@ class keyword(AbstractRule):
 
 
 class Int(AbstractRule):
-    pass
+    def tryMatch(self, currentColumnIndex, text):
+        """Try to find themselves in the text.
+        Returns (count, matchedRule) or (None, None) if doesn't match
+        """
+        # Skip if column doesn't match
+        if self.column is not None and \
+           self.column != currentColumnIndex:
+            return None, None
+        
+        for index, char in enumerate(text[currentColumnIndex:]):
+            if not char.isdigit():
+                break
+        
+        if index == 0:
+            return None, None
+        else:
+            for rule in self._childRules:
+                matchedLength, matchedRule = rule.tryMatch(currentColumnIndex + index, text)
+                if matchedLength is not None:
+                    index += matchedLength
+                    break
+                # child rule context and attribute ignored
+        
+        return index - currentColumnIndex, self
+
 class Float(AbstractRule):
     pass
 class HlCOct(AbstractRule):
@@ -397,6 +423,21 @@ _ruleClasses = (DetectChar, Detect2Chars, AnyChar, StringDetect, WordDetect, Reg
                 keyword, Int, Float, HlCOct, HlCHex, HlCStringChar, HlCChar, RangeDetect,
                 LineContinue, IncludeRules, DetectSpaces, DetectIdentifier)
 
+ruleClassDict = {}
+for ruleClass in _ruleClasses:
+    ruleClassDict[ruleClass.__name__] = ruleClass
+
+def _getChildRules(context, xmlElement):
+    """Extract rules from Context or Rule xml element
+    """
+    rules = []
+    for ruleElement in xmlElement.getchildren():
+        if not ruleElement.tag in ruleClassDict:
+            raise ValueError("Not supported rule '%s'" % ruleElement.tag)
+        rule = ruleClassDict[ruleElement.tag](context, ruleElement)
+        rules.append(rule)
+    return rules
+    
 
 class Context:
     """Highlighting context
@@ -428,17 +469,8 @@ class Context:
         self.dynamic = self._xmlElement.attrib.get('dynamic', False)
         
         # load rules
-        self.rules = []
+        self.rules = _getChildRules(self, self._xmlElement)
 
-        ruleClassDict = {}
-        for ruleClass in _ruleClasses:
-            ruleClassDict[ruleClass.__name__] = ruleClass
-        
-        for ruleElement in self._xmlElement.getchildren():
-            if not ruleElement.tag in ruleClassDict:
-                raise ValueError("Not supported rule '%s'" % ruleElement.tag)
-            rule = ruleClassDict[ruleElement.tag](self, ruleElement)
-            self.rules.append(rule)
     
     def __str__(self):
         """Serialize.
