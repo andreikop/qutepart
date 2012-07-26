@@ -106,9 +106,7 @@ class AbstractRule:
             self.column = int(column)
         else:
             self.column = None
-        
-        self._childRules = _getChildRules(parentContext, xmlElement)
-        
+    
     def __str__(self):
         """Serialize.
         For debug logs
@@ -327,8 +325,14 @@ class keyword(AbstractRule):
     def shortId(self):
         return 'keyword(%s)' % repr(self._string)
 
+class AbstractNumberRule(AbstractRule):
+    """Base class for Int and Float rules.
+    This rules can have child rules
+    """
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+        self._childRules = _getChildRules(parentContext, xmlElement)
 
-class Int(AbstractRule):
     def tryMatch(self, currentColumnIndex, text):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
@@ -338,13 +342,11 @@ class Int(AbstractRule):
            self.column != currentColumnIndex:
             return None, None
         
-        for index, char in enumerate(text[currentColumnIndex:]):
-            if not char.isdigit():
-                break
-        
-        if index == 0:
+        index = self._tryMatch(text[currentColumnIndex:])
+        if index is None:
             return None, None
-        else:
+        
+        if currentColumnIndex + index < len(text):
             for rule in self._childRules:
                 matchedLength, matchedRule = rule.tryMatch(currentColumnIndex + index, text)
                 if matchedLength is not None:
@@ -352,10 +354,77 @@ class Int(AbstractRule):
                     break
                 # child rule context and attribute ignored
         
-        return index - currentColumnIndex, self
+        return index, self
+    
+    def _countDigits(self, text):
+        """Count digits at start of text
+        """
+        index = 0
+        while index < len(text):
+            if not text[index].isdigit():
+                break
+            index += 1
+        return index
+    
+class Int(AbstractNumberRule):
+    def _tryMatch(self, text):
+        matchedLength = self._countDigits(text)
+        
+        if matchedLength:
+            return matchedLength
+        else:
+            return None
 
-class Float(AbstractRule):
-    pass
+class Float(AbstractNumberRule):
+    def _tryMatch(self, text):
+        
+        haveDigit = False
+        havePoint = False
+        
+        matchedLength = 0
+        
+        digitCount = self._countDigits(text[matchedLength:])
+        if digitCount:
+            haveDigit = True
+            matchedLength += digitCount
+        
+        if len(text) > matchedLength and text[matchedLength] == '.':
+            havePoint = True
+            matchedLength += 1
+        
+        digitCount = self._countDigits(text[matchedLength:])
+        if digitCount:
+            haveDigit = True
+            matchedLength += digitCount
+        
+        if len(text) > matchedLength and text[matchedLength] == 'E':
+            matchedLength += 1
+            
+            if len(text) > matchedLength and text[matchedLength] in '+-':
+                matchedLength += 1
+            
+            haveDigitInExponent = False
+            
+            digitCount = self._countDigits(text[matchedLength:])
+            if digitCount:
+                haveDigitInExponent = True
+                matchedLength += digitCount
+            
+            if not haveDigitInExponent:
+                return None
+            
+            return matchedLength
+        else:
+            if not havePoint:
+                return None
+        
+        if matchedLength and haveDigit:
+            return matchedLength
+        else:
+            return None
+        
+
+
 class HlCOct(AbstractRule):
     pass
 class HlCHex(AbstractRule):

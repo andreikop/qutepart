@@ -75,5 +75,21 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(rule.tryMatch(0, '756LUL')[0], 6)
         self.assertEqual(rule.tryMatch(0, '756LOL')[0], 4)
 
+    def test_Float(self):
+        rule = self._getRule('c.xml', 'Normal', 10)
+
+        self.assertEqual(rule.tryMatch(0, '756')[0], None)
+        self.assertEqual(rule.tryMatch(0, '.756')[0], 4)
+        self.assertEqual(rule.tryMatch(0, '.75x')[0], 3)
+        self.assertEqual(rule.tryMatch(0, '43.75x')[0], 5)
+        self.assertEqual(rule.tryMatch(0, '4375..x')[0], 5)
+        
+        self.assertEqual(rule.tryMatch(0, '4375.f')[0], 6)
+        self.assertEqual(rule.tryMatch(0, '4375.v')[0], 5)
+        
+        self.assertEqual(rule.tryMatch(0, '4E')[0], None)
+        self.assertEqual(rule.tryMatch(0, '4E+10')[0], 5)
+        self.assertEqual(rule.tryMatch(0, '4E+10F')[0], 6)
+
 if __name__ == '__main__':
     unittest.main()
