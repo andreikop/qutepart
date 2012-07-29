@@ -593,7 +593,7 @@ class IncludeRules(AbstractRule):
         Returns (count, matchedRule) or (None, None) if doesn't match
         """
         for rule in self.context.rules:
-            columnIndex, text = rule.tryMatch(currentColumnIndex, text)
+            columnIndex, matchedRule = rule.tryMatch(currentColumnIndex, text)
             if columnIndex is not None:
                 return (columnIndex, text)
         else:
