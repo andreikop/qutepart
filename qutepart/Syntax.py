@@ -116,6 +116,12 @@ class AbstractRule:
         res += '\t\t\tcontext: %s\n' % self.context
         return res
     
+    def shortId(self):
+        """Get short ID string of the rule. Used for logs
+        i.e. "DetectChar(x)"
+        """
+        raise NotImplementedError(str(self.__class__))
+
     def tryMatch(self, currentColumnIndex, text):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
@@ -139,17 +145,14 @@ class AbstractRule:
         """
         raise NotImplementedFault()
     
-    def shortId(self):
-        """Get short ID string of the rule. Used for logs
-        i.e. "DetectChar(x)"
-        """
-        raise NotImplementedError(str(self.__class__))
-
 
 class DetectChar(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
         self._char = _safeGetRequiredAttribute(xmlElement, "char", None)
+    
+    def shortId(self):
+        return 'DetectChar(%s)' % self._char
     
     def _tryMatch(self, text):
         if self._char is None:
@@ -158,9 +161,6 @@ class DetectChar(AbstractRule):
         if text[0] == self._char:
             return 1
         return None
-    
-    def shortId(self):
-        return 'DetectChar(%s)' % self._char
 
 class Detect2Chars(AbstractRule):    
     def __init__(self, parentContext, xmlElement):
@@ -173,6 +173,9 @@ class Detect2Chars(AbstractRule):
         else:
             self._string = char + char1
     
+    def shortId(self):
+        return 'Detect2Chars(%s)' % self._string
+    
     def _tryMatch(self, text):
         if self._string is None:
             return None
@@ -181,15 +184,15 @@ class Detect2Chars(AbstractRule):
             return len(self._string)
         
         return None
-    
-    def shortId(self):
-        return 'Detect2Chars(%s)' % self._string
 
 
 class AnyChar(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
         self._string = _safeGetRequiredAttribute(xmlElement, 'String', '')
+
+    def shortId(self):
+        return 'AnyChar(%s)' % self._string
     
     def _tryMatch(self, text):
         if text[0] in self._string:
@@ -197,14 +200,14 @@ class AnyChar(AbstractRule):
         
         return None
 
-    def shortId(self):
-        return 'AnyChar(%s)' % self._string
-
 
 class StringDetect(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
         self._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+        
+    def shortId(self):
+        return 'StringDetect(%s)' % self._string
 
     def _tryMatch(self, text):
         if self._string is None:
@@ -214,9 +217,7 @@ class StringDetect(AbstractRule):
             return len(self._string)
     
         return None
-        
-    def shortId(self):
-        return 'StringDetect(%s)' % self._string
+
 
 class WordDetect(AbstractRule):
     def __init__(self, parentContext, xmlElement):
@@ -224,6 +225,9 @@ class WordDetect(AbstractRule):
         
         self._string = _safeGetRequiredAttribute(xmlElement, "String", "")
         self._insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
+    
+    def shortId(self):
+        return 'WordDetect(%s, %s)' % (self._string, self._insensitive)
     
     def tryMatch(self, currentColumnIndex, text):
         # Skip if column doesn't match
@@ -253,6 +257,7 @@ class WordDetect(AbstractRule):
 
         return (stringLen, self)
 
+
 class RegExpr(AbstractRule):
     """TODO if regexp starts with ^ - match only column 0
     TODO support "minimal" flag
@@ -276,6 +281,9 @@ class RegExpr(AbstractRule):
         except (re.error, AssertionError) as ex:
             print >> sys.stderr, "Invalid pattern '%s': %s" % (string, str(ex))
             self._regExp = None
+    
+    def shortId(self):
+        return 'RegExpr(%s)' % self._regExp.pattern
 
     def _processCraracterCodes(self, text):
         """QRegExp use \0ddd notation for character codes, where d in octal digit
@@ -298,9 +306,6 @@ class RegExpr(AbstractRule):
             return len(match.group(0))
         
         return None
-    
-    def shortId(self):
-        return 'RegExpr(%s)' % self._regExp.pattern
 
 
 class keyword(AbstractRule):
@@ -308,6 +313,9 @@ class keyword(AbstractRule):
         AbstractRule.__init__(self, parentContext, xmlElement)
         
         self._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+
+    def shortId(self):
+        return 'keyword(%s)' % repr(self._string)
 
     def _tryMatch(self, text):
         if self._string is None:
@@ -321,9 +329,6 @@ class keyword(AbstractRule):
                 return len(word)
         
         return None
-
-    def shortId(self):
-        return 'keyword(%s)' % repr(self._string)
 
 class AbstractNumberRule(AbstractRule):
     """Base class for Int and Float rules.
@@ -367,6 +372,9 @@ class AbstractNumberRule(AbstractRule):
         return index
     
 class Int(AbstractNumberRule):
+    def shortId(self):
+        return 'Int()'
+
     def _tryMatch(self, text):
         matchedLength = self._countDigits(text)
         
@@ -374,8 +382,12 @@ class Int(AbstractNumberRule):
             return matchedLength
         else:
             return None
+    
 
 class Float(AbstractNumberRule):
+    def shortId(self):
+        return 'Float()'
+
     def _tryMatch(self, text):
         
         haveDigit = False
@@ -422,7 +434,7 @@ class Float(AbstractNumberRule):
             return matchedLength
         else:
             return None
-
+    
 
 class HlCOct(AbstractRule):
     def shortId(self):
@@ -444,6 +456,8 @@ class HlCOct(AbstractRule):
         
         return index
 
+    def shortId(self):
+        return 'HlCOct()'
 
 class HlCHex(AbstractRule):
     def shortId(self):
@@ -468,6 +482,8 @@ class HlCHex(AbstractRule):
         
         return index
 
+    def shortId(self):
+        return 'HlCHex()'
 
 def _checkEscapedChar(text):
     index = 0
@@ -503,7 +519,7 @@ class HlCStringChar(AbstractRule):
 
 class HlCChar(AbstractRule):
     def shortId(self):
-        return 'HlCHex'
+        return 'HlCChar'
 
     def _tryMatch(self, text):
         if len(text) > 2 and text[0] == "'" and text[1] != "'":
@@ -539,7 +555,7 @@ class RangeDetect(AbstractRule):
 
 class LineContinue(AbstractRule):
     def shortId(self):
-        return 'HlCHex'
+        return 'LineContinue'
 
     def _tryMatch(self, text):
         if text == '\\':
