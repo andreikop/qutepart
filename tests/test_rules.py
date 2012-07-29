@@ -120,6 +120,14 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(rule.tryMatch(0, '\\0')[0], 2)
         self.assertEqual(rule.tryMatch(0, '\\078')[0], 3)
 
+    def test_HlCChar(self):
+        rule = self._getRule("uscript.xml", "Normal", 6)
+        
+        self.assertEqual(rule.tryMatch(0, "'A'")[0], 3)
+        self.assertEqual(rule.tryMatch(0, "A'")[0], None)
+        self.assertEqual(rule.tryMatch(0, "'A")[0], None)
+        self.assertEqual(rule.tryMatch(0, "'\\x56fe'")[0], 8)
+
 
 if __name__ == '__main__':
     unittest.main()

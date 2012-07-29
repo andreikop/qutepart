@@ -422,7 +422,6 @@ class Float(AbstractNumberRule):
             return matchedLength
         else:
             return None
-        
 
 
 class HlCOct(AbstractRule):
@@ -476,6 +475,30 @@ class HlCHex(AbstractRule):
         return index
 
 
+def _checkEscapedChar(text):
+    index = 0
+    if len(text) > 1 and text[0] == '\\':
+        index = 1
+        
+        if text[index] in "abefnrtv'\"?\\":
+            index += 1
+        elif text[index] == 'x':  # if it's like \xff, eat the x
+            index += 1
+            while index < len(text) and text[index].upper() in '0123456789ABCDEF':
+                index += 1
+            if index == 2:  # no hex digits
+                return None
+        elif text[index] in '01234567':
+            while index < 4 and index < len(text) and text[index] in '01234567':
+                index += 1
+        else:
+            return None
+        
+        return index
+    
+    return None
+    
+
 class HlCStringChar(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
@@ -484,30 +507,30 @@ class HlCStringChar(AbstractRule):
         return 'HlCStringChar'
 
     def _tryMatch(self, text):
-        index = 0
-        if len(text) > 1 and text[0] == '\\':
-            index = 1
+        return _checkEscapedChar(text)
+
+
+class HlCChar(AbstractRule):
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+
+    def shortId(self):
+        return 'HlCHex'
+
+    def _tryMatch(self, text):
+        if len(text) > 2 and text[0] == "'" and text[1] != "'":
+            result = _checkEscapedChar(text[1:])
+            if result is not None:
+                index = 1 + result
+            else:  # 1 not escaped character
+                index = 1 + 1
             
-            if text[index] in "abefnrtv'\"?\\":
-                index += 1
-            elif text[index] == 'x':  # if it's like \xff, eat the x
-                index += 1
-                while index < len(text) and text[index].upper() in '0123456789ABCDEF':
-                    index += 1
-                if index == 2:  # no hex digits
-                    return None
-            elif text[index] in '01234567':
-                while index < 4 and index < len(text) and text[index] in '01234567':
-                    index += 1
-            else:
-                return None
-            
-            return index
+            if index < len(text) and text[index] == "'":
+                return index + 1
         
         return None
 
-class HlCChar(AbstractRule):
-    pass
+
 class RangeDetect(AbstractRule):
     pass
 class LineContinue(AbstractRule):
