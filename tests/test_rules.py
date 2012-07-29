@@ -145,6 +145,15 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(rule.tryMatch(0, " \\")[0], None)
         self.assertEqual(rule.tryMatch(0, "x")[0], None)
 
+    def test_DetectIdentifier(self):
+        rule = self._getRule("dtd.xml", "Normal", 7)
+        
+        self.assertEqual(rule.tryMatch(0, " asdf")[0], None)
+        self.assertEqual(rule.tryMatch(0, "asdf")[0], 4)
+        self.assertEqual(rule.tryMatch(0, "asdf+")[0], 4)
+        self.assertEqual(rule.tryMatch(0, "asdf7")[0], 5)
+        self.assertEqual(rule.tryMatch(0, "7asdf7")[0], None)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -596,7 +596,17 @@ class DetectSpaces(AbstractRule):
             return None
         
 class DetectIdentifier(AbstractRule):
-    pass
+    _regExp = re.compile('[a-zA-Z][a-zA-Z0-9]*')
+    def short(self):
+        return 'DetectIdentifier()'
+    
+    def _tryMatch(self, text):
+        match = DetectIdentifier._regExp.match(text)
+        if match is not None and match.group(0):
+            return len(match.group(0))
+        
+        return None
+
 
 _ruleClasses = (DetectChar, Detect2Chars, AnyChar, StringDetect, WordDetect, RegExpr,
                 keyword, Int, Float, HlCOct, HlCHex, HlCStringChar, HlCChar, RangeDetect,
