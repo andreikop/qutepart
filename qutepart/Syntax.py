@@ -532,7 +532,23 @@ class HlCChar(AbstractRule):
 
 
 class RangeDetect(AbstractRule):
-    pass
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+        self._char = _safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
+        self._char1 = _safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
+    
+    def shortId(self):
+        return 'RangeDetect(%s, %s)' % (self._char, self._char1)
+    
+    def _tryMatch(self, text):
+        if text.startswith(self._char):
+            end = text.find(self._char1)
+            if end > 0:
+                return end + 1
+        
+        return None
+
+
 class LineContinue(AbstractRule):
     pass
 

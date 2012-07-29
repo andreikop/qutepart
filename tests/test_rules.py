@@ -129,5 +129,14 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(rule.tryMatch(0, "'\\x56fe'")[0], 8)
 
 
+    def test_RangeDetect(self):
+        rule = self._getRule("ini.xml", "ini", 0)
+        
+        self.assertEqual(rule.tryMatch(0, "[hello]")[0], 7)
+        self.assertEqual(rule.tryMatch(0, "[hello] ")[0], 7)
+        self.assertEqual(rule.tryMatch(0, "[hello ")[0], None)
+        self.assertEqual(rule.tryMatch(0, "][hello ")[0], None)
+
+
 if __name__ == '__main__':
     unittest.main()
