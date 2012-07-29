@@ -425,9 +425,6 @@ class Float(AbstractNumberRule):
 
 
 class HlCOct(AbstractRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-
     def shortId(self):
         return 'HlCOct'
 
@@ -449,9 +446,6 @@ class HlCOct(AbstractRule):
 
 
 class HlCHex(AbstractRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-
     def shortId(self):
         return 'HlCHex'
 
@@ -500,9 +494,6 @@ def _checkEscapedChar(text):
     
 
 class HlCStringChar(AbstractRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-
     def shortId(self):
         return 'HlCStringChar'
 
@@ -511,9 +502,6 @@ class HlCStringChar(AbstractRule):
 
 
 class HlCChar(AbstractRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-
     def shortId(self):
         return 'HlCHex'
 
@@ -550,7 +538,15 @@ class RangeDetect(AbstractRule):
 
 
 class LineContinue(AbstractRule):
-    pass
+    def shortId(self):
+        return 'HlCHex'
+
+    def _tryMatch(self, text):
+        if text == '\\':
+            return 1
+        
+        return None
+
 
 class IncludeRules(AbstractRule):
     def __init__(self, parentContext, xmlElement):

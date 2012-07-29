@@ -137,6 +137,14 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(rule.tryMatch(0, "[hello ")[0], None)
         self.assertEqual(rule.tryMatch(0, "][hello ")[0], None)
 
+    def test_LineContinue(self):
+        rule = self._getRule("picsrc.xml", "string", 0)
+        
+        self.assertEqual(rule.tryMatch(0, "\\")[0], 1)
+        self.assertEqual(rule.tryMatch(0, "\\ ")[0], None)
+        self.assertEqual(rule.tryMatch(0, " \\")[0], None)
+        self.assertEqual(rule.tryMatch(0, "x")[0], None)
+
 
 if __name__ == '__main__':
     unittest.main()
