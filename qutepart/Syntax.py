@@ -426,9 +426,56 @@ class Float(AbstractNumberRule):
 
 
 class HlCOct(AbstractRule):
-    pass
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+
+    def shortId(self):
+        return 'HlCOct'
+
+    def _tryMatch(self, text):
+        if text[0] != '0':
+            return None
+        
+        index = 1
+        while index < len(text) and text[index] in '1234567':
+            index += 1
+        
+        if index == 1:
+            return None
+        
+        if index < len(text) and text[index].upper() in 'LU':
+            index += 1
+        
+        return index
+
+
 class HlCHex(AbstractRule):
-    pass
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+
+    def shortId(self):
+        return 'HlCOct'
+
+    def _tryMatch(self, text):
+        if len(text) < 3:
+            return None
+        
+        if text[:2].upper() != '0X':
+            return None
+        
+        index = 2
+        while index < len(text) and text[index].upper() in '0123456789ABCDEF':
+            index += 1
+        
+        if index == 2:
+            return None
+        
+        if index < len(text) and text[index].upper() in 'LU':
+            index += 1
+        
+        return index
+
+
 class HlCStringChar(AbstractRule):
     pass
 class HlCChar(AbstractRule):

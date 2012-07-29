@@ -91,5 +91,25 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(rule.tryMatch(0, '4E+10')[0], 5)
         self.assertEqual(rule.tryMatch(0, '4E+10F')[0], 6)
 
+    def test_HlCOct(self):
+        rule = self._getRule("commonlisp.xml", "SpecialNumber", 2)
+        
+        self.assertEqual(rule.tryMatch(0, 'xxx')[0], None)
+        self.assertEqual(rule.tryMatch(0, '0765')[0], 4)
+        self.assertEqual(rule.tryMatch(0, '0865')[0], None)
+        self.assertEqual(rule.tryMatch(0, '0768')[0], 3)
+        self.assertEqual(rule.tryMatch(0, '076L')[0], 4)
+
+    def test_HlCHex(self):
+        rule = self._getRule("cgis.xml", "Common", 9)
+        
+        self.assertEqual(rule.tryMatch(0, 'xxx')[0], None)
+        self.assertEqual(rule.tryMatch(0, '0x76A')[0], 5)
+        self.assertEqual(rule.tryMatch(0, '0X0')[0], 3)
+        self.assertEqual(rule.tryMatch(0, 'x8')[0], None)
+        self.assertEqual(rule.tryMatch(0, '0X76L')[0], 5)
+        self.assertEqual(rule.tryMatch(0, '0X76L')[0], 5)
+        self.assertEqual(rule.tryMatch(0, '0X76KL')[0], 4)
+
 if __name__ == '__main__':
     unittest.main()
