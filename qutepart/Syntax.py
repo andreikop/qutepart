@@ -454,7 +454,7 @@ class HlCHex(AbstractRule):
         AbstractRule.__init__(self, parentContext, xmlElement)
 
     def shortId(self):
-        return 'HlCOct'
+        return 'HlCHex'
 
     def _tryMatch(self, text):
         if len(text) < 3:
@@ -477,7 +477,35 @@ class HlCHex(AbstractRule):
 
 
 class HlCStringChar(AbstractRule):
-    pass
+    def __init__(self, parentContext, xmlElement):
+        AbstractRule.__init__(self, parentContext, xmlElement)
+
+    def shortId(self):
+        return 'HlCStringChar'
+
+    def _tryMatch(self, text):
+        index = 0
+        if len(text) > 1 and text[0] == '\\':
+            index = 1
+            
+            if text[index] in "abefnrtv'\"?\\":
+                index += 1
+            elif text[index] == 'x':  # if it's like \xff, eat the x
+                index += 1
+                while index < len(text) and text[index].upper() in '0123456789ABCDEF':
+                    index += 1
+                if index == 2:  # no hex digits
+                    return None
+            elif text[index] in '01234567':
+                while index < 4 and index < len(text) and text[index] in '01234567':
+                    index += 1
+            else:
+                return None
+            
+            return index
+        
+        return None
+
 class HlCChar(AbstractRule):
     pass
 class RangeDetect(AbstractRule):

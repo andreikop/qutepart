@@ -111,5 +111,15 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(rule.tryMatch(0, '0X76L')[0], 5)
         self.assertEqual(rule.tryMatch(0, '0X76KL')[0], 4)
 
+    def test_HlCStringChar(self):
+        rule = self._getRule("boo.xml", "Tripple A-string", 0)
+        
+        self.assertEqual(rule.tryMatch(0, '\\a')[0], 2)
+        self.assertEqual(rule.tryMatch(0, '\\m')[0], None)
+        self.assertEqual(rule.tryMatch(0, '\\x56fel')[0], 6)
+        self.assertEqual(rule.tryMatch(0, '\\0')[0], 2)
+        self.assertEqual(rule.tryMatch(0, '\\078')[0], 3)
+
+
 if __name__ == '__main__':
     unittest.main()
