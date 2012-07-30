@@ -15,7 +15,7 @@ class XmlParsingTestCase(unittest.TestCase):
         xmlFilesPath = os.path.join(os.path.dirname(__file__), '..', 'qutepart', 'syntax')
         for xmlFileName in os.listdir(xmlFilesPath):
             if xmlFileName.endswith('.xml'):
-                Syntax(xmlFileName)
+                Syntax(os.path.join(xmlFilesPath, xmlFileName))
 
 if __name__ == '__main__':
     unittest.main()

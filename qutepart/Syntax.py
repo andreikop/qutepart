@@ -744,21 +744,18 @@ class Syntax:
                            "dsError",
                            "CustomTmpForDebugging"])
 
-    def __init__(self, fileName):
+    def __init__(self, filePath):
         """Parse XML definition
-        """
-        
-        modulePath = os.path.dirname(__file__)
-        dataFilePath = os.path.join(modulePath, "syntax", fileName)
-        with open(dataFilePath, 'r') as dataFile:
-            root = xml.etree.ElementTree.parse(dataFile).getroot()
+        """        
+        with open(filePath, 'r') as definitionFile:
+            root = xml.etree.ElementTree.parse(definitionFile).getroot()
 
         self.name = _safeGetRequiredAttribute(root, 'name', 'Error: Syntax name is not set!!!')
         
         self.section = _safeGetRequiredAttribute(root, 'section', 'Error: Section is not set!!!')
         self.extensions = _safeGetRequiredAttribute(root, 'extensions', '').split(';')
         
-        self.mimetype = root.attrib.get('mimetype', None)
+        self.mimetype = root.attrib.get('mimetype', '').split(';')
         self.version = root.attrib.get('version', None)
         self.kateversion = root.attrib.get('kateversion', None)
         
