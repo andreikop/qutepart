@@ -5,7 +5,7 @@ import sys
 import sip
 sip.setapi('QString', 2)
 
-from PyQt4.QtGui import QApplication, QPlainTextEdit, QSyntaxHighlighter, \
+from PyQt4.QtGui import QApplication, QFont, QPlainTextEdit, QSyntaxHighlighter, \
     QTextCharFormat, QTextBlockUserData
 
 from qutepart.SyntaxHighlighter import SyntaxHighlighter
@@ -34,6 +34,7 @@ def main():
     pte = QPlainTextEdit()
     pte.setPlainText(text)
     pte.setWindowTitle(filePath)
+    pte.setFont(QFont("Monospace"))
     
     hl = SyntaxHighlighter(syntax, pte.document())
     pte.show()
