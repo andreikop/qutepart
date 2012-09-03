@@ -10,29 +10,29 @@ def main():
     xmlFileNames = [fileName for fileName in os.listdir(xmlFilesPath) \
                         if fileName.endswith('.xml')]
     
-    nameToDefinition = {}
-    mimeTypeToDefinition = {}
-    extensionToDefinition = {}
+    syntaxNameToXmlFileName = {}
+    mimeTypeToXmlFileName = {}
+    extensionToXmlFileName = {}
 
     for xmlFileName in xmlFileNames:
         xmlFilePath = os.path.join(xmlFilesPath, xmlFileName)
         syntax = Syntax(xmlFilePath)
-        if not syntax.name in nameToDefinition or \
-           nameToDefinition[syntax.name][0] < syntax.priority:
-            nameToDefinition[syntax.name] = (syntax.priority, xmlFileName)
+        if not syntax.name in syntaxNameToXmlFileName or \
+           syntaxNameToXmlFileName[syntax.name][0] < syntax.priority:
+            syntaxNameToXmlFileName[syntax.name] = (syntax.priority, xmlFileName)
         
         for mimetype in syntax.mimetype:
-            if not mimetype in mimeTypeToDefinition or \
-               mimeTypeToDefinition[mimetype][0] < syntax.priority:
-                mimeTypeToDefinition[mimetype] = (syntax.priority, xmlFileName)
+            if not mimetype in mimeTypeToXmlFileName or \
+               mimeTypeToXmlFileName[mimetype][0] < syntax.priority:
+                mimeTypeToXmlFileName[mimetype] = (syntax.priority, xmlFileName)
         
         for extension in syntax.extensions:
-            if not extension in extensionToDefinition or \
-               extensionToDefinition[extension][0] < syntax.priority:
-                extensionToDefinition[extension] = (syntax.priority, xmlFileName)
+            if not extension in extensionToXmlFileName or \
+               extensionToXmlFileName[extension][0] < syntax.priority:
+                extensionToXmlFileName[extension] = (syntax.priority, xmlFileName)
         
     # remove priority, leave only xml file names
-    for dictionary in (nameToDefinition, mimeTypeToDefinition, extensionToDefinition):
+    for dictionary in (syntaxNameToXmlFileName, mimeTypeToXmlFileName, extensionToXmlFileName):
         newDictionary = {}
         for key, item in dictionary.items():
             newDictionary[key] = item[1]
@@ -40,9 +40,9 @@ def main():
         dictionary.update(newDictionary)
     
     result = {}
-    result['nameToDefinition'] = nameToDefinition
-    result['mimeTypeToDefinition'] = mimeTypeToDefinition
-    result['extensionToDefinition'] = extensionToDefinition
+    result['syntaxNameToXmlFileName'] = syntaxNameToXmlFileName
+    result['mimeTypeToXmlFileName'] = mimeTypeToXmlFileName
+    result['extensionToXmlFileName'] = extensionToXmlFileName
 
     with open(os.path.join(xmlFilesPath, 'syntax_db.json'), 'w') as syntaxDbFile:
         json.dump(result, syntaxDbFile, sort_keys=True, indent=4)

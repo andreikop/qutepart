@@ -3,30 +3,41 @@ holds already created Syntax instances
 Use this module for getting Syntax'es
 """
 
-_nameToDefinitionName = {}  # name: (priproty, definition name)
-_mimeTypeToDefinitionName = {}  # mime type: (priproty, definition name)
-_extensionToDefinitionName = {}  # extension: (priproty, definition name)
+import os.path
+import fnmatch
+import json
 
-_definitionNameToSyntaxInstance = {}  # already created Syntax instances
+import qutepart.Syntax
 
-def _allDefinitions():
-    xmlFilesPath = os.path.join(os.path.dirname(__file__), 'syntax')
-    return [os.path.join(xmlFilesPath, xmlFileName) \
-                for xmlFileName in os.listdir(xmlFilesPath) \
-                    if xmlFileName.endswith('.xml')]
 
-def _init():
+class SyntaxManager:
+    def __init__(self):
+        self._loadedSyntaxes = {}
+        syntaxDbPath = os.path.join(os.path.dirname(__file__), "syntax", "syntax_db.json")
+        with open(syntaxDbPath) as syntaxDbFile:
+            syntaxDb = json.load(syntaxDbFile)
+        self._syntaxNameToXmlFileName = syntaxDb['syntaxNameToXmlFileName']
+        self._mimeTypeToXmlFileName = syntaxDb['mimeTypeToXmlFileName']
+        self._extensionToXmlFileName = syntaxDb['extensionToXmlFileName']
+
+    def getSyntaxByXmlName(self, xmlFileName):
+        if not xmlFileName in self._loadedSyntaxes:
+            xmlFilePath = os.path.join(os.path.dirname(__file__), "syntax", xmlFileName)
+            self._loadedSyntaxes[xmlFileName] = qutepart.Syntax.Syntax(xmlFilePath)
+        
+        return self._loadedSyntaxes[xmlFileName]
+
+    def getSyntaxByName(self, syntaxName):
+        xmlFileName = self._syntaxNameToXmlFileName[syntaxName]
+        return self.getSyntaxByXmlName(xmlFileName)
     
+    def getSyntaxBySourceFileName(self, name):
+        for pattern, xmlFileName in self._extensionToXmlFileName.items():
+            if fnmatch.fnmatch(name, pattern):
+                return self.getSyntaxByXmlName(xmlFileName)
+        else:
+            raise KeyError("No syntax for " + name)
 
-
-def getSyntaxByName(name):
-    pass
-
-def getSyntaxBySourceFileName(name):
-    pass
-
-def getSyntaxByMimeType(mimeType):
-    pass
-
-def getSyntaxByDefinitionName(definitionName):
-    pass
+    def getSyntaxByMimeType(self, mimeType):
+        xmlFileName = self._mimeTypeToXmlFileName[mimeType]
+        return self.getSyntaxByXmlName(xmlFileName)

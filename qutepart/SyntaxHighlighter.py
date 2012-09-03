@@ -6,7 +6,6 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QSyntaxHighlighter, QTextCharFormat, QTextBlockUserData
 
 from ColorTheme import ColorTheme
-from Syntax import Syntax
 
 class _TextBlockUserData(QTextBlockUserData):
     def __init__(self, data):
@@ -15,10 +14,10 @@ class _TextBlockUserData(QTextBlockUserData):
 
 
 class SyntaxHighlighter(QSyntaxHighlighter):
-    def __init__(self, syntaxFileName, *args):
+    def __init__(self, syntax, *args):
         QSyntaxHighlighter.__init__(self, *args)
         self._theme = ColorTheme()
-        self._syntax = Syntax(syntaxFileName)
+        self._syntax = syntax
     
     def highlightBlock(self, text):
         lineData, matchedContexts = self._syntax.parseBlock(text, self._prevData())

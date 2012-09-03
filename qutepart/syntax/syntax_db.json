@@ -1,5 +1,5 @@
 {
-    "extensionToDefinition": {
+    "extensionToXmlFileName": {
         "": "fortran.xml", 
         " *.ADO": "stata.xml", 
         " *.DO": "stata.xml", 
@@ -402,7 +402,7 @@
         "qrpg*.*": "ilerpg.xml", 
         "xorg.conf": "xorg.xml"
     }, 
-    "mimeTypeToDefinition": {
+    "mimeTypeToXmlFileName": {
         "": "modelines.xml", 
         "application/directory": "ldif.xml", 
         "application/json": "json.xml", 
@@ -549,7 +549,7 @@
         "text/xul": "xul.xml", 
         "text/yaml": "yaml.xml"
     }, 
-    "nameToDefinition": {
+    "syntaxNameToXmlFileName": {
         ".desktop": "desktop.xml", 
         "4GL": "fgl-4gl.xml", 
         "4GL-PER": "fgl-per.xml", 

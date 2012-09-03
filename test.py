@@ -9,6 +9,7 @@ from PyQt4.QtGui import QApplication, QPlainTextEdit, QSyntaxHighlighter, \
     QTextCharFormat, QTextBlockUserData
 
 from qutepart.SyntaxHighlighter import SyntaxHighlighter
+from qutepart.syntax_manager import SyntaxManager
 
 text = """mksv3 (12.06.2-1~ppa1) lucid; urgency=low
 
@@ -29,6 +30,9 @@ if __name__ == '__main__':
     
     pte = QPlainTextEdit()
     pte.setPlainText(text)
-    hl = SyntaxHighlighter('debianchangelog.xml', pte.document())
+    
+    syntax = SyntaxManager().getSyntaxByName('Debian Changelog')
+
+    hl = SyntaxHighlighter(syntax, pte.document())
     pte.show()
     app.exec_()
