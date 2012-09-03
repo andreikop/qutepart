@@ -595,7 +595,7 @@ class IncludeRules(AbstractRule):
         for rule in self.context.rules:
             columnIndex, matchedRule = rule.tryMatch(currentColumnIndex, text)
             if columnIndex is not None:
-                return (columnIndex, text)
+                return (columnIndex, matchedRule)
         else:
             return None, None
 
@@ -613,7 +613,7 @@ class DetectSpaces(AbstractRule):
         
 class DetectIdentifier(AbstractRule):
     _regExp = re.compile('[a-zA-Z][a-zA-Z0-9]*')
-    def short(self):
+    def shortId(self):
         return 'DetectIdentifier()'
     
     def _tryMatch(self, text):
