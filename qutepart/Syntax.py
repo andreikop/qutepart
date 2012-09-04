@@ -568,14 +568,9 @@ class IncludeRules(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
         self._contextName = _safeGetRequiredAttribute(xmlElement, "context", None)
-        if self._contextName is not None:
-            if self._contextName in self.parentContext.syntax.contexts:
-                self.context = self.parentContext.syntax.contexts[self._contextName]
-            else:
-                print >> sys.stderr, "Reference to unknown context", self._contextName
-                self.context = self.parentContext.syntax.defaultContext
-        else:
-            self.context = self.parentContext.syntax.defaultContext
+        # context will be resolved, when parsing. Avoiding infinite recursion
+        if self._contextName.startswith('##'):
+            print self._contextName
 
     def __str__(self):
         """Serialize.
@@ -592,7 +587,17 @@ class IncludeRules(AbstractRule):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
         """
-        for rule in self.context.rules:
+        if self._contextName is not None:
+            if self._contextName in self.parentContext.syntax.contexts:
+                context = self.parentContext.syntax.contexts[self._contextName]
+            elif self._contextName.startswith('##'):
+                syntaxName = self._contextName[2:]
+                syntax = self.parentContext.syntax.manager.getSyntaxByName(syntaxName)
+                context = syntax.defaultContext
+        else:
+            context = self.parentContext.syntax.defaultContext
+        
+        for rule in context.rules:
             columnIndex, matchedRule = rule.tryMatch(currentColumnIndex, text)
             if columnIndex is not None:
                 return (columnIndex, matchedRule)
@@ -744,9 +749,10 @@ class Syntax:
                            "dsError",
                            "CustomTmpForDebugging"])
 
-    def __init__(self, filePath):
+    def __init__(self, manager, filePath):
         """Parse XML definition
-        """        
+        """
+        self.manager = manager
         with open(filePath, 'r') as definitionFile:
             root = xml.etree.ElementTree.parse(definitionFile).getroot()
 
@@ -850,7 +856,7 @@ class Syntax:
 
     def parseBlock(self, text, prevLineData):
         """Parse block and return touple:
-            (lineData, matchedRules)
+            (lineData, [matchedContexts])
         where matchedContexts is:
             [ (Context, length, [matchedRules]), ...]
         where matchedRule is:
@@ -907,7 +913,7 @@ class Syntax:
                             return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
                     
                     break  # for loop                    
-            else:
+            else:  # no matched rules
                 if currentContext.fallthroughContext is not None:
                     newContextStack = currentContext.fallthroughContext.getNextContextStack(contextStack)
                     if newContextStack != contextStack:

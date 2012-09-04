@@ -4,14 +4,14 @@ import unittest
 
 import sys
 sys.path.insert(0, '..')
-from qutepart.Syntax import Syntax
+from qutepart.syntax_manager import SyntaxManager
 
 class RulesTestCase(unittest.TestCase):
     
     def test_basic(self):
         """Just apply rules
         """
-        syntax = Syntax('debiancontrol.xml')
+        syntax = SyntaxManager().getSyntaxByXmlName('debiancontrol.xml')
         self.assertEqual(syntax.parseBlockTextualResults('Section:'),
                          [('INIT', 8, [('RegExpr([^ ]*:)', 0, 8)])])
         self.assertEqual(syntax.parseBlockTextualResults(' '),
@@ -22,7 +22,7 @@ class RulesTestCase(unittest.TestCase):
     def test_rule_switches_context(self):
         """Matched rule switches context
         """
-        syntax = Syntax('debiancontrol.xml')
+        syntax = SyntaxManager().getSyntaxByXmlName('debiancontrol.xml')
         self.assertEqual(syntax.parseBlockTextualResults('Section: editors'),
                          [('INIT', 8, [('RegExpr([^ ]*:)', 0, 8)]), ('Field', 8, [])])
         self.assertEqual(syntax.parseBlockTextualResults(' Section: editors'),
@@ -33,7 +33,7 @@ class RulesTestCase(unittest.TestCase):
     def test_pop_context(self):
         """Checks if #pop operation works correctly
         """
-        syntax = Syntax('debiancontrol.xml')
+        syntax = SyntaxManager().getSyntaxByXmlName('debiancontrol.xml')
 
         self.assertEqual(syntax.parseBlockTextualResults(' ${a} ${b}'),
                          [('INIT', 1, [('DetectChar( )', 0, 1)]), 
@@ -45,7 +45,7 @@ class RulesTestCase(unittest.TestCase):
     def test_return_context_stack(self):
         """Checks if parser returns valid context stack
         """
-        syntax = Syntax('debiancontrol.xml')
+        syntax = SyntaxManager().getSyntaxByXmlName('debiancontrol.xml')
 
         self.assertEqual(syntax.parseBlockContextStackTextual('Source: mksv3'),
                          ['INIT'])
@@ -53,7 +53,7 @@ class RulesTestCase(unittest.TestCase):
     def test_line_end_context_switch(self):
         """Switch context, if line end reached, and current context has lineEndContext attribute
         """
-        syntax = Syntax('debianchangelog.xml')
+        syntax = SyntaxManager().getSyntaxByXmlName('debianchangelog.xml')
         
         text = 'mksv3 '
         self.assertEqual(syntax.parseBlockContextStackTextual(text),
@@ -63,7 +63,7 @@ class RulesTestCase(unittest.TestCase):
     def test_fallgrhough(self):
         """Switch context, if no rules matched
         """
-        syntax = Syntax('yacc.xml')
+        syntax = SyntaxManager().getSyntaxByXmlName('yacc.xml')
         
         text = 'mksv3 '
         self.assertEqual(syntax.parseBlockContextStackTextual(text),

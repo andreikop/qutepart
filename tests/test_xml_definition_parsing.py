@@ -5,7 +5,7 @@ import unittest
 
 import sys
 sys.path.insert(0, '..')
-from qutepart.Syntax import Syntax
+from qutepart.syntax_manager import SyntaxManager
 
 class XmlParsingTestCase(unittest.TestCase):
     def test_parse_all_definitions(self):
@@ -15,7 +15,7 @@ class XmlParsingTestCase(unittest.TestCase):
         xmlFilesPath = os.path.join(os.path.dirname(__file__), '..', 'qutepart', 'syntax')
         for xmlFileName in os.listdir(xmlFilesPath):
             if xmlFileName.endswith('.xml'):
-                Syntax(os.path.join(xmlFilesPath, xmlFileName))
+                SyntaxManager().getSyntaxByXmlName(xmlFileName)
 
 if __name__ == '__main__':
     unittest.main()

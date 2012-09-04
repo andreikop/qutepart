@@ -4,11 +4,11 @@ import unittest
 
 import sys
 sys.path.insert(0, '..')
-from qutepart.Syntax import Syntax
+from qutepart.syntax_manager import SyntaxManager
 
 class RulesTestCase(unittest.TestCase):
     def _getRule(self, syntaxName, contextName, ruleIndex):
-        syntax = Syntax(syntaxName)
+        syntax = SyntaxManager().getSyntaxByXmlName(syntaxName)
         context = syntax.contexts[contextName]
         return context.rules[ruleIndex]
     
@@ -47,6 +47,10 @@ class RulesTestCase(unittest.TestCase):
     def test_IncludeRules(self):
         rule = self._getRule('yacc.xml', 'Rule In', 0)
         self.assertEqual(rule.tryMatch(0, '/* xxx */')[0], 2)
+
+    def test_IncludeRulesExternal(self):
+        rule = self._getRule('javascript.xml', 'Comment', 1)  # external context ##Alerts
+        self.assertEqual(rule.tryMatch(0, ' NOTE hello, world')[0], 6)
 
     def test_AnyChar(self):
         rule = self._getRule('asp.xml', 'aspsource', 12)
