@@ -218,17 +218,9 @@ class StringDetect(AbstractRule):
     
         return None
 
-
-class WordDetect(AbstractRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-        
-        self._string = _safeGetRequiredAttribute(xmlElement, "String", "")
-        self._insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
-    
-    def shortId(self):
-        return 'WordDetect(%s, %s)' % (self._string, self._insensitive)
-    
+class AbstractWordRule(AbstractRule):
+    """Base class for WordDetect and keyword
+    """
     def tryMatch(self, currentColumnIndex, text):
         # Skip if column doesn't match
         if self.column is not None and \
@@ -244,18 +236,48 @@ class WordDetect(AbstractRule):
         
         textToCheck = text[currentColumnIndex:]
         
-        if not textToCheck.startswith(self._string):
-            return None, None
+        for word in self._words:
+            if not textToCheck.startswith(word):
+                continue
+                
+            stringLen = len(word)
+            wordEnd   = stringLen == len(textToCheck) or \
+                        textToCheck[stringLen].isspace() or \
+                        textToCheck[stringLen] in self.parentContext.syntax.deliminatorSet
             
-        stringLen = len(self._string)
-        wordEnd   = stringLen == len(textToCheck) or \
-                    textToCheck[stringLen].isspace() or \
-                    textToCheck[stringLen] in self.parentContext.syntax.deliminatorSet
-        
-        if not wordEnd:
+            if not wordEnd:
+                continue
+
+            return (stringLen, self)
+        else:
             return None, None
 
-        return (stringLen, self)
+
+class WordDetect(AbstractWordRule):
+    def __init__(self, parentContext, xmlElement):
+        AbstractWordRule.__init__(self, parentContext, xmlElement)
+        
+        self._words = [_safeGetRequiredAttribute(xmlElement, "String", "")]
+        
+        self._insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
+    
+    def shortId(self):
+        return 'WordDetect(%s, %s)' % (self._string, self._insensitive)
+
+
+class keyword(AbstractWordRule):
+    def __init__(self, parentContext, xmlElement):
+        AbstractWordRule.__init__(self, parentContext, xmlElement)
+        
+        self._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+        try:
+            self._words = self.parentContext.syntax.lists[self._string]
+        except KeyError:
+            print >> sys.stderr, 'List', self._string, 'not found'
+            self._words = []
+
+    def shortId(self):
+        return 'keyword(%s)' % repr(self._string)
 
 
 class RegExpr(AbstractRule):
@@ -304,29 +326,6 @@ class RegExpr(AbstractRule):
         match = self._regExp.match(text)
         if match is not None and match.group(0):
             return len(match.group(0))
-        
-        return None
-
-
-class keyword(AbstractRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-        
-        self._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
-
-    def shortId(self):
-        return 'keyword(%s)' % repr(self._string)
-
-    def _tryMatch(self, text):
-        if self._string is None:
-            return None
-
-        if not self.parentContext.syntax.casesensitive:
-            text = text.lower()
-        
-        for word in self.parentContext.syntax.lists[self._string]:
-            if text.startswith(word):
-                return len(word)
         
         return None
 
