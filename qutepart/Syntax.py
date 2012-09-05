@@ -780,7 +780,7 @@ class Syntax:
         # parse lists
         self.lists = {}  # list name: list
         for listElement in hlgElement.findall('list'):
-            items = [item.text \
+            items = [item.text.strip() \
                         for item in listElement.findall('item')]
             name = _safeGetRequiredAttribute(listElement, 'name', 'Error: list name is not set!!!')
             self.lists[name] = items

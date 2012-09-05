@@ -50,7 +50,8 @@ class RulesTestCase(unittest.TestCase):
 
     def test_IncludeRulesExternal(self):
         rule = self._getRule('javascript.xml', 'Comment', 1)  # external context ##Alerts
-        self.assertEqual(rule.tryMatch(0, ' NOTE hello, world')[0], 6)
+        self.assertEqual(rule.tryMatch(1, ' NOTE hello, world')[0], 4)
+        self.assertEqual(rule.tryMatch(1, ' NOET hello, world')[0], None)
 
     def test_AnyChar(self):
         rule = self._getRule('asp.xml', 'aspsource', 12)
