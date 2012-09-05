@@ -569,8 +569,6 @@ class IncludeRules(AbstractRule):
         AbstractRule.__init__(self, parentContext, xmlElement)
         self._contextName = _safeGetRequiredAttribute(xmlElement, "context", None)
         # context will be resolved, when parsing. Avoiding infinite recursion
-        if self._contextName.startswith('##'):
-            print self._contextName
 
     def __str__(self):
         """Serialize.
@@ -900,7 +898,6 @@ class Syntax:
         startColumnIndex = currentColumnIndex
         matchedRules = []
         while currentColumnIndex < len(text):
-            
             for rule in currentContext.rules:
                 count, matchedRule = rule.tryMatch(currentColumnIndex, text)
                 if count is not None:
@@ -919,7 +916,7 @@ class Syntax:
                     if newContextStack != contextStack:
                         return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
 
-            currentColumnIndex += 1
+                currentColumnIndex += 1
 
         return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
 

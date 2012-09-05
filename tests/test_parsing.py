@@ -59,6 +59,18 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(syntax.parseBlockContextStackTextual(text),
                          ['INIT'])
 
+    def test_just_one_more_test_1(self):
+        """Test for one of bugs.
+        """
+        syntax = SyntaxManager().getSyntaxByXmlName('javascript.xml')
+        
+        text = " /* */"
+        self.assertEqual(syntax.parseBlockTextualResults(text),
+                         [('Normal', 3, [('DetectSpaces()', 0, 1),
+                                         ('Detect2Chars(/*)', 1, 2)]),
+                          ('Multi/inline Comment', 3, [('Detect2Chars(*/)', 4, 2)])])
+
+
     '''
     def test_fallgrhough(self):
         """Switch context, if no rules matched
