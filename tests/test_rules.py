@@ -173,6 +173,11 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 1, " var "), 3)
         self.assertEqual(tryMatch(rule, 1, " varx "), None)
         self.assertEqual(tryMatch(rule, 2, " xvar "), None)
+    
+    def test_lookahead(self):
+        rule = self._getRule("javascript.xml", "ObjectMember", 3)
+        text = 'g.r( /dooh/ )'
+        self.assertEqual(tryMatch(rule, 3, text), 0)
 
 
 if __name__ == '__main__':

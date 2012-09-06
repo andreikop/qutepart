@@ -96,9 +96,10 @@ class AbstractRule:
         contextText = xmlElement.attrib.get("context", '#stay')
         self.context = _ContextSwitcher(contextText, parentContext.syntax.contexts)
     
+        self.lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
+        
         # TODO beginRegion
         # TODO endRegion
-        # TODO lookAhead
         # TODO firstNonSpace
         
         column = xmlElement.attrib.get("column", None)
@@ -125,21 +126,31 @@ class AbstractRule:
     def tryMatch(self, currentColumnIndex, text):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
-        
-        This is basic implementation. IncludeRules, WordDetect, Int, Float reimplements this method
         """
         # Skip if column doesn't match
         if self.column is not None and \
            self.column != currentColumnIndex:
             return None, None
         
-        count = self._tryMatch(text[currentColumnIndex:])
+        count, matchedRule = self._tryMatch(currentColumnIndex, text)
+        if not self.lookAhead:  # usually
+            return count, matchedRule
+        else:  # lookAhead means match length is always zero
+            return 0, matchedRule
+    
+    def _tryMatch(self, currentColumnIndex, text):
+        """Internal method.
+        Doesn't check current column and lookAhead
+        
+        This is basic implementation. IncludeRules, WordDetect, Int, Float reimplements this method
+        """
+        count = self._tryMatchText(text[currentColumnIndex:])
         if count is not None:
             return count, self
         else:
             return None, None
 
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         """Simple tryMatch method. Checks if text matches.
         Shall be reimplemented by child classes
         """
@@ -154,7 +165,7 @@ class DetectChar(AbstractRule):
     def shortId(self):
         return 'DetectChar(%s)' % self._char
     
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         if self._char is None:
             return None
         
@@ -176,7 +187,7 @@ class Detect2Chars(AbstractRule):
     def shortId(self):
         return 'Detect2Chars(%s)' % self._string
     
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         if self._string is None:
             return None
         
@@ -194,7 +205,7 @@ class AnyChar(AbstractRule):
     def shortId(self):
         return 'AnyChar(%s)' % self._string
     
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         if text[0] in self._string:
             return 1
         
@@ -209,7 +220,7 @@ class StringDetect(AbstractRule):
     def shortId(self):
         return 'StringDetect(%s)' % self._string
 
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         if self._string is None:
             return
         
@@ -221,12 +232,8 @@ class StringDetect(AbstractRule):
 class AbstractWordRule(AbstractRule):
     """Base class for WordDetect and keyword
     """
-    def tryMatch(self, currentColumnIndex, text):
-        # Skip if column doesn't match
-        if self.column is not None and \
-           self.column != currentColumnIndex:
-            return None, None
-        
+    def _tryMatch(self, currentColumnIndex, text):
+        # Skip if column doesn't match        
         wordStart = currentColumnIndex == 0 or \
                     text[currentColumnIndex - 1].isspace() or \
                     text[currentColumnIndex - 1] in self.parentContext.syntax.deliminatorSet
@@ -251,7 +258,6 @@ class AbstractWordRule(AbstractRule):
             return (stringLen, self)
         else:
             return None, None
-
 
 class WordDetect(AbstractWordRule):
     def __init__(self, parentContext, xmlElement):
@@ -319,7 +325,7 @@ class RegExpr(AbstractRule):
             return chr(charCode).decode('latin1')
         return re.sub(r"\\0\d\d\d", replFunc, text)
         
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         if self._regExp is None:
             return None
 
@@ -337,16 +343,11 @@ class AbstractNumberRule(AbstractRule):
         AbstractRule.__init__(self, parentContext, xmlElement)
         self._childRules = _getChildRules(parentContext, xmlElement)
 
-    def tryMatch(self, currentColumnIndex, text):
+    def _tryMatch(self, currentColumnIndex, text):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
-        """
-        # Skip if column doesn't match
-        if self.column is not None and \
-           self.column != currentColumnIndex:
-            return None, None
-        
-        index = self._tryMatch(text[currentColumnIndex:])
+        """        
+        index = self._tryMatchText(text[currentColumnIndex:])
         if index is None:
             return None, None
         
@@ -374,7 +375,7 @@ class Int(AbstractNumberRule):
     def shortId(self):
         return 'Int()'
 
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         matchedLength = self._countDigits(text)
         
         if matchedLength:
@@ -387,7 +388,7 @@ class Float(AbstractNumberRule):
     def shortId(self):
         return 'Float()'
 
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         
         haveDigit = False
         havePoint = False
@@ -439,7 +440,7 @@ class HlCOct(AbstractRule):
     def shortId(self):
         return 'HlCOct'
 
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         if text[0] != '0':
             return None
         
@@ -462,7 +463,7 @@ class HlCHex(AbstractRule):
     def shortId(self):
         return 'HlCHex'
 
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         if len(text) < 3:
             return None
         
@@ -512,7 +513,7 @@ class HlCStringChar(AbstractRule):
     def shortId(self):
         return 'HlCStringChar'
 
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         return _checkEscapedChar(text)
 
 
@@ -520,7 +521,7 @@ class HlCChar(AbstractRule):
     def shortId(self):
         return 'HlCChar'
 
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         if len(text) > 2 and text[0] == "'" and text[1] != "'":
             result = _checkEscapedChar(text[1:])
             if result is not None:
@@ -543,7 +544,7 @@ class RangeDetect(AbstractRule):
     def shortId(self):
         return 'RangeDetect(%s, %s)' % (self._char, self._char1)
     
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         if text.startswith(self._char):
             end = text.find(self._char1)
             if end > 0:
@@ -556,7 +557,7 @@ class LineContinue(AbstractRule):
     def shortId(self):
         return 'LineContinue'
 
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         if text == '\\':
             return 1
         
@@ -580,7 +581,7 @@ class IncludeRules(AbstractRule):
     def shortId(self):
         return "IncludeRules(%s)" % self._contextName
     
-    def tryMatch(self, currentColumnIndex, text):
+    def _tryMatch(self, currentColumnIndex, text):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
         """
@@ -606,7 +607,7 @@ class DetectSpaces(AbstractRule):
     def shortId(self):
         return 'DetectSpaces()'
 
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         spaceLen = len(text) - len(text.lstrip())
         if spaceLen:
             return spaceLen
@@ -618,7 +619,7 @@ class DetectIdentifier(AbstractRule):
     def shortId(self):
         return 'DetectIdentifier()'
     
-    def _tryMatch(self, text):
+    def _tryMatchText(self, text):
         match = DetectIdentifier._regExp.match(text)
         if match is not None and match.group(0):
             return len(match.group(0))
