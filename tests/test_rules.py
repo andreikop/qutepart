@@ -179,6 +179,12 @@ class Test(unittest.TestCase):
         text = 'g.r( /dooh/ )'
         self.assertEqual(tryMatch(rule, 3, text), 0)
 
+    def test_firstNonSpace(self):
+        rule = self._getRule("makefile.xml", "Normal", 2)
+        
+        #self.assertEqual(tryMatch(rule, 0, "all: pre"), 4)
+        self.assertEqual(tryMatch(rule, 1, " all: pre"), None)
+
 
 if __name__ == '__main__':
     unittest.main()

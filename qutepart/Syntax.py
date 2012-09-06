@@ -97,6 +97,7 @@ class AbstractRule:
         self.context = _ContextSwitcher(contextText, parentContext.syntax.contexts)
     
         self.lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
+        self.firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
         
         # TODO beginRegion
         # TODO endRegion
@@ -131,6 +132,11 @@ class AbstractRule:
         if self.column is not None and \
            self.column != currentColumnIndex:
             return None, None
+        
+        if self.firstNonSpace:
+            if currentColumnIndex != 0 and \
+               text[currentColumnIndex - 1].isspace():
+                return None, None
         
         count, matchedRule = self._tryMatch(currentColumnIndex, text)
         if not self.lookAhead:  # usually
