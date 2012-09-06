@@ -778,8 +778,10 @@ class Syntax:
         # parse lists
         self.lists = {}  # list name: list
         for listElement in hlgElement.findall('list'):
+            # Sometimes item.text is none. Broken xml files
             items = [item.text.strip() \
-                        for item in listElement.findall('item')]
+                        for item in listElement.findall('item') \
+                            if item.text is not None]
             name = _safeGetRequiredAttribute(listElement, 'name', 'Error: list name is not set!!!')
             self.lists[name] = items
         
