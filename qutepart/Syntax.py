@@ -124,27 +124,30 @@ class AbstractRule:
         """
         raise NotImplementedError(str(self.__class__))
 
-    def tryMatch(self, currentColumnIndex, text):
+    def tryMatch(self, contextStack, currentColumnIndex, text):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
         """
         # Skip if column doesn't match
         if self.column is not None and \
            self.column != currentColumnIndex:
-            return None, None
+            return contextStack,None, None
         
         if self.firstNonSpace:
             if currentColumnIndex != 0 and \
                text[currentColumnIndex - 1].isspace():
-                return None, None
+                return contextStack,None, None
         
-        count, matchedRule = self._tryMatch(currentColumnIndex, text)
-        if not self.lookAhead:  # usually
-            return count, matchedRule
-        else:  # lookAhead means match length is always zero
-            return 0, matchedRule
-    
-    def _tryMatch(self, currentColumnIndex, text):
+        newContextStack, count, matchedRule = self._tryMatch(contextStack, currentColumnIndex, text)
+        if count is None:  # no match
+            return newContextStack, None, None
+        
+        if self.lookAhead:
+            count = 0
+        
+        return newContextStack, count, matchedRule
+
+    def _tryMatch(self, contextStack, currentColumnIndex, text):
         """Internal method.
         Doesn't check current column and lookAhead
         
@@ -152,9 +155,11 @@ class AbstractRule:
         """
         count = self._tryMatchText(text[currentColumnIndex:])
         if count is not None:
-            return count, self
+            if self.context is not None:
+                contextStack = self.context.getNextContextStack(contextStack)
+            return contextStack, count, self
         else:
-            return None, None
+            return contextStack, None, None
 
     def _tryMatchText(self, text):
         """Simple tryMatch method. Checks if text matches.
@@ -238,14 +243,14 @@ class StringDetect(AbstractRule):
 class AbstractWordRule(AbstractRule):
     """Base class for WordDetect and keyword
     """
-    def _tryMatch(self, currentColumnIndex, text):
+    def _tryMatch(self, contextStack, currentColumnIndex, text):
         # Skip if column doesn't match        
         wordStart = currentColumnIndex == 0 or \
                     text[currentColumnIndex - 1].isspace() or \
                     text[currentColumnIndex - 1] in self.parentContext.syntax.deliminatorSet
         
         if not wordStart:
-            return None, None
+            return contextStack, None, None
         
         textToCheck = text[currentColumnIndex:]
         
@@ -261,9 +266,12 @@ class AbstractWordRule(AbstractRule):
             if not wordEnd:
                 continue
 
-            return (stringLen, self)
+            if self.context is not None:
+                contextStack = self.context.getNextContextStack(contextStack)
+
+            return contextStack, stringLen, self
         else:
-            return None, None
+            return contextStack, None, None
 
 class WordDetect(AbstractWordRule):
     def __init__(self, parentContext, xmlElement):
@@ -349,23 +357,26 @@ class AbstractNumberRule(AbstractRule):
         AbstractRule.__init__(self, parentContext, xmlElement)
         self._childRules = _getChildRules(parentContext, xmlElement)
 
-    def _tryMatch(self, currentColumnIndex, text):
+    def _tryMatch(self, contextStack, currentColumnIndex, text):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
         """        
         index = self._tryMatchText(text[currentColumnIndex:])
         if index is None:
-            return None, None
+            return contextStack, None, None
         
         if currentColumnIndex + index < len(text):
             for rule in self._childRules:
-                matchedLength, matchedRule = rule.tryMatch(currentColumnIndex + index, text)
+                newContextStack, matchedLength, matchedRule = rule.tryMatch(contextStack, currentColumnIndex + index, text)
                 if matchedLength is not None:
                     index += matchedLength
                     break
                 # child rule context and attribute ignored
         
-        return index, self
+        if self.context is not None:
+            contextStack = self.context.getNextContextStack(contextStack)
+
+        return contextStack, index, self
     
     def _countDigits(self, text):
         """Count digits at start of text
@@ -587,7 +598,7 @@ class IncludeRules(AbstractRule):
     def shortId(self):
         return "IncludeRules(%s)" % self._contextName
     
-    def _tryMatch(self, currentColumnIndex, text):
+    def _tryMatch(self, contextStack, currentColumnIndex, text):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
         """
@@ -602,11 +613,11 @@ class IncludeRules(AbstractRule):
             context = self.parentContext.syntax.defaultContext
         
         for rule in context.rules:
-            columnIndex, matchedRule = rule.tryMatch(currentColumnIndex, text)
+            newContextStack, columnIndex, matchedRule = rule.tryMatch(contextStack, currentColumnIndex, text)
             if columnIndex is not None:
-                return (columnIndex, matchedRule)
+                return newContextStack, columnIndex, matchedRule
         else:
-            return None, None
+            return contextStack, None, None
 
 
 class DetectSpaces(AbstractRule):
@@ -702,6 +713,34 @@ class Context:
             res += str(rule)
         return res
 
+    def parseBlock(self, contextStack, currentColumnIndex, text):
+        """Parse block
+        Exits, when reached end of the text, or when context is switched
+        Returns (length, newContextStack, matchedRules)
+        where matchedRules is:
+            (Rule, pos, length)
+        """
+        startColumnIndex = currentColumnIndex
+        matchedRules = []
+        while currentColumnIndex < len(text):
+            for rule in self.rules:
+                newContextStack, count, matchedRule = rule.tryMatch(contextStack, currentColumnIndex, text)
+                if count is not None:
+                    matchedRules.append((matchedRule, currentColumnIndex, count))
+                    currentColumnIndex += count
+                    if newContextStack != contextStack:
+                        return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
+                    
+                    break  # for loop                    
+            else:  # no matched rules
+                if self.fallthroughContext is not None:
+                    newContextStack = self.fallthroughContext.getNextContextStack(contextStack)
+                    if newContextStack != contextStack:
+                        return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
+
+                currentColumnIndex += 1
+
+        return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
 
 class Syntax:
     """Syntax file parser and container
@@ -902,31 +941,7 @@ class Syntax:
             (Rule, pos, length)
         """
         currentContext = contextStack[-1]
-        
-        startColumnIndex = currentColumnIndex
-        matchedRules = []
-        while currentColumnIndex < len(text):
-            for rule in currentContext.rules:
-                count, matchedRule = rule.tryMatch(currentColumnIndex, text)
-                if count is not None:
-                    matchedRules.append((matchedRule, currentColumnIndex, count))
-                    currentColumnIndex += count
-                    
-                    if matchedRule.context is not None:
-                        newContextStack = matchedRule.context.getNextContextStack(contextStack)
-                        if newContextStack != contextStack:
-                            return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
-                    
-                    break  # for loop                    
-            else:  # no matched rules
-                if currentContext.fallthroughContext is not None:
-                    newContextStack = currentContext.fallthroughContext.getNextContextStack(contextStack)
-                    if newContextStack != contextStack:
-                        return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
-
-                currentColumnIndex += 1
-
-        return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
+        return currentContext.parseBlock(contextStack, currentColumnIndex, text)
 
     def parseBlockTextualResults(self, text, prevLineData=None):
         """Execute parseBlock() and return textual results.

@@ -5,9 +5,11 @@ import unittest
 import sys
 sys.path.insert(0, '..')
 from qutepart.syntax_manager import SyntaxManager
+from qutepart.Syntax import Context
 
 def tryMatch(rule, column, text):
-    return rule.tryMatch(column, text)[0]
+    fakeStack = [rule.parentContext, rule.parentContext, rule.parentContext]
+    return rule.tryMatch(fakeStack, column, text)[1]
 
 class Test(unittest.TestCase):
     def _getRule(self, syntaxName, contextName, ruleIndex):
