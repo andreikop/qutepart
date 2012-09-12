@@ -5,10 +5,10 @@ import unittest
 import sys
 sys.path.insert(0, '..')
 from qutepart.syntax_manager import SyntaxManager
-from qutepart.Syntax import Context
+from qutepart.Syntax import Context, _ContextStack
 
 def tryMatch(rule, column, text):
-    fakeStack = [rule.parentContext, rule.parentContext, rule.parentContext]
+    fakeStack = _ContextStack([rule.parentContext, rule.parentContext, rule.parentContext], [None, None, None])
     return rule.tryMatch(fakeStack, column, text)[1]
 
 class Test(unittest.TestCase):
@@ -186,6 +186,15 @@ class Test(unittest.TestCase):
         
         #self.assertEqual(tryMatch(rule, 0, "all: pre"), 4)
         self.assertEqual(tryMatch(rule, 1, " all: pre"), None)
+
+    def test_dynamic(self):
+        rule = self._getRule("php.xml", "phpsource", 29)  # heredoc
+
+        fakeStack = _ContextStack([rule.parentContext, rule.parentContext, rule.parentContext], [None, None, None])
+        newStack, count, matchedRule = rule.tryMatch(fakeStack, 0, "<<<myheredoc ")
+        
+        self.assertEqual(count, len("<<<myheredoc"))
+        self.assertEqual(newStack.currentData(), ('myheredoc',))
 
 
 if __name__ == '__main__':

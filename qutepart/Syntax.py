@@ -31,6 +31,43 @@ def _safeGetRequiredAttribute(xmlElement, name, default):
         print >> sys.stderr, "Required attribute '%s' is not set for element '%s'" % (name, xmlElement.tag)
         return default
 
+class _ContextStack:
+    def __init__(self, contexts, data):
+        """Create default context stack for syntax
+        Contains default context on the top
+        """
+        self._contexts = contexts
+        self._data = data
+    
+    @staticmethod
+    def makeDefault(syntax):
+        """Make default stack for syntax
+        """
+        return _ContextStack([syntax.defaultContext], [None])
+
+    def pop(self, count):
+        """Returns new context stack, which doesn't contain few levels
+        """
+        if len(self._contexts) < count:
+            print >> sys.stderr, "Error: #pop value is too big"
+            count = 0
+        return _ContextStack(self._contexts[:-count], self._data[:-count])
+    
+    def append(self, context, data):
+        """Returns new context, which contains current stack and new frame
+        """
+        return _ContextStack(self._contexts + [context], self._data + [data])
+    
+    def currentContext(self):
+        """Get current context
+        """
+        return self._contexts[-1]
+    
+    def currentData(self):
+        """Get current data
+        """
+        return self._data[-1]
+        
 
 class _ContextSwitcher:
     """Class parses 'context', 'lineBeginContext', 'lineEndContext', 'fallthroughContext'
@@ -60,22 +97,20 @@ class _ContextSwitcher:
     def __str__(self):
         return self._contextOperation
         
-    def getNextContextStack(self, contextStack):
+    def getNextContextStack(self, contextStack, data=None):
         """Apply modification to the contextStack.
         This method never modifies input parameter list
         """
         if self._popsCount:
-            if len(contextStack) < self._popsCount or \
-               len(contextStack) == self._popsCount and self._contextToSwitch is None:
-                print >> sys.stderr, "Error: #pop value is too big"
-            
-            contextStack = contextStack[:-self._popsCount]
+            contextStack = contextStack.pop(self._popsCount)
         
         if self._contextToSwitch is not None:
-            return contextStack + [self._contextToSwitch]
-        else:
-            return contextStack
+            if not self._contextToSwitch.dynamic:
+                data = None
+            contextStack = contextStack.append(self._contextToSwitch, data)
         
+        return contextStack
+
     
 class AbstractRule:
     """Base class for rule classes
@@ -101,7 +136,6 @@ class AbstractRule:
         
         # TODO beginRegion
         # TODO endRegion
-        # TODO firstNonSpace
         
         column = xmlElement.attrib.get("column", None)
         if column is not None:
@@ -126,7 +160,7 @@ class AbstractRule:
 
     def tryMatch(self, contextStack, currentColumnIndex, text):
         """Try to find themselves in the text.
-        Returns (count, matchedRule) or (None, None) if doesn't match
+        Returns (contextStack, count, matchedRule) or (contextStack, None, None) if doesn't match
         """
         # Skip if column doesn't match
         if self.column is not None and \
@@ -338,16 +372,23 @@ class RegExpr(AbstractRule):
             charCode = eval(matchText[1:])
             return chr(charCode).decode('latin1')
         return re.sub(r"\\0\d\d\d", replFunc, text)
-        
-    def _tryMatchText(self, text):
+
+    def _tryMatch(self, contextStack, currentColumnIndex, text):
+        """Tries to parse text. If matched - saves data for dynamic context
+        """
         if self._regExp is None:
             return None
 
-        match = self._regExp.match(text)
+        match = self._regExp.match(text[currentColumnIndex:])
         if match is not None and match.group(0):
-            return len(match.group(0))
-        
-        return None
+            count = len(match.group(0))
+
+            if self.context is not None:
+                contextStack = self.context.getNextContextStack(contextStack, match.groups())
+            return contextStack, count, self
+        else:
+            return contextStack, None, None
+
 
 class AbstractNumberRule(AbstractRule):
     """Base class for Int and Float rules.
@@ -910,44 +951,34 @@ class Syntax:
         if prevLineData is not None:
             contextStack = prevLineData
         else:
-            contextStack = [self.defaultContext]
+            contextStack = _ContextStack.makeDefault(self)
         
         # this code is not tested, because lineBeginContext is not defined by any xml file
-        if contextStack[-1].lineBeginContext is not None:
-            contextStack = contextStack[-1].lineBeginContext.getNextContextStack(contextStack)
+        if contextStack.currentContext().lineBeginContext is not None:
+            contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
         
         matchedContexts = []
         
         currentColumnIndex = 0
         while currentColumnIndex < len(text):
             length, newContextStack, matchedRules = \
-                        self._parseBlockWithContextStack(contextStack, currentColumnIndex, text)
+                        contextStack.currentContext().parseBlock(contextStack, currentColumnIndex, text)
             
-            matchedContexts.append((contextStack[-1], length, matchedRules))
+            matchedContexts.append((contextStack.currentContext(), length, matchedRules))
             
             contextStack = newContextStack
             currentColumnIndex += length
 
-        if contextStack[-1].lineEndContext is not None:
-            contextStack = contextStack[-1].lineEndContext.getNextContextStack(contextStack)
+        if contextStack.currentContext().lineEndContext is not None:
+            contextStack = contextStack.currentContext().lineEndContext.getNextContextStack(contextStack)
         
         return contextStack, matchedContexts
-
-    def _parseBlockWithContextStack(self, contextStack, currentColumnIndex, text):
-        """Parse block, using last context in the stack.
-        Exits, when reached end of the text, or when context is switched
-        Returns (length, newContextStack, matchedRules)
-        where matchedRules is:
-            (Rule, pos, length)
-        """
-        currentContext = contextStack[-1]
-        return currentContext.parseBlock(contextStack, currentColumnIndex, text)
 
     def parseBlockTextualResults(self, text, prevLineData=None):
         """Execute parseBlock() and return textual results.
         For debugging"""
         lineData, matchedContexts = self.parseBlock(text, prevLineData)
-        lineDataTextual = [context.name for context in lineData]
+        lineDataTextual = [context.name for context in lineData._contexts]
         matchedContextsTextual = \
          [ (context.name, contextLength, [ (rule.shortId(), pos, length) \
                                                     for rule, pos, length in matchedRules]) \
@@ -959,6 +990,6 @@ class Syntax:
         """Execute parseBlock() and return context stack as list of context names
         For debugging"""
         lineData, matchedContexts = self.parseBlock(text, prevLineData)
-        lineDataTextual = [context.name for context in lineData]
+        lineDataTextual = [context.name for context in lineData._contexts]
         
         return lineDataTextual
