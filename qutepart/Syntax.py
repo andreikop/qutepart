@@ -17,9 +17,9 @@ import copy
 import xml.etree.ElementTree
 
 def _parseBoolAttribute(value):
-    if value in ('true', '1'):
+    if value.lower() in ('true', '1'):
         return True
-    elif value in ('false', '0'):
+    elif value.lower() in ('false', '0'):
         return False
     else:
         raise UserWarning("Invalid bool attribute value '%s'" % value)
@@ -133,6 +133,7 @@ class AbstractRule:
     
         self.lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
         self.firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
+        self.dynamic = _parseBoolAttribute(xmlElement.attrib.get("dynamic", "false"))
         
         # TODO beginRegion
         # TODO endRegion
@@ -187,15 +188,31 @@ class AbstractRule:
         
         This is basic implementation. IncludeRules, WordDetect, Int, Float reimplements this method
         """
-        count = self._tryMatchText(text[currentColumnIndex:])
+        count = self._tryMatchText(text[currentColumnIndex:], contextStack.currentData())
         if count is not None:
             if self.context is not None:
                 contextStack = self.context.getNextContextStack(contextStack)
             return contextStack, count, self
         else:
             return contextStack, None, None
+    
+    _seqReplacer = re.compile('%\d+')
+    
+    @staticmethod
+    def _makeDynamicStringSubsctitutions(string, contextData):
+        """For dynamic rules, replace %d patterns with actual strings
+        """
+        def _replaceFunc(escapeMatchObject):
+            stringIndex = escapeMatchObject.group(0)[1]
+            index = int(stringIndex) - 1
+            if index < len(contextData):
+                return contextData[index]
+            else:
+                return escapeMatchObject.group(0)  # no any replacements, return original value
 
-    def _tryMatchText(self, text):
+        return AbstractRule._seqReplacer.sub(_replaceFunc, string)
+
+    def _tryMatchText(self, text, contextData):
         """Simple tryMatch method. Checks if text matches.
         Shall be reimplemented by child classes
         """
@@ -210,7 +227,7 @@ class DetectChar(AbstractRule):
     def shortId(self):
         return 'DetectChar(%s)' % self._char
     
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         if self._char is None:
             return None
         
@@ -232,7 +249,7 @@ class Detect2Chars(AbstractRule):
     def shortId(self):
         return 'Detect2Chars(%s)' % self._string
     
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         if self._string is None:
             return None
         
@@ -250,7 +267,7 @@ class AnyChar(AbstractRule):
     def shortId(self):
         return 'AnyChar(%s)' % self._string
     
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         if text[0] in self._string:
             return 1
         
@@ -265,7 +282,7 @@ class StringDetect(AbstractRule):
     def shortId(self):
         return 'StringDetect(%s)' % self._string
 
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         if self._string is None:
             return
         
@@ -342,24 +359,31 @@ class RegExpr(AbstractRule):
         AbstractRule.__init__(self, parentContext, xmlElement)
         
         string = _safeGetRequiredAttribute(xmlElement, 'String', None)        
+
         if string is None:
             self._regExp = None
             return
-        string = self._processCraracterCodes(string)
+            
+        self._string = self._processCraracterCodes(string)
+        self._insensitive = xmlElement.attrib.get('insensitive', False)
         
-        insensitive = xmlElement.attrib.get('insensitive', False)
+        if not self.dynamic:
+            self._regExp = self._compileRegExp(self._string, self._insensitive)
+    
+    @staticmethod
+    def _compileRegExp(string, insensitive):
         flags = 0
         if insensitive:
             flags = re.IGNORECASE
         
         try:
-            self._regExp = re.compile(string)
+            return re.compile(string)
         except (re.error, AssertionError) as ex:
             print >> sys.stderr, "Invalid pattern '%s': %s" % (string, str(ex))
-            self._regExp = None
-    
+            return None
+
     def shortId(self):
-        return 'RegExpr(%s)' % self._regExp.pattern
+        return 'RegExpr(%s)' % self._string
 
     def _processCraracterCodes(self, text):
         """QRegExp use \0ddd notation for character codes, where d in octal digit
@@ -373,14 +397,36 @@ class RegExpr(AbstractRule):
             return chr(charCode).decode('latin1')
         return re.sub(r"\\0\d\d\d", replFunc, text)
 
+    @staticmethod
+    def _makeDynamicStringSubsctitutions(string, contextData):
+        """For dynamic rules, replace %d patterns with actual strings
+        AbstractRule method reimplementation. Escapes reg exp symbols in the pattern
+        """
+        def _replaceFunc(escapeMatchObject):
+            stringIndex = escapeMatchObject.group(0)[1]
+            index = int(stringIndex) - 1
+            if index < len(contextData):
+                return re.escape(contextData[index])
+            else:
+                return escapeMatchObject.group(0)  # no any replacements, return original value
+
+        return AbstractRule._seqReplacer.sub(_replaceFunc, string)
+
     def _tryMatch(self, contextStack, currentColumnIndex, text):
         """Tries to parse text. If matched - saves data for dynamic context
         """
-        if self._regExp is None:
+        if self.dynamic:
+            string = self._makeDynamicStringSubsctitutions(self._string, contextStack.currentData())
+            regExp = self._compileRegExp(string, self._insensitive)
+        else:
+            regExp = self._regExp
+        
+        if regExp is None:
             return None
-
-        match = self._regExp.match(text[currentColumnIndex:])
+        
+        match = regExp.match(text[currentColumnIndex:])
         if match is not None and match.group(0):
+            print self._string, regExp.pattern, match.groups()
             count = len(match.group(0))
 
             if self.context is not None:
@@ -402,7 +448,7 @@ class AbstractNumberRule(AbstractRule):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
         """        
-        index = self._tryMatchText(text[currentColumnIndex:])
+        index = self._tryMatchText(text[currentColumnIndex:], contextStack.currentData())
         if index is None:
             return contextStack, None, None
         
@@ -433,7 +479,7 @@ class Int(AbstractNumberRule):
     def shortId(self):
         return 'Int()'
 
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         matchedLength = self._countDigits(text)
         
         if matchedLength:
@@ -446,7 +492,7 @@ class Float(AbstractNumberRule):
     def shortId(self):
         return 'Float()'
 
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         
         haveDigit = False
         havePoint = False
@@ -498,7 +544,7 @@ class HlCOct(AbstractRule):
     def shortId(self):
         return 'HlCOct'
 
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         if text[0] != '0':
             return None
         
@@ -521,7 +567,7 @@ class HlCHex(AbstractRule):
     def shortId(self):
         return 'HlCHex'
 
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         if len(text) < 3:
             return None
         
@@ -571,7 +617,7 @@ class HlCStringChar(AbstractRule):
     def shortId(self):
         return 'HlCStringChar'
 
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         return _checkEscapedChar(text)
 
 
@@ -579,7 +625,7 @@ class HlCChar(AbstractRule):
     def shortId(self):
         return 'HlCChar'
 
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         if len(text) > 2 and text[0] == "'" and text[1] != "'":
             result = _checkEscapedChar(text[1:])
             if result is not None:
@@ -602,7 +648,7 @@ class RangeDetect(AbstractRule):
     def shortId(self):
         return 'RangeDetect(%s, %s)' % (self._char, self._char1)
     
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         if text.startswith(self._char):
             end = text.find(self._char1)
             if end > 0:
@@ -615,7 +661,7 @@ class LineContinue(AbstractRule):
     def shortId(self):
         return 'LineContinue'
 
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         if text == '\\':
             return 1
         
@@ -665,7 +711,7 @@ class DetectSpaces(AbstractRule):
     def shortId(self):
         return 'DetectSpaces()'
 
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         spaceLen = len(text) - len(text.lstrip())
         if spaceLen:
             return spaceLen
@@ -677,7 +723,7 @@ class DetectIdentifier(AbstractRule):
     def shortId(self):
         return 'DetectIdentifier()'
     
-    def _tryMatchText(self, text):
+    def _tryMatchText(self, text, contextData):
         match = DetectIdentifier._regExp.match(text)
         if match is not None and match.group(0):
             return len(match.group(0))
@@ -751,7 +797,7 @@ class Context:
         res += '\t\t%s: %s\n' % ('dynamic', self.dynamic)
         
         for rule in self.rules:
-            res += str(rule)
+            res += unicode(rule)
         return res
 
     def parseBlock(self, contextStack, currentColumnIndex, text):
@@ -912,7 +958,7 @@ class Syntax:
         """Serialize.
         For debug logs
         """
-        res = 'Syntax %s\n' % self.name
+        res = u'Syntax %s\n' % self.name
         for name, value in vars(self).iteritems():
             if not name.startswith('_') and \
                not name in ('defaultContext', 'deliminatorSet', 'contexts', 'lists') and \
@@ -926,7 +972,7 @@ class Syntax:
         
         
         for context in self.contexts.values():
-            res += str(context)
+            res += unicode(context)
         
         return res
     
@@ -986,6 +1032,18 @@ class Syntax:
         
         return matchedContextsTextual
 
+    def _printParseBlockTextualResults(self, text, results):
+        contextStart = 0
+        for name, length, rules in results:
+            print repr(text[contextStart:contextStart + length]), name
+            contextStart += length
+            for rule, pos, len in rules:
+                print '\t', repr(text[pos: pos + len]), rule
+
+    def parseAndPrintBlockTextualResults(self, text, prevLineData=None):
+        res = self.parseBlockTextualResults(text, prevLineData)
+        return self._printParseBlockTextualResults(text, res)
+    
     def parseBlockContextStackTextual(self, text, prevLineData=None):
         """Execute parseBlock() and return context stack as list of context names
         For debugging"""
