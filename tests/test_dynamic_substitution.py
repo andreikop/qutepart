@@ -4,11 +4,11 @@ import unittest
 
 import sys
 sys.path.insert(0, '..')
-from qutepart.Syntax import AbstractRule, RegExpr
+from qutepart.Syntax import StringDetect, RegExpr
 
 class TestCase(unittest.TestCase):
-    def test_AbstractRule(self):
-        self.assertEqual(AbstractRule._makeDynamicStringSubsctitutions('a%2c%3', ['a', '|']),
+    def test_StringDetect(self):
+        self.assertEqual(StringDetect._makeDynamicStringSubsctitutions('a%2c%3', ['a', '|']),
                          'a|c%3')
     
     def test_RegExp(self):

@@ -198,20 +198,6 @@ class AbstractRule:
     
     _seqReplacer = re.compile('%\d+')
     
-    @staticmethod
-    def _makeDynamicStringSubsctitutions(string, contextData):
-        """For dynamic rules, replace %d patterns with actual strings
-        """
-        def _replaceFunc(escapeMatchObject):
-            stringIndex = escapeMatchObject.group(0)[1]
-            index = int(stringIndex) - 1
-            if index < len(contextData):
-                return contextData[index]
-            else:
-                return escapeMatchObject.group(0)  # no any replacements, return original value
-
-        return AbstractRule._seqReplacer.sub(_replaceFunc, string)
-
     def _tryMatchText(self, text, contextData):
         """Simple tryMatch method. Checks if text matches.
         Shall be reimplemented by child classes
@@ -286,10 +272,30 @@ class StringDetect(AbstractRule):
         if self._string is None:
             return
         
-        if text.startswith(self._string):
-            return len(self._string)
+        if self.dynamic:
+            string = self._makeDynamicStringSubsctitutions(self._string)
+        else:
+            string = self._string
+        
+        if text.startswith(string):
+            return len(string)
     
         return None
+    
+    @staticmethod
+    def _makeDynamicStringSubsctitutions(string, contextData):
+        """For dynamic rules, replace %d patterns with actual strings
+        """
+        def _replaceFunc(escapeMatchObject):
+            stringIndex = escapeMatchObject.group(0)[1]
+            index = int(stringIndex) - 1
+            if index < len(contextData):
+                return contextData[index]
+            else:
+                return escapeMatchObject.group(0)  # no any replacements, return original value
+
+        return AbstractRule._seqReplacer.sub(_replaceFunc, string)
+
 
 class AbstractWordRule(AbstractRule):
     """Base class for WordDetect and keyword

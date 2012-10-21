@@ -188,7 +188,7 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 1, " all: pre"), None)
 
     def test_dynamic_reg_exp(self):
-        """Switch context, if line end reached, and current context has lineEndContext attribute
+        """RegExpr rule, dynamic=true
         """
         rule = self._getRule("ruby.xml", "gdl_dq_string_5", 2)  # "\s*%1"
         text = '%|a| x'
@@ -197,6 +197,18 @@ class Test(unittest.TestCase):
                                  )
         newStack, count, matchedRule = rule.tryMatch(fakeStack, 3, text)
         self.assertEqual(count, 1)
+
+    def test_dynamic_string_detect(self):
+        """StringDetect rule, dynamic=true
+        """
+        rule = self._getRule("php.xml", "phpsource", 29)  # heredoc
+        text = "<<<myheredoc"
+
+        fakeStack = _ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
+                                  [None, None, ('myheredoc',)]
+                                 )
+        newStack, count, matchedRule = rule.tryMatch(fakeStack, 0, text)
+        self.assertEqual(count, len(text))
 
 
 if __name__ == '__main__':
