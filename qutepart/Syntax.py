@@ -209,6 +209,16 @@ class DetectChar(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
         self._char = _safeGetRequiredAttribute(xmlElement, "char", None)
+        
+        if self.dynamic:
+            try:
+                index = int(self._char)
+            except ValueError:
+                print >> sys.stderr, 'Invalid DetectChar char', self._char
+                self._char = None
+            if index <= 0:
+                print >> sys.stderr, 'Too little DetectChar index', self._char
+                self._char = None
     
     def shortId(self):
         return 'DetectChar(%s)' % self._char
@@ -216,8 +226,22 @@ class DetectChar(AbstractRule):
     def _tryMatchText(self, text, contextData):
         if self._char is None:
             return None
+
+        if self.dynamic:
+            index = int(self._char) - 1
+            if index >= len(contextData):
+                print >> sys.stderr, 'Invalid DetectChar index', index
+                return None
+            
+            if len(contextData[index]) != 1:
+                    print >> sys.stderr, 'Too long DetectChar string', contextData[index]
+                    return None
+            
+            string = contextData[index]
+        else:
+            string = self._char
         
-        if text[0] == self._char:
+        if text[0] == string:
             return 1
         return None
 

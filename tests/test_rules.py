@@ -210,6 +210,21 @@ class Test(unittest.TestCase):
         newStack, count, matchedRule = rule.tryMatch(fakeStack, 0, text)
         self.assertEqual(count, len(text))
 
+    def test_dynamic_string_detect(self):
+        """DetectChar rule, dynamic=true
+        """
+        rule = self._getRule("perl.xml", "string_6", 3)
+        text = "abcdXefg"
+
+        fakeStack = _ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
+                                  [None, None, ('X', 'Y', 'Z',)]
+                                 )
+        newStack, count, matchedRule = rule.tryMatch(fakeStack, 0, text)
+        self.assertEqual(count, None)
+
+        newStack, count, matchedRule = rule.tryMatch(fakeStack, 4, text)
+        self.assertEqual(count, 1)
+
 
 if __name__ == '__main__':
     unittest.main()
