@@ -13,24 +13,9 @@ contain not a text value, but _ContextSwitcher object
 import os.path
 import sys
 import re
-import xml.etree.ElementTree
 
 import xml_loader
 
-def _parseBoolAttribute(value):
-    if value.lower() in ('true', '1'):
-        return True
-    elif value.lower() in ('false', '0'):
-        return False
-    else:
-        raise UserWarning("Invalid bool attribute value '%s'" % value)
-
-def _safeGetRequiredAttribute(xmlElement, name, default):
-    if name in xmlElement.attrib:
-        return xmlElement.attrib[name]
-    else:
-        print >> sys.stderr, "Required attribute '%s' is not set for element '%s'" % (name, xmlElement.tag)
-        return default
 
 class _ContextStack:
     def __init__(self, contexts, data):
@@ -132,9 +117,9 @@ class AbstractRule:
         contextText = xmlElement.attrib.get("context", '#stay')
         self.context = _ContextSwitcher(contextText, parentContext.syntax.contexts)
     
-        self.lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
-        self.firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
-        self.dynamic = _parseBoolAttribute(xmlElement.attrib.get("dynamic", "false"))
+        self.lookAhead = xml_loader._parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
+        self.firstNonSpace = xml_loader._parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
+        self.dynamic = xml_loader._parseBoolAttribute(xmlElement.attrib.get("dynamic", "false"))
         
         # TODO beginRegion
         # TODO endRegion
@@ -209,7 +194,7 @@ class AbstractRule:
 class DetectChar(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._char = _safeGetRequiredAttribute(xmlElement, "char", None)
+        self._char = xml_loader._safeGetRequiredAttribute(xmlElement, "char", None)
         
         if self.dynamic:
             try:
@@ -250,8 +235,8 @@ class Detect2Chars(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
         
-        char = _safeGetRequiredAttribute(xmlElement, 'char', None)
-        char1 = _safeGetRequiredAttribute(xmlElement, 'char1', None)
+        char = xml_loader._safeGetRequiredAttribute(xmlElement, 'char', None)
+        char1 = xml_loader._safeGetRequiredAttribute(xmlElement, 'char1', None)
         if char is None or char1 is None:
             self._string = None
         else:
@@ -273,7 +258,7 @@ class Detect2Chars(AbstractRule):
 class AnyChar(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._string = _safeGetRequiredAttribute(xmlElement, 'String', '')
+        self._string = xml_loader._safeGetRequiredAttribute(xmlElement, 'String', '')
 
     def shortId(self):
         return 'AnyChar(%s)' % self._string
@@ -288,7 +273,7 @@ class AnyChar(AbstractRule):
 class StringDetect(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+        self._string = xml_loader._safeGetRequiredAttribute(xmlElement, 'String', None)
         
     def shortId(self):
         return 'StringDetect(%s)' % self._string
@@ -359,9 +344,9 @@ class WordDetect(AbstractWordRule):
     def __init__(self, parentContext, xmlElement):
         AbstractWordRule.__init__(self, parentContext, xmlElement)
         
-        self._words = [_safeGetRequiredAttribute(xmlElement, "String", "")]
+        self._words = [xml_loader._safeGetRequiredAttribute(xmlElement, "String", "")]
         
-        self._insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
+        self._insensitive = xml_loader._parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     
     def shortId(self):
         return 'WordDetect(%s, %s)' % (self._string, self._insensitive)
@@ -371,7 +356,7 @@ class keyword(AbstractWordRule):
     def __init__(self, parentContext, xmlElement):
         AbstractWordRule.__init__(self, parentContext, xmlElement)
         
-        self._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+        self._string = xml_loader._safeGetRequiredAttribute(xmlElement, 'String', None)
         try:
             self._words = self.parentContext.syntax.lists[self._string]
         except KeyError:
@@ -389,7 +374,7 @@ class RegExpr(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
         
-        string = _safeGetRequiredAttribute(xmlElement, 'String', None)        
+        string = xml_loader._safeGetRequiredAttribute(xmlElement, 'String', None)        
 
         if string is None:
             self._regExp = None
@@ -673,8 +658,8 @@ class HlCChar(AbstractRule):
 class RangeDetect(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._char = _safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
-        self._char1 = _safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
+        self._char = xml_loader._safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
+        self._char1 = xml_loader._safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
     
     def shortId(self):
         return 'RangeDetect(%s, %s)' % (self._char, self._char1)
@@ -702,7 +687,7 @@ class LineContinue(AbstractRule):
 class IncludeRules(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._contextName = _safeGetRequiredAttribute(xmlElement, "context", None)
+        self._contextName = xml_loader._safeGetRequiredAttribute(xmlElement, "context", None)
         # context will be resolved, when parsing. Avoiding infinite recursion
 
     def __str__(self):
@@ -787,7 +772,7 @@ class Context:
     """
     def __init__(self, syntax, xmlElement):
         self.syntax = syntax
-        self.name = _safeGetRequiredAttribute(xmlElement, 'name', 'Error: context name is not set!!!')
+        self.name = xml_loader._safeGetRequiredAttribute(xmlElement, 'name', 'Error: context name is not set!!!')
         self._xmlElement = xmlElement
 
     def load(self):
@@ -795,7 +780,7 @@ class Context:
         Contexts are at first constructed, and only then loaded, because when loading context,
         _ContextSwitcher must have references to all defined contexts
         """
-        attribute = _safeGetRequiredAttribute(self._xmlElement, 'attribute', 'normal')
+        attribute = xml_loader._safeGetRequiredAttribute(self._xmlElement, 'attribute', 'normal')
         self.attribute = self.syntax._mapAttributeToStyle(attribute)
         
         lineEndContextText = self._xmlElement.attrib.get('lineEndContext', '#stay')
@@ -803,8 +788,8 @@ class Context:
         lineBeginContextText = self._xmlElement.attrib.get('lineEndContext', '#stay')
         self.lineBeginContext = _ContextSwitcher(lineBeginContextText, self.syntax.contexts)
         
-        if _parseBoolAttribute(self._xmlElement.attrib.get('fallthrough', 'false')):
-            fallthroughContextText = _safeGetRequiredAttribute(self._xmlElement, 'fallthroughContext', '#stay')
+        if xml_loader._parseBoolAttribute(self._xmlElement.attrib.get('fallthrough', 'false')):
+            fallthroughContextText = xml_loader._safeGetRequiredAttribute(self._xmlElement, 'fallthroughContext', '#stay')
             self.fallthroughContext = _ContextSwitcher(fallthroughContextText, self.syntax.contexts)
         else:
             self.fallthroughContext = None
@@ -863,81 +848,32 @@ class Context:
 class Syntax:
     """Syntax file parser and container
     
-    Public attributes:
-        deliminatorSet - Set of deliminator characters
-        casesensitive - Keywords are case sensetive. Global flag, every keyword might have own value
-
-        lists - Keyword lists as dictionary "list name" : "list value"
+    Informative public attributes:
+        name            Name
+        section         Section
+        extensions      File extensions
+        mimetype        File mime type
+        version         XML definition version
+        kateversion     Required Kate parser version
+        priority        XML definition priority
+        author          Author
+        license         License
+        hidden          Shall be hidden in the menu
         
-        defaultContext - Default context object
-        contexts - Context list as dictionary "context name" : context
+    Effective public attributes:
+        deliminatorSet          Set of deliminator characters
+        lists                   Keyword lists as dictionary "list name" : "list value"
+        defaultContext          Default context object
+        contexts                Context list as dictionary "context name" : context
+        attributeToStyleMap     Map "attribute" : "style name"   
     """
-    
-    _DEFAULT_DELIMINATOR = " \t.():!+,-<=>%&*/;?[]^{|}~\\"
-
-    
-    def __init__(self, manager, filePath):
+        
+    def __init__(self, manager):
         """Parse XML definition
         """
         self.manager = manager
-        with open(filePath, 'r') as definitionFile:
-            root = xml.etree.ElementTree.parse(definitionFile).getroot()
-
-        self.name = _safeGetRequiredAttribute(root, 'name', 'Error: Syntax name is not set!!!')
         
-        self.section = _safeGetRequiredAttribute(root, 'section', 'Error: Section is not set!!!')
-        self.extensions = _safeGetRequiredAttribute(root, 'extensions', '').split(';')
-        
-        self.mimetype = root.attrib.get('mimetype', '').split(';')
-        self.version = root.attrib.get('version', None)
-        self.kateversion = root.attrib.get('kateversion', None)
-        
-        self.casesensitive = _parseBoolAttribute(root.attrib.get('casesensitive', 'true'))
-        
-        self.priority = root.attrib.get('priority', None)
-        self.author = root.attrib.get('author', None)
-        self.license = root.attrib.get('license', None)
-        
-        self.hidden = _parseBoolAttribute(root.attrib.get('hidden', 'false'))
-        
-        self.deliminatorSet = set(Syntax._DEFAULT_DELIMINATOR)
-        
-        hlgElement = root.find('highlighting')
-        
-        # parse lists
-        self.lists = {}  # list name: list
-        for listElement in hlgElement.findall('list'):
-            # Sometimes item.text is none. Broken xml files
-            items = [item.text.strip() \
-                        for item in listElement.findall('item') \
-                            if item.text is not None]
-            name = _safeGetRequiredAttribute(listElement, 'name', 'Error: list name is not set!!!')
-            self.lists[name] = items
-        
-        # Make all keywords lowercase, if syntax is not case sensetive
-        if not self.casesensitive:
-            for keywordList in self.lists.values():
-                for index, keyword in enumerate(keywordList):
-                    keywordList[index] = keyword.lower()
-        
-        # parse itemData
-        self._styleNameMap = xml_loader.loadStyleNameMap(hlgElement)
-        
-        # parse contexts stage 1: create objects
-        self.contexts = {}
-        contextsElement = hlgElement.find('contexts')
-        firstContext = True
-        
-        for contextElement in contextsElement.findall('context'):
-            context = Context(self, contextElement)
-            self.contexts[context.name] = context
-            if firstContext:
-                firstContext = False
-                self.defaultContext = context
-        
-        # parse contexts stage 2: load contexts
-        for context in self.contexts.values():
-            context.load()
+        # Other attributes are initialized by the XML loader
 
     def __str__(self):
         """Serialize.
@@ -964,12 +900,12 @@ class Syntax:
     def _mapAttributeToStyle(self, attribute):
         """Maps 'attribute' field of a Context and a Rule to style
         """
-        if not attribute.lower() in self._styleNameMap:
+        if not attribute.lower() in self.attributeToStyleMap:
             print >> sys.stderr, "Unknown attribute '%s'" % attribute
-            return self._styleNameMap['normal']
+            return self.attributeToStyleMap['normal']
         
         # attribute names are not case sensetive
-        return self._styleNameMap[attribute.lower()]
+        return self.attributeToStyleMap[attribute.lower()]
 
     def parseBlock(self, text, prevLineData):
         """Parse block and return touple:
