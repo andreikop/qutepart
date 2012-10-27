@@ -1,56 +1,55 @@
-from PyQt4.QtGui import QBrush, QColor, QFont, QTextCharFormat
+class TextFormat:
+    """Text format definition.
+    
+    Public attributes:
+        color          : Font color, #rrggbb
+        background     : Font background, #rrggbb
+        selectionColor : Color of selected text
+        italic         : Italic font, bool
+        bold           : Bold font, bool
+        underline      : Underlined font, bool
+        strikeOut      : Striked out font
+        spellChecking  : Striked out font
+    """
+    def __init__(self, color = '#000000',
+                       background = '#ffffff',
+                       selectionColor = '#0000ff',
+                       italic = False,
+                       bold = False,
+                       underline = False,
+                       strikeOut = False,
+                       spellChecking = False):
+        
+        self.color = color
+        self.background = background
+        self.selectionColor = selectionColor
+        self.italic = italic
+        self.bold = bold
+        self.underline = underline
+        self.strikeOut = strikeOut
+        self.spellChecking = spellChecking
 
 
 class ColorTheme:
     """Color theme.
     """
-    _DEFAULT_STYLE_NAMES = \
-     ("dsNormal",
-      "dsKeyword",
-      "dsDataType",
-      "dsDecVal",
-      "dsBaseN",
-      "dsFloat",
-      "dsChar",
-      "dsString",
-      "dsComment",
-      "dsOthers",
-      "dsAlert",
-      "dsFunction",
-      "dsRegionMarker",
-      "dsError")
     def __init__(self):
-        
         self._format = {}
-        for format in ColorTheme._DEFAULT_STYLE_NAMES:
-            self._format[format] = QTextCharFormat()
-        
-        self._format['dsKeyword'].setFontWeight(QFont.Bold)
-        
-        self._format['dsDataType'].setForeground(QBrush(QColor('#0057ae')))
-        
-        self._format['dsDecVal'].setForeground(QBrush(QColor('#b07e00')))
-        self._format['dsBaseN'].setForeground(QBrush(QColor('#b07e00')))
-        self._format['dsFloat'].setForeground(QBrush(QColor('#b07e00')))
-        
-        self._format['dsChar'].setForeground(QBrush(QColor('#ff80e0')))
-        
-        self._format['dsString'].setForeground(QBrush(QColor('#bf0303')))
-        
-        self._format['dsComment'].setForeground(QBrush(QColor('#888786')))
-        self._format['dsComment'].setFontItalic(True)
-        
-        self._format['dsOthers'].setForeground(QBrush(QColor('#006e26')))
-        
-        self._format['dsAlert'].setForeground(QBrush(QColor('#bf0303')))
-        self._format['dsAlert'].setFontWeight(QFont.Bold)
-        self._format['dsAlert'].setBackground(QBrush(QColor('#f7e7e7')))
-        
-        self._format['dsFunction'].setForeground(QBrush(QColor('#442886')))
-        
-        self._format['dsRegionMarker'].setForeground(QBrush(QColor('#0057ae')))
-        
-        self._format['dsError'].setForeground(QBrush(QColor('#e1eaf8')))
+        self._format['dsNormal'] = TextFormat()
+        self._format['dsKeyword'] = TextFormat(bold=True)
+        self._format['dsDataType'] = TextFormat(color='#0057ae')
+        self._format['dsDataType'] = TextFormat(color='#0057ae')
+        self._format['dsDecVal'] = TextFormat(color='#b07e00')
+        self._format['dsBaseN'] = TextFormat(color='#b07e00')
+        self._format['dsFloat'] = TextFormat(color='#b07e00')
+        self._format['dsChar'] = TextFormat(color='#ff80e0')
+        self._format['dsString'] = TextFormat(color='#bf0303')
+        self._format['dsComment'] = TextFormat(color='#888786', italic=True)
+        self._format['dsOthers'] = TextFormat(color='#006e26')
+        self._format['dsAlert'] = TextFormat(color='#bf0303', background='#f7e7e7', bold=True)
+        self._format['dsFunction'] = TextFormat(color='#442886')
+        self._format['dsRegionMarker'] = TextFormat(color='#0057ae')
+        self._format['dsError'] = TextFormat(color='#e1eaf8')
     
     def getFormat(self, styleName):
         """Returns QTextCharFormat for particular style

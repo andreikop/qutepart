@@ -3,7 +3,7 @@ Uses Syntax module for doing the job
 """
 
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QSyntaxHighlighter, QTextCharFormat, QTextBlockUserData
+from PyQt4.QtGui import QBrush, QColor, QFont, QSyntaxHighlighter, QTextCharFormat, QTextBlockUserData
 
 from ColorTheme import ColorTheme
 
@@ -19,15 +19,30 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self._theme = ColorTheme()
         self._syntax = syntax
     
+    def _makeQtFormat(self, format):
+        qtFormat = QTextCharFormat()
+        qtFormat.setForeground(QBrush(QColor(format.color)))
+        qtFormat.setBackground(QBrush(QColor(format.background)))
+        qtFormat.setFontItalic(format.italic)
+        qtFormat.setFontWeight(QFont.Bold if format.bold else QFont.Normal)
+        qtFormat.setFontUnderline(format.underline)
+        qtFormat.setFontStrikeOut(format.strikeOut)
+        return qtFormat
+
+    def _setFormat(self, start, length, attribute):
+        format = self._theme.getFormat(attribute)
+        qtFormat = self._makeQtFormat(format)
+        self.setFormat(start, length, qtFormat)
+
     def highlightBlock(self, text):
         lineData, matchedContexts = self._syntax.parseBlock(text, self._prevData())
         self._syntax.parseAndPrintBlockTextualResults(text, self._prevData())
         contextAreaStartPos = 0
         for context, contextLength, matchedRules in matchedContexts:
-            self.setFormat(contextAreaStartPos, contextLength, self._theme.getFormat(context.attribute))
+            self._setFormat(contextAreaStartPos, contextLength, context.attribute)
             for rule, pos, ruleLength in matchedRules:
                 if rule.attribute is not None:
-                    self.setFormat(pos, ruleLength, self._theme.getFormat(rule.attribute))
+                    self._setFormat(pos, ruleLength, rule.attribute)
             contextAreaStartPos += contextLength
         
         self.setCurrentBlockUserData(_TextBlockUserData(lineData))
