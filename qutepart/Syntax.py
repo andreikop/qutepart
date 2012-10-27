@@ -98,6 +98,14 @@ class _ContextSwitcher:
     
 class AbstractRule:
     """Base class for rule classes
+    Public attributes:
+        parentContext
+        attribute
+        context
+        lookAhead
+        firstNonSpace
+        column
+        dynamic
     """
     def __str__(self):
         """Serialize.
@@ -161,15 +169,18 @@ class AbstractRule:
     
 
 class DetectChar(AbstractRule):
+    """Public attributes:
+        char
+    """
     def shortId(self):
-        return 'DetectChar(%s)' % self._char
+        return 'DetectChar(%s)' % self.char
     
     def _tryMatchText(self, text, contextData):
-        if self._char is None:
+        if self.char is None:
             return None
 
         if self.dynamic:
-            index = int(self._char) - 1
+            index = int(self.char) - 1
             if index >= len(contextData):
                 print >> sys.stderr, 'Invalid DetectChar index', index
                 return None
@@ -180,49 +191,58 @@ class DetectChar(AbstractRule):
             
             string = contextData[index]
         else:
-            string = self._char
+            string = self.char
         
         if text[0] == string:
             return 1
         return None
 
-class Detect2Chars(AbstractRule):    
+class Detect2Chars(AbstractRule):
+    """Public attributes
+        string
+    """
     def shortId(self):
-        return 'Detect2Chars(%s)' % self._string
+        return 'Detect2Chars(%s)' % self.string
     
     def _tryMatchText(self, text, contextData):
-        if self._string is None:
+        if self.string is None:
             return None
         
-        if text.startswith(self._string):
-            return len(self._string)
+        if text.startswith(self.string):
+            return len(self.string)
         
         return None
 
 
 class AnyChar(AbstractRule):
+    """Public attributes:
+        string
+    """
     def shortId(self):
-        return 'AnyChar(%s)' % self._string
+        return 'AnyChar(%s)' % self.string
     
     def _tryMatchText(self, text, contextData):
-        if text[0] in self._string:
+        if text[0] in self.string:
             return 1
         
         return None
 
 
 class StringDetect(AbstractRule):
+    """Public attributes:
+        string
+    """
     def shortId(self):
-        return 'StringDetect(%s)' % self._string
+        return 'StringDetect(%s)' % self.string
 
     def _tryMatchText(self, text, contextData):
-        if self._string is None:
+        if self.string is None:
             return
         
         if self.dynamic:
-            string = self._makeDynamicStringSubsctitutions(self._string)
+            string = self._makeDynamicStringSubsctitutions(self.string)
         else:
-            string = self._string
+            string = self.string
         
         if text.startswith(string):
             return len(string)
@@ -258,7 +278,7 @@ class AbstractWordRule(AbstractRule):
         
         textToCheck = text[currentColumnIndex:]
         
-        for word in self._words:
+        for word in self.words:
             if not textToCheck.startswith(word):
                 continue
                 
@@ -278,18 +298,27 @@ class AbstractWordRule(AbstractRule):
             return contextStack, None, None
 
 class WordDetect(AbstractWordRule):
+    """Public attributes:
+        words
+    """
     def shortId(self):
-        return 'WordDetect(%s, %s)' % (self._string, self._insensitive)
-
+        return 'WordDetect(%s, %s)' % (' '.join(self.words), self._insensitive)
 
 class keyword(AbstractWordRule):
+    """Public attributes:
+        string
+        words
+    """
     def shortId(self):
-        return 'keyword(%s)' % repr(self._string)
+        return 'keyword(%s)' % repr(self.string)
 
 
 class RegExpr(AbstractRule):
     """TODO if regexp starts with ^ - match only column 0
     TODO support "minimal" flag
+    
+    Public attributes:
+        regExp
     """
     @staticmethod
     def _compileRegExp(string, insensitive):
@@ -304,7 +333,7 @@ class RegExpr(AbstractRule):
             return None
 
     def shortId(self):
-        return 'RegExpr(%s)' % self._string
+        return 'RegExpr(%s)' % self.string
 
     @staticmethod
     def _makeDynamicStringSubsctitutions(string, contextData):
@@ -325,17 +354,17 @@ class RegExpr(AbstractRule):
         """Tries to parse text. If matched - saves data for dynamic context
         """
         if self.dynamic:
-            string = self._makeDynamicStringSubsctitutions(self._string, contextStack.currentData())
+            string = self._makeDynamicStringSubsctitutions(self.string, contextStack.currentData())
             regExp = self._compileRegExp(string, self._insensitive)
         else:
-            regExp = self._regExp
+            regExp = self.regExp
         
         if regExp is None:
             return None
         
         match = regExp.match(text[currentColumnIndex:])
         if match is not None and match.group(0):
-            print self._string, regExp.pattern, match.groups()
+            print self.string, regExp.pattern, match.groups()
             count = len(match.group(0))
 
             if self.context is not None:
@@ -348,6 +377,9 @@ class RegExpr(AbstractRule):
 class AbstractNumberRule(AbstractRule):
     """Base class for Int and Float rules.
     This rules can have child rules
+    
+    Public attributes:
+        childRules
     """
     def _tryMatch(self, contextStack, currentColumnIndex, text):
         """Try to find themselves in the text.
@@ -358,7 +390,7 @@ class AbstractNumberRule(AbstractRule):
             return contextStack, None, None
         
         if currentColumnIndex + index < len(text):
-            for rule in self._childRules:
+            for rule in self.childRules:
                 newContextStack, matchedLength, matchedRule = rule.tryMatch(contextStack, currentColumnIndex + index, text)
                 if matchedLength is not None:
                     index += matchedLength
@@ -392,7 +424,6 @@ class Int(AbstractNumberRule):
         else:
             return None
     
-
 class Float(AbstractNumberRule):
     def shortId(self):
         return 'Float()'
@@ -545,12 +576,16 @@ class HlCChar(AbstractRule):
 
 
 class RangeDetect(AbstractRule):
+    """Public attributes:
+        char
+        char1
+    """
     def shortId(self):
-        return 'RangeDetect(%s, %s)' % (self._char, self._char1)
+        return 'RangeDetect(%s, %s)' % (self.char, self.char1)
     
     def _tryMatchText(self, text, contextData):
-        if text.startswith(self._char):
-            end = text.find(self._char1)
+        if text.startswith(self.char):
+            end = text.find(self.char1)
             if end > 0:
                 return end + 1
         
@@ -627,6 +662,14 @@ class DetectIdentifier(AbstractRule):
 
 class Context:
     """Highlighting context
+    
+    Public attributes:
+        attribute
+        lineEndContext
+        lineBeginContext
+        fallthroughContext
+        dynamic
+        rules
     """
     def __init__(self, syntax, name):
         # Will be initialized later, after all context has been created

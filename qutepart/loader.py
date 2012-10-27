@@ -3,6 +3,7 @@ import sys
 import xml.etree.ElementTree
 
 from qutepart.Syntax import *
+from qutepart.Syntax import _ContextSwitcher
 
 _DEFAULT_ATTRIBUTE_TO_STYLE_MAP = \
 {
@@ -99,7 +100,7 @@ def _loadAbstractRule(rule, parentContext, xmlElement):
 
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
-    rule.context = Syntax._ContextSwitcher(contextText, parentContext.syntax.contexts)
+    rule.context = _ContextSwitcher(contextText, parentContext.syntax.contexts)
 
     rule.lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
     rule.firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
@@ -117,17 +118,17 @@ def _loadAbstractRule(rule, parentContext, xmlElement):
 def _loadDetectChar(parentContext, xmlElement):
     rule = DetectChar()
     _loadAbstractRule(rule, parentContext, xmlElement)
-    rule._char = _safeGetRequiredAttribute(xmlElement, "char", None)
+    rule.char = _safeGetRequiredAttribute(xmlElement, "char", None)
     
     if rule.dynamic:
         try:
-            index = int(rule._char)
+            index = int(rule.char)
         except ValueError:
-            print >> sys.stderr, 'Invalid DetectChar char', rule._char
-            rule._char = None
+            print >> sys.stderr, 'Invalid DetectChar char', rule.char
+            rule.char = None
         if index <= 0:
-            print >> sys.stderr, 'Too little DetectChar index', rule._char
-            rule._char = None
+            print >> sys.stderr, 'Too little DetectChar index', rule.char
+            rule.char = None
     
     return rule
 
@@ -138,9 +139,9 @@ def _loadDetect2Chars(parentContext, xmlElement):
     char = _safeGetRequiredAttribute(xmlElement, 'char', None)
     char1 = _safeGetRequiredAttribute(xmlElement, 'char1', None)
     if char is None or char1 is None:
-        rule._string = None
+        rule.string = None
     else:
-        rule._string = char + char1
+        rule.string = char + char1
     
     return rule
 
@@ -148,20 +149,20 @@ def _loadAnyChar(parentContext, xmlElement):
     rule = AnyChar()
     _loadAbstractRule(rule, parentContext, xmlElement)
     
-    rule._string = _safeGetRequiredAttribute(xmlElement, 'String', '')
+    rule.string = _safeGetRequiredAttribute(xmlElement, 'String', '')
     return rule
 
 def _loadStringDetect(parentContext, xmlElement):
     rule = StringDetect()
     _loadAbstractRule(rule, parentContext, xmlElement)
-    rule._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+    rule.string = _safeGetRequiredAttribute(xmlElement, 'String', None)
     return rule
 
 def _loadWordDetect(parentContext, xmlElement):
     rule = WordDetect()
     _loadAbstractRule(rule, parentContext, xmlElement)
     
-    rule._words = [_safeGetRequiredAttribute(xmlElement, "String", "")]
+    rule.words = [_safeGetRequiredAttribute(xmlElement, "String", "")]
     
     rule._insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     return rule
@@ -169,12 +170,12 @@ def _loadWordDetect(parentContext, xmlElement):
 def _loadKeyword(parentContext, xmlElement):
     rule = keyword()
     _loadAbstractRule(rule, parentContext, xmlElement)
-    rule._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+    rule.string = _safeGetRequiredAttribute(xmlElement, 'String', None)
     try:
-        rule._words = rule.parentContext.syntax.lists[rule._string]
+        rule.words = rule.parentContext.syntax.lists[rule.string]
     except KeyError:
-        print >> sys.stderr, 'List', rule._string, 'not found'
-        rule._words = []
+        print >> sys.stderr, 'List', rule.string, 'not found'
+        rule.words = []
     
     return rule
 
@@ -197,21 +198,21 @@ def _loadRegExpr(parentContext, xmlElement):
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)        
 
     if string is None:
-        rule._regExp = None
+        rule.regExp = None
         return
         
-    rule._string = _processCraracterCodes(string)
+    rule.string = _processCraracterCodes(string)
     rule._insensitive = xmlElement.attrib.get('insensitive', False)
     
     if not rule.dynamic:
-        rule._regExp = rule._compileRegExp(rule._string, rule._insensitive)
+        rule.regExp = rule._compileRegExp(rule.string, rule._insensitive)
     
     return rule
 
 def _loadAbstractNumberRule(rule, parentContext, xmlElement):
     _loadAbstractRule(rule, parentContext, xmlElement)
     
-    rule._childRules = _loadChildRules(parentContext, xmlElement)
+    rule.childRules = _loadChildRules(parentContext, xmlElement)
 
 def _loadInt(parentContext, xmlElement):
     rule = Int()
@@ -227,8 +228,8 @@ def _loadRangeDetect(parentContext, xmlElement):
     rule = RangeDetect()
     _loadAbstractRule(rule, parentContext, xmlElement)
     
-    rule._char = _safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
-    rule._char1 = _safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
+    rule.char = _safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
+    rule.char1 = _safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
     return rule
 
 
@@ -288,21 +289,19 @@ def _loadContexts(highlightingElement, syntax):
 def _loadContext(context, xmlElement):
     """Construct context from XML element
     Contexts are at first constructed, and only then loaded, because when loading context,
-    Syntax._ContextSwitcher must have references to all defined contexts
+    _ContextSwitcher must have references to all defined contexts
     """
-    import Syntax  # FIXME
-    
     attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', 'normal')
     context.attribute = context.syntax._mapAttributeToStyle(attribute)
     
     lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    context.lineEndContext = Syntax._ContextSwitcher(lineEndContextText,  context.syntax.contexts)
+    context.lineEndContext = _ContextSwitcher(lineEndContextText,  context.syntax.contexts)
     lineBeginContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    context.lineBeginContext = Syntax._ContextSwitcher(lineBeginContextText, context.syntax.contexts)
+    context.lineBeginContext = _ContextSwitcher(lineBeginContextText, context.syntax.contexts)
     
     if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
         fallthroughContextText = _safeGetRequiredAttribute(xmlElement, 'fallthroughContext', '#stay')
-        context.fallthroughContext = Syntax._ContextSwitcher(fallthroughContextText, context.syntax.contexts)
+        context.fallthroughContext = _ContextSwitcher(fallthroughContextText, context.syntax.contexts)
     else:
         context.fallthroughContext = None
     
