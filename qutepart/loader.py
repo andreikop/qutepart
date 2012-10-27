@@ -77,25 +77,56 @@ def _loadAttributeToStyleMap(highlightingElement):
 
 def _loadContexts(highlightingElement, syntax):
     from Syntax import Context  # FIXME
-    contexts = {}
     
     contextsElement = highlightingElement.find('contexts')
-    firstContext = True
     
-    for contextElement in contextsElement.findall('context'):
-        context = Context(syntax, contextElement)
-        contexts[context.name] = context
-        if firstContext:
-            firstContext = False
-            syntax.defaultContext = context
+    xmlElementList = contextsElement.findall('context')
+    contextList = []
+    for xmlElement in xmlElementList:
+        name = _safeGetRequiredAttribute(xmlElement,
+                                         'name',
+                                         'Error: context name is not set!!!')
+        context = Context(syntax, name)
+        contextList.append(context)
+
+    syntax.defaultContext = contextList[0]
     
-    syntax.contexts = contexts  # FIXME
+    contextDict = {}
+    for context in contextList:
+        contextDict[context.name] = context
+    
+    syntax.contexts = contextDict  # FIXME
     
     # parse contexts stage 2: load contexts
-    for context in contexts.values():
-        context.load()
+    for xmlElement, context in zip(xmlElementList, contextList):
+        _loadContext(context, xmlElement)
 
-    return contexts
+def _loadContext(context, xmlElement):
+    """Construct context from XML element
+    Contexts are at first constructed, and only then loaded, because when loading context,
+    Syntax._ContextSwitcher must have references to all defined contexts
+    """
+    import Syntax  # FIXME
+    
+    attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', 'normal')
+    context.attribute = context.syntax._mapAttributeToStyle(attribute)
+    
+    lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
+    context.lineEndContext = Syntax._ContextSwitcher(lineEndContextText,  context.syntax.contexts)
+    lineBeginContextText = xmlElement.attrib.get('lineEndContext', '#stay')
+    context.lineBeginContext = Syntax._ContextSwitcher(lineBeginContextText, context.syntax.contexts)
+    
+    if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
+        fallthroughContextText = _safeGetRequiredAttribute(xmlElement, 'fallthroughContext', '#stay')
+        context.fallthroughContext = Syntax._ContextSwitcher(fallthroughContextText, context.syntax.contexts)
+    else:
+        context.fallthroughContext = None
+    
+    context.dynamic = xmlElement.attrib.get('dynamic', False)
+    
+    # load rules
+    context.rules = Syntax._getChildRules(context, xmlElement)
+
 
 def _loadLists(root, highlightingElement):
     lists = {}  # list name: list
@@ -150,6 +181,6 @@ def loadSyntax(manager, filePath):
     syntax.attributeToStyleMap = _loadAttributeToStyleMap(highlightingElement)
     
     # parse contexts stage 1: create objects
-    syntax.contexts = _loadContexts(highlightingElement, syntax)
+    _loadContexts(highlightingElement, syntax)
 
     return syntax

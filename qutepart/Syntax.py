@@ -770,35 +770,10 @@ def _getChildRules(context, xmlElement):
 class Context:
     """Highlighting context
     """
-    def __init__(self, syntax, xmlElement):
+    def __init__(self, syntax, name):
+        # Will be initialized later, after all context has been created
         self.syntax = syntax
-        self.name = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'name', 'Error: context name is not set!!!')
-        self._xmlElement = xmlElement
-
-    def load(self):
-        """Construct context from XML element
-        Contexts are at first constructed, and only then loaded, because when loading context,
-        _ContextSwitcher must have references to all defined contexts
-        """
-        attribute = qutepart.loader._safeGetRequiredAttribute(self._xmlElement, 'attribute', 'normal')
-        self.attribute = self.syntax._mapAttributeToStyle(attribute)
-        
-        lineEndContextText = self._xmlElement.attrib.get('lineEndContext', '#stay')
-        self.lineEndContext = _ContextSwitcher(lineEndContextText,  self.syntax.contexts)
-        lineBeginContextText = self._xmlElement.attrib.get('lineEndContext', '#stay')
-        self.lineBeginContext = _ContextSwitcher(lineBeginContextText, self.syntax.contexts)
-        
-        if qutepart.loader._parseBoolAttribute(self._xmlElement.attrib.get('fallthrough', 'false')):
-            fallthroughContextText = qutepart.loader._safeGetRequiredAttribute(self._xmlElement, 'fallthroughContext', '#stay')
-            self.fallthroughContext = _ContextSwitcher(fallthroughContextText, self.syntax.contexts)
-        else:
-            self.fallthroughContext = None
-        
-        self.dynamic = self._xmlElement.attrib.get('dynamic', False)
-        
-        # load rules
-        self.rules = _getChildRules(self, self._xmlElement)
-
+        self.name = name
     
     def __str__(self):
         """Serialize.
