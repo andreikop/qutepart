@@ -13,8 +13,9 @@ contain not a text value, but _ContextSwitcher object
 import os.path
 import sys
 import re
-import copy
 import xml.etree.ElementTree
+
+import xml_loader
 
 def _parseBoolAttribute(value):
     if value.lower() in ('true', '1'):
@@ -874,41 +875,7 @@ class Syntax:
     
     _DEFAULT_DELIMINATOR = " \t.():!+,-<=>%&*/;?[]^{|}~\\"
 
-    _DEFAULT_ATTRIBUTE_TO_STYLE_MAP = \
-    {
-        'alert' : 'dsAlert',
-        'base-n integer' : 'dsBaseN',
-        'character' : 'dsChar',
-        'string char': 'dsChar',
-        'comment' : 'dsComment',
-        'data type' : 'dsDataType',
-        'decimal/value' : 'dsDecVal',
-        'error' : 'dsError',
-        'floating point' : 'dsFloat',
-        'function' : 'dsFunction',
-        'keyword' : 'dsKeyword',
-        'normal' : 'dsNormal',
-        'others' : 'dsOthers',
-        'region marker' : 'dsRegionMarker',
-        'string' : 'dsString'
-    }
     
-    _KNOWN_STYLES = set([  "dsNormal",
-                           "dsKeyword",
-                           "dsDataType",
-                           "dsDecVal",
-                           "dsBaseN",
-                           "dsFloat",
-                           "dsChar",
-                           "dsString",
-                           "dsComment",
-                           "dsOthers",
-                           "dsAlert",
-                           "dsFunction",
-                           "dsRegionMarker",
-                           "dsError",
-                           "CustomTmpForDebugging"])
-
     def __init__(self, manager, filePath):
         """Parse XML definition
         """
@@ -954,19 +921,7 @@ class Syntax:
                     keywordList[index] = keyword.lower()
         
         # parse itemData
-        self._styleNameMap = copy.copy(self._DEFAULT_ATTRIBUTE_TO_STYLE_MAP)
-        itemDatasElement = hlgElement.find('itemDatas')
-        for item in itemDatasElement.findall('itemData'):
-            name, styleName = item.get('name'), item.get('defStyleNum')
-            
-            if styleName is None:  # custom format
-                styleName = 'CustomTmpForDebugging'
-            
-            if not styleName in self._KNOWN_STYLES:
-                print >> sys.stderr, "Unknown default style '%s'" % styleName
-                styleName = 'dsNormal'
-            name = name.lower()  # format names are not case sensetive
-            self._styleNameMap[name] = styleName
+        self._styleNameMap = xml_loader.loadStyleNameMap(hlgElement)
         
         # parse contexts stage 1: create objects
         self.contexts = {}
