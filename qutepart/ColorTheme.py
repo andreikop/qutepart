@@ -52,6 +52,6 @@ class ColorTheme:
         self._format['dsError'] = TextFormat(color='#e1eaf8')
     
     def getFormat(self, styleName):
-        """Returns QTextCharFormat for particular style
+        """Returns TextFormat for particular style
         """
         return self._format[styleName]

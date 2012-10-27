@@ -5,10 +5,10 @@ import unittest
 import sys
 sys.path.insert(0, '..')
 from qutepart.syntax_manager import SyntaxManager
-from qutepart.Syntax import Context, _ContextStack
+from qutepart.Syntax import Context, ContextStack
 
 def tryMatch(rule, column, text):
-    fakeStack = _ContextStack([rule.parentContext, rule.parentContext, rule.parentContext], [None, None, None])
+    fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext], [None, None, None])
     return rule.tryMatch(fakeStack, column, text)[1]
 
 class Test(unittest.TestCase):
@@ -192,7 +192,7 @@ class Test(unittest.TestCase):
         """
         rule = self._getRule("ruby.xml", "gdl_dq_string_5", 2)  # "\s*%1"
         text = '%|a| x'
-        fakeStack = _ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
+        fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
                                   [('|'), ('|'), ('|')]
                                  )
         newStack, count, matchedRule = rule.tryMatch(fakeStack, 3, text)
@@ -204,7 +204,7 @@ class Test(unittest.TestCase):
         rule = self._getRule("php.xml", "phpsource", 29)  # heredoc
         text = "<<<myheredoc"
 
-        fakeStack = _ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
+        fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
                                   [None, None, ('myheredoc',)]
                                  )
         newStack, count, matchedRule = rule.tryMatch(fakeStack, 0, text)
@@ -216,7 +216,7 @@ class Test(unittest.TestCase):
         rule = self._getRule("perl.xml", "string_6", 3)
         text = "abcdXefg"
 
-        fakeStack = _ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
+        fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
                                   [None, None, ('X', 'Y', 'Z',)]
                                  )
         newStack, count, matchedRule = rule.tryMatch(fakeStack, 0, text)

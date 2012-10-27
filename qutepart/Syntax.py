@@ -7,7 +7,7 @@ if you want to understand something
 but value from itemDatas section (style name)
 
 'context', 'lineBeginContext', 'lineEndContext', 'fallthroughContext' properties
-contain not a text value, but _ContextSwitcher object
+contain not a text value, but ContextSwitcher object
 """
 
 import os.path
@@ -15,7 +15,7 @@ import sys
 import re
 
 
-class _ContextStack:
+class ContextStack:
     def __init__(self, contexts, data):
         """Create default context stack for syntax
         Contains default context on the top
@@ -27,7 +27,7 @@ class _ContextStack:
     def makeDefault(syntax):
         """Make default stack for syntax
         """
-        return _ContextStack([syntax.defaultContext], [None])
+        return ContextStack([syntax.defaultContext], [None])
 
     def pop(self, count):
         """Returns new context stack, which doesn't contain few levels
@@ -35,12 +35,12 @@ class _ContextStack:
         if len(self._contexts) < count:
             print >> sys.stderr, "Error: #pop value is too big"
             count = 0
-        return _ContextStack(self._contexts[:-count], self._data[:-count])
+        return ContextStack(self._contexts[:-count], self._data[:-count])
     
     def append(self, context, data):
         """Returns new context, which contains current stack and new frame
         """
-        return _ContextStack(self._contexts + [context], self._data + [data])
+        return ContextStack(self._contexts + [context], self._data + [data])
     
     def currentContext(self):
         """Get current context
@@ -53,7 +53,7 @@ class _ContextStack:
         return self._data[-1]
         
 
-class _ContextSwitcher:
+class ContextSwitcher:
     """Class parses 'context', 'lineBeginContext', 'lineEndContext', 'fallthroughContext'
     and modifies context stack according to context operation
     """
@@ -794,7 +794,7 @@ class Syntax:
         if prevLineData is not None:
             contextStack = prevLineData
         else:
-            contextStack = _ContextStack.makeDefault(self)
+            contextStack = ContextStack.makeDefault(self)
         
         # this code is not tested, because lineBeginContext is not defined by any xml file
         if contextStack.currentContext().lineBeginContext is not None:

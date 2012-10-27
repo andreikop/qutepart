@@ -3,7 +3,7 @@ import sys
 import xml.etree.ElementTree
 
 from qutepart.Syntax import *
-from qutepart.Syntax import _ContextSwitcher
+from qutepart.Syntax import ContextSwitcher
 
 _DEFAULT_ATTRIBUTE_TO_STYLE_MAP = \
 {
@@ -100,7 +100,7 @@ def _loadAbstractRule(rule, parentContext, xmlElement):
 
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
-    rule.context = _ContextSwitcher(contextText, parentContext.syntax.contexts)
+    rule.context = ContextSwitcher(contextText, parentContext.syntax.contexts)
 
     rule.lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
     rule.firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
@@ -289,19 +289,19 @@ def _loadContexts(highlightingElement, syntax):
 def _loadContext(context, xmlElement):
     """Construct context from XML element
     Contexts are at first constructed, and only then loaded, because when loading context,
-    _ContextSwitcher must have references to all defined contexts
+    ContextSwitcher must have references to all defined contexts
     """
     attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', 'normal')
     context.attribute = context.syntax._mapAttributeToStyle(attribute)
     
     lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    context.lineEndContext = _ContextSwitcher(lineEndContextText,  context.syntax.contexts)
+    context.lineEndContext = ContextSwitcher(lineEndContextText,  context.syntax.contexts)
     lineBeginContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    context.lineBeginContext = _ContextSwitcher(lineBeginContextText, context.syntax.contexts)
+    context.lineBeginContext = ContextSwitcher(lineBeginContextText, context.syntax.contexts)
     
     if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
         fallthroughContextText = _safeGetRequiredAttribute(xmlElement, 'fallthroughContext', '#stay')
-        context.fallthroughContext = _ContextSwitcher(fallthroughContextText, context.syntax.contexts)
+        context.fallthroughContext = ContextSwitcher(fallthroughContextText, context.syntax.contexts)
     else:
         context.fallthroughContext = None
     
