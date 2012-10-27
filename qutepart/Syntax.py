@@ -14,7 +14,7 @@ import os.path
 import sys
 import re
 
-import xml_loader
+import qutepart.loader
 
 
 class _ContextStack:
@@ -117,9 +117,9 @@ class AbstractRule:
         contextText = xmlElement.attrib.get("context", '#stay')
         self.context = _ContextSwitcher(contextText, parentContext.syntax.contexts)
     
-        self.lookAhead = xml_loader._parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
-        self.firstNonSpace = xml_loader._parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
-        self.dynamic = xml_loader._parseBoolAttribute(xmlElement.attrib.get("dynamic", "false"))
+        self.lookAhead = qutepart.loader._parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
+        self.firstNonSpace = qutepart.loader._parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
+        self.dynamic = qutepart.loader._parseBoolAttribute(xmlElement.attrib.get("dynamic", "false"))
         
         # TODO beginRegion
         # TODO endRegion
@@ -194,7 +194,7 @@ class AbstractRule:
 class DetectChar(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._char = xml_loader._safeGetRequiredAttribute(xmlElement, "char", None)
+        self._char = qutepart.loader._safeGetRequiredAttribute(xmlElement, "char", None)
         
         if self.dynamic:
             try:
@@ -235,8 +235,8 @@ class Detect2Chars(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
         
-        char = xml_loader._safeGetRequiredAttribute(xmlElement, 'char', None)
-        char1 = xml_loader._safeGetRequiredAttribute(xmlElement, 'char1', None)
+        char = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'char', None)
+        char1 = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'char1', None)
         if char is None or char1 is None:
             self._string = None
         else:
@@ -258,7 +258,7 @@ class Detect2Chars(AbstractRule):
 class AnyChar(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._string = xml_loader._safeGetRequiredAttribute(xmlElement, 'String', '')
+        self._string = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'String', '')
 
     def shortId(self):
         return 'AnyChar(%s)' % self._string
@@ -273,7 +273,7 @@ class AnyChar(AbstractRule):
 class StringDetect(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._string = xml_loader._safeGetRequiredAttribute(xmlElement, 'String', None)
+        self._string = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'String', None)
         
     def shortId(self):
         return 'StringDetect(%s)' % self._string
@@ -344,9 +344,9 @@ class WordDetect(AbstractWordRule):
     def __init__(self, parentContext, xmlElement):
         AbstractWordRule.__init__(self, parentContext, xmlElement)
         
-        self._words = [xml_loader._safeGetRequiredAttribute(xmlElement, "String", "")]
+        self._words = [qutepart.loader._safeGetRequiredAttribute(xmlElement, "String", "")]
         
-        self._insensitive = xml_loader._parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
+        self._insensitive = qutepart.loader._parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     
     def shortId(self):
         return 'WordDetect(%s, %s)' % (self._string, self._insensitive)
@@ -356,7 +356,7 @@ class keyword(AbstractWordRule):
     def __init__(self, parentContext, xmlElement):
         AbstractWordRule.__init__(self, parentContext, xmlElement)
         
-        self._string = xml_loader._safeGetRequiredAttribute(xmlElement, 'String', None)
+        self._string = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'String', None)
         try:
             self._words = self.parentContext.syntax.lists[self._string]
         except KeyError:
@@ -374,7 +374,7 @@ class RegExpr(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
         
-        string = xml_loader._safeGetRequiredAttribute(xmlElement, 'String', None)        
+        string = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'String', None)        
 
         if string is None:
             self._regExp = None
@@ -658,8 +658,8 @@ class HlCChar(AbstractRule):
 class RangeDetect(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._char = xml_loader._safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
-        self._char1 = xml_loader._safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
+        self._char = qutepart.loader._safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
+        self._char1 = qutepart.loader._safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
     
     def shortId(self):
         return 'RangeDetect(%s, %s)' % (self._char, self._char1)
@@ -687,7 +687,7 @@ class LineContinue(AbstractRule):
 class IncludeRules(AbstractRule):
     def __init__(self, parentContext, xmlElement):
         AbstractRule.__init__(self, parentContext, xmlElement)
-        self._contextName = xml_loader._safeGetRequiredAttribute(xmlElement, "context", None)
+        self._contextName = qutepart.loader._safeGetRequiredAttribute(xmlElement, "context", None)
         # context will be resolved, when parsing. Avoiding infinite recursion
 
     def __str__(self):
@@ -772,7 +772,7 @@ class Context:
     """
     def __init__(self, syntax, xmlElement):
         self.syntax = syntax
-        self.name = xml_loader._safeGetRequiredAttribute(xmlElement, 'name', 'Error: context name is not set!!!')
+        self.name = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'name', 'Error: context name is not set!!!')
         self._xmlElement = xmlElement
 
     def load(self):
@@ -780,7 +780,7 @@ class Context:
         Contexts are at first constructed, and only then loaded, because when loading context,
         _ContextSwitcher must have references to all defined contexts
         """
-        attribute = xml_loader._safeGetRequiredAttribute(self._xmlElement, 'attribute', 'normal')
+        attribute = qutepart.loader._safeGetRequiredAttribute(self._xmlElement, 'attribute', 'normal')
         self.attribute = self.syntax._mapAttributeToStyle(attribute)
         
         lineEndContextText = self._xmlElement.attrib.get('lineEndContext', '#stay')
@@ -788,8 +788,8 @@ class Context:
         lineBeginContextText = self._xmlElement.attrib.get('lineEndContext', '#stay')
         self.lineBeginContext = _ContextSwitcher(lineBeginContextText, self.syntax.contexts)
         
-        if xml_loader._parseBoolAttribute(self._xmlElement.attrib.get('fallthrough', 'false')):
-            fallthroughContextText = xml_loader._safeGetRequiredAttribute(self._xmlElement, 'fallthroughContext', '#stay')
+        if qutepart.loader._parseBoolAttribute(self._xmlElement.attrib.get('fallthrough', 'false')):
+            fallthroughContextText = qutepart.loader._safeGetRequiredAttribute(self._xmlElement, 'fallthroughContext', '#stay')
             self.fallthroughContext = _ContextSwitcher(fallthroughContextText, self.syntax.contexts)
         else:
             self.fallthroughContext = None
