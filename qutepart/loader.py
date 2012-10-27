@@ -2,6 +2,7 @@ import copy
 import sys
 import xml.etree.ElementTree
 
+from qutepart.Syntax import *
 
 _DEFAULT_ATTRIBUTE_TO_STYLE_MAP = \
 {
@@ -40,7 +41,6 @@ _KNOWN_STYLES = set([  "dsNormal",
 
 _DEFAULT_DELIMINATOR = " \t.():!+,-<=>%&*/;?[]^{|}~\\"
 
-
 def _parseBoolAttribute(value):
     if value.lower() in ('true', '1'):
         return True
@@ -56,24 +56,208 @@ def _safeGetRequiredAttribute(xmlElement, name, default):
         print >> sys.stderr, "Required attribute '%s' is not set for element '%s'" % (name, xmlElement.tag)
         return default
 
+################################################################################
+##                               Rules
+################################################################################
 
-def _loadAttributeToStyleMap(highlightingElement):
-    attributeToStyleMap = copy.copy(_DEFAULT_ATTRIBUTE_TO_STYLE_MAP)
-
-    itemDatasElement = highlightingElement.find('itemDatas')
-    for item in itemDatasElement.findall('itemData'):
-        name, styleName = item.get('name'), item.get('defStyleNum')
-        
-        if styleName is None:  # custom format
-            styleName = 'CustomTmpForDebugging'
-        
-        if not styleName in _KNOWN_STYLES:
-            print >> sys.stderr, "Unknown default style '%s'" % styleName
-            styleName = 'dsNormal'
-        name = name.lower()  # format names are not case sensetive
-        attributeToStyleMap[name] = styleName
+def _loadIncludeRules(parentContext, xmlElement):
+    rule = IncludeRules()
+    _loadAbstractRule(rule, parentContext, xmlElement)
     
-    return attributeToStyleMap
+    rule._contextName = _safeGetRequiredAttribute(xmlElement, "context", None)
+    # context will be resolved, when parsing. Avoiding infinite recursion
+    return rule
+
+def _simpleLoader(classObject):
+    def _load(parentContext, xmlElement):
+        rule = classObject()
+        _loadAbstractRule(rule, parentContext, xmlElement)
+        return rule
+    return _load
+
+def _loadChildRules(context, xmlElement):
+    """Extract rules from Context or Rule xml element
+    """
+    rules = []
+    for ruleElement in xmlElement.getchildren():
+        if not ruleElement.tag in _ruleClassDict:
+            raise ValueError("Not supported rule '%s'" % ruleElement.tag)
+        rule = _ruleClassDict[ruleElement.tag](context, ruleElement)
+        rules.append(rule)
+    return rules
+
+def _loadAbstractRule(rule, parentContext, xmlElement):
+    import Syntax  # FIXME
+    rule.parentContext = parentContext
+
+    # attribute
+    attribute = xmlElement.attrib.get("attribute", None)
+    if attribute is not None:
+        rule.attribute = parentContext.syntax._mapAttributeToStyle(attribute)
+    else:
+        rule.attribute = None
+
+    # context
+    contextText = xmlElement.attrib.get("context", '#stay')
+    rule.context = Syntax._ContextSwitcher(contextText, parentContext.syntax.contexts)
+
+    rule.lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
+    rule.firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
+    rule.dynamic = _parseBoolAttribute(xmlElement.attrib.get("dynamic", "false"))
+    
+    # TODO beginRegion
+    # TODO endRegion
+    
+    column = xmlElement.attrib.get("column", None)
+    if column is not None:
+        rule.column = int(column)
+    else:
+        rule.column = None
+
+def _loadDetectChar(parentContext, xmlElement):
+    rule = DetectChar()
+    _loadAbstractRule(rule, parentContext, xmlElement)
+    rule._char = _safeGetRequiredAttribute(xmlElement, "char", None)
+    
+    if rule.dynamic:
+        try:
+            index = int(rule._char)
+        except ValueError:
+            print >> sys.stderr, 'Invalid DetectChar char', rule._char
+            rule._char = None
+        if index <= 0:
+            print >> sys.stderr, 'Too little DetectChar index', rule._char
+            rule._char = None
+    
+    return rule
+
+def _loadDetect2Chars(parentContext, xmlElement):
+    rule = Detect2Chars()
+    _loadAbstractRule(rule, parentContext, xmlElement)
+    
+    char = _safeGetRequiredAttribute(xmlElement, 'char', None)
+    char1 = _safeGetRequiredAttribute(xmlElement, 'char1', None)
+    if char is None or char1 is None:
+        rule._string = None
+    else:
+        rule._string = char + char1
+    
+    return rule
+
+def _loadAnyChar(parentContext, xmlElement):
+    rule = AnyChar()
+    _loadAbstractRule(rule, parentContext, xmlElement)
+    
+    rule._string = _safeGetRequiredAttribute(xmlElement, 'String', '')
+    return rule
+
+def _loadStringDetect(parentContext, xmlElement):
+    rule = StringDetect()
+    _loadAbstractRule(rule, parentContext, xmlElement)
+    rule._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+    return rule
+
+def _loadWordDetect(parentContext, xmlElement):
+    rule = WordDetect()
+    _loadAbstractRule(rule, parentContext, xmlElement)
+    
+    rule._words = [_safeGetRequiredAttribute(xmlElement, "String", "")]
+    
+    rule._insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
+    return rule
+
+def _loadKeyword(parentContext, xmlElement):
+    rule = keyword()
+    _loadAbstractRule(rule, parentContext, xmlElement)
+    rule._string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+    try:
+        rule._words = rule.parentContext.syntax.lists[rule._string]
+    except KeyError:
+        print >> sys.stderr, 'List', rule._string, 'not found'
+        rule._words = []
+    
+    return rule
+
+def _loadRegExpr(parentContext, xmlElement):
+    def _processCraracterCodes(text):
+        """QRegExp use \0ddd notation for character codes, where d in octal digit
+        i.e. \0377 is character with code 255 in the unicode table
+        Convert such notation to unicode text
+        """
+        text = unicode(text)
+        def replFunc(matchObj):
+            matchText = matchObj.group(0)
+            charCode = eval(matchText[1:])
+            return chr(charCode).decode('latin1')
+        return re.sub(r"\\0\d\d\d", replFunc, text)
+
+    rule = RegExpr()
+    _loadAbstractRule(rule, parentContext, xmlElement)
+    
+    string = _safeGetRequiredAttribute(xmlElement, 'String', None)        
+
+    if string is None:
+        rule._regExp = None
+        return
+        
+    rule._string = _processCraracterCodes(string)
+    rule._insensitive = xmlElement.attrib.get('insensitive', False)
+    
+    if not rule.dynamic:
+        rule._regExp = rule._compileRegExp(rule._string, rule._insensitive)
+    
+    return rule
+
+def _loadAbstractNumberRule(rule, parentContext, xmlElement):
+    _loadAbstractRule(rule, parentContext, xmlElement)
+    
+    rule._childRules = _loadChildRules(parentContext, xmlElement)
+
+def _loadInt(parentContext, xmlElement):
+    rule = Int()
+    _loadAbstractNumberRule(rule, parentContext, xmlElement)
+    return rule
+
+def _loadFloat(parentContext, xmlElement):
+    rule = Float()
+    _loadAbstractNumberRule(rule, parentContext, xmlElement)
+    return rule
+
+def _loadRangeDetect(parentContext, xmlElement):
+    rule = RangeDetect()
+    _loadAbstractRule(rule, parentContext, xmlElement)
+    
+    rule._char = _safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
+    rule._char1 = _safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
+    return rule
+
+
+_ruleClassDict = \
+{
+    'DetectChar': _loadDetectChar,
+    'Detect2Chars': _loadDetect2Chars,
+    'AnyChar': _loadAnyChar,
+    'StringDetect': _loadStringDetect,
+    'WordDetect': _loadWordDetect,
+    'RegExpr': _loadRegExpr,
+    'keyword': _loadKeyword,
+    'Int': _loadInt,
+    'Float': _loadFloat,
+    'HlCOct': _simpleLoader(HlCOct),
+    'HlCHex': _simpleLoader(HlCHex),
+    'HlCStringChar': _simpleLoader(HlCStringChar),
+    'HlCChar': _simpleLoader(HlCChar),
+    'RangeDetect': _loadRangeDetect,
+    'LineContinue': _simpleLoader(LineContinue),
+    'IncludeRules': _loadIncludeRules,
+    'DetectSpaces': _simpleLoader(DetectSpaces),
+    'DetectIdentifier': _simpleLoader(DetectIdentifier)
+}
+
+################################################################################
+##                               Context
+################################################################################
+
 
 def _loadContexts(highlightingElement, syntax):
     from Syntax import Context  # FIXME
@@ -125,8 +309,29 @@ def _loadContext(context, xmlElement):
     context.dynamic = xmlElement.attrib.get('dynamic', False)
     
     # load rules
-    context.rules = Syntax._getChildRules(context, xmlElement)
+    context.rules = _loadChildRules(context, xmlElement)
 
+################################################################################
+##                               Syntax
+################################################################################
+
+def _loadAttributeToStyleMap(highlightingElement):
+    attributeToStyleMap = copy.copy(_DEFAULT_ATTRIBUTE_TO_STYLE_MAP)
+
+    itemDatasElement = highlightingElement.find('itemDatas')
+    for item in itemDatasElement.findall('itemData'):
+        name, styleName = item.get('name'), item.get('defStyleNum')
+        
+        if styleName is None:  # custom format
+            styleName = 'CustomTmpForDebugging'
+        
+        if not styleName in _KNOWN_STYLES:
+            print >> sys.stderr, "Unknown default style '%s'" % styleName
+            styleName = 'dsNormal'
+        name = name.lower()  # format names are not case sensetive
+        attributeToStyleMap[name] = styleName
+    
+    return attributeToStyleMap
 
 def _loadLists(root, highlightingElement):
     lists = {}  # list name: list

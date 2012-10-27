@@ -14,8 +14,6 @@ import os.path
 import sys
 import re
 
-import qutepart.loader
-
 
 class _ContextStack:
     def __init__(self, contexts, data):
@@ -101,35 +99,6 @@ class _ContextSwitcher:
 class AbstractRule:
     """Base class for rule classes
     """
-    def __init__(self, parentContext, xmlElement):
-        """Parse XML definition
-        """
-        self.parentContext = parentContext
-        
-        # attribute
-        attribute = xmlElement.attrib.get("attribute", None)
-        if attribute is not None:
-            self.attribute = parentContext.syntax._mapAttributeToStyle(attribute)
-        else:
-            self.attribute = None
-
-        # context
-        contextText = xmlElement.attrib.get("context", '#stay')
-        self.context = _ContextSwitcher(contextText, parentContext.syntax.contexts)
-    
-        self.lookAhead = qutepart.loader._parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
-        self.firstNonSpace = qutepart.loader._parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
-        self.dynamic = qutepart.loader._parseBoolAttribute(xmlElement.attrib.get("dynamic", "false"))
-        
-        # TODO beginRegion
-        # TODO endRegion
-        
-        column = xmlElement.attrib.get("column", None)
-        if column is not None:
-            self.column = int(column)
-        else:
-            self.column = None
-    
     def __str__(self):
         """Serialize.
         For debug logs
@@ -192,20 +161,6 @@ class AbstractRule:
     
 
 class DetectChar(AbstractRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-        self._char = qutepart.loader._safeGetRequiredAttribute(xmlElement, "char", None)
-        
-        if self.dynamic:
-            try:
-                index = int(self._char)
-            except ValueError:
-                print >> sys.stderr, 'Invalid DetectChar char', self._char
-                self._char = None
-            if index <= 0:
-                print >> sys.stderr, 'Too little DetectChar index', self._char
-                self._char = None
-    
     def shortId(self):
         return 'DetectChar(%s)' % self._char
     
@@ -232,16 +187,6 @@ class DetectChar(AbstractRule):
         return None
 
 class Detect2Chars(AbstractRule):    
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-        
-        char = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'char', None)
-        char1 = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'char1', None)
-        if char is None or char1 is None:
-            self._string = None
-        else:
-            self._string = char + char1
-    
     def shortId(self):
         return 'Detect2Chars(%s)' % self._string
     
@@ -256,10 +201,6 @@ class Detect2Chars(AbstractRule):
 
 
 class AnyChar(AbstractRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-        self._string = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'String', '')
-
     def shortId(self):
         return 'AnyChar(%s)' % self._string
     
@@ -271,10 +212,6 @@ class AnyChar(AbstractRule):
 
 
 class StringDetect(AbstractRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-        self._string = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'String', None)
-        
     def shortId(self):
         return 'StringDetect(%s)' % self._string
 
@@ -341,28 +278,11 @@ class AbstractWordRule(AbstractRule):
             return contextStack, None, None
 
 class WordDetect(AbstractWordRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractWordRule.__init__(self, parentContext, xmlElement)
-        
-        self._words = [qutepart.loader._safeGetRequiredAttribute(xmlElement, "String", "")]
-        
-        self._insensitive = qutepart.loader._parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
-    
     def shortId(self):
         return 'WordDetect(%s, %s)' % (self._string, self._insensitive)
 
 
 class keyword(AbstractWordRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractWordRule.__init__(self, parentContext, xmlElement)
-        
-        self._string = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'String', None)
-        try:
-            self._words = self.parentContext.syntax.lists[self._string]
-        except KeyError:
-            print >> sys.stderr, 'List', self._string, 'not found'
-            self._words = []
-
     def shortId(self):
         return 'keyword(%s)' % repr(self._string)
 
@@ -371,21 +291,6 @@ class RegExpr(AbstractRule):
     """TODO if regexp starts with ^ - match only column 0
     TODO support "minimal" flag
     """
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-        
-        string = qutepart.loader._safeGetRequiredAttribute(xmlElement, 'String', None)        
-
-        if string is None:
-            self._regExp = None
-            return
-            
-        self._string = self._processCraracterCodes(string)
-        self._insensitive = xmlElement.attrib.get('insensitive', False)
-        
-        if not self.dynamic:
-            self._regExp = self._compileRegExp(self._string, self._insensitive)
-    
     @staticmethod
     def _compileRegExp(string, insensitive):
         flags = 0
@@ -400,18 +305,6 @@ class RegExpr(AbstractRule):
 
     def shortId(self):
         return 'RegExpr(%s)' % self._string
-
-    def _processCraracterCodes(self, text):
-        """QRegExp use \0ddd notation for character codes, where d in octal digit
-        i.e. \0377 is character with code 255 in the unicode table
-        Convert such notation to unicode text
-        """
-        text = unicode(text)
-        def replFunc(matchObj):
-            matchText = matchObj.group(0)
-            charCode = eval(matchText[1:])
-            return chr(charCode).decode('latin1')
-        return re.sub(r"\\0\d\d\d", replFunc, text)
 
     @staticmethod
     def _makeDynamicStringSubsctitutions(string, contextData):
@@ -456,10 +349,6 @@ class AbstractNumberRule(AbstractRule):
     """Base class for Int and Float rules.
     This rules can have child rules
     """
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-        self._childRules = _getChildRules(parentContext, xmlElement)
-
     def _tryMatch(self, contextStack, currentColumnIndex, text):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
@@ -656,11 +545,6 @@ class HlCChar(AbstractRule):
 
 
 class RangeDetect(AbstractRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-        self._char = qutepart.loader._safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
-        self._char1 = qutepart.loader._safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
-    
     def shortId(self):
         return 'RangeDetect(%s, %s)' % (self._char, self._char1)
     
@@ -685,11 +569,6 @@ class LineContinue(AbstractRule):
 
 
 class IncludeRules(AbstractRule):
-    def __init__(self, parentContext, xmlElement):
-        AbstractRule.__init__(self, parentContext, xmlElement)
-        self._contextName = qutepart.loader._safeGetRequiredAttribute(xmlElement, "context", None)
-        # context will be resolved, when parsing. Avoiding infinite recursion
-
     def __str__(self):
         """Serialize.
         For debug logs
@@ -745,27 +624,6 @@ class DetectIdentifier(AbstractRule):
             return len(match.group(0))
         
         return None
-
-
-_ruleClasses = (DetectChar, Detect2Chars, AnyChar, StringDetect, WordDetect, RegExpr,
-                keyword, Int, Float, HlCOct, HlCHex, HlCStringChar, HlCChar, RangeDetect,
-                LineContinue, IncludeRules, DetectSpaces, DetectIdentifier)
-
-ruleClassDict = {}
-for ruleClass in _ruleClasses:
-    ruleClassDict[ruleClass.__name__] = ruleClass
-
-def _getChildRules(context, xmlElement):
-    """Extract rules from Context or Rule xml element
-    """
-    rules = []
-    for ruleElement in xmlElement.getchildren():
-        if not ruleElement.tag in ruleClassDict:
-            raise ValueError("Not supported rule '%s'" % ruleElement.tag)
-        rule = ruleClassDict[ruleElement.tag](context, ruleElement)
-        rules.append(rule)
-    return rules
-    
 
 class Context:
     """Highlighting context
