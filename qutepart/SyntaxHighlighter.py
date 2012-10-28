@@ -5,7 +5,6 @@ Uses Syntax module for doing the job
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QBrush, QColor, QFont, QSyntaxHighlighter, QTextCharFormat, QTextBlockUserData
 
-from ColorTheme import ColorTheme
 
 class _TextBlockUserData(QTextBlockUserData):
     def __init__(self, data):
@@ -16,7 +15,6 @@ class _TextBlockUserData(QTextBlockUserData):
 class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, syntax, *args):
         QSyntaxHighlighter.__init__(self, *args)
-        self._theme = ColorTheme()
         self._syntax = syntax
     
     def _makeQtFormat(self, format):
@@ -30,13 +28,13 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         return qtFormat
 
     def _setFormat(self, start, length, attribute):
-        format = self._theme.getFormat(attribute)
+        format = self._syntax.attributeToFormatMap[attribute.lower()]
         qtFormat = self._makeQtFormat(format)
         self.setFormat(start, length, qtFormat)
 
     def highlightBlock(self, text):
         lineData, matchedContexts = self._syntax.parseBlock(text, self._prevData())
-        self._syntax.parseAndPrintBlockTextualResults(text, self._prevData())
+        #self._syntax.parseAndPrintBlockTextualResults(text, self._prevData())
         contextAreaStartPos = 0
         for context, contextLength, matchedRules in matchedContexts:
             self._setFormat(contextAreaStartPos, contextLength, context.attribute)

@@ -364,7 +364,6 @@ class RegExpr(AbstractRule):
         
         match = regExp.match(text[currentColumnIndex:])
         if match is not None and match.group(0):
-            print self.string, regExp.pattern, match.groups()
             count = len(match.group(0))
 
             if self.context is not None:
@@ -741,7 +740,9 @@ class Syntax:
         lists                   Keyword lists as dictionary "list name" : "list value"
         defaultContext          Default context object
         contexts                Context list as dictionary "context name" : context
-        attributeToStyleMap     Map "attribute" : "style name"   
+        attributeToFormatMap    Map "attribute" : TextFormat
+        colorTheme              Current color theme,
+                                  compiled from default one and syntax specific modifications
     """
         
     def __init__(self, manager):
@@ -773,16 +774,6 @@ class Syntax:
         
         return res
     
-    def _mapAttributeToStyle(self, attribute):
-        """Maps 'attribute' field of a Context and a Rule to style
-        """
-        if not attribute.lower() in self.attributeToStyleMap:
-            print >> sys.stderr, "Unknown attribute '%s'" % attribute
-            return self.attributeToStyleMap['normal']
-        
-        # attribute names are not case sensetive
-        return self.attributeToStyleMap[attribute.lower()]
-
     def parseBlock(self, text, prevLineData):
         """Parse block and return touple:
             (lineData, [matchedContexts])

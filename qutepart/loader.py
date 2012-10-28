@@ -3,7 +3,8 @@ import sys
 import xml.etree.ElementTree
 
 from qutepart.Syntax import *
-from qutepart.Syntax import ContextSwitcher
+from qutepart.ColorTheme import ColorTheme
+
 
 _DEFAULT_ATTRIBUTE_TO_STYLE_MAP = \
 {
@@ -92,11 +93,9 @@ def _loadAbstractRule(rule, parentContext, xmlElement):
     rule.parentContext = parentContext
 
     # attribute
-    attribute = xmlElement.attrib.get("attribute", None)
-    if attribute is not None:
-        rule.attribute = parentContext.syntax._mapAttributeToStyle(attribute)
-    else:
-        rule.attribute = None
+    rule.attribute = xmlElement.attrib.get("attribute", None)
+    if not rule.attribute is None:
+        rule.attribute = rule.attribute.lower()  # not case sensetive
 
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
@@ -291,8 +290,7 @@ def _loadContext(context, xmlElement):
     Contexts are at first constructed, and only then loaded, because when loading context,
     ContextSwitcher must have references to all defined contexts
     """
-    attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', 'normal')
-    context.attribute = context.syntax._mapAttributeToStyle(attribute)
+    context.attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', 'normal')
     
     lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
     context.lineEndContext = ContextSwitcher(lineEndContextText,  context.syntax.contexts)
@@ -314,24 +312,40 @@ def _loadContext(context, xmlElement):
 ##                               Syntax
 ################################################################################
 
-def _loadAttributeToStyleMap(highlightingElement):
-    attributeToStyleMap = copy.copy(_DEFAULT_ATTRIBUTE_TO_STYLE_MAP)
-
+def _loadAttributeToFormatMap(highlightingElement):
+    defaultTheme = ColorTheme()
+    attributeToFormatMap = {}
+    
     itemDatasElement = highlightingElement.find('itemDatas')
     for item in itemDatasElement.findall('itemData'):
-        name, styleName = item.get('name'), item.get('defStyleNum')
+        attribute, defaultStyleName = item.get('name'), item.get('defStyleNum')
         
-        if styleName is None:  # custom format
-            styleName = 'CustomTmpForDebugging'
-        
-        if not styleName in _KNOWN_STYLES:
-            print >> sys.stderr, "Unknown default style '%s'" % styleName
-            styleName = 'dsNormal'
-        name = name.lower()  # format names are not case sensetive
-        attributeToStyleMap[name] = styleName
-    
-    return attributeToStyleMap
+        if not defaultStyleName in defaultTheme.format:
+            print >> sys.stderr, "Unknown default style '%s'" % defaultStyleName
+            defaultStyleName = 'dsNormal'
+            
+        format = copy.copy(defaultTheme.format[defaultStyleName])
 
+        if 'color' in item.attrib:
+            format.color = item.attrib['color']
+        if 'selColor' in item.attrib:
+            format.selectionColor = item.attrib['selColor']
+        if 'italic' in item.attrib:
+            format.italic = _parseBoolAttribute(item.attrib['italic'])
+        if 'bold' in item.attrib:
+            format.bold = _parseBoolAttribute(item.attrib['bold'])
+        if 'underline' in item.attrib:
+            format.underline = _parseBoolAttribute(item.attrib['underline'])
+        if 'strikeout' in item.attrib:
+            format.strikeout = _parseBoolAttribute(item.attrib['strikeout'])
+        if 'spellChecking' in item.attrib:
+            format.spellChecking = _parseBoolAttribute(item.attrib['spellChecking'])
+        
+        attribute = attribute.lower()  # style names are not case sensetive
+        attributeToFormatMap[attribute] = format
+    
+    return attributeToFormatMap
+    
 def _loadLists(root, highlightingElement):
     lists = {}  # list name: list
     for listElement in highlightingElement.findall('list'):
@@ -382,7 +396,7 @@ def loadSyntax(manager, filePath):
     syntax.lists = _loadLists(root, highlightingElement)
     
     # parse itemData
-    syntax.attributeToStyleMap = _loadAttributeToStyleMap(highlightingElement)
+    syntax.attributeToFormatMap = _loadAttributeToFormatMap(highlightingElement)
     
     # parse contexts stage 1: create objects
     _loadContexts(highlightingElement, syntax)

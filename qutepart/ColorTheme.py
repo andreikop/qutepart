@@ -2,8 +2,8 @@ class TextFormat:
     """Text format definition.
     
     Public attributes:
-        color          : Font color, #rrggbb
-        background     : Font background, #rrggbb
+        color          : Font color, #rrggbb or #rgb
+        background     : Font background, #rrggbb or #rgb
         selectionColor : Color of selected text
         italic         : Italic font, bool
         bold           : Bold font, bool
@@ -34,24 +34,24 @@ class ColorTheme:
     """Color theme.
     """
     def __init__(self):
-        self._format = {}
-        self._format['dsNormal'] = TextFormat()
-        self._format['dsKeyword'] = TextFormat(bold=True)
-        self._format['dsDataType'] = TextFormat(color='#0057ae')
-        self._format['dsDataType'] = TextFormat(color='#0057ae')
-        self._format['dsDecVal'] = TextFormat(color='#b07e00')
-        self._format['dsBaseN'] = TextFormat(color='#b07e00')
-        self._format['dsFloat'] = TextFormat(color='#b07e00')
-        self._format['dsChar'] = TextFormat(color='#ff80e0')
-        self._format['dsString'] = TextFormat(color='#bf0303')
-        self._format['dsComment'] = TextFormat(color='#888786', italic=True)
-        self._format['dsOthers'] = TextFormat(color='#006e26')
-        self._format['dsAlert'] = TextFormat(color='#bf0303', background='#f7e7e7', bold=True)
-        self._format['dsFunction'] = TextFormat(color='#442886')
-        self._format['dsRegionMarker'] = TextFormat(color='#0057ae')
-        self._format['dsError'] = TextFormat(color='#e1eaf8')
+        self.format = {}
+        self.format['dsNormal'] = TextFormat()
+        self.format['dsKeyword'] = TextFormat(bold=True)
+        self.format['dsDataType'] = TextFormat(color='#0057ae')
+        self.format['dsDataType'] = TextFormat(color='#0057ae')
+        self.format['dsDecVal'] = TextFormat(color='#b07e00')
+        self.format['dsBaseN'] = TextFormat(color='#b07e00')
+        self.format['dsFloat'] = TextFormat(color='#b07e00')
+        self.format['dsChar'] = TextFormat(color='#ff80e0')
+        self.format['dsString'] = TextFormat(color='#bf0303')
+        self.format['dsComment'] = TextFormat(color='#888786', italic=True)
+        self.format['dsOthers'] = TextFormat(color='#006e26')
+        self.format['dsAlert'] = TextFormat(color='#bf0303', background='#f7e7e7', bold=True)
+        self.format['dsFunction'] = TextFormat(color='#442886')
+        self.format['dsRegionMarker'] = TextFormat(color='#0057ae')
+        self.format['dsError'] = TextFormat(color='#e1eaf8')
     
     def getFormat(self, styleName):
         """Returns TextFormat for particular style
         """
-        return self._format[styleName]
+        return self.format[styleName]
