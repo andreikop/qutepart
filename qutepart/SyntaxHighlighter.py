@@ -27,8 +27,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         qtFormat.setFontStrikeOut(format.strikeOut)
         return qtFormat
 
-    def _setFormat(self, start, length, attribute):
-        format = self._syntax.attributeToFormatMap[attribute.lower()]
+    def _setFormat(self, start, length, format):
         qtFormat = self._makeQtFormat(format)
         self.setFormat(start, length, qtFormat)
 
@@ -37,10 +36,10 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         #self._syntax.parseAndPrintBlockTextualResults(text, self._prevData())
         contextAreaStartPos = 0
         for context, contextLength, matchedRules in matchedContexts:
-            self._setFormat(contextAreaStartPos, contextLength, context.attribute)
+            self._setFormat(contextAreaStartPos, contextLength, context.format)
             for rule, pos, ruleLength in matchedRules:
                 if rule.attribute is not None:
-                    self._setFormat(pos, ruleLength, rule.attribute)
+                    self._setFormat(pos, ruleLength, rule.format)
             contextAreaStartPos += contextLength
         
         self.setCurrentBlockUserData(_TextBlockUserData(lineData))

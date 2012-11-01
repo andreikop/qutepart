@@ -96,6 +96,7 @@ def _loadAbstractRule(rule, parentContext, xmlElement):
     rule.attribute = xmlElement.attrib.get("attribute", None)
     if not rule.attribute is None:
         rule.attribute = rule.attribute.lower()  # not case sensetive
+        rule.format = parentContext.syntax.attributeToFormatMap[rule.attribute]
 
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
@@ -290,7 +291,8 @@ def _loadContext(context, xmlElement):
     Contexts are at first constructed, and only then loaded, because when loading context,
     ContextSwitcher must have references to all defined contexts
     """
-    context.attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', 'normal')
+    context.attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', 'normal').lower()
+    context.format = context.syntax.attributeToFormatMap[context.attribute]
     
     lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
     context.lineEndContext = ContextSwitcher(lineEndContextText,  context.syntax.contexts)
