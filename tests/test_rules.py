@@ -176,6 +176,10 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 1, " varx "), None)
         self.assertEqual(tryMatch(rule, 2, " xvar "), None)
     
+    def test_keyword_insensitive(self):
+        rule = self._getRule("cmake.xml", "Normal Text", 1)
+        self.assertEqual(tryMatch(rule, 0, "ADD_definitions()"), len("ADD_definitions"))
+    
     def test_lookahead(self):
         rule = self._getRule("javascript.xml", "ObjectMember", 3)
         text = 'g.r( /dooh/ )'

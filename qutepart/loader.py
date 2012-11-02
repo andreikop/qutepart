@@ -164,7 +164,7 @@ def _loadWordDetect(parentContext, xmlElement):
     
     rule.words = [_safeGetRequiredAttribute(xmlElement, "String", "")]
     
-    rule._insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
+    rule.insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     return rule
 
 def _loadKeyword(parentContext, xmlElement):
@@ -177,6 +177,7 @@ def _loadKeyword(parentContext, xmlElement):
         print >> sys.stderr, 'List', rule.string, 'not found'
         rule.words = []
     
+    rule.insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     return rule
 
 def _loadRegExpr(parentContext, xmlElement):
@@ -202,10 +203,10 @@ def _loadRegExpr(parentContext, xmlElement):
         return
         
     rule.string = _processCraracterCodes(string)
-    rule._insensitive = xmlElement.attrib.get('insensitive', False)
+    rule.insensitive = xmlElement.attrib.get('insensitive', False)
     
     if not rule.dynamic:
-        rule.regExp = rule._compileRegExp(rule.string, rule._insensitive)
+        rule.regExp = rule._compileRegExp(rule.string, rule.insensitive)
     
     return rule
 
@@ -400,7 +401,13 @@ def loadSyntax(manager, filePath):
     # parse itemData
     syntax.attributeToFormatMap = _loadAttributeToFormatMap(highlightingElement)
     
-    # parse contexts stage 1: create objects
+    # parse contexts
     _loadContexts(highlightingElement, syntax)
 
+    generalElement = root.find('general')
+    keywordsElement = root.find('keywords')
+    
+    # TODO not supported
+    #syntax.keywordsCaseSensetive = _parseBoolAttribute(keywordsElement.get('casesensitive', "true"))
+    
     return syntax

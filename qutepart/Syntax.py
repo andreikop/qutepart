@@ -266,9 +266,12 @@ class StringDetect(AbstractRule):
 
 class AbstractWordRule(AbstractRule):
     """Base class for WordDetect and keyword
+    
+    Public attributes:
+        insensitive  (Not documented in the kate docs)
     """
     def _tryMatch(self, contextStack, currentColumnIndex, text):
-        # Skip if column doesn't match        
+        # Skip if column doesn't match
         wordStart = currentColumnIndex == 0 or \
                     text[currentColumnIndex - 1].isspace() or \
                     text[currentColumnIndex - 1] in self.parentContext.syntax.deliminatorSet
@@ -277,6 +280,9 @@ class AbstractWordRule(AbstractRule):
             return contextStack, None, None
         
         textToCheck = text[currentColumnIndex:]
+        
+        if self.insensitive:
+            textToCheck = textToCheck.lower()
         
         for word in self.words:
             if not textToCheck.startswith(word):
@@ -302,7 +308,7 @@ class WordDetect(AbstractWordRule):
         words
     """
     def shortId(self):
-        return 'WordDetect(%s, %s)' % (' '.join(self.words), self._insensitive)
+        return 'WordDetect(%s, %s)' % (' '.join(self.words), self.insensitive)
 
 class keyword(AbstractWordRule):
     """Public attributes:
@@ -355,7 +361,7 @@ class RegExpr(AbstractRule):
         """
         if self.dynamic:
             string = self._makeDynamicStringSubsctitutions(self.string, contextStack.currentData())
-            regExp = self._compileRegExp(string, self._insensitive)
+            regExp = self._compileRegExp(string, self.insensitive)
         else:
             regExp = self.regExp
         
