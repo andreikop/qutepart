@@ -3,7 +3,7 @@ import sys
 import xml.etree.ElementTree
 
 from qutepart.Syntax import *
-from qutepart.ColorTheme import ColorTheme
+from qutepart.ColorTheme import ColorTheme, TextFormat
 
 
 _DEFAULT_ATTRIBUTE_TO_STYLE_MAP = \
@@ -96,7 +96,11 @@ def _loadAbstractRule(rule, parentContext, xmlElement):
     rule.attribute = xmlElement.attrib.get("attribute", None)
     if not rule.attribute is None:
         rule.attribute = rule.attribute.lower()  # not case sensetive
-        rule.format = parentContext.syntax.attributeToFormatMap[rule.attribute]
+        try:
+            rule.format = parentContext.syntax.attributeToFormatMap[rule.attribute]
+        except KeyError:
+            print >> sys.stderr, 'Unknown rule attribute', rule.attribute
+            rule.format = TextFormat()
 
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
@@ -292,8 +296,15 @@ def _loadContext(context, xmlElement):
     Contexts are at first constructed, and only then loaded, because when loading context,
     ContextSwitcher must have references to all defined contexts
     """
-    context.attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', 'normal').lower()
-    context.format = context.syntax.attributeToFormatMap[context.attribute]
+    context.attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', '<not set>').lower()
+    if context.attribute != '<not set>':  # there are no attributes for internal contexts, used by rules. See perl.xml
+        try:
+            context.format = context.syntax.attributeToFormatMap[context.attribute]
+        except KeyError:
+            print >> sys.stderr, 'Unknown context attribute', context.attribute
+            context.format = TextFormat()
+    else:
+        context.format = None
     
     lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
     context.lineEndContext = ContextSwitcher(lineEndContextText,  context.syntax.contexts)

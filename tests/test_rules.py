@@ -214,9 +214,7 @@ class Test(unittest.TestCase):
         newStack, count, matchedRule = rule.tryMatch(fakeStack, 0, text)
         self.assertEqual(count, len(text))
 
-    def test_dynamic_string_detect(self):
-        """DetectChar rule, dynamic=true
-        """
+    def test_some_test(self):
         rule = self._getRule("perl.xml", "string_6", 3)
         text = "abcdXefg"
 
