@@ -41,6 +41,12 @@ class Test(unittest.TestCase):
         rule = self._getRule('debiancontrol.xml', 'INIT', 1)
         self.assertEqual(tryMatch(rule, 0, 'Recommends: xxx'), len('Recommends:'))
 
+    def test_StringDetect_first_non_space(self):
+        """StringDetect with firstNonSpace=true
+        """
+        rule = self._getRule('d.xml', 'normal', 9)
+        self.assertEqual(tryMatch(rule, 2, '  //BEGIN'), len('//BEGIN'))
+
     def test_Detect2Chars(self):
         rule = self._getRule('debiancontrol.xml', 'Field', 1)
         self.assertEqual(tryMatch(rule, 0, '${xxx}'), 2)
@@ -202,8 +208,8 @@ class Test(unittest.TestCase):
     def test_firstNonSpace(self):
         rule = self._getRule("makefile.xml", "Normal", 2)
         
-        #self.assertEqual(tryMatch(rule, 0, "all: pre"), 4)
-        self.assertEqual(tryMatch(rule, 1, " all: pre"), None)
+        self.assertEqual(tryMatch(rule, 1, "xall: pre"), None)
+        self.assertEqual(tryMatch(rule, 1, " all: pre"), 4)
 
     def test_dynamic_reg_exp(self):
         """RegExpr rule, dynamic=true

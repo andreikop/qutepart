@@ -131,10 +131,11 @@ class AbstractRule:
            self.column != currentColumnIndex:
             return contextStack,None, None
         
-        if self.firstNonSpace:
-            if currentColumnIndex != 0 and \
-               text[currentColumnIndex - 1].isspace():
-                return contextStack,None, None
+        if self.firstNonSpace and currentColumnIndex != 0:
+            prevText = text[:currentColumnIndex]
+            for char in prevText:
+                if not char.isspace():
+                    return contextStack, None, None
         
         newContextStack, count, matchedRule = self._tryMatch(contextStack, currentColumnIndex, text)
         if count is None:  # no match
