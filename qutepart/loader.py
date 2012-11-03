@@ -340,20 +340,24 @@ def _loadAttributeToFormatMap(highlightingElement):
             
         format = copy.copy(defaultTheme.format[defaultStyleName])
 
-        if 'color' in item.attrib:
-            format.color = item.attrib['color']
-        if 'selColor' in item.attrib:
-            format.selectionColor = item.attrib['selColor']
-        if 'italic' in item.attrib:
-            format.italic = _parseBoolAttribute(item.attrib['italic'])
-        if 'bold' in item.attrib:
-            format.bold = _parseBoolAttribute(item.attrib['bold'])
-        if 'underline' in item.attrib:
-            format.underline = _parseBoolAttribute(item.attrib['underline'])
-        if 'strikeout' in item.attrib:
-            format.strikeout = _parseBoolAttribute(item.attrib['strikeout'])
-        if 'spellChecking' in item.attrib:
-            format.spellChecking = _parseBoolAttribute(item.attrib['spellChecking'])
+        caseInsensitiveAttributes = {}
+        for key, value in item.attrib.iteritems():
+            caseInsensitiveAttributes[key.lower()] = value.lower()
+        
+        if 'color' in caseInsensitiveAttributes:
+            format.color = caseInsensitiveAttributes['color']
+        if 'selColor' in caseInsensitiveAttributes:
+            format.selectionColor = caseInsensitiveAttributes['selColor']
+        if 'italic' in caseInsensitiveAttributes:
+            format.italic = _parseBoolAttribute(caseInsensitiveAttributes['italic'])
+        if 'bold' in caseInsensitiveAttributes:
+            format.bold = _parseBoolAttribute(caseInsensitiveAttributes['bold'])
+        if 'underline' in caseInsensitiveAttributes:
+            format.underline = _parseBoolAttribute(caseInsensitiveAttributes['underline'])
+        if 'strikeout' in caseInsensitiveAttributes:
+            format.strikeOut = _parseBoolAttribute(caseInsensitiveAttributes['strikeout'])
+        if 'spellChecking' in caseInsensitiveAttributes:
+            format.spellChecking = _parseBoolAttribute(caseInsensitiveAttributes['spellChecking'])
         
         attribute = attribute.lower()  # style names are not case sensitive
         attributeToFormatMap[attribute] = format
