@@ -187,7 +187,13 @@ class Test(unittest.TestCase):
         """
         rule = self._getRule("css.xml", "RuleSet", 1)
         self.assertEqual(tryMatch(rule, 0, "backGround"), len("backGround"))
-    
+
+    def test_keyword_weak_delimiter(self):
+        """Test weakDeliminator attribute parsing and usage
+        """
+        rule = self._getRule("css.xml", "RuleSet", 1)
+        self.assertEqual(tryMatch(rule, 0, "background-color"), len("background-color"))
+
     def test_lookahead(self):
         rule = self._getRule("javascript.xml", "ObjectMember", 3)
         text = 'g.r( /dooh/ )'

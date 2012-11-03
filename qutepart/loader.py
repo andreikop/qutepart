@@ -416,8 +416,14 @@ def loadSyntax(manager, filePath):
     _loadContexts(highlightingElement, syntax)
 
     generalElement = root.find('general')
-    keywordsElement = generalElement.find('keywords')
-    
-    syntax.keywordsCaseSensitive = _parseBoolAttribute(keywordsElement.get('casesensitive', "true"))
-    
+    if generalElement is not None:
+        keywordsElement = generalElement.find('keywords')
+        
+        if keywordsElement is not None:
+            syntax.keywordsCaseSensitive = _parseBoolAttribute(keywordsElement.get('casesensitive', "true"))
+
+            if 'weakDeliminator' in keywordsElement.attrib:
+                weakSet = keywordsElement.attrib['weakDeliminator']
+                syntax.deliminatorSet.difference_update(weakSet)
+
     return syntax
