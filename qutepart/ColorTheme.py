@@ -48,7 +48,7 @@ class ColorTheme:
         self.format['dsOthers'] = TextFormat(color='#006e26')
         self.format['dsAlert'] = TextFormat(color='#bf0303', background='#f7e7e7', bold=True)
         self.format['dsFunction'] = TextFormat(color='#442886')
-        self.format['dsRegionMarker'] = TextFormat(color='#0057ae')
+        self.format['dsRegionMarker'] = TextFormat(color='#0057ae', background='#e1eaf8')
         self.format['dsError'] = TextFormat(color='#bf0303', underline=True)
     
     def getFormat(self, styleName):
