@@ -95,7 +95,7 @@ def _loadAbstractRule(rule, parentContext, xmlElement):
     # attribute
     rule.attribute = xmlElement.attrib.get("attribute", None)
     if not rule.attribute is None:
-        rule.attribute = rule.attribute.lower()  # not case sensetive
+        rule.attribute = rule.attribute.lower()  # not case sensitive
         try:
             rule.format = parentContext.syntax.attributeToFormatMap[rule.attribute]
         except KeyError:
@@ -355,7 +355,7 @@ def _loadAttributeToFormatMap(highlightingElement):
         if 'spellChecking' in item.attrib:
             format.spellChecking = _parseBoolAttribute(item.attrib['spellChecking'])
         
-        attribute = attribute.lower()  # style names are not case sensetive
+        attribute = attribute.lower()  # style names are not case sensitive
         attributeToFormatMap[attribute] = format
     
     return attributeToFormatMap
@@ -371,7 +371,7 @@ def _loadLists(root, highlightingElement):
         lists[name] = items
     
     casesensitive = _parseBoolAttribute(root.attrib.get('casesensitive', 'true'))
-    # Make all keywords lowercase, if syntax is not case sensetive
+    # Make all keywords lowercase, if syntax is not case sensitive
     if not casesensitive:
         for keywordList in lists.values():
             for index, keyword in enumerate(keywordList):
@@ -416,9 +416,8 @@ def loadSyntax(manager, filePath):
     _loadContexts(highlightingElement, syntax)
 
     generalElement = root.find('general')
-    keywordsElement = root.find('keywords')
+    keywordsElement = generalElement.find('keywords')
     
-    # TODO not supported
-    #syntax.keywordsCaseSensetive = _parseBoolAttribute(keywordsElement.get('casesensitive', "true"))
+    syntax.keywordsCaseSensitive = _parseBoolAttribute(keywordsElement.get('casesensitive', "true"))
     
     return syntax

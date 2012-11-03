@@ -281,7 +281,8 @@ class AbstractWordRule(AbstractRule):
         
         textToCheck = text[currentColumnIndex:]
         
-        if self.insensitive:
+        if self.insensitive or \
+           (not self.parentContext.syntax.keywordsCaseSensitive):
             textToCheck = textToCheck.lower()
         
         for word in self.words:
@@ -744,6 +745,7 @@ class Syntax:
     Effective public attributes:
         deliminatorSet          Set of deliminator characters
         lists                   Keyword lists as dictionary "list name" : "list value"
+        keywordsCaseSensitive   If true, keywords are not case sensitive
         defaultContext          Default context object
         contexts                Context list as dictionary "context name" : context
         attributeToFormatMap    Map "attribute" : TextFormat

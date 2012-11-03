@@ -177,8 +177,16 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 2, " xvar "), None)
     
     def test_keyword_insensitive(self):
+        """Insensitive attribute for particular keyword
+        """
         rule = self._getRule("cmake.xml", "Normal Text", 1)
         self.assertEqual(tryMatch(rule, 0, "ADD_definitions()"), len("ADD_definitions"))
+    
+    def test_keyword_insensitive_syntax(self):
+        """Insensitive attribute for whole syntax
+        """
+        rule = self._getRule("css.xml", "RuleSet", 1)
+        self.assertEqual(tryMatch(rule, 0, "backGround"), len("backGround"))
     
     def test_lookahead(self):
         rule = self._getRule("javascript.xml", "ObjectMember", 3)
