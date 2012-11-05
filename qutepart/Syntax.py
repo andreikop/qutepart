@@ -369,10 +369,18 @@ class RegExpr(AbstractRule):
             regExp = self.regExp
         
         if regExp is None:
-            return None
+            return contextStack, None, None
+        
+        # Special case. if pattern starts with \b, we have to check it manually,
+        # because string is passed to .match(..) without beginning
+        if regExp.pattern.strip('(').startswith('\\b'):
+            if currentColumnIndex > 0 and \
+               (not text[currentColumnIndex - 1].isspace()):
+                return contextStack, None, None
         
         match = regExp.match(text[currentColumnIndex:])
         if match is not None and match.group(0):
+            #print regExp.pattern.strip('('), regExp.pattern.strip('(').startswith('\\b'), currentColumnIndex > 0, (not text[currentColumnIndex - 1].isspace())
             count = len(match.group(0))
 
             if self.context is not None:

@@ -37,6 +37,11 @@ class Test(unittest.TestCase):
         rule = self._getRule('fsharp.xml', 'ModuleEnv2', 0)
         self.assertEqual(rule.regExp.pattern, u"[A-Z][A-Za-z\xc0-\xd6\xd8-\xf6\xf8-\xff0-9_']*")
     
+    def test_RegExpr_slashB(self):
+        rule = self._getRule('fortran.xml', 'find_numbers', 3)
+        self.assertEqual(tryMatch(rule, 5, 'point3d'), None)
+        self.assertEqual(tryMatch(rule, 5, 'poin 3 '), 1)
+    
     def test_StringDetect(self):
         rule = self._getRule('debiancontrol.xml', 'INIT', 1)
         self.assertEqual(tryMatch(rule, 0, 'Recommends: xxx'), len('Recommends:'))
