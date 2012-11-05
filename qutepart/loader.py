@@ -178,7 +178,8 @@ def _loadKeyword(parentContext, xmlElement):
     try:
         rule.words = rule.parentContext.syntax.lists[rule.string]
     except KeyError:
-        print >> sys.stderr, 'List', rule.string, 'not found'
+        print >> sys.stderr, "List '%s' not found" % rule.string
+        
         rule.words = []
     
     rule.insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))

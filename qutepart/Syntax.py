@@ -32,9 +32,10 @@ class ContextStack:
     def pop(self, count):
         """Returns new context stack, which doesn't contain few levels
         """
-        if len(self._contexts) < count:
+        if len(self._contexts) - 1 < count:
             print >> sys.stderr, "Error: #pop value is too big"
-            count = 0
+            return self
+        
         return ContextStack(self._contexts[:-count], self._data[:-count])
     
     def append(self, context, data):
