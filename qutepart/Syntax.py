@@ -290,7 +290,7 @@ class AbstractWordRule(AbstractRule):
         for word in self.words:
             if not textToCheck.startswith(word):
                 continue
-                
+            
             stringLen = len(word)
             wordEnd   = stringLen == len(textToCheck) or \
                         textToCheck[stringLen].isspace() or \
@@ -342,7 +342,7 @@ class RegExpr(AbstractRule):
             return None
 
     def shortId(self):
-        return 'RegExpr(%s)' % self.string
+        return 'RegExpr( %s )' % self.string
 
     @staticmethod
     def _makeDynamicStringSubsctitutions(string, contextData):

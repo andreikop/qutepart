@@ -195,6 +195,10 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 1, " varx "), None)
         self.assertEqual(tryMatch(rule, 2, " xvar "), None)
     
+    def test_jsp_keyword(self):
+        rule = self._getRule('jsp.xml', "Jsp Scriptlet", 5)
+        self.assertEqual(tryMatch(rule, 0, "String"), len("String"))
+    
     def test_keyword_insensitive(self):
         """Insensitive attribute for particular keyword
         """

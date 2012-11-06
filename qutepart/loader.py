@@ -375,14 +375,14 @@ def _loadLists(root, highlightingElement):
         name = _safeGetRequiredAttribute(listElement, 'name', 'Error: list name is not set!!!')
         lists[name] = items
     
-    casesensitive = _parseBoolAttribute(root.attrib.get('casesensitive', 'true'))
-    # Make all keywords lowercase, if syntax is not case sensitive
-    if not casesensitive:
-        for keywordList in lists.values():
-            for index, keyword in enumerate(keywordList):
-                keywordList[index] = keyword.lower()
-
     return lists
+
+def _makeKeywordsLowerCase(listDict):
+    # Make all keywords lowercase, if syntax is not case sensitive
+    for keywordList in listDict.values():
+        for index, keyword in enumerate(keywordList):
+            keywordList[index] = keyword.lower()
+
 
 def loadSyntax(manager, filePath):
     from Syntax import Syntax  # FIXME
@@ -426,6 +426,9 @@ def loadSyntax(manager, filePath):
         
         if keywordsElement is not None:
             syntax.keywordsCaseSensitive = _parseBoolAttribute(keywordsElement.get('casesensitive', "true"))
+            
+            if not syntax.keywordsCaseSensitive:
+                _makeKeywordsLowerCase(syntax.lists)
 
             if 'weakDeliminator' in keywordsElement.attrib:
                 weakSet = keywordsElement.attrib['weakDeliminator']
