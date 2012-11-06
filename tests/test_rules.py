@@ -40,6 +40,7 @@ class Test(unittest.TestCase):
     def test_RegExpr_slashB(self):
         rule = self._getRule('fortran.xml', 'find_numbers', 3)
         self.assertEqual(tryMatch(rule, 5, 'point3d'), None)
+        self.assertEqual(tryMatch(rule, 5, 'poin(3)'), 1)
         self.assertEqual(tryMatch(rule, 5, 'poin 3 '), 1)
     
     def test_StringDetect(self):

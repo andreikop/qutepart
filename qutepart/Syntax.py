@@ -359,6 +359,10 @@ class RegExpr(AbstractRule):
 
         return AbstractRule._seqReplacer.sub(_replaceFunc, string)
 
+    @staticmethod
+    def _isWordChar(char):
+        return re.match('\\w', char) is not None
+    
     def _tryMatch(self, contextStack, currentColumnIndex, text):
         """Tries to parse text. If matched - saves data for dynamic context
         """
@@ -374,13 +378,12 @@ class RegExpr(AbstractRule):
         # Special case. if pattern starts with \b, we have to check it manually,
         # because string is passed to .match(..) without beginning
         if regExp.pattern.strip('(').startswith('\\b'):
-            if currentColumnIndex > 0 and \
-               (not text[currentColumnIndex - 1].isspace()):
-                return contextStack, None, None
+            if currentColumnIndex > 0:
+                if self._isWordChar(text[currentColumnIndex - 1]):
+                    return contextStack, None, None
         
         match = regExp.match(text[currentColumnIndex:])
         if match is not None and match.group(0):
-            #print regExp.pattern.strip('('), regExp.pattern.strip('(').startswith('\\b'), currentColumnIndex > 0, (not text[currentColumnIndex - 1].isspace())
             count = len(match.group(0))
 
             if self.context is not None:
