@@ -382,6 +382,11 @@ class RegExpr(AbstractRule):
                 if self._isWordChar(text[currentColumnIndex - 1]):
                     return contextStack, None, None
         
+        #Special case. If pattern starts with ^ - check column number manually
+        if regExp.pattern.strip('(').startswith('^'):
+            if currentColumnIndex > 0:
+                return contextStack, None, None
+        
         match = regExp.match(text[currentColumnIndex:])
         if match is not None and match.group(0):
             count = len(match.group(0))

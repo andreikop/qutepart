@@ -43,6 +43,11 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 5, 'poin(3)'), 1)
         self.assertEqual(tryMatch(rule, 5, 'poin 3 '), 1)
     
+    def test_RegExpr_caret(self):
+        rule = self._getRule('fortran.xml', 'find_decls', 7)
+        self.assertEqual(tryMatch(rule, 1, ' real'), None)
+        self.assertEqual(tryMatch(rule, 0, 'real'), 4)
+    
     def test_StringDetect(self):
         rule = self._getRule('debiancontrol.xml', 'INIT', 1)
         self.assertEqual(tryMatch(rule, 0, 'Recommends: xxx'), len('Recommends:'))
