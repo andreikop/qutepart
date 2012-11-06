@@ -120,6 +120,8 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, '4E+10'), 5)
         self.assertEqual(tryMatch(rule, 0, '4E+10F'), 6)
 
+        self.assertEqual(tryMatch(rule, 0, '4e+10'), 5)  # lower case
+
     def test_HlCOct(self):
         rule = self._getRule("commonlisp.xml", "SpecialNumber", 2)
         

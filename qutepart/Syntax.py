@@ -473,7 +473,7 @@ class Float(AbstractNumberRule):
             haveDigit = True
             matchedLength += digitCount
         
-        if len(text) > matchedLength and text[matchedLength] == 'E':
+        if len(text) > matchedLength and text[matchedLength].lower() == 'e':
             matchedLength += 1
             
             if len(text) > matchedLength and text[matchedLength] in '+-':
