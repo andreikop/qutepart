@@ -734,7 +734,7 @@
   
       <context attribute="Tuplet" lineEndContext="#pop" name="Tuplet"
 		fallthrough="true" fallthroughContext="#pop">
-	<RegExpr attribute="Tuplet" context="#pop" String="\s*(above|below)?\s*[0-9]{1,2}(y|n|num)?(\s*,\s*[0-9]{1,2}\.?([+][0-9]{1,2}\.?)*)?" />
+	<RegExpr attribute="Tuplet" context="#pop" String="\s*(above|below)?\s*[0-9]{1,2}(y|num|n)?(\s*,\s*[0-9]{1,2}\.?([+][0-9]{1,2}\.?)*)?" />
       </context>
 
 
