@@ -202,6 +202,13 @@ class Test(unittest.TestCase):
         rule = self._getRule('jsp.xml', "Jsp Scriptlet", 5)
         self.assertEqual(tryMatch(rule, 0, "String"), len("String"))
     
+    def test_mup_keyword(self):
+        """Test for additionalDeliminator syntax attribute
+        """
+        rule = self._getRule('mup.xml', "Value", 2)
+        text = 'key = 3#minor'
+        self.assertEqual(tryMatch(rule, 8, text), 5)
+    
     def test_keyword_insensitive(self):
         """Insensitive attribute for particular keyword
         """

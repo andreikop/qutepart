@@ -433,5 +433,9 @@ def loadSyntax(manager, filePath):
             if 'weakDeliminator' in keywordsElement.attrib:
                 weakSet = keywordsElement.attrib['weakDeliminator']
                 syntax.deliminatorSet.difference_update(weakSet)
+            
+            if 'additionalDeliminator' in keywordsElement.attrib:
+                additionalSet = keywordsElement.attrib['additionalDeliminator']
+                syntax.deliminatorSet.update(additionalSet)
 
     return syntax
