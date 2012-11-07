@@ -103,6 +103,9 @@ class Test(unittest.TestCase):
         rule = self._getRule('c.xml', 'Normal', 13)
         self.assertEqual(tryMatch(rule, 0, '756LUL'), 6)
         self.assertEqual(tryMatch(rule, 0, '756LOL'), 4)
+        
+        self.assertEqual(tryMatch(rule, 1, '(756LOL'), 4)
+        self.assertEqual(tryMatch(rule, 1, 'i756LOL'), None)
 
     def test_Float(self):
         rule = self._getRule('c.xml', 'Normal', 10)

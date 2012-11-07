@@ -408,7 +408,13 @@ class AbstractNumberRule(AbstractRule):
     def _tryMatch(self, contextStack, currentColumnIndex, text):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
-        """        
+        """
+        
+        # hlamer: This check is not described in kate docs, and I haven't found it in the code
+        if currentColumnIndex > 0 and \
+           (not text[currentColumnIndex - 1] in self.parentContext.syntax.deliminatorSet):
+            return contextStack, None, None
+        
         index = self._tryMatchText(text[currentColumnIndex:], contextStack.currentData())
         if index is None:
             return contextStack, None, None
