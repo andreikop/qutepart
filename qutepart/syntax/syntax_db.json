@@ -252,6 +252,7 @@
         "*.per": "fgl-per.xml", 
         "*.per.err": "fgl-per.xml", 
         "*.pgn": "pgn.xml", 
+        "*.php": "php.xml", 
         "*.pic": "picsrc.xml", 
         "*.pig": "pig.xml", 
         "*.pike": "pike.xml", 

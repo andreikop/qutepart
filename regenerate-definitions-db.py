@@ -3,7 +3,8 @@
 import os.path
 import json
 
-from qutepart.Syntax import Syntax
+from qutepart.syntax_manager import SyntaxManager
+from qutepart.loader import loadSyntax
 
 def main():
     xmlFilesPath = os.path.join(os.path.dirname(__file__), 'qutepart', 'syntax')
@@ -16,7 +17,7 @@ def main():
 
     for xmlFileName in xmlFileNames:
         xmlFilePath = os.path.join(xmlFilesPath, xmlFileName)
-        syntax = Syntax(xmlFilePath)
+        syntax = loadSyntax(SyntaxManager(), xmlFilePath)
         if not syntax.name in syntaxNameToXmlFileName or \
            syntaxNameToXmlFileName[syntax.name][0] < syntax.priority:
             syntaxNameToXmlFileName[syntax.name] = (syntax.priority, xmlFileName)
