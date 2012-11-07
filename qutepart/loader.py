@@ -420,6 +420,8 @@ def loadSyntax(manager, filePath):
     # parse contexts
     _loadContexts(highlightingElement, syntax)
 
+    syntax.keywordsCaseSensitive = True
+
     generalElement = root.find('general')
     if generalElement is not None:
         keywordsElement = generalElement.find('keywords')
