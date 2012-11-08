@@ -38,9 +38,9 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         
         for matchedContext in parseBlockResult.matchedContexts:
             self._setFormat(contextAreaStartPos, matchedContext.length, matchedContext.context.format)
-            for rule, pos, ruleLength in matchedContext.matchedRules:
-                if rule.format is not None:
-                    self._setFormat(pos, ruleLength, rule.format)
+            for matchedRule in matchedContext.matchedRules:
+                if matchedRule.rule.attribute is not None:
+                    self._setFormat(matchedRule.pos, matchedRule.length, matchedRule.rule.format)
             contextAreaStartPos += matchedContext.length
         
         self.setCurrentBlockUserData(_TextBlockUserData(parseBlockResult.lineData))

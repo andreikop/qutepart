@@ -29,12 +29,31 @@ class MatchedContext:
     Public attributes:
         context
         length
-        matchedRules
+        matchedRules    List of MatchedRule
     """
     def __init__(self, context, length, matchedRules):
         self.context = context
         self.length = length
         self.matchedRules = matchedRules
+
+class MatchedRule:
+    """Matched rule section
+    Public attributes:
+        rule
+        pos
+        length
+    """
+    def __init__(self, rule, pos, length):
+        self.rule = rule
+        self.pos = pos
+        self.length = length
+
+class _LineData:
+    """Data of previous line, used for parsing next line
+    """
+    def __init__(self, contextStack, lineContinue):
+        self.contextStack = contextStack
+        self.lineContinue = lineContinue
 
 class ContextStack:
     def __init__(self, contexts, data):
@@ -756,7 +775,7 @@ class Context:
             for rule in self.rules:
                 newContextStack, count, matchedRule = rule.tryMatch(contextStack, currentColumnIndex, text)
                 if count is not None:
-                    matchedRules.append((matchedRule, currentColumnIndex, count))
+                    matchedRules.append(MatchedRule(matchedRule, currentColumnIndex, count))
                     currentColumnIndex += count
                     if newContextStack != contextStack:
                         return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
@@ -829,18 +848,17 @@ class Syntax:
     
     def parseBlock(self, text, prevLineData):
         """Parse block and return ParseBlockResult
-        where matchedContexts is:
-            [ (Context, length, [matchedRules]), ...]
-        where matchedRule is:
-            (Rule, pos, length)
         """
         if prevLineData is not None:
-            contextStack = prevLineData
+            contextStack = prevLineData.contextStack
+            lineContinue = prevLineData.lineContinue
         else:
             contextStack = ContextStack.makeDefault(self)
+            lineContinue = False
         
         # this code is not tested, because lineBeginContext is not defined by any xml file
-        if contextStack.currentContext().lineBeginContext is not None:
+        if contextStack.currentContext().lineBeginContext is not None and \
+           (not lineContinue):
             contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
         
         matchedContexts = []
@@ -855,19 +873,28 @@ class Syntax:
             contextStack = newContextStack
             currentColumnIndex += length
 
-        if contextStack.currentContext().lineEndContext is not None:
+        lineContinue = False
+        if matchedContexts and \
+           matchedContexts[-1].matchedRules and \
+           isinstance(matchedContexts[-1].matchedRules[-1].rule, LineContinue):
+            lineContinue = True
+
+        if contextStack.currentContext().lineEndContext is not None and \
+           (not lineContinue):
             contextStack = contextStack.currentContext().lineEndContext.getNextContextStack(contextStack)
         
-        return ParseBlockResult(contextStack, matchedContexts)
+        return ParseBlockResult(_LineData(contextStack, lineContinue), matchedContexts)
 
     def parseBlockTextualResults(self, text, prevLineData=None):
         """Execute parseBlock() and return textual results.
         For debugging"""
         parseBlockResult = self.parseBlock(text, prevLineData)
-        lineDataTextual = [context.name for context in parseBlockResult.lineData._contexts]
+        lineDataTextual = [context.name for context in parseBlockResult.lineData.contextStack._contexts]
         matchedContextsTextual = \
-         [ (matchedContext.context.name, matchedContext.length, [ (rule.shortId(), pos, length) \
-                                                    for rule, pos, length in matchedContext.matchedRules]) \
+         [ (matchedContext.context.name,
+            matchedContext.length,
+            [ (matchedRule.rule.shortId(), matchedRule.pos, matchedRule.length) \
+                for matchedRule in matchedContext.matchedRules]) \
                     for matchedContext in parseBlockResult.matchedContexts]
         
         return matchedContextsTextual
