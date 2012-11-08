@@ -14,6 +14,27 @@ import os.path
 import sys
 import re
 
+class ParseBlockResult:
+    """Result of Syntax.parseBlock() call.
+    Public attributes:
+        lineData            Data, which shall be saved and passed to Syntax.parseBlock() for the next line
+        matchedContexts     Highlighting results
+    """
+    def __init__(self, lineData, matchedContexts):
+        self.lineData = lineData
+        self.matchedContexts = matchedContexts
+
+class MatchedContext:
+    """Matched section of ParseBlockResult
+    Public attributes:
+        context
+        length
+        matchedRules
+    """
+    def __init__(self, context, length, matchedRules):
+        self.context = context
+        self.length = length
+        self.matchedRules = matchedRules
 
 class ContextStack:
     def __init__(self, contexts, data):
@@ -807,8 +828,7 @@ class Syntax:
         return res
     
     def parseBlock(self, text, prevLineData):
-        """Parse block and return touple:
-            (lineData, [matchedContexts])
+        """Parse block and return ParseBlockResult
         where matchedContexts is:
             [ (Context, length, [matchedRules]), ...]
         where matchedRule is:
@@ -830,7 +850,7 @@ class Syntax:
             length, newContextStack, matchedRules = \
                         contextStack.currentContext().parseBlock(contextStack, currentColumnIndex, text)
             
-            matchedContexts.append((contextStack.currentContext(), length, matchedRules))
+            matchedContexts.append(MatchedContext(contextStack.currentContext(), length, matchedRules))
             
             contextStack = newContextStack
             currentColumnIndex += length
@@ -838,17 +858,17 @@ class Syntax:
         if contextStack.currentContext().lineEndContext is not None:
             contextStack = contextStack.currentContext().lineEndContext.getNextContextStack(contextStack)
         
-        return contextStack, matchedContexts
+        return ParseBlockResult(contextStack, matchedContexts)
 
     def parseBlockTextualResults(self, text, prevLineData=None):
         """Execute parseBlock() and return textual results.
         For debugging"""
-        lineData, matchedContexts = self.parseBlock(text, prevLineData)
-        lineDataTextual = [context.name for context in lineData._contexts]
+        parseBlockResult = self.parseBlock(text, prevLineData)
+        lineDataTextual = [context.name for context in parseBlockResult.lineData._contexts]
         matchedContextsTextual = \
-         [ (context.name, contextLength, [ (rule.shortId(), pos, length) \
-                                                    for rule, pos, length in matchedRules]) \
-                    for context, contextLength, matchedRules in matchedContexts]
+         [ (matchedContext.context.name, matchedContext.length, [ (rule.shortId(), pos, length) \
+                                                    for rule, pos, length in matchedContext.matchedRules]) \
+                    for matchedContext in parseBlockResult.matchedContexts]
         
         return matchedContextsTextual
 
