@@ -880,9 +880,12 @@ class Syntax:
            isinstance(matchedContexts[-1].matchedRules[-1].rule, LineContinue):
             lineContinue = True
 
-        if contextStack.currentContext().lineEndContext is not None and \
-           (not lineContinue):
+        while contextStack.currentContext().lineEndContext is not None and \
+              (not lineContinue):
+            oldStack = contextStack
             contextStack = contextStack.currentContext().lineEndContext.getNextContextStack(contextStack)
+            if oldStack == contextStack:  # avoid infinite while loop if nothing to switch
+                break
         
         return ParseBlockResult(_LineData(contextStack, lineContinue), matchedContexts)
 
