@@ -6,6 +6,33 @@ from qutepart.Syntax import *
 from qutepart.ColorTheme import ColorTheme, TextFormat
 
 
+import re
+
+_seqReplacer = re.compile('\\\\.')
+
+_escapeSequences = \
+{  '\\': '\\',
+  'a': '\a',
+  'b': '\b',
+  'f': '\f',
+  'n': '\n',
+  'r': '\r',
+  't': '\t',}
+
+
+def _processEscapeSequences(replaceText):
+    """Replace symbols like \n \\, etc
+    """
+    def _replaceFunc(escapeMatchObject):
+        char = escapeMatchObject.group(0)[1]
+        if char in _escapeSequences:
+            return _escapeSequences[char]
+        
+        return escapeMatchObject.group(0)  # no any replacements, return original value
+
+    return _seqReplacer.sub(_replaceFunc, replaceText)
+
+
 _DEFAULT_ATTRIBUTE_TO_STYLE_MAP = \
 {
     'alert' : 'dsAlert',
@@ -123,6 +150,8 @@ def _loadDetectChar(parentContext, xmlElement):
     rule = DetectChar()
     _loadAbstractRule(rule, parentContext, xmlElement)
     rule.char = _safeGetRequiredAttribute(xmlElement, "char", None)
+    if rule.char is not None:
+        rule.char = _processEscapeSequences(rule.char)
     
     if rule.dynamic:
         try:
@@ -145,7 +174,7 @@ def _loadDetect2Chars(parentContext, xmlElement):
     if char is None or char1 is None:
         rule.string = None
     else:
-        rule.string = char + char1
+        rule.string = _processEscapeSequences(char) + _processEscapeSequences(char1)
     
     return rule
 

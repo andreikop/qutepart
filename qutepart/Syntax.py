@@ -14,6 +14,7 @@ import os.path
 import sys
 import re
 
+
 class ParseBlockResult:
     """Result of Syntax.parseBlock() call.
     Public attributes:

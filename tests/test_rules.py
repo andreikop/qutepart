@@ -62,6 +62,12 @@ class Test(unittest.TestCase):
         rule = self._getRule('debiancontrol.xml', 'Field', 1)
         self.assertEqual(tryMatch(rule, 0, '${xxx}'), 2)
 
+    def test_Detect2Chars_shell_escape(self):
+        """Test escape characters processing in Detect2Chars rule
+        """
+        rule = self._getRule('zsh.xml', "FindStrings", 1)
+        self.assertEqual(tryMatch(rule, 0, '\\"'), 2)
+
     def test_DetectSpaces(self):
         rule = self._getRule('yacc.xml', 'Pre Start', 1)
         self.assertEqual(tryMatch(rule, 0, '   asdf fdafasd  '), 3)
