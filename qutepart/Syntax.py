@@ -141,7 +141,7 @@ class _TextToMatchObject:
     """Peace of text, which shall be matched.
     Contains pre-calculated and pre-checked data for performance optimization
     """
-    def __init__(self, currentColumnIndex, wholeLineText):
+    def __init__(self, currentColumnIndex, wholeLineText, deliminatorSet):
         self.currentColumnIndex = currentColumnIndex
         self.wholeLineText = wholeLineText
         self.text = wholeLineText[currentColumnIndex:]
@@ -153,6 +153,25 @@ class _TextToMatchObject:
                 if not char.isspace():
                     self.firstNonSpace = False
                     break
+        
+        self.isWordStart = currentColumnIndex == 0 or \
+                         wholeLineText[currentColumnIndex - 1].isspace() or \
+                         wholeLineText[currentColumnIndex - 1] in deliminatorSet
+
+        self.word = None
+        if self.isWordStart:
+            wordEndIndex = 0
+            for index, char in enumerate(self.text):
+                if char.isspace() or \
+                   char in deliminatorSet:
+                    wordEndIndex = index
+                    break
+            else:
+                wordEndIndex = len(wholeLineText)
+            
+            if wordEndIndex != 0:
+                self.word = self.text[:wordEndIndex]
+
 
 class AbstractRule:
     """Base class for rule classes
@@ -331,32 +350,15 @@ class AbstractWordRule(AbstractRule):
     """
     def _tryMatch(self, contextStack, textToMatchObject):
         # Skip if column doesn't match
-        wordStart = textToMatchObject.currentColumnIndex == 0 or \
-                    textToMatchObject.wholeLineText[textToMatchObject.currentColumnIndex - 1].isspace() or \
-                    textToMatchObject.wholeLineText[textToMatchObject.currentColumnIndex - 1] in self.parentContext.syntax.deliminatorSet
         
-        if not wordStart:
-            return contextStack, None, None
-        
-        textToCheck = textToMatchObject.text
-
-        wordEndIndex = 0
-        for index, char in enumerate(textToCheck):
-            if char.isspace() or \
-               char in self.parentContext.syntax.deliminatorSet:
-                wordEndIndex = index
-                break
-        else:
-            wordEndIndex = len(textToMatchObject.wholeLineText)
-
-        wordToCheck = textToCheck[:wordEndIndex]
-        
-        if not wordToCheck:
+        if textToMatchObject.word is None:
             return contextStack, None, None
         
         if self.insensitive or \
            (not self.parentContext.syntax.keywordsCaseSensitive):
-            wordToCheck = wordToCheck.lower()
+            wordToCheck = textToMatchObject.word.lower()
+        else:
+            wordToCheck = textToMatchObject.word
         
         if wordToCheck in self.words:
             if self.context is not None:
@@ -419,10 +421,6 @@ class RegExpr(AbstractRule):
 
         return AbstractRule._seqReplacer.sub(_replaceFunc, string)
 
-    @staticmethod
-    def _isWordChar(char):
-        return re.match('\\w', char) is not None
-    
     def _tryMatch(self, contextStack, textToMatchObject):
         """Tries to parse text. If matched - saves data for dynamic context
         """
@@ -438,9 +436,8 @@ class RegExpr(AbstractRule):
         # Special case. if pattern starts with \b, we have to check it manually,
         # because string is passed to .match(..) without beginning
         if regExp.pattern.strip('(').startswith('\\b'):
-            if textToMatchObject.currentColumnIndex > 0:
-                if self._isWordChar(textToMatchObject.wholeLineText[textToMatchObject.currentColumnIndex - 1]):
-                    return contextStack, None, None
+            if not textToMatchObject.isWordStart:
+                return contextStack, None, None
         
         #Special case. If pattern starts with ^ - check column number manually
         if regExp.pattern.strip('(').startswith('^'):
@@ -471,8 +468,7 @@ class AbstractNumberRule(AbstractRule):
         """
         
         # hlamer: This check is not described in kate docs, and I haven't found it in the code
-        if textToMatchObject.currentColumnIndex > 0 and \
-           (not textToMatchObject.wholeLineText[textToMatchObject.currentColumnIndex - 1] in self.parentContext.syntax.deliminatorSet):
+        if not textToMatchObject.isWordStart:
             return contextStack, None, None
         
         index = self._tryMatchText(textToMatchObject.text, contextStack.currentData())
@@ -480,7 +476,9 @@ class AbstractNumberRule(AbstractRule):
             return contextStack, None, None
         
         if textToMatchObject.currentColumnIndex + index < len(textToMatchObject.wholeLineText):
-            newTextToMatchObject = _TextToMatchObject(textToMatchObject.currentColumnIndex + index, textToMatchObject.wholeLineText)
+            newTextToMatchObject = _TextToMatchObject(textToMatchObject.currentColumnIndex + index,
+                                                      textToMatchObject.wholeLineText,
+                                                      self.parentContext.syntax.deliminatorSet)
             for rule in self.childRules:
                 newContextStack, matchedLength, matchedRule = rule.tryMatch(contextStack, newTextToMatchObject)
                 if matchedLength is not None:
@@ -793,7 +791,7 @@ class Context:
         startColumnIndex = currentColumnIndex
         matchedRules = []
         while currentColumnIndex < len(text):
-            textToMatchObject = _TextToMatchObject(currentColumnIndex, text)
+            textToMatchObject = _TextToMatchObject(currentColumnIndex, text, self.syntax.deliminatorSet)
             for rule in self.rules:
                 newContextStack, count, matchedRule = rule.tryMatch(contextStack, textToMatchObject)
                 if count is not None:

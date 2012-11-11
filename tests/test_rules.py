@@ -9,8 +9,13 @@ from qutepart.Syntax import Context, ContextStack, _TextToMatchObject
 
 def tryMatch(rule, column, text):
     fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext], [None, None, None])
-    textToMatchObject = _TextToMatchObject(column, text)
+    textToMatchObject = _TextToMatchObject(column, text, rule.parentContext.syntax.deliminatorSet)
     return rule.tryMatch(fakeStack, textToMatchObject)[1]
+
+def tryMatchWithData(rule, contextStack, column, text):
+    textToMatchObject = _TextToMatchObject(column, text, rule.parentContext.syntax.deliminatorSet)
+    return rule.tryMatch(contextStack, textToMatchObject)[1]
+
 
 class Test(unittest.TestCase):
     def _getRule(self, syntaxName, contextName, ruleIndex):
@@ -253,7 +258,7 @@ class Test(unittest.TestCase):
         fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
                                   [('|'), ('|'), ('|')]
                                  )
-        newStack, count, matchedRule = rule.tryMatch(fakeStack, _TextToMatchObject(3, text))
+        count = tryMatchWithData(rule, fakeStack, 3, text)
         self.assertEqual(count, 1)
 
     def test_dynamic_string_detect(self):
@@ -265,7 +270,7 @@ class Test(unittest.TestCase):
         fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
                                   [None, None, ('myheredoc',)]
                                  )
-        newStack, count, matchedRule = rule.tryMatch(fakeStack, _TextToMatchObject(0, text))
+        count = tryMatchWithData(rule, fakeStack, 0, text)
         self.assertEqual(count, len(text))
 
     def test_some_test(self):
@@ -275,10 +280,10 @@ class Test(unittest.TestCase):
         fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
                                   [None, None, ('X', 'Y', 'Z',)]
                                  )
-        newStack, count, matchedRule = rule.tryMatch(fakeStack, _TextToMatchObject(0, text))
+        count = tryMatchWithData(rule, fakeStack, 0, text)
         self.assertEqual(count, None)
 
-        newStack, count, matchedRule = rule.tryMatch(fakeStack, _TextToMatchObject(4, text))
+        count = tryMatchWithData(rule, fakeStack, 4, text)
         self.assertEqual(count, 1)
 
 
