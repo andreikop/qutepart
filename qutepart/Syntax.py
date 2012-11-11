@@ -177,6 +177,9 @@ class AbstractRule:
         column
         dynamic
     """
+    
+    _seqReplacer = re.compile('%\d+')
+
     def __str__(self):
         """Serialize.
         For debug logs
@@ -229,8 +232,6 @@ class AbstractRule:
             return contextStack, count, self
         else:
             return contextStack, None, None
-    
-    _seqReplacer = re.compile('%\d+')
     
     def _tryMatchText(self, text, contextData):
         """Simple tryMatch method. Checks if text matches.
