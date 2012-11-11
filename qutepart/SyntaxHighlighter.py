@@ -16,6 +16,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, syntax, *args):
         QSyntaxHighlighter.__init__(self, *args)
         self._syntax = syntax
+        self._quteparserToQtFormat = {}
     
     def _makeQtFormat(self, format):
         qtFormat = QTextCharFormat()
@@ -26,9 +27,17 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         qtFormat.setFontUnderline(format.underline)
         qtFormat.setFontStrikeOut(format.strikeOut)
         return qtFormat
+    
+    def _getQtFormat(self, format):
+        try:
+            return self._quteparserToQtFormat[id(format)]
+        except KeyError:
+            qtFormat = self._makeQtFormat(format)
+            self._quteparserToQtFormat[id(format)] = qtFormat
+            return qtFormat
 
     def _setFormat(self, start, length, format):
-        qtFormat = self._makeQtFormat(format)
+        qtFormat = self._getQtFormat(format)
         self.setFormat(start, length, qtFormat)
 
     def highlightBlock(self, text):
