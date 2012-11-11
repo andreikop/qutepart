@@ -8,13 +8,11 @@ from qutepart.syntax_manager import SyntaxManager
 from qutepart.Syntax import Context, ContextStack, _TextToMatchObject
 
 def tryMatch(rule, column, text):
-    fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext], [None, None, None])
-    textToMatchObject = _TextToMatchObject(column, text, rule.parentContext.syntax.deliminatorSet)
-    return rule.tryMatch(fakeStack, textToMatchObject)[1]
+    return tryMatchWithData(rule, None, column, text)
 
-def tryMatchWithData(rule, contextStack, column, text):
-    textToMatchObject = _TextToMatchObject(column, text, rule.parentContext.syntax.deliminatorSet)
-    return rule.tryMatch(contextStack, textToMatchObject)[1]
+def tryMatchWithData(rule, contextData, column, text):
+    textToMatchObject = _TextToMatchObject(column, text, rule.parentContext.syntax.deliminatorSet, contextData)
+    return rule.tryMatch(textToMatchObject)[1]
 
 
 class Test(unittest.TestCase):
@@ -255,10 +253,7 @@ class Test(unittest.TestCase):
         """
         rule = self._getRule("ruby.xml", "gdl_dq_string_5", 2)  # "\s*%1"
         text = '%|a| x'
-        fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
-                                  [('|'), ('|'), ('|')]
-                                 )
-        count = tryMatchWithData(rule, fakeStack, 3, text)
+        count = tryMatchWithData(rule, ('|'), 3, text)
         self.assertEqual(count, 1)
 
     def test_dynamic_string_detect(self):
@@ -267,23 +262,17 @@ class Test(unittest.TestCase):
         rule = self._getRule("php.xml", "phpsource", 29)  # heredoc
         text = "<<<myheredoc"
 
-        fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
-                                  [None, None, ('myheredoc',)]
-                                 )
-        count = tryMatchWithData(rule, fakeStack, 0, text)
+        count = tryMatchWithData(rule, ('myheredoc',), 0, text)
         self.assertEqual(count, len(text))
 
     def test_some_test(self):
         rule = self._getRule("perl.xml", "string_6", 3)
         text = "abcdXefg"
 
-        fakeStack = ContextStack([rule.parentContext, rule.parentContext, rule.parentContext],
-                                  [None, None, ('X', 'Y', 'Z',)]
-                                 )
-        count = tryMatchWithData(rule, fakeStack, 0, text)
+        count = tryMatchWithData(rule, ('X', 'Y', 'Z',), 0, text)
         self.assertEqual(count, None)
 
-        count = tryMatchWithData(rule, fakeStack, 4, text)
+        count = tryMatchWithData(rule, ('X', 'Y', 'Z',), 4, text)
         self.assertEqual(count, 1)
 
 
