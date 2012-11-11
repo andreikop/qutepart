@@ -383,6 +383,8 @@ class RegExpr(AbstractRule):
     
     Public attributes:
         regExp
+        wordStart
+        lineStart
     """
     @staticmethod
     def _compileRegExp(string, insensitive):
@@ -428,14 +430,14 @@ class RegExpr(AbstractRule):
         
         # Special case. if pattern starts with \b, we have to check it manually,
         # because string is passed to .match(..) without beginning
-        if regExp.pattern.strip('(').startswith('\\b'):
-            if not textToMatchObject.isWordStart:
+        if self.wordStart and \
+           (not textToMatchObject.isWordStart):
                 return contextStack, None, None
         
         #Special case. If pattern starts with ^ - check column number manually
-        if regExp.pattern.strip('(').startswith('^'):
-            if textToMatchObject.currentColumnIndex > 0:
-                return contextStack, None, None
+        if self.lineStart and \
+           textToMatchObject.currentColumnIndex > 0:
+            return contextStack, None, None
         
         match = regExp.match(textToMatchObject.text)
         if match is not None and match.group(0):

@@ -242,6 +242,9 @@ def _loadRegExpr(parentContext, xmlElement):
     if not rule.dynamic:
         rule.regExp = rule._compileRegExp(rule.string, rule.insensitive)
     
+    rule.wordStart = rule.string.strip('(').startswith('\\b')
+    rule.lineStart = rule.string.strip('(').startswith('^')
+    
     return rule
 
 def _loadAbstractNumberRule(rule, parentContext, xmlElement):
