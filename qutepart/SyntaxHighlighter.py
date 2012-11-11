@@ -33,7 +33,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
     def highlightBlock(self, text):
         parseBlockResult = self._syntax.parseBlock(text, self._prevData())
-        self._syntax.parseAndPrintBlockTextualResults(text, self._prevData())
+        #self._syntax.parseAndPrintBlockTextualResults(text, self._prevData())
         contextAreaStartPos = 0
         
         for matchedContext in parseBlockResult.matchedContexts:

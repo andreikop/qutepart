@@ -323,27 +323,30 @@ class AbstractWordRule(AbstractRule):
             return contextStack, None, None
         
         textToCheck = text[currentColumnIndex:]
+
+        wordEndIndex = 0
+        for index, char in enumerate(textToCheck):
+            if char.isspace() or \
+               char in self.parentContext.syntax.deliminatorSet:
+                wordEndIndex = index
+                break
+        else:
+            wordEndIndex = len(text)
+
+        wordToCheck = textToCheck[:wordEndIndex]
+        
+        if not wordToCheck:
+            return contextStack, None, None
         
         if self.insensitive or \
            (not self.parentContext.syntax.keywordsCaseSensitive):
-            textToCheck = textToCheck.lower()
+            wordToCheck = wordToCheck.lower()
         
-        for word in self.words:
-            if not textToCheck.startswith(word):
-                continue
-            
-            stringLen = len(word)
-            wordEnd   = stringLen == len(textToCheck) or \
-                        textToCheck[stringLen].isspace() or \
-                        textToCheck[stringLen] in self.parentContext.syntax.deliminatorSet
-            
-            if not wordEnd:
-                continue
-
+        if wordToCheck in self.words:
             if self.context is not None:
                 contextStack = self.context.getNextContextStack(contextStack)
 
-            return contextStack, stringLen, self
+            return contextStack, len(wordToCheck), self
         else:
             return contextStack, None, None
 
