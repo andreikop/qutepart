@@ -13,7 +13,7 @@ class RulesTestCase(unittest.TestCase):
         """
         syntax = SyntaxManager().getSyntaxByXmlName('debiancontrol.xml')
         self.assertEqual(syntax.parseBlockTextualResults('Section:'),
-                         [('INIT', 8, [('RegExpr([^ ]*:)', 0, 8)])])
+                         [('INIT', 8, [(u'RegExpr( [^ ]*: )', 0, 8)])])
         self.assertEqual(syntax.parseBlockTextualResults(' '),
                          [('INIT', 1, [('DetectChar( )', 0, 1)])])
         self.assertEqual(syntax.parseBlockTextualResults('Provides:'),
@@ -24,7 +24,7 @@ class RulesTestCase(unittest.TestCase):
         """
         syntax = SyntaxManager().getSyntaxByXmlName('debiancontrol.xml')
         self.assertEqual(syntax.parseBlockTextualResults('Section: editors'),
-                         [('INIT', 8, [('RegExpr([^ ]*:)', 0, 8)]), ('Field', 8, [])])
+                         [('INIT', 8, [(u'RegExpr( [^ ]*: )', 0, 8)]), ('Field', 8, [])])
         self.assertEqual(syntax.parseBlockTextualResults(' Section: editors'),
                          [('INIT', 1, [('DetectChar( )', 0, 1)]), ('Field', 16, [])])
         self.assertEqual(syntax.parseBlockTextualResults('Provides: xxx'),
