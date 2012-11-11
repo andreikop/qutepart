@@ -146,13 +146,7 @@ class _TextToMatchObject:
         self.wholeLineText = wholeLineText
         self.text = wholeLineText[currentColumnIndex:]
 
-        self.firstNonSpace = True
-        if currentColumnIndex != 0:
-            prevText = wholeLineText[:currentColumnIndex]
-            for char in prevText:
-                if not char.isspace():
-                    self.firstNonSpace = False
-                    break
+        self.firstNonSpace = not bool(wholeLineText[:currentColumnIndex].strip())
         
         self.isWordStart = currentColumnIndex == 0 or \
                          wholeLineText[currentColumnIndex - 1].isspace() or \
@@ -162,8 +156,7 @@ class _TextToMatchObject:
         if self.isWordStart:
             wordEndIndex = 0
             for index, char in enumerate(self.text):
-                if char.isspace() or \
-                   char in deliminatorSet:
+                if char in deliminatorSet:
                     wordEndIndex = index
                     break
             else:
