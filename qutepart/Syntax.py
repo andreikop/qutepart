@@ -14,19 +14,47 @@ import os.path
 import sys
 import re
 
+class HighlightedSegment:
+    def __init__(self, length, format):
+        self.length = length
+        self.format = format
 
 class ParseBlockResult:
+    def __init__(self, parseBlockFullResult):
+        self.lineData = parseBlockFullResult.lineData
+        
+        self.highlightedSegments = []
+        
+        currentPos = 0
+        for matchedContext in parseBlockFullResult.matchedContexts:
+            matchedCntextStartPos = currentPos
+            for matchedRule in matchedContext.matchedRules:
+                if matchedRule.pos > currentPos:
+                    self._appendHighlightedSegment(matchedRule.pos - currentPos,
+                                                   matchedContext.context.format)
+                self._appendHighlightedSegment(matchedRule.length,
+                                               matchedRule.rule.format)
+                currentPos = matchedRule.pos + matchedRule.length
+            if currentPos < matchedCntextStartPos + matchedContext.length:
+                self._appendHighlightedSegment(matchedCntextStartPos + matchedContext.length - currentPos,
+                                               matchedContext.context.format)
+
+    def _appendHighlightedSegment(self, length, format):
+        self.highlightedSegments.append(HighlightedSegment(length, format))
+
+
+class ParseBlockFullResult:
     """Result of Syntax.parseBlock() call.
     Public attributes:
-        lineData            Data, which shall be saved and passed to Syntax.parseBlock() for the next line
-        matchedContexts     Highlighting results
+        lineData                Data, which shall be saved and passed to Syntax.parseBlock() for the next line
+        matchedContextsFull     Highlighting results, 
     """
     def __init__(self, lineData, matchedContexts):
         self.lineData = lineData
         self.matchedContexts = matchedContexts
 
 class MatchedContext:
-    """Matched section of ParseBlockResult
+    """Matched section of ParseBlockFullResult
     Public attributes:
         context
         length
@@ -790,7 +818,7 @@ class Context:
                                                    contextStack.currentData())
             for rule in self.rules:
                 ruleTryMatchResult = rule.tryMatch(textToMatchObject)
-                if ruleTryMatchResult is not None:        
+                if ruleTryMatchResult is not None:
                     matchedRules.append(MatchedRule(ruleTryMatchResult.rule,
                                                     currentColumnIndex,
                                                     ruleTryMatchResult.length))
@@ -866,9 +894,13 @@ class Syntax:
             res += unicode(context)
         
         return res
-    
+
     def parseBlock(self, text, prevLineData):
-        """Parse block and return ParseBlockResult
+        fullResult = self.parseBlockFullResults(text, prevLineData)
+        return ParseBlockResult(fullResult)
+    
+    def parseBlockFullResults(self, text, prevLineData):
+        """Parse block and return ParseBlockFullResult
         """
         if prevLineData is not None:
             contextStack = prevLineData.contextStack
@@ -907,23 +939,25 @@ class Syntax:
             if oldStack == contextStack:  # avoid infinite while loop if nothing to switch
                 break
         
-        return ParseBlockResult(_LineData(contextStack, lineContinue), matchedContexts)
+        return ParseBlockFullResult(_LineData(contextStack, lineContinue), matchedContexts)
 
     def parseBlockTextualResults(self, text, prevLineData=None):
         """Execute parseBlock() and return textual results.
         For debugging"""
-        parseBlockResult = self.parseBlock(text, prevLineData)
-        lineDataTextual = [context.name for context in parseBlockResult.lineData.contextStack._contexts]
+        parseBlockFullResult = self.parseBlockFullResults(text, prevLineData)
+        lineDataTextual = [context.name for context in parseBlockFullResult.lineData.contextStack._contexts]
         matchedContextsTextual = \
          [ (matchedContext.context.name,
             matchedContext.length,
             [ (matchedRule.rule.shortId(), matchedRule.pos, matchedRule.length) \
                 for matchedRule in matchedContext.matchedRules]) \
-                    for matchedContext in parseBlockResult.matchedContexts]
+                    for matchedContext in parseBlockFullResult.matchedContexts]
         
         return matchedContextsTextual
 
     def _printParseBlockTextualResults(self, text, results):
+        """For debugging
+        """
         contextStart = 0
         for name, length, rules in results:
             print repr(text[contextStart:contextStart + length]), name
@@ -932,13 +966,15 @@ class Syntax:
                 print '\t', repr(text[pos: pos + len]), rule
 
     def parseAndPrintBlockTextualResults(self, text, prevLineData=None):
+        """For debugging
+        """
         res = self.parseBlockTextualResults(text, prevLineData)
         return self._printParseBlockTextualResults(text, res)
     
     def parseBlockContextStackTextual(self, text, prevLineData=None):
         """Execute parseBlock() and return context stack as list of context names
         For debugging"""
-        parseBlockResult = self.parseBlock(text, prevLineData)
-        lineDataTextual = [context.name for context in parseBlockResult.lineData.contextStack._contexts]
+        parseBlockFullResult = self.parseBlockFullResults(text, prevLineData)
+        lineDataTextual = [context.name for context in parseBlockFullResult.lineData.contextStack._contexts]
         
         return lineDataTextual

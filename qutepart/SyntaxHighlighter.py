@@ -37,20 +37,19 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             return qtFormat
 
     def _setFormat(self, start, length, format):
+        if format is None:
+            return
         qtFormat = self._getQtFormat(format)
         self.setFormat(start, length, qtFormat)
 
     def highlightBlock(self, text):
         parseBlockResult = self._syntax.parseBlock(text, self._prevData())
         #self._syntax.parseAndPrintBlockTextualResults(text, self._prevData())
-        contextAreaStartPos = 0
+        currentPos = 0
         
-        for matchedContext in parseBlockResult.matchedContexts:
-            self._setFormat(contextAreaStartPos, matchedContext.length, matchedContext.context.format)
-            for matchedRule in matchedContext.matchedRules:
-                if matchedRule.rule.attribute is not None:
-                    self._setFormat(matchedRule.pos, matchedRule.length, matchedRule.rule.format)
-            contextAreaStartPos += matchedContext.length
+        for highlitedSegment in parseBlockResult.highlightedSegments:
+            self._setFormat(currentPos, highlitedSegment.length, highlitedSegment.format)
+            currentPos += highlitedSegment.length
         
         self.setCurrentBlockUserData(_TextBlockUserData(parseBlockResult.lineData))
 

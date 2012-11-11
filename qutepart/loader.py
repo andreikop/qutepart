@@ -127,7 +127,9 @@ def _loadAbstractRule(rule, parentContext, xmlElement):
             rule.format = parentContext.syntax.attributeToFormatMap[rule.attribute]
         except KeyError:
             print >> sys.stderr, 'Unknown rule attribute', rule.attribute
-            rule.format = TextFormat()
+            rule.format = parentContext.format
+    else:
+        rule.format = parentContext.format
 
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
