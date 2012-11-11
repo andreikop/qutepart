@@ -921,7 +921,7 @@ class Syntax:
     def parseBlockContextStackTextual(self, text, prevLineData=None):
         """Execute parseBlock() and return context stack as list of context names
         For debugging"""
-        lineData, matchedContexts = self.parseBlock(text, prevLineData)
-        lineDataTextual = [context.name for context in lineData._contexts]
+        parseBlockResult = self.parseBlock(text, prevLineData)
+        lineDataTextual = [context.name for context in parseBlockResult.lineData.contextStack._contexts]
         
         return lineDataTextual
