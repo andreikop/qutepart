@@ -40,7 +40,7 @@ def main():
     pte.show()
     
     from PyQt4.QtCore import QTimer
-    QTimer.singleShot(0, app.quit)
+    #QTimer.singleShot(0, app.quit)
     return app.exec_()
     
 

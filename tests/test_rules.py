@@ -12,7 +12,11 @@ def tryMatch(rule, column, text):
 
 def tryMatchWithData(rule, contextData, column, text):
     textToMatchObject = _TextToMatchObject(column, text, rule.parentContext.syntax.deliminatorSet, contextData)
-    return rule.tryMatch(textToMatchObject)[1]
+    ruleTryMatchResult = rule.tryMatch(textToMatchObject)
+    if ruleTryMatchResult is not None:
+        return ruleTryMatchResult.length
+    else:
+        return None
 
 
 class Test(unittest.TestCase):

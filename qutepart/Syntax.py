@@ -167,6 +167,14 @@ class _TextToMatchObject:
         
         self.contextData = contextData
 
+class _RuleTryMatchResult:
+    def __init__(self, rule, length, data):
+        self.rule = rule
+        self.length = length
+        self.data = data
+        
+        if rule.lookAhead:
+            self.length = 0
 
 class AbstractRule:
     """Base class for rule classes
@@ -204,20 +212,17 @@ class AbstractRule:
         # Skip if column doesn't match
         if self.column is not None and \
            self.column != textToMatchObject.currentColumnIndex:
-            return None, None, None
+            return None
         
         if self.firstNonSpace and \
            (not textToMatchObject.firstNonSpace):
-            return None, None, None
+            return None
         
-        ruleMatchData, count, matchedRule = self._tryMatch(textToMatchObject)
-        if count is None:  # no match
-            return None, None, None
+        ruleTryMatchResult = self._tryMatch(textToMatchObject)
+        if ruleTryMatchResult is None:  # no match
+            return None
         
-        if self.lookAhead:
-            count = 0
-        
-        return ruleMatchData, count, matchedRule
+        return ruleTryMatchResult
 
     def _tryMatch(self, textToMatchObject):
         """Internal method.
@@ -228,9 +233,9 @@ class AbstractRule:
         count = self._tryMatchText(textToMatchObject.text,
                                    textToMatchObject.contextData)
         if count is not None:
-            return None, count, self
+            return _RuleTryMatchResult(self, count, None)
         else:
-            return None, None, None
+            return None
     
     def _tryMatchText(self, text, contextData):
         """Simple tryMatch method. Checks if text matches.
@@ -345,7 +350,7 @@ class AbstractWordRule(AbstractRule):
         # Skip if column doesn't match
         
         if textToMatchObject.word is None:
-            return None, None, None
+            return None
         
         if self.insensitive or \
            (not self.parentContext.syntax.keywordsCaseSensitive):
@@ -354,9 +359,9 @@ class AbstractWordRule(AbstractRule):
             wordToCheck = textToMatchObject.word
         
         if wordToCheck in self.words:
-            return None, len(wordToCheck), self
+            return _RuleTryMatchResult(self, len(wordToCheck), None)
         else:
-            return None, None, None
+            return None
 
 class WordDetect(AbstractWordRule):
     """Public attributes:
@@ -423,26 +428,26 @@ class RegExpr(AbstractRule):
             regExp = self.regExp
         
         if regExp is None:
-            return None, None, None
+            return None
         
         # Special case. if pattern starts with \b, we have to check it manually,
         # because string is passed to .match(..) without beginning
         if self.wordStart and \
            (not textToMatchObject.isWordStart):
-                return None, None, None
+                return None
         
         #Special case. If pattern starts with ^ - check column number manually
         if self.lineStart and \
            textToMatchObject.currentColumnIndex > 0:
-            return None, None, None
+            return None
         
         match = regExp.match(textToMatchObject.text)
         if match is not None and match.group(0):
             count = len(match.group(0))
 
-            return match.groups(), count, self
+            return _RuleTryMatchResult(self, count, match.groups())
         else:
-            return None, None, None
+            return None
 
 
 class AbstractNumberRule(AbstractRule):
@@ -459,11 +464,11 @@ class AbstractNumberRule(AbstractRule):
         
         # hlamer: This check is not described in kate docs, and I haven't found it in the code
         if not textToMatchObject.isWordStart:
-            return None, None, None
+            return None
         
         index = self._tryMatchText(textToMatchObject.text, textToMatchObject.contextData)
         if index is None:
-            return None, None, None
+            return None
         
         if textToMatchObject.currentColumnIndex + index < len(textToMatchObject.wholeLineText):
             newTextToMatchObject = _TextToMatchObject(textToMatchObject.currentColumnIndex + index,
@@ -471,13 +476,13 @@ class AbstractNumberRule(AbstractRule):
                                                       self.parentContext.syntax.deliminatorSet,
                                                       textToMatchObject.contextData)
             for rule in self.childRules:
-                ruleMatchData, matchedLength, matchedRule = rule.tryMatch(newTextToMatchObject)
-                if matchedLength is not None:
-                    index += matchedLength
+                ruleTryMatchResult = rule.tryMatch(newTextToMatchObject)
+                if ruleTryMatchResult is not None:
+                    index += ruleTryMatchResult.length
                     break
                 # child rule context and attribute ignored
 
-        return None, index, self
+        return _RuleTryMatchResult(self, index, None)
     
     def _countDigits(self, text):
         """Count digits at start of text
@@ -707,11 +712,11 @@ class IncludeRules(AbstractRule):
             context = self.parentContext.syntax.defaultContext
         
         for rule in context.rules:
-            ruleMatchData, columnIndex, matchedRule = rule.tryMatch(textToMatchObject)
-            if columnIndex is not None:
-                return ruleMatchData, columnIndex, matchedRule
+            ruleTryMatchResult = rule.tryMatch(textToMatchObject)
+            if ruleTryMatchResult is not None:
+                return ruleTryMatchResult
         else:
-            return None, None, None
+            return None
 
 
 class DetectSpaces(AbstractRule):
@@ -784,12 +789,15 @@ class Context:
                                                    self.syntax.deliminatorSet,
                                                    contextStack.currentData())
             for rule in self.rules:
-                ruleMatchData, count, matchedRule = rule.tryMatch(textToMatchObject)
-                if count is not None:
-                    matchedRules.append(MatchedRule(matchedRule, currentColumnIndex, count))
-                    currentColumnIndex += count
-                    if rule.context is not None:
-                        newContextStack = rule.context.getNextContextStack(contextStack, ruleMatchData)
+                ruleTryMatchResult = rule.tryMatch(textToMatchObject)
+                if ruleTryMatchResult is not None:        
+                    matchedRules.append(MatchedRule(ruleTryMatchResult.rule,
+                                                    currentColumnIndex,
+                                                    ruleTryMatchResult.length))
+                    currentColumnIndex += ruleTryMatchResult.length
+                    if ruleTryMatchResult.rule.context is not None:
+                        newContextStack = ruleTryMatchResult.rule.context.getNextContextStack(contextStack,
+                                                                                              ruleTryMatchResult.data)
                         if newContextStack != contextStack:
                             return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
                     
