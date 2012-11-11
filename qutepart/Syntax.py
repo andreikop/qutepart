@@ -366,7 +366,7 @@ class WordDetect(AbstractWordRule):
         words
     """
     def shortId(self):
-        return 'WordDetect(%s, %s)' % (' '.join(self.words), self.insensitive)
+        return 'WordDetect(%s, %s)' % (' '.join(list(self.words)), self.insensitive)
 
 class keyword(AbstractWordRule):
     """Public attributes:

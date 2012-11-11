@@ -195,7 +195,7 @@ def _loadWordDetect(parentContext, xmlElement):
     rule = WordDetect()
     _loadAbstractRule(rule, parentContext, xmlElement)
     
-    rule.words = [_safeGetRequiredAttribute(xmlElement, "String", "")]
+    rule.words = set([_safeGetRequiredAttribute(xmlElement, "String", "")])
     
     rule.insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     return rule
@@ -205,11 +205,11 @@ def _loadKeyword(parentContext, xmlElement):
     _loadAbstractRule(rule, parentContext, xmlElement)
     rule.string = _safeGetRequiredAttribute(xmlElement, 'String', None)
     try:
-        rule.words = rule.parentContext.syntax.lists[rule.string]
+        rule.words = set(rule.parentContext.syntax.lists[rule.string])
     except KeyError:
         print >> sys.stderr, "List '%s' not found" % rule.string
         
-        rule.words = []
+        rule.words = set()
     
     rule.insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     return rule
