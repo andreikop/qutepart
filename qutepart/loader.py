@@ -105,7 +105,7 @@ def _loadIncludeRules(parentContext, xmlElement):
     else:
         context = parentContext.syntax.defaultContext
 
-    rule.context = context
+    rule.init(context)
 
     return rule
 
@@ -128,55 +128,57 @@ def _loadChildRules(context, xmlElement):
     return rules
 
 def _loadAbstractRule(rule, parentContext, xmlElement):
-    import Syntax  # FIXME
-    rule.parentContext = parentContext
-
     # attribute
-    rule.attribute = xmlElement.attrib.get("attribute", None)
-    if not rule.attribute is None:
-        rule.attribute = rule.attribute.lower()  # not case sensitive
+    attribute = xmlElement.attrib.get("attribute", None)
+    if not attribute is None:
+        attribute = attribute.lower()  # not case sensitive
         try:
-            rule.format = parentContext.syntax.attributeToFormatMap[rule.attribute]
+            format = parentContext.syntax.attributeToFormatMap[attribute]
         except KeyError:
-            print >> sys.stderr, 'Unknown rule attribute', rule.attribute
-            rule.format = parentContext.format
+            print >> sys.stderr, 'Unknown rule attribute', attribute
+            format = parentContext.format
     else:
-        rule.format = parentContext.format
+        format = parentContext.format
 
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
-    rule.context = ContextSwitcher(contextText, parentContext.syntax.contexts)
+    context = ContextSwitcher(contextText, parentContext.syntax.contexts)
 
-    rule.lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
-    rule.firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
-    rule.dynamic = _parseBoolAttribute(xmlElement.attrib.get("dynamic", "false"))
+    lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
+    firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
+    dynamic = _parseBoolAttribute(xmlElement.attrib.get("dynamic", "false"))
     
     # TODO beginRegion
     # TODO endRegion
     
     column = xmlElement.attrib.get("column", None)
     if column is not None:
-        rule.column = int(column)
+        column = int(column)
     else:
-        rule.column = None
+        column = None
+    
+    AbstractRule.init(rule, parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column)
 
 def _loadDetectChar(parentContext, xmlElement):
     rule = DetectChar()
     _loadAbstractRule(rule, parentContext, xmlElement)
-    rule.char = _safeGetRequiredAttribute(xmlElement, "char", None)
-    if rule.char is not None:
-        rule.char = _processEscapeSequences(rule.char)
+    char = _safeGetRequiredAttribute(xmlElement, "char", None)
+    if char is not None:
+        char = _processEscapeSequences(char)
     
+    index = 0
     if rule.dynamic:
         try:
-            index = int(rule.char)
+            index = int(char)
         except ValueError:
-            print >> sys.stderr, 'Invalid DetectChar char', rule.char
-            rule.char = None
+            print >> sys.stderr, 'Invalid DetectChar char', char
+            index = 0
+        char = None
         if index <= 0:
-            print >> sys.stderr, 'Too little DetectChar index', rule.char
-            rule.char = None
+            print >> sys.stderr, 'Too little DetectChar index', char
+            index = 0
     
+    rule.init(char, index)
     return rule
 
 def _loadDetect2Chars(parentContext, xmlElement):
@@ -186,46 +188,58 @@ def _loadDetect2Chars(parentContext, xmlElement):
     char = _safeGetRequiredAttribute(xmlElement, 'char', None)
     char1 = _safeGetRequiredAttribute(xmlElement, 'char1', None)
     if char is None or char1 is None:
-        rule.string = None
+        string = None
     else:
-        rule.string = _processEscapeSequences(char) + _processEscapeSequences(char1)
+        string = _processEscapeSequences(char) + _processEscapeSequences(char1)
     
+    rule.init(string)
     return rule
 
 def _loadAnyChar(parentContext, xmlElement):
     rule = AnyChar()
     _loadAbstractRule(rule, parentContext, xmlElement)
     
-    rule.string = _safeGetRequiredAttribute(xmlElement, 'String', '')
+    string = _safeGetRequiredAttribute(xmlElement, 'String', '')
+    
+    rule.init(string)
+    
     return rule
 
 def _loadStringDetect(parentContext, xmlElement):
     rule = StringDetect()
     _loadAbstractRule(rule, parentContext, xmlElement)
-    rule.string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+    string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+    
+    rule.init(string)
+    
     return rule
 
 def _loadWordDetect(parentContext, xmlElement):
     rule = WordDetect()
     _loadAbstractRule(rule, parentContext, xmlElement)
     
-    rule.words = set([_safeGetRequiredAttribute(xmlElement, "String", "")])
+    words = set([_safeGetRequiredAttribute(xmlElement, "String", "")])
+    insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     
-    rule.insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
+    AbstractWordRule.init(rule, words, insensitive)
+
     return rule
 
 def _loadKeyword(parentContext, xmlElement):
     rule = keyword()
     _loadAbstractRule(rule, parentContext, xmlElement)
-    rule.string = _safeGetRequiredAttribute(xmlElement, 'String', None)
+    string = _safeGetRequiredAttribute(xmlElement, 'String', None)
     try:
-        rule.words = set(rule.parentContext.syntax.lists[rule.string])
+        words = set(rule.parentContext.syntax.lists[string])
     except KeyError:
-        print >> sys.stderr, "List '%s' not found" % rule.string
+        print >> sys.stderr, "List '%s' not found" % string
         
-        rule.words = set()
+        words = set()
     
-    rule.insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
+    insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
+    
+    AbstractWordRule.init(rule, words, insensitive)
+    
     return rule
 
 def _loadRegExpr(parentContext, xmlElement):
@@ -244,27 +258,27 @@ def _loadRegExpr(parentContext, xmlElement):
     rule = RegExpr()
     _loadAbstractRule(rule, parentContext, xmlElement)
     
+    insensitive = xmlElement.attrib.get('insensitive', False)
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)        
 
-    if string is None:
-        rule.regExp = None
-        return
+    if string is not None:
+        string = _processCraracterCodes(string)
         
-    rule.string = _processCraracterCodes(string)
-    rule.insensitive = xmlElement.attrib.get('insensitive', False)
+        wordStart = string.strip('(').startswith('\\b')
+        lineStart = string.strip('(').startswith('^')
+    else:
+        wordStart = False
+        lineStart = False
     
-    if not rule.dynamic:
-        rule.regExp = rule._compileRegExp(rule.string, rule.insensitive)
-    
-    rule.wordStart = rule.string.strip('(').startswith('\\b')
-    rule.lineStart = rule.string.strip('(').startswith('^')
-    
+    rule.init(string, insensitive, wordStart, lineStart)
+
     return rule
 
 def _loadAbstractNumberRule(rule, parentContext, xmlElement):
     _loadAbstractRule(rule, parentContext, xmlElement)
     
-    rule.childRules = _loadChildRules(parentContext, xmlElement)
+    childRules = _loadChildRules(parentContext, xmlElement)
+    rule.init(childRules)
 
 def _loadInt(parentContext, xmlElement):
     rule = Int()
@@ -280,8 +294,11 @@ def _loadRangeDetect(parentContext, xmlElement):
     rule = RangeDetect()
     _loadAbstractRule(rule, parentContext, xmlElement)
     
-    rule.char = _safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
-    rule.char1 = _safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
+    char = _safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
+    char1 = _safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
+    
+    rule.init(char, char1)
+    
     return rule
 
 

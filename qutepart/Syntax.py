@@ -219,6 +219,16 @@ class AbstractRule:
     
     _seqReplacer = re.compile('%\d+')
 
+    def init(self, parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column):
+        self.parentContext = parentContext
+        self.format = format
+        self.attribute = attribute
+        self.context = context
+        self.lookAhead = lookAhead
+        self.firstNonSpace = firstNonSpace
+        self.dynamic = dynamic
+        self.column = column
+    
     def __str__(self):
         """Serialize.
         For debug logs
@@ -258,15 +268,19 @@ class DetectChar(AbstractRule):
     """Public attributes:
         char
     """
+    def init(self, char, index):
+        self.char = char
+        self.index = index
+    
     def shortId(self):
-        return 'DetectChar(%s)' % self.char
+        return 'DetectChar(%s, %d)' % (self.char, self.index)
     
     def _tryMatch(self, textToMatchObject):
-        if self.char is None:
+        if self.char is None and self.index == 0:
             return None
 
         if self.dynamic:
-            index = int(self.char) - 1
+            index = self.index - 1
             if index >= len(textToMatchObject.contextData):
                 print >> sys.stderr, 'Invalid DetectChar index', index
                 return None
@@ -287,6 +301,9 @@ class Detect2Chars(AbstractRule):
     """Public attributes
         string
     """
+    def init(self, string):
+        self.string = string
+    
     def shortId(self):
         return 'Detect2Chars(%s)' % self.string
     
@@ -304,6 +321,9 @@ class AnyChar(AbstractRule):
     """Public attributes:
         string
     """
+    def init(self, string):
+        self.string = string
+    
     def shortId(self):
         return 'AnyChar(%s)' % self.string
     
@@ -318,6 +338,9 @@ class StringDetect(AbstractRule):
     """Public attributes:
         string
     """
+    def init(self, string):
+        self.string = string
+    
     def shortId(self):
         return 'StringDetect(%s)' % self.string
 
@@ -356,6 +379,10 @@ class AbstractWordRule(AbstractRule):
     Public attributes:
         insensitive  (Not documented in the kate docs)
     """
+    def init(self, words, insensitive):
+        self.words = words
+        self.insensitive = insensitive
+
     def _tryMatch(self, textToMatchObject):
         # Skip if column doesn't match
         
@@ -376,9 +403,9 @@ class AbstractWordRule(AbstractRule):
 class WordDetect(AbstractWordRule):
     """Public attributes:
         words
-    """
+    """    
     def shortId(self):
-        return 'WordDetect(%s, %s)' % (' '.join(list(self.words)), self.insensitive)
+        return 'WordDetect(%s, %d)' % (' '.join(list(self.words)), self.insensitive)
 
 class keyword(AbstractWordRule):
     """Public attributes:
@@ -386,7 +413,7 @@ class keyword(AbstractWordRule):
         words
     """
     def shortId(self):
-        return 'keyword(%s)' % repr(self.string)
+        return 'keyword(%s, %d)' % (' '.join(list(self.words)), self.insensitive)
 
 
 class RegExpr(AbstractRule):
@@ -398,6 +425,18 @@ class RegExpr(AbstractRule):
         wordStart
         lineStart
     """
+    def init(self, string, insensitive, wordStart, lineStart):
+        self.string = string
+        self.insensitive = insensitive
+        self.wordStart = wordStart
+        self.lineStart = lineStart
+        
+        if self.dynamic:
+            self.regExp = None
+        else:
+            self.regExp = self._compileRegExp(string, insensitive)
+
+    
     @staticmethod
     def _compileRegExp(string, insensitive):
         flags = 0
@@ -467,6 +506,9 @@ class AbstractNumberRule(AbstractRule):
     Public attributes:
         childRules
     """
+    def init(self, childRules):
+        self.childRules = childRules
+    
     def _tryMatch(self, textToMatchObject):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
@@ -676,6 +718,10 @@ class RangeDetect(AbstractRule):
         char
         char1
     """
+    def init(self, char, char1):
+        self.char = char
+        self.char1 = char1
+    
     def shortId(self):
         return 'RangeDetect(%s, %s)' % (self.char, self.char1)
     
@@ -700,6 +746,9 @@ class LineContinue(AbstractRule):
 
 
 class IncludeRules(AbstractRule):
+    def init(self, context):
+        self.context = context
+
     def __str__(self):
         """Serialize.
         For debug logs
@@ -709,7 +758,7 @@ class IncludeRules(AbstractRule):
         return res
 
     def shortId(self):
-        return "IncludeRules(%s)" % self._contextName
+        return "IncludeRules(%s)" % self.context.name
     
     def _tryMatch(self, textToMatchObject):
         """Try to find themselves in the text.
