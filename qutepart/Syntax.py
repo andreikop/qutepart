@@ -173,6 +173,7 @@ class _TextToMatchObject:
         self.currentColumnIndex = currentColumnIndex
         self.wholeLineText = wholeLineText
         self.text = wholeLineText[currentColumnIndex:]
+        self.textLen = len(self.text)
 
         self.firstNonSpace = not bool(wholeLineText[:currentColumnIndex].strip())
         
@@ -196,7 +197,7 @@ class _TextToMatchObject:
         self.contextData = contextData
 
 class _RuleTryMatchResult:
-    def __init__(self, rule, length, data):
+    def __init__(self, rule, length, data=None):
         self.rule = rule
         self.length = length
         self.data = data
@@ -252,25 +253,6 @@ class AbstractRule:
         
         return ruleTryMatchResult
 
-    def _tryMatch(self, textToMatchObject):
-        """Internal method.
-        Doesn't check current column and lookAhead
-        
-        This is basic implementation. IncludeRules, WordDetect, Int, Float reimplements this method
-        """
-        count = self._tryMatchText(textToMatchObject.text,
-                                   textToMatchObject.contextData)
-        if count is not None:
-            return _RuleTryMatchResult(self, count, None)
-        else:
-            return None
-    
-    def _tryMatchText(self, text, contextData):
-        """Simple tryMatch method. Checks if text matches.
-        Shall be reimplemented by child classes
-        """
-        raise NotImplementedFault()
-    
 
 class DetectChar(AbstractRule):
     """Public attributes:
@@ -279,26 +261,26 @@ class DetectChar(AbstractRule):
     def shortId(self):
         return 'DetectChar(%s)' % self.char
     
-    def _tryMatchText(self, text, contextData):
+    def _tryMatch(self, textToMatchObject):
         if self.char is None:
             return None
 
         if self.dynamic:
             index = int(self.char) - 1
-            if index >= len(contextData):
+            if index >= len(textToMatchObject.contextData):
                 print >> sys.stderr, 'Invalid DetectChar index', index
                 return None
             
-            if len(contextData[index]) != 1:
-                    print >> sys.stderr, 'Too long DetectChar string', contextData[index]
+            if len(textToMatchObject.contextData[index]) != 1:
+                    print >> sys.stderr, 'Too long DetectChar string', textToMatchObject.contextData[index]
                     return None
             
-            string = contextData[index]
+            string = textToMatchObject.contextData[index]
         else:
             string = self.char
         
-        if text[0] == string:
-            return 1
+        if textToMatchObject.text[0] == string:
+            return _RuleTryMatchResult(self, 1)
         return None
 
 class Detect2Chars(AbstractRule):
@@ -308,12 +290,12 @@ class Detect2Chars(AbstractRule):
     def shortId(self):
         return 'Detect2Chars(%s)' % self.string
     
-    def _tryMatchText(self, text, contextData):
+    def _tryMatch(self, textToMatchObject):
         if self.string is None:
             return None
         
-        if text.startswith(self.string):
-            return len(self.string)
+        if textToMatchObject.text.startswith(self.string):
+            return _RuleTryMatchResult(self, len(self.string))
         
         return None
 
@@ -325,9 +307,9 @@ class AnyChar(AbstractRule):
     def shortId(self):
         return 'AnyChar(%s)' % self.string
     
-    def _tryMatchText(self, text, contextData):
-        if text[0] in self.string:
-            return 1
+    def _tryMatch(self, textToMatchObject):
+        if textToMatchObject.text[0] in self.string:
+            return _RuleTryMatchResult(self, 1)
         
         return None
 
@@ -339,17 +321,17 @@ class StringDetect(AbstractRule):
     def shortId(self):
         return 'StringDetect(%s)' % self.string
 
-    def _tryMatchText(self, text, contextData):
+    def _tryMatch(self, textToMatchObject):
         if self.string is None:
-            return
+            return None
         
         if self.dynamic:
-            string = self._makeDynamicStringSubsctitutions(self.string, contextData)
+            string = self._makeDynamicStringSubsctitutions(self.string, textToMatchObject.contextData)
         else:
             string = self.string
         
-        if text.startswith(string):
-            return len(string)
+        if textToMatchObject.text.startswith(string):
+            return _RuleTryMatchResult(self, len(string))
     
         return None
     
@@ -360,8 +342,8 @@ class StringDetect(AbstractRule):
         def _replaceFunc(escapeMatchObject):
             stringIndex = escapeMatchObject.group(0)[1]
             index = int(stringIndex) - 1
-            if index < len(contextData):
-                return contextData[index]
+            if index < len(textToMatchObject.contextData):
+                return textToMatchObject.contextData[index]
             else:
                 return escapeMatchObject.group(0)  # no any replacements, return original value
 
@@ -387,7 +369,7 @@ class AbstractWordRule(AbstractRule):
             wordToCheck = textToMatchObject.word
         
         if wordToCheck in self.words:
-            return _RuleTryMatchResult(self, len(wordToCheck), None)
+            return _RuleTryMatchResult(self, len(wordToCheck))
         else:
             return None
 
@@ -494,7 +476,7 @@ class AbstractNumberRule(AbstractRule):
         if not textToMatchObject.isWordStart:
             return None
         
-        index = self._tryMatchText(textToMatchObject.text, textToMatchObject.contextData)
+        index = self._tryMatchText(textToMatchObject.text)
         if index is None:
             return None
         
@@ -510,7 +492,7 @@ class AbstractNumberRule(AbstractRule):
                     break
                 # child rule context and attribute ignored
 
-        return _RuleTryMatchResult(self, index, None)
+        return _RuleTryMatchResult(self, index)
     
     def _countDigits(self, text):
         """Count digits at start of text
@@ -526,7 +508,7 @@ class Int(AbstractNumberRule):
     def shortId(self):
         return 'Int()'
 
-    def _tryMatchText(self, text, contextData):
+    def _tryMatchText(self, text):
         matchedLength = self._countDigits(text)
         
         if matchedLength:
@@ -538,7 +520,7 @@ class Float(AbstractNumberRule):
     def shortId(self):
         return 'Float()'
 
-    def _tryMatchText(self, text, contextData):
+    def _tryMatchText(self, text):
         
         haveDigit = False
         havePoint = False
@@ -590,21 +572,21 @@ class HlCOct(AbstractRule):
     def shortId(self):
         return 'HlCOct'
 
-    def _tryMatchText(self, text, contextData):
-        if text[0] != '0':
+    def _tryMatch(self, textToMatchObject):
+        if textToMatchObject.text[0] != '0':
             return None
         
         index = 1
-        while index < len(text) and text[index] in '1234567':
+        while index < len(textToMatchObject.text) and textToMatchObject.text[index] in '1234567':
             index += 1
         
         if index == 1:
             return None
         
-        if index < len(text) and text[index].upper() in 'LU':
+        if index < len(textToMatchObject.text) and textToMatchObject.text[index].upper() in 'LU':
             index += 1
         
-        return index
+        return _RuleTryMatchResult(self, index)
 
     def shortId(self):
         return 'HlCOct()'
@@ -613,24 +595,24 @@ class HlCHex(AbstractRule):
     def shortId(self):
         return 'HlCHex'
 
-    def _tryMatchText(self, text, contextData):
-        if len(text) < 3:
+    def _tryMatch(self, textToMatchObject):
+        if len(textToMatchObject.text) < 3:
             return None
         
-        if text[:2].upper() != '0X':
+        if textToMatchObject.text[:2].upper() != '0X':
             return None
         
         index = 2
-        while index < len(text) and text[index].upper() in '0123456789ABCDEF':
+        while index < len(textToMatchObject.text) and textToMatchObject.text[index].upper() in '0123456789ABCDEF':
             index += 1
         
         if index == 2:
             return None
         
-        if index < len(text) and text[index].upper() in 'LU':
+        if index < len(textToMatchObject.text) and textToMatchObject.text[index].upper() in 'LU':
             index += 1
         
-        return index
+        return _RuleTryMatchResult(self, index)
 
     def shortId(self):
         return 'HlCHex()'
@@ -663,24 +645,28 @@ class HlCStringChar(AbstractRule):
     def shortId(self):
         return 'HlCStringChar'
 
-    def _tryMatchText(self, text, contextData):
-        return _checkEscapedChar(text)
+    def _tryMatch(self, textToMatchObject):
+        res = _checkEscapedChar(textToMatchObject.text)
+        if res is not None:
+            return _RuleTryMatchResult(self, res)
+        else:
+            return None
 
 
 class HlCChar(AbstractRule):
     def shortId(self):
         return 'HlCChar'
 
-    def _tryMatchText(self, text, contextData):
-        if len(text) > 2 and text[0] == "'" and text[1] != "'":
-            result = _checkEscapedChar(text[1:])
+    def _tryMatch(self, textToMatchObject):
+        if len(textToMatchObject.text) > 2 and textToMatchObject.text[0] == "'" and textToMatchObject.text[1] != "'":
+            result = _checkEscapedChar(textToMatchObject.text[1:])
             if result is not None:
                 index = 1 + result
             else:  # 1 not escaped character
                 index = 1 + 1
             
-            if index < len(text) and text[index] == "'":
-                return index + 1
+            if index < len(textToMatchObject.text) and textToMatchObject.text[index] == "'":
+                return _RuleTryMatchResult(self, index + 1)
         
         return None
 
@@ -693,11 +679,11 @@ class RangeDetect(AbstractRule):
     def shortId(self):
         return 'RangeDetect(%s, %s)' % (self.char, self.char1)
     
-    def _tryMatchText(self, text, contextData):
-        if text.startswith(self.char):
-            end = text.find(self.char1)
+    def _tryMatch(self, textToMatchObject):
+        if textToMatchObject.text.startswith(self.char):
+            end = textToMatchObject.text.find(self.char1)
             if end > 0:
-                return end + 1
+                return _RuleTryMatchResult(self, end + 1)
         
         return None
 
@@ -706,9 +692,9 @@ class LineContinue(AbstractRule):
     def shortId(self):
         return 'LineContinue'
 
-    def _tryMatchText(self, text, contextData):
-        if text == '\\':
-            return 1
+    def _tryMatch(self, textToMatchObject):
+        if textToMatchObject.text == '\\':
+            return _RuleTryMatchResult(self, 1)
         
         return None
 
@@ -741,10 +727,10 @@ class DetectSpaces(AbstractRule):
     def shortId(self):
         return 'DetectSpaces()'
 
-    def _tryMatchText(self, text, contextData):
-        spaceLen = len(text) - len(text.lstrip())
+    def _tryMatch(self, textToMatchObject):
+        spaceLen = len(textToMatchObject.text) - len(textToMatchObject.text.lstrip())
         if spaceLen:
-            return spaceLen
+            return _RuleTryMatchResult(self, spaceLen)
         else:
             return None
         
@@ -753,10 +739,10 @@ class DetectIdentifier(AbstractRule):
     def shortId(self):
         return 'DetectIdentifier()'
     
-    def _tryMatchText(self, text, contextData):
-        match = DetectIdentifier._regExp.match(text)
+    def _tryMatch(self, textToMatchObject):
+        match = DetectIdentifier._regExp.match(textToMatchObject.text)
         if match is not None and match.group(0):
-            return len(match.group(0))
+            return _RuleTryMatchResult(self, len(match.group(0)))
         
         return None
 
