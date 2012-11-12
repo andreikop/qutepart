@@ -24,7 +24,9 @@ class SyntaxManager:
     def getSyntaxByXmlName(self, xmlFileName):
         if not xmlFileName in self._loadedSyntaxes:
             xmlFilePath = os.path.join(os.path.dirname(__file__), "syntax", xmlFileName)
-            self._loadedSyntaxes[xmlFileName] = qutepart.loader.loadSyntax(self, xmlFilePath)
+            syntax = qutepart.Syntax.Syntax(self)
+            self._loadedSyntaxes[xmlFileName] = syntax
+            qutepart.loader.loadSyntax(syntax, xmlFilePath)
         
         return self._loadedSyntaxes[xmlFileName]
 

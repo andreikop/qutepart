@@ -729,17 +729,7 @@ class IncludeRules(AbstractRule):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
         """
-        if self._contextName is not None:
-            if self._contextName in self.parentContext.syntax.contexts:
-                context = self.parentContext.syntax.contexts[self._contextName]
-            elif self._contextName.startswith('##'):
-                syntaxName = self._contextName[2:]
-                syntax = self.parentContext.syntax.manager.getSyntaxByName(syntaxName)
-                context = syntax.defaultContext
-        else:
-            context = self.parentContext.syntax.defaultContext
-        
-        for rule in context.rules:
+        for rule in self.context.rules:
             ruleTryMatchResult = rule.tryMatch(textToMatchObject)
             if ruleTryMatchResult is not None:
                 return ruleTryMatchResult

@@ -93,8 +93,20 @@ def _loadIncludeRules(parentContext, xmlElement):
     rule = IncludeRules()
     _loadAbstractRule(rule, parentContext, xmlElement)
     
-    rule._contextName = _safeGetRequiredAttribute(xmlElement, "context", None)
-    # context will be resolved, when parsing. Avoiding infinite recursion
+    contextName = _safeGetRequiredAttribute(xmlElement, "context", None)
+    
+    if contextName is not None:
+        if contextName in parentContext.syntax.contexts:
+            context = parentContext.syntax.contexts[contextName]
+        elif contextName.startswith('##'):
+            syntaxName = contextName[2:]
+            syntax = parentContext.syntax.manager.getSyntaxByName(syntaxName)
+            context = syntax.defaultContext
+    else:
+        context = parentContext.syntax.defaultContext
+
+    rule.context = context
+
     return rule
 
 def _simpleLoader(classObject):
@@ -418,11 +430,7 @@ def _makeKeywordsLowerCase(listDict):
             keywordList[index] = keyword.lower()
 
 
-def loadSyntax(manager, filePath):
-    from Syntax import Syntax  # FIXME
-    
-    syntax = Syntax(manager)
-    
+def loadSyntax(syntax, filePath):
     with open(filePath, 'r') as definitionFile:
         root = xml.etree.ElementTree.parse(definitionFile).getroot()
 
