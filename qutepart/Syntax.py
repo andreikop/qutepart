@@ -219,15 +219,28 @@ class AbstractRule:
     
     _seqReplacer = re.compile('%\d+')
 
-    def init(self, parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column):
-        self.parentContext = parentContext
-        self.format = format
-        self.attribute = attribute
-        self.context = context
-        self.lookAhead = lookAhead
-        self.firstNonSpace = firstNonSpace
-        self.dynamic = dynamic
-        self.column = column
+    class Params:
+        """Parameters, passed to the constructor
+        """
+        def __init__(self, parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column):
+            self.parentContext = parentContext
+            self.format = format
+            self.attribute = attribute
+            self.context = context
+            self.lookAhead = lookAhead
+            self.firstNonSpace = firstNonSpace
+            self.dynamic = dynamic
+            self.column = column
+
+    def __init__(self, params):
+        self.parentContext = params.parentContext
+        self.format = params.format
+        self.attribute = params.attribute
+        self.context = params.context
+        self.lookAhead = params.lookAhead
+        self.firstNonSpace = params.firstNonSpace
+        self.dynamic = params.dynamic
+        self.column = params.column
     
     def __str__(self):
         """Serialize.
@@ -268,7 +281,8 @@ class DetectChar(AbstractRule):
     """Public attributes:
         char
     """
-    def init(self, char, index):
+    def __init__(self, abstractRuleParams, char, index):
+        AbstractRule.__init__(self, abstractRuleParams)
         self.char = char
         self.index = index
     
@@ -301,7 +315,8 @@ class Detect2Chars(AbstractRule):
     """Public attributes
         string
     """
-    def init(self, string):
+    def __init__(self, abstractRuleParams, string):
+        AbstractRule.__init__(self, abstractRuleParams)
         self.string = string
     
     def shortId(self):
@@ -321,7 +336,8 @@ class AnyChar(AbstractRule):
     """Public attributes:
         string
     """
-    def init(self, string):
+    def __init__(self, abstractRuleParams, string):
+        AbstractRule.__init__(self, abstractRuleParams)
         self.string = string
     
     def shortId(self):
@@ -338,7 +354,8 @@ class StringDetect(AbstractRule):
     """Public attributes:
         string
     """
-    def init(self, string):
+    def __init__(self, abstractRuleParams, string):
+        AbstractRule.__init__(self, abstractRuleParams)
         self.string = string
     
     def shortId(self):
@@ -379,7 +396,8 @@ class AbstractWordRule(AbstractRule):
     Public attributes:
         insensitive  (Not documented in the kate docs)
     """
-    def init(self, words, insensitive):
+    def __init__(self, abstractRuleParams, words, insensitive):
+        AbstractRule.__init__(self, abstractRuleParams)
         self.words = words
         self.insensitive = insensitive
 
@@ -417,15 +435,15 @@ class keyword(AbstractWordRule):
 
 
 class RegExpr(AbstractRule):
-    """TODO if regexp starts with ^ - match only column 0
-    TODO support "minimal" flag
+    """TODO support "minimal" flag
     
     Public attributes:
         regExp
         wordStart
         lineStart
     """
-    def init(self, string, insensitive, wordStart, lineStart):
+    def __init__(self, abstractRuleParams, string, insensitive, wordStart, lineStart):
+        AbstractRule.__init__(self, abstractRuleParams)
         self.string = string
         self.insensitive = insensitive
         self.wordStart = wordStart
@@ -506,7 +524,8 @@ class AbstractNumberRule(AbstractRule):
     Public attributes:
         childRules
     """
-    def init(self, childRules):
+    def __init__(self, abstractRuleParams, childRules):
+        AbstractRule.__init__(self, abstractRuleParams)
         self.childRules = childRules
     
     def _tryMatch(self, textToMatchObject):
@@ -718,7 +737,8 @@ class RangeDetect(AbstractRule):
         char
         char1
     """
-    def init(self, char, char1):
+    def __init__(self, abstractRuleParams, char, char1):
+        AbstractRule.__init__(self, abstractRuleParams)
         self.char = char
         self.char1 = char1
     
@@ -746,7 +766,8 @@ class LineContinue(AbstractRule):
 
 
 class IncludeRules(AbstractRule):
-    def init(self, context):
+    def __init__(self, abstractRuleParams, context):
+        AbstractRule.__init__(self, abstractRuleParams)
         self.context = context
 
     def __str__(self):

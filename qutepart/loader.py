@@ -90,9 +90,6 @@ def _safeGetRequiredAttribute(xmlElement, name, default):
 ################################################################################
 
 def _loadIncludeRules(parentContext, xmlElement):
-    rule = IncludeRules()
-    _loadAbstractRule(rule, parentContext, xmlElement)
-    
     contextName = _safeGetRequiredAttribute(xmlElement, "context", None)
     
     if contextName is not None:
@@ -105,15 +102,11 @@ def _loadIncludeRules(parentContext, xmlElement):
     else:
         context = parentContext.syntax.defaultContext
 
-    rule.init(context)
-
-    return rule
+    return IncludeRules(_loadAbstractRuleParams(parentContext, xmlElement), context)
 
 def _simpleLoader(classObject):
     def _load(parentContext, xmlElement):
-        rule = classObject()
-        _loadAbstractRule(rule, parentContext, xmlElement)
-        return rule
+        return classObject(_loadAbstractRuleParams(parentContext, xmlElement))
     return _load
 
 def _loadChildRules(context, xmlElement):
@@ -127,7 +120,7 @@ def _loadChildRules(context, xmlElement):
         rules.append(rule)
     return rules
 
-def _loadAbstractRule(rule, parentContext, xmlElement):
+def _loadAbstractRuleParams(parentContext, xmlElement):
     # attribute
     attribute = xmlElement.attrib.get("attribute", None)
     if not attribute is None:
@@ -157,17 +150,17 @@ def _loadAbstractRule(rule, parentContext, xmlElement):
     else:
         column = None
     
-    AbstractRule.init(rule, parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column)
+    return AbstractRule.Params(parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column)
 
 def _loadDetectChar(parentContext, xmlElement):
-    rule = DetectChar()
-    _loadAbstractRule(rule, parentContext, xmlElement)
+    abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement)
+    
     char = _safeGetRequiredAttribute(xmlElement, "char", None)
     if char is not None:
         char = _processEscapeSequences(char)
     
     index = 0
-    if rule.dynamic:
+    if abstractRuleParams.dynamic:
         try:
             index = int(char)
         except ValueError:
@@ -178,13 +171,9 @@ def _loadDetectChar(parentContext, xmlElement):
             print >> sys.stderr, 'Too little DetectChar index', char
             index = 0
     
-    rule.init(char, index)
-    return rule
+    return DetectChar(abstractRuleParams, char, index)
 
 def _loadDetect2Chars(parentContext, xmlElement):
-    rule = Detect2Chars()
-    _loadAbstractRule(rule, parentContext, xmlElement)
-    
     char = _safeGetRequiredAttribute(xmlElement, 'char', None)
     char1 = _safeGetRequiredAttribute(xmlElement, 'char1', None)
     if char is None or char1 is None:
@@ -192,45 +181,27 @@ def _loadDetect2Chars(parentContext, xmlElement):
     else:
         string = _processEscapeSequences(char) + _processEscapeSequences(char1)
     
-    rule.init(string)
-    return rule
+    return Detect2Chars(_loadAbstractRuleParams(parentContext, xmlElement), string)
 
 def _loadAnyChar(parentContext, xmlElement):
-    rule = AnyChar()
-    _loadAbstractRule(rule, parentContext, xmlElement)
-    
     string = _safeGetRequiredAttribute(xmlElement, 'String', '')
-    
-    rule.init(string)
-    
-    return rule
+    return AnyChar(_loadAbstractRuleParams(parentContext, xmlElement), string)
 
 def _loadStringDetect(parentContext, xmlElement):
-    rule = StringDetect()
-    _loadAbstractRule(rule, parentContext, xmlElement)
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)
     
-    rule.init(string)
-    
-    return rule
+    return StringDetect(_loadAbstractRuleParams(parentContext, xmlElement), string)
 
 def _loadWordDetect(parentContext, xmlElement):
-    rule = WordDetect()
-    _loadAbstractRule(rule, parentContext, xmlElement)
-    
     words = set([_safeGetRequiredAttribute(xmlElement, "String", "")])
     insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     
-    AbstractWordRule.init(rule, words, insensitive)
-
-    return rule
+    return WordDetect(_loadAbstractRuleParams(parentContext, xmlElement), words, insensitive)
 
 def _loadKeyword(parentContext, xmlElement):
-    rule = keyword()
-    _loadAbstractRule(rule, parentContext, xmlElement)
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)
     try:
-        words = set(rule.parentContext.syntax.lists[string])
+        words = set(parentContext.syntax.lists[string])
     except KeyError:
         print >> sys.stderr, "List '%s' not found" % string
         
@@ -238,9 +209,7 @@ def _loadKeyword(parentContext, xmlElement):
     
     insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     
-    AbstractWordRule.init(rule, words, insensitive)
-    
-    return rule
+    return keyword(_loadAbstractRuleParams(parentContext, xmlElement), words, insensitive)
 
 def _loadRegExpr(parentContext, xmlElement):
     def _processCraracterCodes(text):
@@ -255,9 +224,6 @@ def _loadRegExpr(parentContext, xmlElement):
             return chr(charCode).decode('latin1')
         return re.sub(r"\\0\d\d\d", replFunc, text)
 
-    rule = RegExpr()
-    _loadAbstractRule(rule, parentContext, xmlElement)
-    
     insensitive = xmlElement.attrib.get('insensitive', False)
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)        
 
@@ -270,36 +236,25 @@ def _loadRegExpr(parentContext, xmlElement):
         wordStart = False
         lineStart = False
     
-    rule.init(string, insensitive, wordStart, lineStart)
-
-    return rule
+    return RegExpr(_loadAbstractRuleParams(parentContext, xmlElement), string, insensitive, wordStart, lineStart)
 
 def _loadAbstractNumberRule(rule, parentContext, xmlElement):
-    _loadAbstractRule(rule, parentContext, xmlElement)
-    
-    childRules = _loadChildRules(parentContext, xmlElement)
-    rule.init(childRules)
+
+    return NumberRule(_loadAbstractRuleParams(parentContext, xmlElement), childRules)
 
 def _loadInt(parentContext, xmlElement):
-    rule = Int()
-    _loadAbstractNumberRule(rule, parentContext, xmlElement)
-    return rule
+    childRules = _loadChildRules(parentContext, xmlElement)
+    return Int(_loadAbstractRuleParams(parentContext, xmlElement), childRules)
 
 def _loadFloat(parentContext, xmlElement):
-    rule = Float()
-    _loadAbstractNumberRule(rule, parentContext, xmlElement)
-    return rule
+    childRules = _loadChildRules(parentContext, xmlElement)
+    return Float(_loadAbstractRuleParams(parentContext, xmlElement), childRules)
 
 def _loadRangeDetect(parentContext, xmlElement):
-    rule = RangeDetect()
-    _loadAbstractRule(rule, parentContext, xmlElement)
-    
     char = _safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
     char1 = _safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
     
-    rule.init(char, char1)
-    
-    return rule
+    return RangeDetect(_loadAbstractRuleParams(parentContext, xmlElement), char, char1)
 
 
 _ruleClassDict = \
