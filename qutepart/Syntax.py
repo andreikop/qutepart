@@ -832,6 +832,17 @@ class Context:
         self.syntax = syntax
         self.name = name
     
+    def init(self, attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic):
+        self.attribute = attribute
+        self.format = format
+        self.lineEndContext = lineEndContext
+        self.lineBeginContext = lineBeginContext
+        self.fallthroughContext = fallthroughContext
+        self.dynamic = dynamic
+    
+    def setRules(self, rules):
+        self.rules = rules
+    
     def __str__(self):
         """Serialize.
         For debug logs

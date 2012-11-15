@@ -308,38 +308,41 @@ def _loadContexts(highlightingElement, syntax):
     
     # parse contexts stage 2: load contexts
     for xmlElement, context in zip(xmlElementList, contextList):
-        _loadContext(context, xmlElement)
+        _loadContext(context, syntax, xmlElement)
 
-def _loadContext(context, xmlElement):
+def _loadContext(context, syntax, xmlElement):
     """Construct context from XML element
     Contexts are at first constructed, and only then loaded, because when loading context,
     ContextSwitcher must have references to all defined contexts
     """
-    context.attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', '<not set>').lower()
-    if context.attribute != '<not set>':  # there are no attributes for internal contexts, used by rules. See perl.xml
+    attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', '<not set>').lower()
+    if attribute != '<not set>':  # there are no attributes for internal contexts, used by rules. See perl.xml
         try:
-            context.format = context.syntax.attributeToFormatMap[context.attribute]
+            format = syntax.attributeToFormatMap[attribute]
         except KeyError:
-            print >> sys.stderr, 'Unknown context attribute', context.attribute
-            context.format = TextFormat()
+            print >> sys.stderr, 'Unknown context attribute', attribute
+            format = TextFormat()
     else:
-        context.format = None
+        format = None
     
     lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    context.lineEndContext = ContextSwitcher(lineEndContextText,  context.syntax.contexts)
+    lineEndContext = ContextSwitcher(lineEndContextText,  syntax.contexts)
     lineBeginContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    context.lineBeginContext = ContextSwitcher(lineBeginContextText, context.syntax.contexts)
+    lineBeginContext = ContextSwitcher(lineBeginContextText, syntax.contexts)
     
     if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
         fallthroughContextText = _safeGetRequiredAttribute(xmlElement, 'fallthroughContext', '#stay')
-        context.fallthroughContext = ContextSwitcher(fallthroughContextText, context.syntax.contexts)
+        fallthroughContext = ContextSwitcher(fallthroughContextText, syntax.contexts)
     else:
-        context.fallthroughContext = None
+        fallthroughContext = None
     
-    context.dynamic = xmlElement.attrib.get('dynamic', False)
+    dynamic = xmlElement.attrib.get('dynamic', False)
+    
+    context.init(attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic)
     
     # load rules
-    context.rules = _loadChildRules(context, xmlElement)
+    rules = _loadChildRules(context, xmlElement)
+    context.setRules(rules)
 
 ################################################################################
 ##                               Syntax
