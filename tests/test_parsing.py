@@ -15,7 +15,7 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(syntax.parseBlockTextualResults('Section:'),
                          [('INIT', 8, [(u'RegExpr( [^ ]*: )', 0, 8)])])
         self.assertEqual(syntax.parseBlockTextualResults(' '),
-                         [('INIT', 1, [('DetectChar( )', 0, 1)])])
+                         [('INIT', 1, [('DetectChar( , 0)', 0, 1)])])
         self.assertEqual(syntax.parseBlockTextualResults('Provides:'),
                          [('INIT', 9, [('StringDetect(Provides:)', 0, 9)])])
     
@@ -26,7 +26,7 @@ class RulesTestCase(unittest.TestCase):
         self.assertEqual(syntax.parseBlockTextualResults('Section: editors'),
                          [('INIT', 8, [(u'RegExpr( [^ ]*: )', 0, 8)]), ('Field', 8, [])])
         self.assertEqual(syntax.parseBlockTextualResults(' Section: editors'),
-                         [('INIT', 1, [('DetectChar( )', 0, 1)]), ('Field', 16, [])])
+                         [('INIT', 1, [('DetectChar( , 0)', 0, 1)]), ('Field', 16, [])])
         self.assertEqual(syntax.parseBlockTextualResults('Provides: xxx'),
                          [('INIT', 9, [('StringDetect(Provides:)', 0, 9)]), ('DependencyField', 4, [])])
 
@@ -36,11 +36,11 @@ class RulesTestCase(unittest.TestCase):
         syntax = SyntaxManager().getSyntaxByXmlName('debiancontrol.xml')
 
         self.assertEqual(syntax.parseBlockTextualResults(' ${a} ${b}'),
-                         [('INIT', 1, [('DetectChar( )', 0, 1)]), 
+                         [('INIT', 1, [('DetectChar( , 0)', 0, 1)]), 
                           ('Field', 2, [('Detect2Chars(${)', 1, 2)]),
-                          ('Variable', 2, [('DetectChar(})', 4, 1)]),
+                          ('Variable', 2, [('DetectChar(}, 0)', 4, 1)]),
                           ('Field', 3, [('Detect2Chars(${)', 6, 2)]),
-                          ('Variable', 2, [('DetectChar(})', 9, 1)])])
+                          ('Variable', 2, [('DetectChar(}, 0)', 9, 1)])])
 
     def test_return_context_stack(self):
         """Checks if parser returns valid context stack
