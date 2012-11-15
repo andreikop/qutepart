@@ -897,10 +897,10 @@ class Context:
 
         return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
 
-class Syntax:
-    """Syntax file parser and container
-    
-    Informative public attributes:
+
+class SyntaxDescription:
+    """Syntax description.
+    Public attributes:
         name            Name
         section         Section
         extensions      File extensions
@@ -911,8 +911,14 @@ class Syntax:
         author          Author
         license         License
         hidden          Shall be hidden in the menu
+    """
+    pass
+
+class Syntax:
+    """Syntax file parser and container
         
-    Effective public attributes:
+        syntaxDescription       SyntaxDescription instance
+        
         deliminatorSet          Set of deliminator characters
         lists                   Keyword lists as dictionary "list name" : "list value"
         keywordsCaseSensitive   If true, keywords are not case sensitive
@@ -922,7 +928,6 @@ class Syntax:
         colorTheme              Current color theme,
                                   compiled from default one and syntax specific modifications
     """
-        
     def __init__(self, manager):
         """Parse XML definition
         """

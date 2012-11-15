@@ -404,26 +404,27 @@ def _makeKeywordsLowerCase(listDict):
         for index, keyword in enumerate(keywordList):
             keywordList[index] = keyword.lower()
 
+def _loadSyntaxDescription(root):
+    syntaxDescription = SyntaxDescription()
+    syntaxDescription.name = _safeGetRequiredAttribute(root, 'name', 'Error: Syntax name is not set!!!')
+    syntaxDescription.section = _safeGetRequiredAttribute(root, 'section', 'Error: Section is not set!!!')
+    syntaxDescription.extensions = _safeGetRequiredAttribute(root, 'extensions', '').split(';')
+    syntaxDescription.mimetype = root.attrib.get('mimetype', '').split(';')
+    syntaxDescription.version = root.attrib.get('version', None)
+    syntaxDescription.kateversion = root.attrib.get('kateversion', None)
+    syntaxDescription.priority = root.attrib.get('priority', None)
+    syntaxDescription.author = root.attrib.get('author', None)
+    syntaxDescription.license = root.attrib.get('license', None)
+    syntaxDescription.hidden = _parseBoolAttribute(root.attrib.get('hidden', 'false'))
+    
+    return syntaxDescription
 
 def loadSyntax(syntax, filePath):
     with open(filePath, 'r') as definitionFile:
         root = xml.etree.ElementTree.parse(definitionFile).getroot()
 
-    syntax.name = _safeGetRequiredAttribute(root, 'name', 'Error: Syntax name is not set!!!')
-    
-    syntax.section = _safeGetRequiredAttribute(root, 'section', 'Error: Section is not set!!!')
-    syntax.extensions = _safeGetRequiredAttribute(root, 'extensions', '').split(';')
-    
-    syntax.mimetype = root.attrib.get('mimetype', '').split(';')
-    syntax.version = root.attrib.get('version', None)
-    syntax.kateversion = root.attrib.get('kateversion', None)
-    
-    syntax.priority = root.attrib.get('priority', None)
-    syntax.author = root.attrib.get('author', None)
-    syntax.license = root.attrib.get('license', None)
-    
-    syntax.hidden = _parseBoolAttribute(root.attrib.get('hidden', 'false'))
-    
+    syntax.syntaxDescription = _loadSyntaxDescription(root)
+
     syntax.deliminatorSet = set(_DEFAULT_DELIMINATOR)
     
     highlightingElement = root.find('highlighting')
@@ -434,9 +435,6 @@ def loadSyntax(syntax, filePath):
     # parse itemData
     syntax.attributeToFormatMap = _loadAttributeToFormatMap(highlightingElement)
     
-    # parse contexts
-    _loadContexts(highlightingElement, syntax)
-
     syntax.keywordsCaseSensitive = True
 
     generalElement = root.find('general')
@@ -456,5 +454,8 @@ def loadSyntax(syntax, filePath):
             if 'additionalDeliminator' in keywordsElement.attrib:
                 additionalSet = keywordsElement.attrib['additionalDeliminator']
                 syntax.deliminatorSet.update(additionalSet)
+
+    # parse contexts
+    _loadContexts(highlightingElement, syntax)
 
     return syntax
