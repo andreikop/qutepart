@@ -298,13 +298,13 @@ def _loadContexts(highlightingElement, syntax):
         context = Context(syntax, name)
         contextList.append(context)
 
-    syntax.defaultContext = contextList[0]
+    defaultContext = contextList[0]
     
     contextDict = {}
     for context in contextList:
         contextDict[context.name] = context
     
-    syntax.contexts = contextDict  # FIXME
+    syntax.setContexts(contextDict, defaultContext)
     
     # parse contexts stage 2: load contexts
     for xmlElement, context in zip(xmlElementList, contextList):
@@ -423,38 +423,40 @@ def loadSyntax(syntax, filePath):
     with open(filePath, 'r') as definitionFile:
         root = xml.etree.ElementTree.parse(definitionFile).getroot()
 
-    syntax.syntaxDescription = _loadSyntaxDescription(root)
-
-    syntax.deliminatorSet = set(_DEFAULT_DELIMINATOR)
-    
     highlightingElement = root.find('highlighting')
     
-    # parse lists
-    syntax.lists = _loadLists(root, highlightingElement)
-    
-    # parse itemData
+    # not used by parser
+    syntax.syntaxDescription = _loadSyntaxDescription(root)
     syntax.attributeToFormatMap = _loadAttributeToFormatMap(highlightingElement)
     
-    syntax.keywordsCaseSensitive = True
+    deliminatorSet = set(_DEFAULT_DELIMINATOR)
+    
+    # parse lists
+    lists = _loadLists(root, highlightingElement)
+    
+    # parse itemData
+    keywordsCaseSensitive = True
 
     generalElement = root.find('general')
     if generalElement is not None:
         keywordsElement = generalElement.find('keywords')
         
         if keywordsElement is not None:
-            syntax.keywordsCaseSensitive = _parseBoolAttribute(keywordsElement.get('casesensitive', "true"))
+            keywordsCaseSensitive = _parseBoolAttribute(keywordsElement.get('casesensitive', "true"))
             
-            if not syntax.keywordsCaseSensitive:
-                _makeKeywordsLowerCase(syntax.lists)
+            if not keywordsCaseSensitive:
+                _makeKeywordsLowerCase(lists)
 
             if 'weakDeliminator' in keywordsElement.attrib:
                 weakSet = keywordsElement.attrib['weakDeliminator']
-                syntax.deliminatorSet.difference_update(weakSet)
+                deliminatorSet.difference_update(weakSet)
             
             if 'additionalDeliminator' in keywordsElement.attrib:
                 additionalSet = keywordsElement.attrib['additionalDeliminator']
-                syntax.deliminatorSet.update(additionalSet)
+                deliminatorSet.update(additionalSet)
 
+    syntax.init(deliminatorSet, lists, keywordsCaseSensitive)
+    
     # parse contexts
     _loadContexts(highlightingElement, syntax)
 

@@ -919,14 +919,14 @@ class Syntax:
         
         syntaxDescription       SyntaxDescription instance
         
+        attributeToFormatMap    Map "attribute" : TextFormat
+        
         deliminatorSet          Set of deliminator characters
         lists                   Keyword lists as dictionary "list name" : "list value"
         keywordsCaseSensitive   If true, keywords are not case sensitive
-        defaultContext          Default context object
+        
         contexts                Context list as dictionary "context name" : context
-        attributeToFormatMap    Map "attribute" : TextFormat
-        colorTheme              Current color theme,
-                                  compiled from default one and syntax specific modifications
+        defaultContext          Default context object
     """
     def __init__(self, manager):
         """Parse XML definition
@@ -935,6 +935,15 @@ class Syntax:
         
         # Other attributes are initialized by the XML loader
 
+    def init(self, deliminatorSet, lists, keywordsCaseSensitive):
+        self.deliminatorSet = deliminatorSet
+        self.lists = lists
+        self.keywordsCaseSensitive = keywordsCaseSensitive
+    
+    def setContexts(self, contexts, defaultContext):
+        self.contexts = contexts
+        self.defaultContext = defaultContext
+    
     def __str__(self):
         """Serialize.
         For debug logs
