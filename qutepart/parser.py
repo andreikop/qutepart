@@ -44,9 +44,9 @@ class ParseBlockResult:
 
 
 class ParseBlockFullResult:
-    """Result of Syntax.parseBlock() call.
+    """Result of Parser.parseBlock() call.
     Public attributes:
-        lineData                Data, which shall be saved and passed to Syntax.parseBlock() for the next line
+        lineData                Data, which shall be saved and passed to Parser.parseBlock() for the next line
         matchedContextsFull     Highlighting results, 
     """
     def __init__(self, lineData, matchedContexts):
@@ -93,10 +93,10 @@ class ContextStack:
         self._data = data
     
     @staticmethod
-    def makeDefault(syntax):
-        """Make default stack for syntax
+    def makeDefault(parser):
+        """Make default stack for parser
         """
-        return ContextStack([syntax.defaultContext], [None])
+        return ContextStack([parser.defaultContext], [None])
 
     def pop(self, count):
         """Returns new context stack, which doesn't contain few levels
@@ -408,7 +408,7 @@ class AbstractWordRule(AbstractRule):
             return None
         
         if self.insensitive or \
-           (not self.parentContext.syntax.keywordsCaseSensitive):
+           (not self.parentContext.parser.keywordsCaseSensitive):
             wordToCheck = textToMatchObject.word.lower()
         else:
             wordToCheck = textToMatchObject.word
@@ -544,7 +544,7 @@ class AbstractNumberRule(AbstractRule):
         if textToMatchObject.currentColumnIndex + index < len(textToMatchObject.wholeLineText):
             newTextToMatchObject = _TextToMatchObject(textToMatchObject.currentColumnIndex + index,
                                                       textToMatchObject.wholeLineText,
-                                                      self.parentContext.syntax.deliminatorSet,
+                                                      self.parentContext.parser.deliminatorSet,
                                                       textToMatchObject.contextData)
             for rule in self.childRules:
                 ruleTryMatchResult = rule.tryMatch(newTextToMatchObject)
@@ -827,9 +827,9 @@ class Context:
         dynamic
         rules
     """
-    def __init__(self, syntax, name):
+    def __init__(self, parser, name):
         # Will be initialized later, after all context has been created
-        self.syntax = syntax
+        self.parser = parser
         self.name = name
     
     def init(self, attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic):
@@ -871,7 +871,7 @@ class Context:
         while currentColumnIndex < len(text):
             textToMatchObject = _TextToMatchObject(currentColumnIndex,
                                                    text,
-                                                   self.syntax.deliminatorSet,
+                                                   self.parser.deliminatorSet,
                                                    contextStack.currentData())
             for rule in self.rules:
                 ruleTryMatchResult = rule.tryMatch(textToMatchObject)
@@ -898,24 +898,8 @@ class Context:
         return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
 
 
-class SyntaxDescription:
-    """Syntax description.
-    Public attributes:
-        name            Name
-        section         Section
-        extensions      File extensions
-        mimetype        File mime type
-        version         XML definition version
-        kateversion     Required Kate parser version
-        priority        XML definition priority
-        author          Author
-        license         License
-        hidden          Shall be hidden in the menu
-    """
-    pass
-
-class Syntax:
-    """Syntax file parser and container
+class Parser:
+    """Parser implementation
         
         syntaxDescription       SyntaxDescription instance
         
@@ -928,14 +912,8 @@ class Syntax:
         contexts                Context list as dictionary "context name" : context
         defaultContext          Default context object
     """
-    def __init__(self, manager):
-        """Parse XML definition
-        """
-        self.manager = manager
-        
-        # Other attributes are initialized by the XML loader
-
-    def init(self, deliminatorSet, lists, keywordsCaseSensitive):
+    def __init__(self, syntax, deliminatorSet, lists, keywordsCaseSensitive):
+        self.syntax = syntax
         self.deliminatorSet = deliminatorSet
         self.lists = lists
         self.keywordsCaseSensitive = keywordsCaseSensitive
@@ -948,7 +926,7 @@ class Syntax:
         """Serialize.
         For debug logs
         """
-        res = u'Syntax %s\n' % self.name
+        res = u'Parser %s\n' % self.name
         for name, value in vars(self).iteritems():
             if not name.startswith('_') and \
                not name in ('defaultContext', 'deliminatorSet', 'contexts', 'lists') and \

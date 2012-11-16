@@ -2,7 +2,7 @@ import copy
 import sys
 import xml.etree.ElementTree
 
-from qutepart.Syntax import *
+from qutepart.parser import *
 from qutepart.ColorTheme import ColorTheme, TextFormat
 
 
@@ -93,14 +93,17 @@ def _loadIncludeRules(parentContext, xmlElement):
     contextName = _safeGetRequiredAttribute(xmlElement, "context", None)
     
     if contextName is not None:
-        if contextName in parentContext.syntax.contexts:
-            context = parentContext.syntax.contexts[contextName]
+        if contextName in parentContext.parser.contexts:
+            context = parentContext.parser.contexts[contextName]
         elif contextName.startswith('##'):
             syntaxName = contextName[2:]
-            syntax = parentContext.syntax.manager.getSyntaxByName(syntaxName)
-            context = syntax.defaultContext
+            parser = parentContext.parser.syntax.manager.getSyntaxByName(syntaxName).parser
+            context = parser.defaultContext
+        else:
+            print >> sys.stderr, 'Invalid context name', contextName
+            context = parentContext.parser.defaultContext
     else:
-        context = parentContext.syntax.defaultContext
+        context = parentContext.parser.defaultContext
 
     return IncludeRules(_loadAbstractRuleParams(parentContext, xmlElement), context)
 
@@ -126,7 +129,7 @@ def _loadAbstractRuleParams(parentContext, xmlElement):
     if not attribute is None:
         attribute = attribute.lower()  # not case sensitive
         try:
-            format = parentContext.syntax.attributeToFormatMap[attribute]
+            format = parentContext.parser.attributeToFormatMap[attribute]
         except KeyError:
             print >> sys.stderr, 'Unknown rule attribute', attribute
             format = parentContext.format
@@ -135,7 +138,7 @@ def _loadAbstractRuleParams(parentContext, xmlElement):
 
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
-    context = ContextSwitcher(contextText, parentContext.syntax.contexts)
+    context = ContextSwitcher(contextText, parentContext.parser.contexts)
 
     lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
     firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
@@ -201,7 +204,7 @@ def _loadWordDetect(parentContext, xmlElement):
 def _loadKeyword(parentContext, xmlElement):
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)
     try:
-        words = set(parentContext.syntax.lists[string])
+        words = set(parentContext.parser.lists[string])
     except KeyError:
         print >> sys.stderr, "List '%s' not found" % string
         
@@ -284,8 +287,8 @@ _ruleClassDict = \
 ################################################################################
 
 
-def _loadContexts(highlightingElement, syntax):
-    from Syntax import Context  # FIXME
+def _loadContexts(highlightingElement, parser):
+    from .parser import Context  # FIXME
     
     contextsElement = highlightingElement.find('contexts')
     
@@ -295,7 +298,7 @@ def _loadContexts(highlightingElement, syntax):
         name = _safeGetRequiredAttribute(xmlElement,
                                          'name',
                                          'Error: context name is not set!!!')
-        context = Context(syntax, name)
+        context = Context(parser, name)
         contextList.append(context)
 
     defaultContext = contextList[0]
@@ -304,13 +307,13 @@ def _loadContexts(highlightingElement, syntax):
     for context in contextList:
         contextDict[context.name] = context
     
-    syntax.setContexts(contextDict, defaultContext)
+    parser.setContexts(contextDict, defaultContext)
     
     # parse contexts stage 2: load contexts
     for xmlElement, context in zip(xmlElementList, contextList):
-        _loadContext(context, syntax, xmlElement)
+        _loadContext(context, xmlElement)
 
-def _loadContext(context, syntax, xmlElement):
+def _loadContext(context, xmlElement):
     """Construct context from XML element
     Contexts are at first constructed, and only then loaded, because when loading context,
     ContextSwitcher must have references to all defined contexts
@@ -318,7 +321,7 @@ def _loadContext(context, syntax, xmlElement):
     attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', '<not set>').lower()
     if attribute != '<not set>':  # there are no attributes for internal contexts, used by rules. See perl.xml
         try:
-            format = syntax.attributeToFormatMap[attribute]
+            format = context.parser.attributeToFormatMap[attribute]
         except KeyError:
             print >> sys.stderr, 'Unknown context attribute', attribute
             format = TextFormat()
@@ -326,13 +329,13 @@ def _loadContext(context, syntax, xmlElement):
         format = None
     
     lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    lineEndContext = ContextSwitcher(lineEndContextText,  syntax.contexts)
+    lineEndContext = ContextSwitcher(lineEndContextText,  context.parser.contexts)
     lineBeginContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    lineBeginContext = ContextSwitcher(lineBeginContextText, syntax.contexts)
+    lineBeginContext = ContextSwitcher(lineBeginContextText, context.parser.contexts)
     
     if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
         fallthroughContextText = _safeGetRequiredAttribute(xmlElement, 'fallthroughContext', '#stay')
-        fallthroughContext = ContextSwitcher(fallthroughContextText, syntax.contexts)
+        fallthroughContext = ContextSwitcher(fallthroughContextText, context.parser.contexts)
     else:
         fallthroughContext = None
     
@@ -404,20 +407,17 @@ def _makeKeywordsLowerCase(listDict):
         for index, keyword in enumerate(keywordList):
             keywordList[index] = keyword.lower()
 
-def _loadSyntaxDescription(root):
-    syntaxDescription = SyntaxDescription()
-    syntaxDescription.name = _safeGetRequiredAttribute(root, 'name', 'Error: Syntax name is not set!!!')
-    syntaxDescription.section = _safeGetRequiredAttribute(root, 'section', 'Error: Section is not set!!!')
-    syntaxDescription.extensions = _safeGetRequiredAttribute(root, 'extensions', '').split(';')
-    syntaxDescription.mimetype = root.attrib.get('mimetype', '').split(';')
-    syntaxDescription.version = root.attrib.get('version', None)
-    syntaxDescription.kateversion = root.attrib.get('kateversion', None)
-    syntaxDescription.priority = root.attrib.get('priority', None)
-    syntaxDescription.author = root.attrib.get('author', None)
-    syntaxDescription.license = root.attrib.get('license', None)
-    syntaxDescription.hidden = _parseBoolAttribute(root.attrib.get('hidden', 'false'))
-    
-    return syntaxDescription
+def _loadSyntaxDescription(root, syntax):
+    syntax.name = _safeGetRequiredAttribute(root, 'name', 'Error: .parser name is not set!!!')
+    syntax.section = _safeGetRequiredAttribute(root, 'section', 'Error: Section is not set!!!')
+    syntax.extensions = _safeGetRequiredAttribute(root, 'extensions', '').split(';')
+    syntax.mimetype = root.attrib.get('mimetype', '').split(';')
+    syntax.version = root.attrib.get('version', None)
+    syntax.kateversion = root.attrib.get('kateversion', None)
+    syntax.priority = root.attrib.get('priority', None)
+    syntax.author = root.attrib.get('author', None)
+    syntax.license = root.attrib.get('license', None)
+    syntax.hidden = _parseBoolAttribute(root.attrib.get('hidden', 'false'))
 
 def loadSyntax(syntax, filePath):
     with open(filePath, 'r') as definitionFile:
@@ -425,9 +425,7 @@ def loadSyntax(syntax, filePath):
 
     highlightingElement = root.find('highlighting')
     
-    # not used by parser
-    syntax.syntaxDescription = _loadSyntaxDescription(root)
-    syntax.attributeToFormatMap = _loadAttributeToFormatMap(highlightingElement)
+    _loadSyntaxDescription(root, syntax)
     
     deliminatorSet = set(_DEFAULT_DELIMINATOR)
     
@@ -455,9 +453,10 @@ def loadSyntax(syntax, filePath):
                 additionalSet = keywordsElement.attrib['additionalDeliminator']
                 deliminatorSet.update(additionalSet)
 
-    syntax.init(deliminatorSet, lists, keywordsCaseSensitive)
+    syntax.parser = Parser(syntax, deliminatorSet, lists, keywordsCaseSensitive)
+    syntax.parser.attributeToFormatMap = _loadAttributeToFormatMap(highlightingElement)
     
     # parse contexts
-    _loadContexts(highlightingElement, syntax)
+    _loadContexts(highlightingElement, syntax.parser)
 
     return syntax

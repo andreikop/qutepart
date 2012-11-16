@@ -4,7 +4,7 @@ import unittest
 
 import sys
 sys.path.insert(0, '..')
-from qutepart.Syntax import StringDetect, RegExpr
+from qutepart.parser import StringDetect, RegExpr
 
 class TestCase(unittest.TestCase):
     def test_StringDetect(self):

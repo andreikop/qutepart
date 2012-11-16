@@ -5,13 +5,13 @@ import unittest
 import sys
 sys.path.insert(0, '..')
 from qutepart.syntax_manager import SyntaxManager
-from qutepart.Syntax import Context, ContextStack, _TextToMatchObject
+from qutepart.parser import Context, ContextStack, _TextToMatchObject
 
 def tryMatch(rule, column, text):
     return tryMatchWithData(rule, None, column, text)
 
 def tryMatchWithData(rule, contextData, column, text):
-    textToMatchObject = _TextToMatchObject(column, text, rule.parentContext.syntax.deliminatorSet, contextData)
+    textToMatchObject = _TextToMatchObject(column, text, rule.parentContext.parser.deliminatorSet, contextData)
     ruleTryMatchResult = rule.tryMatch(textToMatchObject)
     if ruleTryMatchResult is not None:
         return ruleTryMatchResult.length
@@ -22,7 +22,7 @@ def tryMatchWithData(rule, contextData, column, text):
 class Test(unittest.TestCase):
     def _getRule(self, syntaxName, contextName, ruleIndex):
         syntax = SyntaxManager().getSyntaxByXmlName(syntaxName)
-        context = syntax.contexts[contextName]
+        context = syntax.parser.contexts[contextName]
         return context.rules[ruleIndex]
     
     def test_DetectChar(self):

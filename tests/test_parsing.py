@@ -12,22 +12,22 @@ class RulesTestCase(unittest.TestCase):
         """Just apply rules
         """
         syntax = SyntaxManager().getSyntaxByXmlName('debiancontrol.xml')
-        self.assertEqual(syntax.parseBlockTextualResults('Section:'),
+        self.assertEqual(syntax.parser.parseBlockTextualResults('Section:'),
                          [('INIT', 8, [(u'RegExpr( [^ ]*: )', 0, 8)])])
-        self.assertEqual(syntax.parseBlockTextualResults(' '),
+        self.assertEqual(syntax.parser.parseBlockTextualResults(' '),
                          [('INIT', 1, [('DetectChar( , 0)', 0, 1)])])
-        self.assertEqual(syntax.parseBlockTextualResults('Provides:'),
+        self.assertEqual(syntax.parser.parseBlockTextualResults('Provides:'),
                          [('INIT', 9, [('StringDetect(Provides:)', 0, 9)])])
     
     def test_rule_switches_context(self):
         """Matched rule switches context
         """
         syntax = SyntaxManager().getSyntaxByXmlName('debiancontrol.xml')
-        self.assertEqual(syntax.parseBlockTextualResults('Section: editors'),
+        self.assertEqual(syntax.parser.parseBlockTextualResults('Section: editors'),
                          [('INIT', 8, [(u'RegExpr( [^ ]*: )', 0, 8)]), ('Field', 8, [])])
-        self.assertEqual(syntax.parseBlockTextualResults(' Section: editors'),
+        self.assertEqual(syntax.parser.parseBlockTextualResults(' Section: editors'),
                          [('INIT', 1, [('DetectChar( , 0)', 0, 1)]), ('Field', 16, [])])
-        self.assertEqual(syntax.parseBlockTextualResults('Provides: xxx'),
+        self.assertEqual(syntax.parser.parseBlockTextualResults('Provides: xxx'),
                          [('INIT', 9, [('StringDetect(Provides:)', 0, 9)]), ('DependencyField', 4, [])])
 
     def test_pop_context(self):
@@ -35,7 +35,7 @@ class RulesTestCase(unittest.TestCase):
         """
         syntax = SyntaxManager().getSyntaxByXmlName('debiancontrol.xml')
 
-        self.assertEqual(syntax.parseBlockTextualResults(' ${a} ${b}'),
+        self.assertEqual(syntax.parser.parseBlockTextualResults(' ${a} ${b}'),
                          [('INIT', 1, [('DetectChar( , 0)', 0, 1)]), 
                           ('Field', 2, [('Detect2Chars(${)', 1, 2)]),
                           ('Variable', 2, [('DetectChar(}, 0)', 4, 1)]),
@@ -47,7 +47,7 @@ class RulesTestCase(unittest.TestCase):
         """
         syntax = SyntaxManager().getSyntaxByXmlName('debiancontrol.xml')
 
-        self.assertEqual(syntax.parseBlockContextStackTextual('Source: mksv3'),
+        self.assertEqual(syntax.parser.parseBlockContextStackTextual('Source: mksv3'),
                          ['INIT'])
 
     def test_line_end_context_switch(self):
@@ -56,7 +56,7 @@ class RulesTestCase(unittest.TestCase):
         syntax = SyntaxManager().getSyntaxByXmlName('debianchangelog.xml')
         
         text = 'mksv3 '
-        self.assertEqual(syntax.parseBlockContextStackTextual(text),
+        self.assertEqual(syntax.parser.parseBlockContextStackTextual(text),
                          ['INIT'])
 
     def test_just_one_more_test_1(self):
@@ -65,7 +65,7 @@ class RulesTestCase(unittest.TestCase):
         syntax = SyntaxManager().getSyntaxByXmlName('javascript.xml')
         
         text = " /* */"
-        self.assertEqual(syntax.parseBlockTextualResults(text),
+        self.assertEqual(syntax.parser.parseBlockTextualResults(text),
                          [('Normal', 3, [('DetectSpaces()', 0, 1),
                                          ('Detect2Chars(/*)', 1, 2)]),
                           ('Multi/inline Comment', 3, [('Detect2Chars(*/)', 4, 2)])])
@@ -78,7 +78,7 @@ class RulesTestCase(unittest.TestCase):
         syntax = SyntaxManager().getSyntaxByXmlName('yacc.xml')
         
         text = 'mksv3 '
-        self.assertEqual(syntax.parseBlockContextStackTextual(text),
+        self.assertEqual(syntax.parser.parseBlockContextStackTextual(text),
                          ['INIT'])
     '''
 
