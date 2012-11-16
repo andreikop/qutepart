@@ -9,7 +9,7 @@ from PyQt4.QtGui import QApplication, QFont, QPlainTextEdit, QSyntaxHighlighter,
     QTextCharFormat, QTextBlockUserData
 
 from qutepart.SyntaxHighlighter import SyntaxHighlighter
-from qutepart.syntax_manager import SyntaxManager
+from qutepart.syntax import SyntaxManager
 
 
 def main():

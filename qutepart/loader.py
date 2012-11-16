@@ -324,7 +324,7 @@ def _loadContext(context, xmlElement):
             format = context.parser.attributeToFormatMap[attribute]
         except KeyError:
             print >> sys.stderr, 'Unknown context attribute', attribute
-            from qutepart.syntax_manager import TextFormat
+            from qutepart.syntax import TextFormat
             format = TextFormat()
     else:
         format = None
@@ -353,8 +353,8 @@ def _loadContext(context, xmlElement):
 ################################################################################
 
 def _loadAttributeToFormatMap(highlightingElement):
-    import qutepart.syntax_manager
-    defaultTheme = ColorTheme(qutepart.syntax_manager.TextFormat)
+    import qutepart.syntax
+    defaultTheme = ColorTheme(qutepart.syntax.TextFormat)
     attributeToFormatMap = {}
     
     itemDatasElement = highlightingElement.find('itemDatas')

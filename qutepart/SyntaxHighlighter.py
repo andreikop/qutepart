@@ -1,5 +1,5 @@
 """QSyntaxHighlighter implementation
-Uses syntax_manager module for doing the job
+Uses syntax module for doing the job
 """
 
 from PyQt4.QtCore import Qt

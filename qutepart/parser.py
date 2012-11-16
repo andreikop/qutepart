@@ -918,7 +918,7 @@ class Parser:
 
     def parseBlock(self, text, prevLineData):
         fullResult = self.parseBlockFullResults(text, prevLineData)
-        from qutepart.syntax_manager import ParseBlockResult
+        from qutepart.syntax import ParseBlockResult
         return ParseBlockResult(fullResult)
     
     def parseBlockFullResults(self, text, prevLineData):

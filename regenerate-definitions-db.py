@@ -3,7 +3,7 @@
 import os.path
 import json
 
-from qutepart.syntax_manager import SyntaxManager
+from qutepart.syntax import SyntaxManager
 from qutepart.loader import loadSyntax
 
 def main():

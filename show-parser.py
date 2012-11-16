@@ -5,7 +5,7 @@ import sys
 import sip
 sip.setapi('QString', 2)
 
-from qutepart.syntax_manager import SyntaxManager
+from qutepart.syntax import SyntaxManager
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
