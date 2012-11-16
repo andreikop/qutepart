@@ -10,6 +10,67 @@ import json
 import qutepart.parser
 import qutepart.loader
 
+class TextFormat:
+    """Text format definition.
+    
+    Public attributes:
+        color          : Font color, #rrggbb or #rgb
+        background     : Font background, #rrggbb or #rgb
+        selectionColor : Color of selected text
+        italic         : Italic font, bool
+        bold           : Bold font, bool
+        underline      : Underlined font, bool
+        strikeOut      : Striked out font
+        spellChecking  : Striked out font
+    """
+    def __init__(self, color = '#000000',
+                       background = '#ffffff',
+                       selectionColor = '#0000ff',
+                       italic = False,
+                       bold = False,
+                       underline = False,
+                       strikeOut = False,
+                       spellChecking = False):
+        
+        self.color = color
+        self.background = background
+        self.selectionColor = selectionColor
+        self.italic = italic
+        self.bold = bold
+        self.underline = underline
+        self.strikeOut = strikeOut
+        self.spellChecking = spellChecking
+
+
+class HighlightedSegment:
+    def __init__(self, length, format):
+        self.length = length
+        self.format = format
+
+
+class ParseBlockResult:
+    def __init__(self, parseBlockFullResult):
+        self.lineData = parseBlockFullResult.lineData
+        
+        self.highlightedSegments = []
+        
+        currentPos = 0
+        for matchedContext in parseBlockFullResult.matchedContexts:
+            matchedCntextStartPos = currentPos
+            for matchedRule in matchedContext.matchedRules:
+                if matchedRule.pos > currentPos:
+                    self._appendHighlightedSegment(matchedRule.pos - currentPos,
+                                                   matchedContext.context.format)
+                self._appendHighlightedSegment(matchedRule.length,
+                                               matchedRule.rule.format)
+                currentPos = matchedRule.pos + matchedRule.length
+            if currentPos < matchedCntextStartPos + matchedContext.length:
+                self._appendHighlightedSegment(matchedCntextStartPos + matchedContext.length - currentPos,
+                                               matchedContext.context.format)
+
+    def _appendHighlightedSegment(self, length, format):
+        self.highlightedSegments.append(HighlightedSegment(length, format))
+
 
 class Syntax:
     """Syntax. Programming language parser definition

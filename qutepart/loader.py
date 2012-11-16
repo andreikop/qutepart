@@ -3,7 +3,7 @@ import sys
 import xml.etree.ElementTree
 
 from qutepart.parser import *
-from qutepart.ColorTheme import ColorTheme, TextFormat
+from qutepart.ColorTheme import ColorTheme
 
 
 import re
@@ -324,6 +324,7 @@ def _loadContext(context, xmlElement):
             format = context.parser.attributeToFormatMap[attribute]
         except KeyError:
             print >> sys.stderr, 'Unknown context attribute', attribute
+            from qutepart.syntax_manager import TextFormat
             format = TextFormat()
     else:
         format = None
@@ -352,7 +353,8 @@ def _loadContext(context, xmlElement):
 ################################################################################
 
 def _loadAttributeToFormatMap(highlightingElement):
-    defaultTheme = ColorTheme()
+    import qutepart.syntax_manager
+    defaultTheme = ColorTheme(qutepart.syntax_manager.TextFormat)
     attributeToFormatMap = {}
     
     itemDatasElement = highlightingElement.find('itemDatas')

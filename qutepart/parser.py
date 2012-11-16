@@ -14,34 +14,6 @@ import os.path
 import sys
 import re
 
-class HighlightedSegment:
-    def __init__(self, length, format):
-        self.length = length
-        self.format = format
-
-class ParseBlockResult:
-    def __init__(self, parseBlockFullResult):
-        self.lineData = parseBlockFullResult.lineData
-        
-        self.highlightedSegments = []
-        
-        currentPos = 0
-        for matchedContext in parseBlockFullResult.matchedContexts:
-            matchedCntextStartPos = currentPos
-            for matchedRule in matchedContext.matchedRules:
-                if matchedRule.pos > currentPos:
-                    self._appendHighlightedSegment(matchedRule.pos - currentPos,
-                                                   matchedContext.context.format)
-                self._appendHighlightedSegment(matchedRule.length,
-                                               matchedRule.rule.format)
-                currentPos = matchedRule.pos + matchedRule.length
-            if currentPos < matchedCntextStartPos + matchedContext.length:
-                self._appendHighlightedSegment(matchedCntextStartPos + matchedContext.length - currentPos,
-                                               matchedContext.context.format)
-
-    def _appendHighlightedSegment(self, length, format):
-        self.highlightedSegments.append(HighlightedSegment(length, format))
-
 
 class ParseBlockFullResult:
     """Result of Parser.parseBlock() call.
@@ -946,6 +918,7 @@ class Parser:
 
     def parseBlock(self, text, prevLineData):
         fullResult = self.parseBlockFullResults(text, prevLineData)
+        from qutepart.syntax_manager import ParseBlockResult
         return ParseBlockResult(fullResult)
     
     def parseBlockFullResults(self, text, prevLineData):
