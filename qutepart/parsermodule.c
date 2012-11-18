@@ -375,6 +375,115 @@ static PyTypeObject ContextType = {
     (initproc)Context_init,                 /* tp_init */
 };
 
+/********************************************************************************
+ *                                Parser
+ ********************************************************************************/
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    PyObject* syntax;
+    PyObject* deliminatorSet;
+    PyObject* lists;
+    PyObject* keywordsCaseSensitive;
+    PyObject* contexts;
+    PyObject* defaultContext;
+} Parser;
+
+static void
+Parser_dealloc(Parser* self)
+{
+    Py_XDECREF(self->syntax);
+    Py_XDECREF(self->deliminatorSet);
+    Py_XDECREF(self->lists);
+    Py_XDECREF(self->keywordsCaseSensitive);
+    Py_XDECREF(self->contexts);
+    Py_XDECREF(self->defaultContext);
+
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static int
+Parser_init(Parser *self, PyObject *args, PyObject *kwds)
+{
+    PyObject* syntax = NULL;
+    PyObject* deliminatorSet = NULL;
+    PyObject* lists = NULL;
+    PyObject* keywordsCaseSensitive = NULL;
+    PyObject* tmp = NULL;
+
+    if (! PyArg_ParseTuple(args, "|OOOO",
+                           &syntax, &deliminatorSet, &lists, &keywordsCaseSensitive))
+        return -1;
+
+    ASSIGN_PYOBJECT_FIELD(syntax);
+    ASSIGN_PYOBJECT_FIELD(deliminatorSet);
+    ASSIGN_PYOBJECT_FIELD(lists);
+    ASSIGN_PYOBJECT_FIELD(keywordsCaseSensitive);
+
+    return 0;
+}
+
+static int
+Parser_setConexts(Parser *self, PyObject *args)
+{
+    PyObject* contexts = NULL;
+    PyObject* tmp = NULL;
+
+    if (! PyArg_ParseTuple(args, "|O",
+                           &contexts))
+        return -1;
+
+    ASSIGN_PYOBJECT_FIELD(contexts);
+
+    return 0;
+}
+
+static PyMethodDef Parser_methods[] = {
+    {"setContexts", (PyCFunction)Parser_setConexts, METH_VARARGS,  "Set list of parser contexts"},
+    {NULL}  /* Sentinel */
+};
+
+static PyTypeObject ParserType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                                      /*ob_size*/
+    "qutepart.cParser.Parser",              /*tp_name*/
+    sizeof(Parser),                         /*tp_basicsize*/
+    0,                                      /*tp_itemsize*/
+    (destructor)Parser_dealloc,             /*tp_dealloc*/
+    0,                                      /*tp_print*/
+    0,                                      /*tp_getattr*/
+    0,                                      /*tp_setattr*/
+    0,                                      /*tp_compare*/
+    0,                                      /*tp_repr*/
+    0,                                      /*tp_as_number*/
+    0,                                      /*tp_as_sequence*/
+    0,                                      /*tp_as_mapping*/
+    0,                                      /*tp_hash */
+    0,                                      /*tp_call*/
+    0,                                      /*tp_str*/
+    0,                                      /*tp_getattro*/
+    0,                                      /*tp_setattro*/
+    0,                                      /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,                     /*tp_flags*/
+    "Parser",                               /*tp_doc*/
+    0,		                                /* tp_traverse */
+    0,		                                /* tp_clear */
+    0,		                                /* tp_richcompare */
+    0,		                                /* tp_weaklistoffset */
+    0,		                                /* tp_iter */
+    0,		                                /* tp_iternext */
+    Parser_methods,                         /* tp_methods */
+    0,                                      /* tp_members */
+    0,                                      /* tp_getset */
+    0,                                      /* tp_base */
+    0,                                      /* tp_dict */
+    0,                                      /* tp_descr_get */
+    0,                                      /* tp_descr_set */
+    0,                                      /* tp_dictoffset */
+    (initproc)Parser_init,                  /* tp_init */
+};
+
 
 /********************************************************************************
  *                                Module
@@ -402,4 +511,5 @@ initcParser(void)
     REGISTER_TYPE(DetectChar)
     
     REGISTER_TYPE(Context)
+    REGISTER_TYPE(Parser)
 }
