@@ -153,7 +153,7 @@ def _loadAbstractRuleParams(parentContext, xmlElement):
     else:
         column = None
     
-    return AbstractRule.Params(parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column)
+    return AbstractRuleParams(parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column)
 
 def _loadDetectChar(parentContext, xmlElement):
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement)

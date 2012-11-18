@@ -177,6 +177,20 @@ class _RuleTryMatchResult:
         if rule.lookAhead:
             self.length = 0
 
+class AbstractRuleParams:
+    """Parameters, passed to the AbstractRule constructor
+    """
+    def __init__(self, parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column):
+        self.parentContext = parentContext
+        self.format = format
+        self.attribute = attribute
+        self.context = context
+        self.lookAhead = lookAhead
+        self.firstNonSpace = firstNonSpace
+        self.dynamic = dynamic
+        self.column = column
+
+
 class AbstractRule:
     """Base class for rule classes
     Public attributes:
@@ -190,19 +204,6 @@ class AbstractRule:
     """
     
     _seqReplacer = re.compile('%\d+')
-
-    class Params:
-        """Parameters, passed to the constructor
-        """
-        def __init__(self, parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column):
-            self.parentContext = parentContext
-            self.format = format
-            self.attribute = attribute
-            self.context = context
-            self.lookAhead = lookAhead
-            self.firstNonSpace = firstNonSpace
-            self.dynamic = dynamic
-            self.column = column
 
     def __init__(self, params):
         self.parentContext = params.parentContext
