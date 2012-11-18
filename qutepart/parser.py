@@ -805,7 +805,7 @@ class Context:
         self.parser = parser
         self.name = name
     
-    def init(self, attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic):
+    def setValues(self, attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic):
         self.attribute = attribute
         self.format = format
         self.lineEndContext = lineEndContext

@@ -342,7 +342,7 @@ def _loadContext(context, xmlElement):
     
     dynamic = xmlElement.attrib.get('dynamic', False)
     
-    context.init(attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic)
+    context.setValues(attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic)
     
     # load rules
     rules = _loadChildRules(context, xmlElement)
