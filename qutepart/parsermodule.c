@@ -5,9 +5,17 @@
 
 #define ASSIGN_PYOBJECT_FIELD(fieldName)\
     if (fieldName) { \
-        tmp = self->fieldName; \
+        PyObject* tmp = self->fieldName; \
         Py_INCREF(fieldName); \
         self->fieldName = fieldName; \
+        Py_XDECREF(tmp); \
+    }
+
+#define ASSIGN_OBJECT_FIELD(type, fieldName)\
+    if (fieldName) { \
+        type* tmp = self->fieldName; \
+        Py_INCREF(fieldName); \
+        self->fieldName = (type*)fieldName; \
         Py_XDECREF(tmp); \
     }
 
@@ -60,7 +68,6 @@ AbstractRuleParams_init(AbstractRuleParams *self, PyObject *args, PyObject *kwds
     PyObject* lookAhead = NULL;
     PyObject* firstNonSpace = NULL;
     PyObject* dynamic = NULL;
-    PyObject* tmp = NULL;
 
     if (! PyArg_ParseTuple(args, "|OOOOOOOi",
                            &parentContext, &format, &attribute,
@@ -218,7 +225,6 @@ DetectChar_init(DetectChar *self, PyObject *args, PyObject *kwds)
 {
     PyObject* abstractRuleParams = NULL;
     PyObject* char_ = NULL;
-    PyObject* tmp;
     
     if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
         return -1;
@@ -274,7 +280,6 @@ Context_init(Context *self, PyObject *args, PyObject *kwds)
 {
     PyObject* parser = NULL;
     PyObject* name = NULL;
-    PyObject* tmp = NULL;
 
     if (! PyArg_ParseTuple(args, "|OO",
                            &parser, &name))
@@ -286,7 +291,7 @@ Context_init(Context *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static int
+static PyObject*
 Context_setValues(Context *self, PyObject *args)
 {
     PyObject* attribute = NULL;
@@ -295,13 +300,12 @@ Context_setValues(Context *self, PyObject *args)
     PyObject* lineBeginContext = NULL;
     PyObject* fallthroughContext = NULL;
     PyObject* dynamic = NULL;
-    PyObject* tmp = NULL;
 
     if (! PyArg_ParseTuple(args, "|OOOOOO",
                            &attribute, &format, &lineEndContext,
                            &lineBeginContext, &fallthroughContext,
                            &dynamic))
-        return -1;
+        Py_RETURN_NONE;
 
     ASSIGN_PYOBJECT_FIELD(attribute);
     ASSIGN_PYOBJECT_FIELD(format);
@@ -310,14 +314,13 @@ Context_setValues(Context *self, PyObject *args)
     ASSIGN_PYOBJECT_FIELD(fallthroughContext);
     ASSIGN_BOOL_FIELD(dynamic);
 
-    return 0;
+    Py_RETURN_NONE;
 }
 
 static int
 Context_setRules(Context *self, PyObject *args)
 {
     PyObject* rules = NULL;
-    PyObject* tmp = NULL;
 
     if (! PyArg_ParseTuple(args, "|O",
                            &rules))
@@ -387,7 +390,7 @@ typedef struct {
     PyObject* lists;
     PyObject* keywordsCaseSensitive;
     PyObject* contexts;
-    PyObject* defaultContext;
+    Context* defaultContext;
 } Parser;
 
 static void
@@ -410,7 +413,6 @@ Parser_init(Parser *self, PyObject *args, PyObject *kwds)
     PyObject* deliminatorSet = NULL;
     PyObject* lists = NULL;
     PyObject* keywordsCaseSensitive = NULL;
-    PyObject* tmp = NULL;
 
     if (! PyArg_ParseTuple(args, "|OOOO",
                            &syntax, &deliminatorSet, &lists, &keywordsCaseSensitive))
@@ -424,23 +426,47 @@ Parser_init(Parser *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static int
+static PyObject*
 Parser_setConexts(Parser *self, PyObject *args)
 {
     PyObject* contexts = NULL;
-    PyObject* tmp = NULL;
+    PyObject* defaultContext = NULL;
 
-    if (! PyArg_ParseTuple(args, "|O",
-                           &contexts))
-        return -1;
+    if (! PyArg_ParseTuple(args, "|OO",
+                           &contexts, &defaultContext))
+        Py_RETURN_NONE;
 
     ASSIGN_PYOBJECT_FIELD(contexts);
+    ASSIGN_OBJECT_FIELD(Context, defaultContext);
 
-    return 0;
+    Py_RETURN_NONE;
 }
+
+static PyObject*
+Parser_parseBlock(Parser *self, PyObject *args)
+{
+    PyObject* text = NULL;
+    PyObject* prevLineData = NULL;
+
+    if (! PyArg_ParseTuple(args, "|OO",
+                           &prevLineData,
+                           &text))
+        return NULL;
+
+    assert(PyUnicode_Check(text));
+    
+    PyObject* segment = Py_BuildValue("iO", 7, self->defaultContext->format);
+    
+    PyObject* segmentList = PyList_New(1);
+    PyList_SetItem(segmentList, 0, segment);
+    
+    return Py_BuildValue("OO", prevLineData, segmentList);
+}
+
 
 static PyMethodDef Parser_methods[] = {
     {"setContexts", (PyCFunction)Parser_setConexts, METH_VARARGS,  "Set list of parser contexts"},
+    {"parseBlock", (PyCFunction)Parser_parseBlock, METH_VARARGS,  "Parse line of text"},
     {NULL}  /* Sentinel */
 };
 
