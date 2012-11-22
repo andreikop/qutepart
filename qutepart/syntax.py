@@ -42,35 +42,6 @@ class TextFormat:
         self.spellChecking = spellChecking
 
 
-class HighlightedSegment:
-    def __init__(self, length, format):
-        self.length = length
-        self.format = format
-
-
-class ParseBlockResult:
-    def __init__(self, parseBlockFullResult):
-        self.lineData = parseBlockFullResult.lineData
-        
-        self.highlightedSegments = []
-        
-        currentPos = 0
-        for matchedContext in parseBlockFullResult.matchedContexts:
-            matchedCntextStartPos = currentPos
-            for matchedRule in matchedContext.matchedRules:
-                if matchedRule.pos > currentPos:
-                    self._appendHighlightedSegment(matchedRule.pos - currentPos,
-                                                   matchedContext.context.format)
-                self._appendHighlightedSegment(matchedRule.length,
-                                               matchedRule.rule.format)
-                currentPos = matchedRule.pos + matchedRule.length
-            if currentPos < matchedCntextStartPos + matchedContext.length:
-                self._appendHighlightedSegment(matchedCntextStartPos + matchedContext.length - currentPos,
-                                               matchedContext.context.format)
-
-    def _appendHighlightedSegment(self, length, format):
-        self.highlightedSegments.append(HighlightedSegment(length, format))
-
 
 class Syntax:
     """Syntax. Programming language parser definition
@@ -91,6 +62,12 @@ class Syntax:
         self.manager = manager
     
     def parseBlock(self, text, prevLineData):
+        """Parse line of text and return
+            (lineData, highlightedSegments)
+        where
+            lineData is data, which shall be saved and used for parsing next line
+            highlightedSegments is list of touples (segmentLength, segmentFormat)
+        """
         return self.parser.parseBlock(text, prevLineData)
 
 class SyntaxManager:

@@ -917,10 +917,31 @@ class Parser:
         
         return res
 
+    @staticmethod
+    def _makeParseBlockResult(parseBlockFullResult):
+        highlightedSegments = []
+        
+        def _appendHighlightedSegment(length, format):
+            highlightedSegments.append((length, format))
+        
+        currentPos = 0
+        for matchedContext in parseBlockFullResult.matchedContexts:
+            matchedContextStartPos = currentPos
+            for matchedRule in matchedContext.matchedRules:
+                if matchedRule.pos > currentPos:
+                    _appendHighlightedSegment(matchedRule.pos - currentPos,
+                                                   matchedContext.context.format)
+                _appendHighlightedSegment(matchedRule.length,
+                                               matchedRule.rule.format)
+                currentPos = matchedRule.pos + matchedRule.length
+            if currentPos < matchedContextStartPos + matchedContext.length:
+                _appendHighlightedSegment(matchedContextStartPos + matchedContext.length - currentPos,
+                                               matchedContext.context.format)
+
+        return (parseBlockFullResult.lineData, highlightedSegments)
+
     def parseBlock(self, text, prevLineData):
-        fullResult = self.parseBlockFullResults(text, prevLineData)
-        from qutepart.syntax import ParseBlockResult
-        return ParseBlockResult(fullResult)
+        return self._makeParseBlockResult(self.parseBlockFullResults(text, prevLineData))
     
     def parseBlockFullResults(self, text, prevLineData):
         """Parse block and return ParseBlockFullResult
