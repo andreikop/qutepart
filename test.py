@@ -8,7 +8,7 @@ from cParser import *
 
 p = Parser(None, None, None, None)
 c = Context(p, "test context")
-c.setValues(1, 'a format', 3, 4, 5, 6)
+c.setValues(1, 'a format', c, c, 5, 6)
 
 p.setContexts([c], c)
 

@@ -99,26 +99,9 @@ class ContextSwitcher:
     """Class parses 'context', 'lineBeginContext', 'lineEndContext', 'fallthroughContext'
     and modifies context stack according to context operation
     """
-    def __init__(self, contextOperation, contexts):
-        self._contextOperation = contextOperation
-        
-        self._popsCount = 0
-        self._contextToSwitch = None
-        
-        rest = contextOperation
-        while rest.startswith('#pop'):
-            self._popsCount += 1
-            rest = rest[len('#pop'):]
-        
-        if rest == '#stay':
-            if self._popsCount:
-                print >> sys.stderr, "Invalid context operation '%s'" % contextOperation
-        elif rest in contexts:
-            self._contextToSwitch = contexts[rest]
-        elif rest.startswith('##'):
-            pass  # TODO implement IncludeRules
-        elif rest:
-            print >> sys.stderr, "Unknown context '%s'" % rest
+    def __init__(self, popsCount, contextToSwitch):
+        self._popsCount = popsCount
+        self._contextToSwitch = contextToSwitch
     
     def __str__(self):
         return self._contextOperation

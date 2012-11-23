@@ -85,6 +85,32 @@ def _safeGetRequiredAttribute(xmlElement, name, default):
         print >> sys.stderr, "Required attribute '%s' is not set for element '%s'" % (name, xmlElement.tag)
         return default
 
+def _makeContextSwitcher(contextOperation, contexts):
+    popsCount = 0
+    contextToSwitch = None
+    
+    rest = contextOperation
+    while rest.startswith('#pop'):
+        popsCount += 1
+        rest = rest[len('#pop'):]
+    
+    if rest == '#stay':
+        if popsCount:
+            print >> sys.stderr, "Invalid context operation '%s'" % contextOperation
+    elif rest in contexts:
+        contextToSwitch = contexts[rest]
+    elif rest.startswith('##'):
+        pass  # TODO implement IncludeRules
+    elif rest:
+        print >> sys.stderr, "Unknown context '%s'" % rest
+
+    contextSwitcher = ContextSwitcher(popsCount, contextToSwitch)
+    
+    contextSwitcher._contextOperation = contextOperation  # only for Python version
+    
+    return contextSwitcher
+    
+
 ################################################################################
 ##                               Rules
 ################################################################################
@@ -138,7 +164,7 @@ def _loadAbstractRuleParams(parentContext, xmlElement):
 
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
-    context = ContextSwitcher(contextText, parentContext.parser.contexts)
+    context = _makeContextSwitcher(contextText, parentContext.parser.contexts)
 
     lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
     firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
@@ -316,7 +342,7 @@ def _loadContexts(highlightingElement, parser):
 def _loadContext(context, xmlElement):
     """Construct context from XML element
     Contexts are at first constructed, and only then loaded, because when loading context,
-    ContextSwitcher must have references to all defined contexts
+    _makeContextSwitcher must have references to all defined contexts
     """
     attribute = _safeGetRequiredAttribute(xmlElement, 'attribute', '<not set>').lower()
     if attribute != '<not set>':  # there are no attributes for internal contexts, used by rules. See perl.xml
@@ -330,13 +356,13 @@ def _loadContext(context, xmlElement):
         format = None
     
     lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    lineEndContext = ContextSwitcher(lineEndContextText,  context.parser.contexts)
+    lineEndContext = _makeContextSwitcher(lineEndContextText,  context.parser.contexts)
     lineBeginContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    lineBeginContext = ContextSwitcher(lineBeginContextText, context.parser.contexts)
+    lineBeginContext = _makeContextSwitcher(lineBeginContextText, context.parser.contexts)
     
     if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
         fallthroughContextText = _safeGetRequiredAttribute(xmlElement, 'fallthroughContext', '#stay')
-        fallthroughContext = ContextSwitcher(fallthroughContextText, context.parser.contexts)
+        fallthroughContext = _makeContextSwitcher(fallthroughContextText, context.parser.contexts)
     else:
         fallthroughContext = None
     

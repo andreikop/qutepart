@@ -5,7 +5,7 @@ import unittest
 import sys
 sys.path.insert(0, '..')
 from qutepart.syntax import SyntaxManager
-from qutepart.parser import Context, ContextStack, _TextToMatchObject
+from qutepart.parser import Context, _TextToMatchObject
 
 def tryMatch(rule, column, text):
     return tryMatchWithData(rule, None, column, text)

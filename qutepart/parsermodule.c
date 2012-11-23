@@ -219,89 +219,6 @@ DECLARE_RULE_METHODS_AND_TYPE(DetectChar);
 
 
 /********************************************************************************
- *                                Context stack
- ********************************************************************************/
-
-
-typedef struct {
-    PyObject_HEAD
-    PyObject* _contexts;
-    PyObject* _data;
-} _ContextStack;
-
-static void
-_ContextStack_dealloc(_ContextStack* self)
-{
-    Py_XDECREF(self->_contexts);
-    Py_XDECREF(self->_data);
-
-    self->ob_type->tp_free((PyObject*)self);
-}
-
-DECLARE_TYPE_WITHOUT_CONSTRUCTOR(_ContextStack, NULL, "Context stack");
-
-static _ContextStack*
-_ContextStack_new(PyObject* contexts, PyObject* data)  // not a constructor, just C function
-{
-    _ContextStack* contextStack = PyObject_New(_ContextStack, &_ContextStackType);
-
-    contextStack->_contexts = contexts;
-    Py_INCREF(contextStack->_contexts);
-    
-    contextStack->_data = data;
-    Py_INCREF(contextStack->_data);
-    
-    Py_INCREF(contextStack);
-    return contextStack;
-}
-
-#if 0
-static _ContextStack*
-_ContextStack_currentContext(_ContextStack* self)
-{
-    //TODO
-    return contextStack;
-}
-#endif
-
-
-/********************************************************************************
- *                                LineData
- ********************************************************************************/
-
-typedef struct {
-    PyObject_HEAD
-    _ContextStack* contextStack;
-    bool lineContinue;
-} _LineData;
-
-static void
-_LineData_dealloc(_LineData* self)
-{
-    Py_XDECREF(self->contextStack);
-
-    self->ob_type->tp_free((PyObject*)self);
-}
-
-static int
-_LineData_init(_LineData *self, PyObject *args, PyObject *kwds)
-{
-    PyObject* contextStack = NULL;
-    PyObject* lineContinue = NULL;
-    
-    if (! PyArg_ParseTuple(args, "|OO", &contextStack, &lineContinue))
-        return -1;
-    
-    ASSIGN_OBJECT_FIELD(_ContextStack, contextStack);
-    ASSIGN_BOOL_FIELD(lineContinue);
-
-    return 0;
-}
-
-DECLARE_TYPE(_LineData, NULL, "Line data");
-
-
-/********************************************************************************
  *                                Context
  ********************************************************************************/
 
@@ -398,6 +315,123 @@ static PyMethodDef Context_methods[] = {
 
 DECLARE_TYPE(Context, Context_methods, "Parsing context");
 
+
+/********************************************************************************
+ *                                Context stack
+ ********************************************************************************/
+
+
+typedef struct {
+    PyObject_HEAD
+    PyObject* _contexts;
+    PyObject* _data;
+} _ContextStack;
+
+static void
+_ContextStack_dealloc(_ContextStack* self)
+{
+    Py_XDECREF(self->_contexts);
+    Py_XDECREF(self->_data);
+
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+DECLARE_TYPE_WITHOUT_CONSTRUCTOR(_ContextStack, NULL, "Context stack");
+
+static _ContextStack*
+_ContextStack_new(PyObject* contexts, PyObject* data)  // not a constructor, just C function
+{
+    _ContextStack* contextStack = PyObject_New(_ContextStack, &_ContextStackType);
+
+    contextStack->_contexts = contexts;
+    Py_INCREF(contextStack->_contexts);
+    
+    contextStack->_data = data;
+    Py_INCREF(contextStack->_data);
+    
+    Py_INCREF(contextStack);
+    return contextStack;
+}
+
+static Context*
+_ContextStack_currentContext(_ContextStack* self)
+{
+    // TODO
+    return NULL;
+}
+
+
+/********************************************************************************
+ *                                ContextSwitcher
+ ********************************************************************************/
+
+typedef struct {
+    PyObject_HEAD
+    int _popsCount;
+    Context* _contextToSwitch;
+} ContextSwitcher;
+
+static void
+ContextSwitcher_dealloc(ContextSwitcher* self)
+{
+    Py_XDECREF(self->_contextToSwitch);
+
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static int
+ContextSwitcher_init(ContextSwitcher *self, PyObject *args, PyObject *kwds)
+{
+    PyObject* _contextToSwitch;
+    
+    if (! PyArg_ParseTuple(args, "|iO", &self->_popsCount, &_contextToSwitch))
+        return -1;
+    
+    ASSIGN_OBJECT_FIELD(Context, _contextToSwitch);
+
+    return 0;
+}
+
+DECLARE_TYPE(ContextSwitcher, NULL, "Context switcher");
+
+
+/********************************************************************************
+ *                                LineData
+ ********************************************************************************/
+
+typedef struct {
+    PyObject_HEAD
+    _ContextStack* contextStack;
+    bool lineContinue;
+} _LineData;
+
+static void
+_LineData_dealloc(_LineData* self)
+{
+    Py_XDECREF(self->contextStack);
+
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static int
+_LineData_init(_LineData *self, PyObject *args, PyObject *kwds)
+{
+    PyObject* contextStack = NULL;
+    PyObject* lineContinue = NULL;
+    
+    if (! PyArg_ParseTuple(args, "|OO", &contextStack, &lineContinue))
+        return -1;
+    
+    ASSIGN_OBJECT_FIELD(_ContextStack, contextStack);
+    ASSIGN_BOOL_FIELD(lineContinue);
+
+    return 0;
+}
+
+DECLARE_TYPE(_LineData, NULL, "Line data");
+
+
+
 /********************************************************************************
  *                                Parser
  ********************************************************************************/
@@ -473,7 +507,7 @@ Parser_setConexts(Parser *self, PyObject *args)
     ASSIGN_PYOBJECT_FIELD(contexts);
     ASSIGN_OBJECT_FIELD(Context, defaultContext);
     
-    //self->defaultContextStack = _makeDefaultContextStack(self->defaultContext);
+    self->defaultContextStack = _makeDefaultContextStack(self->defaultContext);
 
     Py_RETURN_NONE;
 }
@@ -503,14 +537,14 @@ Parser_parseBlock(Parser *self, PyObject *args)
         contextStack = self->defaultContextStack;
     }
     
-#if 0
+#if 0 // TODO
     // this code is not tested, because lineBeginContext is not defined by any xml file
     if (_ContextStack_currentContext(contextStack)->lineBeginContext != Py_None &&
         (! lineContinue))
     {
-        _Context
+        //contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
+        printf("switch !!!\n");
     }
-        contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
 #endif
     
     PyObject* segment = Py_BuildValue("iO", 7, self->defaultContext->format);
@@ -559,5 +593,6 @@ initcParser(void)
     REGISTER_TYPE(_LineData)
     REGISTER_TYPE(_ContextStack)
     REGISTER_TYPE(Context)
+    REGISTER_TYPE(ContextSwitcher)
     REGISTER_TYPE(Parser)
 }
