@@ -22,6 +22,48 @@
 #define ASSIGN_BOOL_FIELD(fieldName) \
     self->fieldName = Py_True == fieldName
 
+#define DECLARE_TYPE(TYPE_NAME, METHODS, COMMENT) \
+    static PyTypeObject TYPE_NAME##Type = { \
+        PyObject_HEAD_INIT(NULL)\
+        0,\
+        "qutepart.cParser." #TYPE_NAME,\
+        sizeof(TYPE_NAME),\
+        0,\
+        (destructor)TYPE_NAME##_dealloc,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        Py_TPFLAGS_DEFAULT,\
+        #COMMENT,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        METHODS,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        0,\
+        (initproc)TYPE_NAME##_init,\
+    }
+
+
 #define REGISTER_TYPE(TYPE_NAME) \
     TYPE_NAME##Type.tp_new = PyType_GenericNew; \
     if (PyType_Ready(&TYPE_NAME##Type) < 0) \
@@ -101,45 +143,7 @@ static PyMethodDef AbstractRuleParams_methods[] = {
     {NULL}  /* Sentinel */
 };
 
-static PyTypeObject AbstractRuleParamsType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                                      /*ob_size*/
-    "qutepart.cParser.AbstractRuleParams",  /*tp_name*/
-    sizeof(AbstractRuleParams),             /*tp_basicsize*/
-    0,                                      /*tp_itemsize*/
-    (destructor)AbstractRuleParams_dealloc, /*tp_dealloc*/
-    0,                                      /*tp_print*/
-    0,                                      /*tp_getattr*/
-    0,                                      /*tp_setattr*/
-    0,                                      /*tp_compare*/
-    0,                                      /*tp_repr*/
-    0,                                      /*tp_as_number*/
-    0,                                      /*tp_as_sequence*/
-    0,                                      /*tp_as_mapping*/
-    0,                                      /*tp_hash */
-    0,                                      /*tp_call*/
-    0,                                      /*tp_str*/
-    0,                                      /*tp_getattro*/
-    0,                                      /*tp_setattro*/
-    0,                                      /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,                     /*tp_flags*/
-    "AbstractRule constructor parameters",  /*tp_doc*/
-    0,		                                /* tp_traverse */
-    0,		                                /* tp_clear */
-    0,		                                /* tp_richcompare */
-    0,		                                /* tp_weaklistoffset */
-    0,		                                /* tp_iter */
-    0,		                                /* tp_iternext */
-    AbstractRuleParams_methods,             /* tp_methods */
-    0,                                      /* tp_members */
-    0,                                      /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    0,                                      /* tp_descr_get */
-    0,                                      /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)AbstractRuleParams_init,      /* tp_init */
-};
+DECLARE_TYPE(AbstractRuleParams, AbstractRuleParams_methods, "AbstractRule constructor parameters");
 
 
 /********************************************************************************
@@ -162,45 +166,7 @@ static PyTypeObject AbstractRuleParamsType = {
         {NULL}  /* Sentinel */ \
     }; \
  \
-    static PyTypeObject RULE_TYPE_NAME##Type = { \
-        PyObject_HEAD_INIT(NULL) \
-        0,                                      /*ob_size*/ \
-        "qutepart.cParser."#RULE_TYPE_NAME,     /*tp_name*/ \
-        sizeof(RULE_TYPE_NAME),                 /*tp_basicsize*/ \
-        0,                                      /*tp_itemsize*/ \
-        (destructor)RULE_TYPE_NAME##_dealloc,   /*tp_dealloc*/ \
-        0,                                      /*tp_print*/ \
-        0,                                      /*tp_getattr*/ \
-        0,                                      /*tp_setattr*/ \
-        0,                                      /*tp_compare*/ \
-        0,                                      /*tp_repr*/ \
-        0,                                      /*tp_as_number*/ \
-        0,                                      /*tp_as_sequence*/ \
-        0,                                      /*tp_as_mapping*/ \
-        0,                                      /*tp_hash */ \
-        0,                                      /*tp_call*/ \
-        0,                                      /*tp_str*/ \
-        0,                                      /*tp_getattro*/ \
-        0,                                      /*tp_setattro*/ \
-        0,                                      /*tp_as_buffer*/ \
-        Py_TPFLAGS_DEFAULT,                     /*tp_flags*/ \
-        #RULE_TYPE_NAME " rule",                /*tp_doc*/ \
-        0,		                                /* tp_traverse */ \
-        0,		                                /* tp_clear */ \
-        0,		                                /* tp_richcompare */ \
-        0,		                                /* tp_weaklistoffset */ \
-        0,		                                /* tp_iter */ \
-        0,		                                /* tp_iternext */ \
-        RULE_TYPE_NAME##_methods,               /* tp_methods */ \
-        0,                                      /* tp_members */ \
-        0,                                      /* tp_getset */ \
-        0,                                      /* tp_base */ \
-        0,                                      /* tp_dict */ \
-        0,                                      /* tp_descr_get */ \
-        0,                                      /* tp_descr_set */ \
-        0,                                      /* tp_dictoffset */ \
-        (initproc)RULE_TYPE_NAME##_init,        /* tp_init */ \
-    };
+    DECLARE_TYPE(RULE_TYPE_NAME, RULE_TYPE_NAME##_methods, #RULE_TYPE_NAME " rule")
     
 
 /********************************************************************************
@@ -218,7 +184,7 @@ typedef struct {
 static void
 DetectChar_dealloc_fields(DetectChar* self)
 {
-    self->ob_type->tp_free((PyObject*)self);
+    Py_XDECREF(self->abstractRuleParams);
 }
 
 static int
@@ -242,7 +208,7 @@ DetectChar_tryMatch(DetectChar* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
-DECLARE_RULE_METHODS_AND_TYPE(DetectChar)
+DECLARE_RULE_METHODS_AND_TYPE(DetectChar);
 
 
 /********************************************************************************
@@ -256,7 +222,7 @@ typedef struct {
 } _LineData;
 
 static void
-_LineData_dealloc_fields(_LineData* self)
+_LineData_dealloc(_LineData* self)
 {
     Py_XDECREF(self->contextStack);
 
@@ -278,88 +244,44 @@ _LineData_init(_LineData *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static PyTypeObject _LineDataType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                                      /*ob_size*/
-    "qutepart.cParser._LineData",           /*tp_name*/
-    sizeof(_LineData),                      /*tp_basicsize*/
-    0,                                      /*tp_itemsize*/
-    (destructor)_LineData_dealloc,          /*tp_dealloc*/
-    0,                                      /*tp_print*/
-    0,                                      /*tp_getattr*/
-    0,                                      /*tp_setattr*/
-    0,                                      /*tp_compare*/
-    0,                                      /*tp_repr*/
-    0,                                      /*tp_as_number*/
-    0,                                      /*tp_as_sequence*/
-    0,                                      /*tp_as_mapping*/
-    0,                                      /*tp_hash */
-    0,                                      /*tp_call*/
-    0,                                      /*tp_str*/
-    0,                                      /*tp_getattro*/
-    0,                                      /*tp_setattro*/
-    0,                                      /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,                     /*tp_flags*/
-    "Line data",                            /*tp_doc*/
-    0,		                                /* tp_traverse */
-    0,		                                /* tp_clear */
-    0,		                                /* tp_richcompare */
-    0,		                                /* tp_weaklistoffset */
-    0,		                                /* tp_iter */
-    0,		                                /* tp_iternext */
-    _LineData_methods,                      /* tp_methods */
-    0,                                      /* tp_members */
-    0,                                      /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    0,                                      /* tp_descr_get */
-    0,                                      /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)_LineData_init,               /* tp_init */
-};
+DECLARE_TYPE(_LineData, NULL, "Line data");
 
 /********************************************************************************
- *                                LineData
+ *                                Context stack
  ********************************************************************************/
 
 
-class ContextStack:
-    def __init__(self, contexts, data):
-        """Create default context stack for syntax
-        Contains default context on the top
-        """
-        self._contexts = contexts
-        self._data = data
-    
-    @staticmethod
-    def makeDefault(parser):
-        """Make default stack for parser
-        """
-        return ContextStack([parser.defaultContext], [None])
+typedef struct {
+    PyObject_HEAD
+    PyObject* _contexts;
+    PyObject* _data;
+} _ContextStack;
 
-    def pop(self, count):
-        """Returns new context stack, which doesn't contain few levels
-        """
-        if len(self._contexts) - 1 < count:
-            print >> sys.stderr, "Error: #pop value is too big"
-            return self
-        
-        return ContextStack(self._contexts[:-count], self._data[:-count])
+static void
+_ContextStack_dealloc(_ContextStack* self)
+{
+    Py_XDECREF(self->_contexts);
+    Py_XDECREF(self->_data);
+
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static int
+_ContextStack_init(_ContextStack *self, PyObject *args, PyObject *kwds)
+{
+    PyObject* _contexts = NULL;
+    PyObject* _data = NULL;
     
-    def append(self, context, data):
-        """Returns new context, which contains current stack and new frame
-        """
-        return ContextStack(self._contexts + [context], self._data + [data])
+    if (! PyArg_ParseTuple(args, "|OO", &_contexts, &_data))
+        return -1;
     
-    def currentContext(self):
-        """Get current context
-        """
-        return self._contexts[-1]
-    
-    def currentData(self):
-        """Get current data
-        """
-        return self._data[-1]
+    ASSIGN_PYOBJECT_FIELD(_contexts);
+    ASSIGN_PYOBJECT_FIELD(_data);
+
+    return 0;
+}
+
+DECLARE_TYPE(_ContextStack, NULL, "Context stack");
 
 
 /********************************************************************************
@@ -457,45 +379,7 @@ static PyMethodDef Context_methods[] = {
     {NULL}  /* Sentinel */
 };
 
-static PyTypeObject ContextType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                                      /*ob_size*/
-    "qutepart.cParser.Context",             /*tp_name*/
-    sizeof(Context),                        /*tp_basicsize*/
-    0,                                      /*tp_itemsize*/
-    (destructor)Context_dealloc,            /*tp_dealloc*/
-    0,                                      /*tp_print*/
-    0,                                      /*tp_getattr*/
-    0,                                      /*tp_setattr*/
-    0,                                      /*tp_compare*/
-    0,                                      /*tp_repr*/
-    0,                                      /*tp_as_number*/
-    0,                                      /*tp_as_sequence*/
-    0,                                      /*tp_as_mapping*/
-    0,                                      /*tp_hash */
-    0,                                      /*tp_call*/
-    0,                                      /*tp_str*/
-    0,                                      /*tp_getattro*/
-    0,                                      /*tp_setattro*/
-    0,                                      /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,                     /*tp_flags*/
-    "Parsing context",                      /*tp_doc*/
-    0,		                                /* tp_traverse */
-    0,		                                /* tp_clear */
-    0,		                                /* tp_richcompare */
-    0,		                                /* tp_weaklistoffset */
-    0,		                                /* tp_iter */
-    0,		                                /* tp_iternext */
-    Context_methods,                        /* tp_methods */
-    0,                                      /* tp_members */
-    0,                                      /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    0,                                      /* tp_descr_get */
-    0,                                      /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)Context_init,                 /* tp_init */
-};
+DECLARE_TYPE(Context, Context_methods, "Parsing context");
 
 /********************************************************************************
  *                                Parser
@@ -589,45 +473,7 @@ static PyMethodDef Parser_methods[] = {
     {NULL}  /* Sentinel */
 };
 
-static PyTypeObject ParserType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                                      /*ob_size*/
-    "qutepart.cParser.Parser",              /*tp_name*/
-    sizeof(Parser),                         /*tp_basicsize*/
-    0,                                      /*tp_itemsize*/
-    (destructor)Parser_dealloc,             /*tp_dealloc*/
-    0,                                      /*tp_print*/
-    0,                                      /*tp_getattr*/
-    0,                                      /*tp_setattr*/
-    0,                                      /*tp_compare*/
-    0,                                      /*tp_repr*/
-    0,                                      /*tp_as_number*/
-    0,                                      /*tp_as_sequence*/
-    0,                                      /*tp_as_mapping*/
-    0,                                      /*tp_hash */
-    0,                                      /*tp_call*/
-    0,                                      /*tp_str*/
-    0,                                      /*tp_getattro*/
-    0,                                      /*tp_setattro*/
-    0,                                      /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,                     /*tp_flags*/
-    "Parser",                               /*tp_doc*/
-    0,		                                /* tp_traverse */
-    0,		                                /* tp_clear */
-    0,		                                /* tp_richcompare */
-    0,		                                /* tp_weaklistoffset */
-    0,		                                /* tp_iter */
-    0,		                                /* tp_iternext */
-    Parser_methods,                         /* tp_methods */
-    0,                                      /* tp_members */
-    0,                                      /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    0,                                      /* tp_descr_get */
-    0,                                      /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)Parser_init,                  /* tp_init */
-};
+DECLARE_TYPE(Parser, Parser_methods, "Parser");
 
 
 /********************************************************************************
