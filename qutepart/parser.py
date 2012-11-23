@@ -56,7 +56,7 @@ class _LineData:
         self.contextStack = contextStack
         self.lineContinue = lineContinue
 
-class ContextStack:
+class _ContextStack:
     def __init__(self, contexts, data):
         """Create default context stack for syntax
         Contains default context on the top
@@ -68,7 +68,7 @@ class ContextStack:
     def makeDefault(parser):
         """Make default stack for parser
         """
-        return ContextStack([parser.defaultContext], [None])
+        return _ContextStack([parser.defaultContext], [None])
 
     def pop(self, count):
         """Returns new context stack, which doesn't contain few levels
@@ -77,12 +77,12 @@ class ContextStack:
             print >> sys.stderr, "Error: #pop value is too big"
             return self
         
-        return ContextStack(self._contexts[:-count], self._data[:-count])
+        return _ContextStack(self._contexts[:-count], self._data[:-count])
     
     def append(self, context, data):
         """Returns new context, which contains current stack and new frame
         """
-        return ContextStack(self._contexts + [context], self._data + [data])
+        return _ContextStack(self._contexts + [context], self._data + [data])
     
     def currentContext(self):
         """Get current context
@@ -950,7 +950,7 @@ class Parser:
             contextStack = prevLineData.contextStack
             lineContinue = prevLineData.lineContinue
         else:
-            contextStack = ContextStack.makeDefault(self)
+            contextStack = _ContextStack.makeDefault(self)
             lineContinue = False
         
         # this code is not tested, because lineBeginContext is not defined by any xml file

@@ -218,6 +218,7 @@ typedef struct {
 static void
 DetectChar_dealloc_fields(DetectChar* self)
 {
+    self->ob_type->tp_free((PyObject*)self);
 }
 
 static int
@@ -242,6 +243,124 @@ DetectChar_tryMatch(DetectChar* self, PyObject* args)
 }
 
 DECLARE_RULE_METHODS_AND_TYPE(DetectChar)
+
+
+/********************************************************************************
+ *                                LineData
+ ********************************************************************************/
+
+typedef struct {
+    PyObject_HEAD
+    PyObject* contextStack;
+    bool lineContinue;
+} _LineData;
+
+static void
+_LineData_dealloc_fields(_LineData* self)
+{
+    Py_XDECREF(self->contextStack);
+
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static int
+_LineData_init(_LineData *self, PyObject *args, PyObject *kwds)
+{
+    PyObject* contextStack = NULL;
+    PyObject* lineContinue = NULL;
+    
+    if (! PyArg_ParseTuple(args, "|OO", &contextStack, &lineContinue))
+        return -1;
+    
+    ASSIGN_PYOBJECT_FIELD(contextStack);
+    ASSIGN_BOOL_FIELD(lineContinue);
+
+    return 0;
+}
+
+static PyTypeObject _LineDataType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                                      /*ob_size*/
+    "qutepart.cParser._LineData",           /*tp_name*/
+    sizeof(_LineData),                      /*tp_basicsize*/
+    0,                                      /*tp_itemsize*/
+    (destructor)_LineData_dealloc,          /*tp_dealloc*/
+    0,                                      /*tp_print*/
+    0,                                      /*tp_getattr*/
+    0,                                      /*tp_setattr*/
+    0,                                      /*tp_compare*/
+    0,                                      /*tp_repr*/
+    0,                                      /*tp_as_number*/
+    0,                                      /*tp_as_sequence*/
+    0,                                      /*tp_as_mapping*/
+    0,                                      /*tp_hash */
+    0,                                      /*tp_call*/
+    0,                                      /*tp_str*/
+    0,                                      /*tp_getattro*/
+    0,                                      /*tp_setattro*/
+    0,                                      /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,                     /*tp_flags*/
+    "Line data",                            /*tp_doc*/
+    0,		                                /* tp_traverse */
+    0,		                                /* tp_clear */
+    0,		                                /* tp_richcompare */
+    0,		                                /* tp_weaklistoffset */
+    0,		                                /* tp_iter */
+    0,		                                /* tp_iternext */
+    _LineData_methods,                      /* tp_methods */
+    0,                                      /* tp_members */
+    0,                                      /* tp_getset */
+    0,                                      /* tp_base */
+    0,                                      /* tp_dict */
+    0,                                      /* tp_descr_get */
+    0,                                      /* tp_descr_set */
+    0,                                      /* tp_dictoffset */
+    (initproc)_LineData_init,               /* tp_init */
+};
+
+/********************************************************************************
+ *                                LineData
+ ********************************************************************************/
+
+
+class ContextStack:
+    def __init__(self, contexts, data):
+        """Create default context stack for syntax
+        Contains default context on the top
+        """
+        self._contexts = contexts
+        self._data = data
+    
+    @staticmethod
+    def makeDefault(parser):
+        """Make default stack for parser
+        """
+        return ContextStack([parser.defaultContext], [None])
+
+    def pop(self, count):
+        """Returns new context stack, which doesn't contain few levels
+        """
+        if len(self._contexts) - 1 < count:
+            print >> sys.stderr, "Error: #pop value is too big"
+            return self
+        
+        return ContextStack(self._contexts[:-count], self._data[:-count])
+    
+    def append(self, context, data):
+        """Returns new context, which contains current stack and new frame
+        """
+        return ContextStack(self._contexts + [context], self._data + [data])
+    
+    def currentContext(self):
+        """Get current context
+        """
+        return self._contexts[-1]
+    
+    def currentData(self):
+        """Get current data
+        """
+        return self._data[-1]
+
 
 /********************************************************************************
  *                                Context
@@ -536,6 +655,8 @@ initcParser(void)
     
     REGISTER_TYPE(DetectChar)
     
+    REGISTER_TYPE(_LineData)
+    REGISTER_TYPE(_ContextStack)
     REGISTER_TYPE(Context)
     REGISTER_TYPE(Parser)
 }
