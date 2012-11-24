@@ -3,24 +3,26 @@
 
 #include <stdbool.h>
 
-#define ASSIGN_PYOBJECT_FIELD(fieldName)\
-    if (fieldName) { \
-        PyObject* tmp = self->fieldName; \
-        Py_INCREF(fieldName); \
-        self->fieldName = fieldName; \
+#define ASSIGN_VALUE(type, to, from) \
+    { \
+        type* tmp = to; \
+        Py_INCREF(from); \
+        to = from; \
         Py_XDECREF(tmp); \
     }
 
-#define ASSIGN_OBJECT_FIELD(type, fieldName)\
-    if (fieldName) { \
-        type* tmp = self->fieldName; \
-        Py_INCREF(fieldName); \
-        self->fieldName = (type*)fieldName; \
-        Py_XDECREF(tmp); \
-    }
+#define ASSIGN_PYOBJECT_VALUE(to, from) \
+    ASSIGN_VALUE(PyObject, to, from)
+
+#define ASSIGN_PYOBJECT_FIELD(fieldName)\
+    ASSIGN_PYOBJECT_VALUE(self->fieldName, fieldName)
+
+#define ASSIGN_FIELD(type, fieldName)\
+    ASSIGN_VALUE(type, self->fieldName, (type*)fieldName)
 
 #define ASSIGN_BOOL_FIELD(fieldName) \
     self->fieldName = Py_True == fieldName
+
 
 #define _DECLARE_TYPE(TYPE_NAME, CONSTRUCTOR, METHODS, COMMENT) \
     static PyTypeObject TYPE_NAME##Type = { \
@@ -356,8 +358,37 @@ _ContextStack_new(PyObject* contexts, PyObject* data)  // not a constructor, jus
 static Context*
 _ContextStack_currentContext(_ContextStack* self)
 {
-    // TODO
-    return NULL;
+    
+    return (Context*)PyList_GetItem(self->_contexts,
+                                    PyList_Size(self->_contexts) - 1);
+}
+
+static Context*
+_ContextStack_currentData(_ContextStack* self)
+{
+    return (Context*)PyList_GetItem(self->_contexts, -1);
+}
+
+static _ContextStack*
+_ContextStack_pop(_ContextStack* self, int count)
+{
+    if (PyList_Size(self->_contexts) - 1 < count)
+    {
+        fprintf(stderr, "Qutepart error: #pop value is too big");
+        return self;
+    }
+
+    PyObject* contexts = PyList_GetSlice(self->_contexts, -count, PyList_Size(self->_contexts));
+    PyObject* data = PyList_GetSlice(self->_data, -count, PyList_Size(self->_data));
+    return _ContextStack_new(contexts, data);
+}
+
+static _ContextStack*
+_ContextStack_append(_ContextStack* self, Context* context, PyObject* data)
+{
+    PyList_Append(self->_contexts, (PyObject*)context);
+    PyList_Append(self->_data, data);
+    return self;
 }
 
 
@@ -387,12 +418,30 @@ ContextSwitcher_init(ContextSwitcher *self, PyObject *args, PyObject *kwds)
     if (! PyArg_ParseTuple(args, "|iO", &self->_popsCount, &_contextToSwitch))
         return -1;
     
-    ASSIGN_OBJECT_FIELD(Context, _contextToSwitch);
+    ASSIGN_FIELD(Context, _contextToSwitch);
 
     return 0;
 }
 
 DECLARE_TYPE(ContextSwitcher, NULL, "Context switcher");
+
+static _ContextStack*
+ContextSwitcher_getNextContextStack(ContextSwitcher* self, _ContextStack* contextStack, PyObject* data)
+{
+    if (self->_popsCount)
+        ASSIGN_VALUE(_ContextStack, contextStack, _ContextStack_pop(contextStack, self->_popsCount));
+
+    if (Py_None != (PyObject*)self->_contextToSwitch)
+    {
+        if ( ! self->_contextToSwitch->dynamic)
+            ASSIGN_PYOBJECT_VALUE(data, Py_None);
+        ASSIGN_VALUE(_ContextStack,
+                     contextStack,
+                     _ContextStack_append(contextStack, self->_contextToSwitch, data));
+    }
+
+    return contextStack;
+}
 
 
 /********************************************************************************
@@ -422,7 +471,7 @@ _LineData_init(_LineData *self, PyObject *args, PyObject *kwds)
     if (! PyArg_ParseTuple(args, "|OO", &contextStack, &lineContinue))
         return -1;
     
-    ASSIGN_OBJECT_FIELD(_ContextStack, contextStack);
+    ASSIGN_FIELD(_ContextStack, contextStack);
     ASSIGN_BOOL_FIELD(lineContinue);
 
     return 0;
@@ -505,7 +554,7 @@ Parser_setConexts(Parser *self, PyObject *args)
         Py_RETURN_NONE;
 
     ASSIGN_PYOBJECT_FIELD(contexts);
-    ASSIGN_OBJECT_FIELD(Context, defaultContext);
+    ASSIGN_FIELD(Context, defaultContext);
     
     self->defaultContextStack = _makeDefaultContextStack(self->defaultContext);
 
@@ -536,16 +585,16 @@ Parser_parseBlock(Parser *self, PyObject *args)
     {
         contextStack = self->defaultContextStack;
     }
+    Context* currentContext = _ContextStack_currentContext(contextStack);
     
-#if 0 // TODO
     // this code is not tested, because lineBeginContext is not defined by any xml file
-    if (_ContextStack_currentContext(contextStack)->lineBeginContext != Py_None &&
+    if (currentContext->lineBeginContext != Py_None &&
         (! lineContinue))
     {
-        //contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
+        ContextSwitcher* contextSwitcher = (ContextSwitcher*)currentContext->lineBeginContext;
+        contextStack = ContextSwitcher_getNextContextStack(contextSwitcher, contextStack, NULL);
         printf("switch !!!\n");
     }
-#endif
     
     PyObject* segment = Py_BuildValue("iO", 7, self->defaultContext->format);
     
