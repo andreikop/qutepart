@@ -81,10 +81,69 @@
     PyModule_AddObject(m, #TYPE_NAME, (PyObject *)&TYPE_NAME##Type);
 
 
+#define DECLARE_RULE_METHODS_AND_TYPE(RULE_TYPE_NAME) \
+    static void \
+    RULE_TYPE_NAME##_dealloc(RULE_TYPE_NAME* self) \
+    { \
+        Py_XDECREF(self->abstractRuleParams); \
+        RULE_TYPE_NAME##_dealloc_fields(self); \
+        self->ob_type->tp_free((PyObject*)self); \
+    }; \
+ \
+    static PyMethodDef RULE_TYPE_NAME##_methods[] = { \
+        {"tryMatch", (PyCFunction)RULE_TYPE_NAME##_tryMatch, METH_VARARGS, \
+         "Try to parse peace of text" \
+        }, \
+        {NULL}  /* Sentinel */ \
+    }; \
+ \
+    DECLARE_TYPE(RULE_TYPE_NAME, RULE_TYPE_NAME##_methods, #RULE_TYPE_NAME " rule")
+
+    
 /********************************************************************************
- *                                AbstractRuleParams
+ *                                Types declaration
  ********************************************************************************/
- 
+
+    
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    PyObject* parser;  // Parser*
+    PyObject* name;
+    PyObject* attribute;
+    PyObject* format;
+    PyObject* lineEndContext;
+    PyObject* lineBeginContext;
+    PyObject* fallthroughContext;
+    PyObject* rules;
+    bool dynamic;
+} Context;
+
+typedef struct {
+    PyObject_HEAD
+    PyObject* _contexts;
+    PyObject* _data;
+} _ContextStack;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    PyObject* syntax;
+    PyObject* deliminatorSet;
+    PyObject* lists;
+    PyObject* keywordsCaseSensitive;
+    PyObject* contexts;
+    Context* defaultContext;
+    _ContextStack* defaultContextStack;
+} Parser;
+
+
+typedef struct {
+    PyObject_HEAD
+    int _popsCount;
+    Context* _contextToSwitch;
+} ContextSwitcher;
+
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
@@ -97,6 +156,18 @@ typedef struct {
     bool dynamic;
     int column;
 } AbstractRuleParams;
+
+typedef struct {
+    PyObject_HEAD
+    _ContextStack* contextStack;
+    bool lineContinue;
+} _LineData;
+
+
+/********************************************************************************
+ *                                AbstractRuleParams
+ ********************************************************************************/
+ 
 
 static void
 AbstractRuleParams_dealloc(AbstractRuleParams* self)
@@ -159,29 +230,10 @@ DECLARE_TYPE(AbstractRuleParams, AbstractRuleParams_methods, "AbstractRule const
  *                                Rules
  ********************************************************************************/
 
-#define DECLARE_RULE_METHODS_AND_TYPE(RULE_TYPE_NAME) \
-    static void \
-    RULE_TYPE_NAME##_dealloc(RULE_TYPE_NAME* self) \
-    { \
-        Py_XDECREF(self->abstractRuleParams); \
-        RULE_TYPE_NAME##_dealloc_fields(self); \
-        self->ob_type->tp_free((PyObject*)self); \
-    }; \
- \
-    static PyMethodDef RULE_TYPE_NAME##_methods[] = { \
-        {"tryMatch", (PyCFunction)RULE_TYPE_NAME##_tryMatch, METH_VARARGS, \
-         "Try to parse peace of text" \
-        }, \
-        {NULL}  /* Sentinel */ \
-    }; \
- \
-    DECLARE_TYPE(RULE_TYPE_NAME, RULE_TYPE_NAME##_methods, #RULE_TYPE_NAME " rule")
-    
-
 /********************************************************************************
  *                                DetectChar
  ********************************************************************************/
- 
+
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
@@ -189,6 +241,7 @@ typedef struct {
     Py_UNICODE char_;
     int index;
 } DetectChar;
+
 
 static void
 DetectChar_dealloc_fields(DetectChar* self)
@@ -223,20 +276,6 @@ DECLARE_RULE_METHODS_AND_TYPE(DetectChar);
 /********************************************************************************
  *                                Context
  ********************************************************************************/
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    PyObject* parser;
-    PyObject* name;
-    PyObject* attribute;
-    PyObject* format;
-    PyObject* lineEndContext;
-    PyObject* lineBeginContext;
-    PyObject* fallthroughContext;
-    PyObject* rules;
-    bool dynamic;
-} Context;
 
 static void
 Context_dealloc(Context* self)
@@ -321,13 +360,6 @@ DECLARE_TYPE(Context, Context_methods, "Parsing context");
  *                                Context stack
  ********************************************************************************/
 
-
-typedef struct {
-    PyObject_HEAD
-    PyObject* _contexts;
-    PyObject* _data;
-} _ContextStack;
-
 static void
 _ContextStack_dealloc(_ContextStack* self)
 {
@@ -358,10 +390,10 @@ _ContextStack_currentContext(_ContextStack* self)
                                     PyList_Size(self->_contexts) - 1);
 }
 
-static Context*
+static PyObject*
 _ContextStack_currentData(_ContextStack* self)
 {
-    return (Context*)PyList_GetItem(self->_contexts, -1);
+    return PyList_GetItem(self->_contexts, -1);
 }
 
 static _ContextStack*
@@ -390,12 +422,6 @@ _ContextStack_append(_ContextStack* self, Context* context, PyObject* data)
 /********************************************************************************
  *                                ContextSwitcher
  ********************************************************************************/
-
-typedef struct {
-    PyObject_HEAD
-    int _popsCount;
-    Context* _contextToSwitch;
-} ContextSwitcher;
 
 static void
 ContextSwitcher_dealloc(ContextSwitcher* self)
@@ -447,14 +473,113 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, _ContextStack* contex
  *                                Context.parseBlock()
  ********************************************************************************/
 // here, because uses ContextStack structure declaration
+
+bool _isDeliminator(Py_UNICODE character, PyObject* deliminatorSet)
+{
+    int deliminatorSetLen = PyUnicode_GET_SIZE(deliminatorSet);
+    Py_UNICODE* deliminatorSetUnicode = PyUnicode_AS_UNICODE(deliminatorSet);
+    
+    int i;
+    for(i = 0; i < deliminatorSetLen; i++)
+        if (deliminatorSetUnicode[i] == character)
+            return true;
+    
+    return false;
+}
+
+typedef struct {
+    int currentColumnIndex;
+    PyObject* wholeLineText;
+    Py_UNICODE* text;
+    int textLen;
+    bool firstNonSpace;
+    bool isWordStart;
+    int wordLength;
+    PyObject* contextData;
+} _TextToMatchObject;
+
+
 static int
 Context_parseBlock(Context* self,
                    int currentColumnIndex,
-                   Py_UNICODE* text,
+                   PyObject* text,
                    PyObject* segmentList,
                    _ContextStack** pContextStack,
                    bool* pLineContinue)
 {
+    int wholeLineLen = PyUnicode_GET_SIZE(text);
+    
+    _TextToMatchObject textToMatchObject;
+    textToMatchObject.currentColumnIndex = currentColumnIndex;
+    textToMatchObject.wholeLineText = text;
+    // text and textLen is updated in the loop
+    textToMatchObject.firstNonSpace = true;  // updated in the loop
+    // isWordStart, wordLength is updated in the loop
+    textToMatchObject.contextData = _ContextStack_currentData(*pContextStack);
+    
+    Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(text);
+    
+    while (currentColumnIndex < wholeLineLen)
+    {
+        // update text and textLen
+        textToMatchObject.text = wholeLineUnicodeBuffer + currentColumnIndex;
+        textToMatchObject.textLen = wholeLineLen - currentColumnIndex;
+
+        // update firstNonSpace
+        if (textToMatchObject.firstNonSpace && currentColumnIndex > 0)
+        {
+            bool previousCharIsSpace = Py_UNICODE_ISSPACE(wholeLineUnicodeBuffer[currentColumnIndex - 1]);
+            textToMatchObject.firstNonSpace = previousCharIsSpace;
+        }
+        
+        // update isWordStart and wordLength
+        textToMatchObject.isWordStart = \
+            currentColumnIndex == 0 ||
+            Py_UNICODE_ISSPACE(wholeLineUnicodeBuffer[currentColumnIndex - 1]) ||
+            _isDeliminator(wholeLineUnicodeBuffer[currentColumnIndex - 1], ((Parser*)self->parser)->deliminatorSet);
+
+        if (textToMatchObject.isWordStart)
+        {
+            int wordEndIndex;
+            
+            for(wordEndIndex = currentColumnIndex; wordEndIndex < wholeLineLen; wordEndIndex++)
+            {
+                if (_isDeliminator(wholeLineUnicodeBuffer[wordEndIndex],
+                                   ((Parser*)self->parser)->deliminatorSet))
+                    break;
+            }
+            
+            wordEndIndex = wholeLineLen;
+            
+            textToMatchObject.wordLength = wordEndIndex - currentColumnIndex;
+        }
+        
+#if 0
+        for rule in self.rules:
+            ruleTryMatchResult = rule.tryMatch(textToMatchObject)
+            if ruleTryMatchResult is not None:
+                matchedRules.append(MatchedRule(ruleTryMatchResult.rule,
+                                                currentColumnIndex,
+                                                ruleTryMatchResult.length))
+                currentColumnIndex += ruleTryMatchResult.length
+                if ruleTryMatchResult.rule.context is not None:
+                    newContextStack = ruleTryMatchResult.rule.context.getNextContextStack(contextStack,
+                                                                                          ruleTryMatchResult.data)
+                    if newContextStack != contextStack:
+                        return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
+                
+                break  # for loop
+        else:  # no matched rules
+            if self.fallthroughContext is not None:
+                newContextStack = self.fallthroughContext.getNextContextStack(contextStack)
+                if newContextStack != contextStack:
+                    return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
+#endif
+
+        currentColumnIndex += 1;
+    }
+    
+    //return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
     return 0;
 }
 
@@ -462,12 +587,6 @@ Context_parseBlock(Context* self,
 /********************************************************************************
  *                                LineData
  ********************************************************************************/
-
-typedef struct {
-    PyObject_HEAD
-    _ContextStack* contextStack;
-    bool lineContinue;
-} _LineData;
 
 static void
 _LineData_dealloc(_LineData* self)
@@ -495,18 +614,6 @@ _LineData_new(_ContextStack* contextStack, bool lineContinue)  // not a construc
 /********************************************************************************
  *                                Parser
  ********************************************************************************/
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    PyObject* syntax;
-    PyObject* deliminatorSet;
-    PyObject* lists;
-    PyObject* keywordsCaseSensitive;
-    PyObject* contexts;
-    Context* defaultContext;
-    _ContextStack* defaultContextStack;
-} Parser;
 
 static void
 Parser_dealloc(Parser* self)
@@ -615,7 +722,7 @@ Parser_parseBlock(Parser *self, PyObject *args)
     {
         int length = Context_parseBlock( currentContext,
                                          currentColumnIndex,
-                                         PyUnicode_AS_UNICODE(text),
+                                         text,
                                          segmentList,
                                         &contextStack,
                                         &lineContinue);
