@@ -104,7 +104,13 @@
  *                                Types declaration
  ********************************************************************************/
 
-    
+typedef struct {
+    PyObject_HEAD
+    int _popsCount;
+    PyObject* _contextToSwitch;  // Context*
+} ContextSwitcher;
+
+
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
@@ -114,7 +120,7 @@ typedef struct {
     PyObject* format;
     PyObject* lineEndContext;
     PyObject* lineBeginContext;
-    PyObject* fallthroughContext;
+    ContextSwitcher* fallthroughContext;
     PyObject* rules;
     bool dynamic;
 } Context;
@@ -140,17 +146,11 @@ typedef struct {
 
 typedef struct {
     PyObject_HEAD
-    int _popsCount;
-    Context* _contextToSwitch;
-} ContextSwitcher;
-
-typedef struct {
-    PyObject_HEAD
     /* Type-specific fields go here. */
     PyObject* parentContext;
     PyObject* format;
     PyObject* attribute;
-    PyObject* context;
+    ContextSwitcher* context;
     bool lookAhead;
     bool firstNonSpace;
     bool dynamic;
@@ -162,6 +162,31 @@ typedef struct {
     _ContextStack* contextStack;
     bool lineContinue;
 } _LineData;
+
+#define AbstractRule_HEAD \
+    PyObject_HEAD \
+    AbstractRuleParams* abstractRuleParams; \
+
+typedef struct {
+    AbstractRule_HEAD
+} AbstractRule;  // not a real type, but any rule structure starts with this structure
+
+typedef struct {
+    AbstractRule* rule;
+    int length;
+    PyObject* data;
+} _RuleTryMatchResult;
+
+typedef struct {
+    int currentColumnIndex;
+    PyObject* wholeLineText;
+    Py_UNICODE* text;
+    int textLen;
+    bool firstNonSpace;
+    bool isWordStart;
+    int wordLength;
+    PyObject* contextData;
+} _TextToMatchObject;
 
 
 /********************************************************************************
@@ -200,7 +225,7 @@ AbstractRuleParams_init(AbstractRuleParams *self, PyObject *args, PyObject *kwds
     ASSIGN_PYOBJECT_FIELD(parentContext);
     ASSIGN_PYOBJECT_FIELD(format);
     ASSIGN_PYOBJECT_FIELD(attribute);
-    ASSIGN_PYOBJECT_FIELD(context);
+    ASSIGN_FIELD(ContextSwitcher, context);
     
     ASSIGN_BOOL_FIELD(lookAhead);
     ASSIGN_BOOL_FIELD(firstNonSpace);
@@ -230,14 +255,20 @@ DECLARE_TYPE(AbstractRuleParams, AbstractRuleParams_methods, "AbstractRule const
  *                                Rules
  ********************************************************************************/
 
+_RuleTryMatchResult AbstractRule_tryMatch(AbstractRule* self, _TextToMatchObject* textToMatchObject)
+{
+    _RuleTryMatchResult result;
+    result.rule = NULL;
+    return result;
+}
+
 /********************************************************************************
  *                                DetectChar
  ********************************************************************************/
 
 typedef struct {
-    PyObject_HEAD
+    AbstractRule_HEAD
     /* Type-specific fields go here. */
-    PyObject* abstractRuleParams;
     Py_UNICODE char_;
     int index;
 } DetectChar;
@@ -258,7 +289,7 @@ DetectChar_init(DetectChar *self, PyObject *args, PyObject *kwds)
     if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
         return -1;
     
-    ASSIGN_PYOBJECT_FIELD(abstractRuleParams);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
     self->char_ = PyUnicode_AS_UNICODE(char_)[0];
 
     return 0;
@@ -327,7 +358,7 @@ Context_setValues(Context *self, PyObject *args)
     ASSIGN_PYOBJECT_FIELD(format);
     ASSIGN_PYOBJECT_FIELD(lineEndContext);
     ASSIGN_PYOBJECT_FIELD(lineBeginContext);
-    ASSIGN_PYOBJECT_FIELD(fallthroughContext);
+    ASSIGN_FIELD(ContextSwitcher, fallthroughContext);
     ASSIGN_BOOL_FIELD(dynamic);
 
     Py_RETURN_NONE;
@@ -439,7 +470,7 @@ ContextSwitcher_init(ContextSwitcher *self, PyObject *args, PyObject *kwds)
     if (! PyArg_ParseTuple(args, "|iO", &self->_popsCount, &_contextToSwitch))
         return -1;
     
-    ASSIGN_FIELD(Context, _contextToSwitch);
+    ASSIGN_PYOBJECT_FIELD(_contextToSwitch);
 
     return 0;
 }
@@ -457,10 +488,11 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, _ContextStack* contex
 
     if (Py_None != (PyObject*)self->_contextToSwitch)
     {
-        if ( ! self->_contextToSwitch->dynamic)
+        Context* contextToSwitch = (Context*)self->_contextToSwitch;
+        if ( ! contextToSwitch->dynamic)
             data = Py_None;
         
-        _ContextStack* newContextStack = _ContextStack_append(contextStack, self->_contextToSwitch, data);
+        _ContextStack* newContextStack = _ContextStack_append(contextStack, contextToSwitch, data);
         ASSIGN_VALUE(_ContextStack, contextStack, newContextStack);
     }
 
@@ -487,18 +519,6 @@ bool _isDeliminator(Py_UNICODE character, PyObject* deliminatorSet)
     return false;
 }
 
-typedef struct {
-    int currentColumnIndex;
-    PyObject* wholeLineText;
-    Py_UNICODE* text;
-    int textLen;
-    bool firstNonSpace;
-    bool isWordStart;
-    int wordLength;
-    PyObject* contextData;
-} _TextToMatchObject;
-
-
 static int
 Context_parseBlock(Context* self,
                    int currentColumnIndex,
@@ -507,6 +527,7 @@ Context_parseBlock(Context* self,
                    _ContextStack** pContextStack,
                    bool* pLineContinue)
 {
+    int startColumnIndex = currentColumnIndex;
     int wholeLineLen = PyUnicode_GET_SIZE(text);
     
     _TextToMatchObject textToMatchObject;
@@ -518,7 +539,6 @@ Context_parseBlock(Context* self,
     textToMatchObject.contextData = _ContextStack_currentData(*pContextStack);
     
     Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(text);
-    
     while (currentColumnIndex < wholeLineLen)
     {
         // update text and textLen
@@ -554,32 +574,76 @@ Context_parseBlock(Context* self,
             textToMatchObject.wordLength = wordEndIndex - currentColumnIndex;
         }
         
-#if 0
-        for rule in self.rules:
-            ruleTryMatchResult = rule.tryMatch(textToMatchObject)
-            if ruleTryMatchResult is not None:
-                matchedRules.append(MatchedRule(ruleTryMatchResult.rule,
-                                                currentColumnIndex,
-                                                ruleTryMatchResult.length))
-                currentColumnIndex += ruleTryMatchResult.length
-                if ruleTryMatchResult.rule.context is not None:
-                    newContextStack = ruleTryMatchResult.rule.context.getNextContextStack(contextStack,
-                                                                                          ruleTryMatchResult.data)
-                    if newContextStack != contextStack:
-                        return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
-                
-                break  # for loop
-        else:  # no matched rules
-            if self.fallthroughContext is not None:
-                newContextStack = self.fallthroughContext.getNextContextStack(contextStack)
-                if newContextStack != contextStack:
-                    return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
-#endif
+        _RuleTryMatchResult result;
+        result.rule = NULL;
+        
+        int countOfNotMatchedSymbols = 0;
+        
+        int i;
+        for (i = 0; i < PyList_Size(self->rules); i++)
+        {
+            result = AbstractRule_tryMatch((AbstractRule*)PyList_GetItem(self->rules, i), &textToMatchObject);
+            
+            if (NULL != result.rule)
+                break;
+        }
 
-        currentColumnIndex += 1;
+        if (NULL != result.rule)  // if something matched
+        {
+            if (countOfNotMatchedSymbols > 0)
+            {
+                PyObject* segment = Py_BuildValue("iO", countOfNotMatchedSymbols, self->format);
+                PyList_Append(segmentList, segment);
+                countOfNotMatchedSymbols = 0;
+            }
+            
+            PyObject* segment = Py_BuildValue("iO", result.length, result.rule->abstractRuleParams->format);
+            PyList_Append(segmentList, segment);
+            
+            currentColumnIndex += result.length;
+            
+            if (Py_None != (PyObject*)result.rule->abstractRuleParams->context)
+            {
+                _ContextStack* newContextStack = 
+                    ContextSwitcher_getNextContextStack(result.rule->abstractRuleParams->context,
+                                                        *pContextStack,
+                                                        result.data);
+                
+                if (newContextStack != *pContextStack)
+                {
+                    *pContextStack = newContextStack;
+                    return currentColumnIndex - startColumnIndex;
+                }
+            }
+        }
+        else // no match
+        {
+            countOfNotMatchedSymbols++;
+            currentColumnIndex++;
+            
+            if ((PyObject*)self->fallthroughContext != Py_None)
+            {
+                _ContextStack* newContextStack = 
+                        ContextSwitcher_getNextContextStack(self->fallthroughContext,
+                                                            *pContextStack,
+                                                            Py_None);
+                if (newContextStack != *pContextStack)
+                {
+                    if (countOfNotMatchedSymbols > 0)
+                    {
+                        PyObject* segment = Py_BuildValue("iO", countOfNotMatchedSymbols, self->format);
+                        PyList_Append(segmentList, segment);
+                        countOfNotMatchedSymbols = 0;
+                    }
+
+                    *pContextStack = newContextStack;
+                    return currentColumnIndex - startColumnIndex;
+                }
+            }
+        }
+
     }
     
-    //return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
     return 0;
 }
 
