@@ -151,7 +151,7 @@ class _TextToMatchObject:
         
         self.contextData = contextData
 
-class _RuleTryMatchResult:
+class RuleTryMatchResult:
     def __init__(self, rule, length, data=None):
         self.rule = rule
         self.length = length
@@ -264,7 +264,7 @@ class DetectChar(AbstractRule):
             string = self.char
         
         if textToMatchObject.text[0] == string:
-            return _RuleTryMatchResult(self, 1)
+            return RuleTryMatchResult(self, 1)
         return None
 
 class Detect2Chars(AbstractRule):
@@ -283,7 +283,7 @@ class Detect2Chars(AbstractRule):
             return None
         
         if textToMatchObject.text.startswith(self.string):
-            return _RuleTryMatchResult(self, len(self.string))
+            return RuleTryMatchResult(self, len(self.string))
         
         return None
 
@@ -301,7 +301,7 @@ class AnyChar(AbstractRule):
     
     def _tryMatch(self, textToMatchObject):
         if textToMatchObject.text[0] in self.string:
-            return _RuleTryMatchResult(self, 1)
+            return RuleTryMatchResult(self, 1)
         
         return None
 
@@ -327,7 +327,7 @@ class StringDetect(AbstractRule):
             string = self.string
         
         if textToMatchObject.text.startswith(string):
-            return _RuleTryMatchResult(self, len(string))
+            return RuleTryMatchResult(self, len(string))
     
         return None
     
@@ -370,7 +370,7 @@ class AbstractWordRule(AbstractRule):
             wordToCheck = textToMatchObject.word
         
         if wordToCheck in self.words:
-            return _RuleTryMatchResult(self, len(wordToCheck))
+            return RuleTryMatchResult(self, len(wordToCheck))
         else:
             return None
 
@@ -468,7 +468,7 @@ class RegExpr(AbstractRule):
         if match is not None and match.group(0):
             count = len(match.group(0))
 
-            return _RuleTryMatchResult(self, count, match.groups())
+            return RuleTryMatchResult(self, count, match.groups())
         else:
             return None
 
@@ -509,7 +509,7 @@ class AbstractNumberRule(AbstractRule):
                     break
                 # child rule context and attribute ignored
 
-        return _RuleTryMatchResult(self, index)
+        return RuleTryMatchResult(self, index)
     
     def _countDigits(self, text):
         """Count digits at start of text
@@ -603,7 +603,7 @@ class HlCOct(AbstractRule):
         if index < len(textToMatchObject.text) and textToMatchObject.text[index].upper() in 'LU':
             index += 1
         
-        return _RuleTryMatchResult(self, index)
+        return RuleTryMatchResult(self, index)
 
     def shortId(self):
         return 'HlCOct()'
@@ -629,7 +629,7 @@ class HlCHex(AbstractRule):
         if index < len(textToMatchObject.text) and textToMatchObject.text[index].upper() in 'LU':
             index += 1
         
-        return _RuleTryMatchResult(self, index)
+        return RuleTryMatchResult(self, index)
 
     def shortId(self):
         return 'HlCHex()'
@@ -665,7 +665,7 @@ class HlCStringChar(AbstractRule):
     def _tryMatch(self, textToMatchObject):
         res = _checkEscapedChar(textToMatchObject.text)
         if res is not None:
-            return _RuleTryMatchResult(self, res)
+            return RuleTryMatchResult(self, res)
         else:
             return None
 
@@ -683,7 +683,7 @@ class HlCChar(AbstractRule):
                 index = 1 + 1
             
             if index < len(textToMatchObject.text) and textToMatchObject.text[index] == "'":
-                return _RuleTryMatchResult(self, index + 1)
+                return RuleTryMatchResult(self, index + 1)
         
         return None
 
@@ -705,7 +705,7 @@ class RangeDetect(AbstractRule):
         if textToMatchObject.text.startswith(self.char):
             end = textToMatchObject.text.find(self.char1)
             if end > 0:
-                return _RuleTryMatchResult(self, end + 1)
+                return RuleTryMatchResult(self, end + 1)
         
         return None
 
@@ -716,7 +716,7 @@ class LineContinue(AbstractRule):
 
     def _tryMatch(self, textToMatchObject):
         if textToMatchObject.text == '\\':
-            return _RuleTryMatchResult(self, 1)
+            return RuleTryMatchResult(self, 1)
         
         return None
 
@@ -756,7 +756,7 @@ class DetectSpaces(AbstractRule):
     def _tryMatch(self, textToMatchObject):
         spaceLen = len(textToMatchObject.text) - len(textToMatchObject.text.lstrip())
         if spaceLen:
-            return _RuleTryMatchResult(self, spaceLen)
+            return RuleTryMatchResult(self, spaceLen)
         else:
             return None
         
@@ -768,7 +768,7 @@ class DetectIdentifier(AbstractRule):
     def _tryMatch(self, textToMatchObject):
         match = DetectIdentifier._regExp.match(textToMatchObject.text)
         if match is not None and match.group(0):
-            return _RuleTryMatchResult(self, len(match.group(0)))
+            return RuleTryMatchResult(self, len(match.group(0)))
         
         return None
 

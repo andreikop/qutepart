@@ -24,7 +24,7 @@
     self->fieldName = Py_True == fieldName
 
 
-#define _DECLARE_TYPE(TYPE_NAME, CONSTRUCTOR, METHODS, COMMENT) \
+#define _DECLARE_TYPE(TYPE_NAME, CONSTRUCTOR, METHODS, MEMBERS, COMMENT) \
     static PyTypeObject TYPE_NAME##Type = { \
         PyObject_HEAD_INIT(NULL)\
         0,\
@@ -55,7 +55,7 @@
         0,\
         0,\
         METHODS,\
-        0,\
+        MEMBERS,\
         0,\
         0,\
         0,\
@@ -66,10 +66,13 @@
     }
 
 #define DECLARE_TYPE(TYPE_NAME, METHODS, COMMENT) \
-    _DECLARE_TYPE(TYPE_NAME, (initproc)TYPE_NAME##_init, METHODS, COMMENT)
+    _DECLARE_TYPE(TYPE_NAME, (initproc)TYPE_NAME##_init, METHODS, 0, COMMENT)
 
 #define DECLARE_TYPE_WITHOUT_CONSTRUCTOR(TYPE_NAME, METHODS, COMMENT) \
-    _DECLARE_TYPE(TYPE_NAME, 0, METHODS, COMMENT)
+    _DECLARE_TYPE(TYPE_NAME, 0, METHODS, 0, COMMENT)
+
+#define DECLARE_TYPE_WITHOUT_CONSTRUCTOR_WITH_MEMBERS(TYPE_NAME, METHODS, COMMENT) \
+    _DECLARE_TYPE(TYPE_NAME, 0, METHODS, TYPE_NAME##_members, COMMENT)
 
 
 
@@ -174,10 +177,17 @@ typedef struct {
 } AbstractRule;  // not a real type, but any rule structure starts with this structure
 
 typedef struct {
+    PyObject_HEAD
+    PyObject* rule;
+    int length;
+    PyObject* data;
+} RuleTryMatchResult;
+
+typedef struct {
     AbstractRule* rule;
     int length;
     PyObject* data;
-} _RuleTryMatchResult;
+} _RuleTryMatchResultInternal;
 
 typedef struct {
     int currentColumnIndex;
@@ -190,7 +200,7 @@ typedef struct {
     PyObject* contextData;
 } _TextToMatchObject;
 
-typedef _RuleTryMatchResult (*_tryMatchFunctionType)(PyObject* self, _TextToMatchObject* textToMatchObject);
+typedef _RuleTryMatchResultInternal (*_tryMatchFunctionType)(PyObject* self, _TextToMatchObject* textToMatchObject);
 
 /********************************************************************************
  *                                AbstractRuleParams
@@ -255,13 +265,49 @@ DECLARE_TYPE(AbstractRuleParams, AbstractRuleParams_methods, "AbstractRule const
 
 
 /********************************************************************************
+ *                                RuleTryMatchResult
+ ********************************************************************************/
+
+static void
+RuleTryMatchResult_dealloc(RuleTryMatchResult* self)
+{
+    Py_XDECREF(self->rule);
+    Py_XDECREF(self->data);
+
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static PyMemberDef RuleTryMatchResult_members[] = {
+    {"rule", T_OBJECT_EX, offsetof(RuleTryMatchResult, rule), READONLY, "Matched rule"},
+    {"length", T_INT, offsetof(RuleTryMatchResult, length), READONLY, "Matched text length"},
+    {"data", T_OBJECT_EX, offsetof(RuleTryMatchResult, data), READONLY, "Match data"},
+    {NULL}
+};
+
+DECLARE_TYPE_WITHOUT_CONSTRUCTOR_WITH_MEMBERS(RuleTryMatchResult, NULL, "Rule.tryMatch() result structure");
+
+static RuleTryMatchResult*
+RuleTryMatchResult_new(PyObject* rule, int length, PyObject* data)  // not a constructor, just C function
+{
+    RuleTryMatchResult* result = PyObject_New(RuleTryMatchResult, &RuleTryMatchResultType);
+
+    result->rule = rule;
+    Py_INCREF(result->rule);
+    result->length = length;
+    result->data = data;
+    Py_INCREF(result->data);
+    
+    return result;
+}
+
+/********************************************************************************
  *                                Rules
  ********************************************************************************/
 
-static _RuleTryMatchResult
+static _RuleTryMatchResultInternal
 MakeEmptyTryMatchResult(void)
 {
-    _RuleTryMatchResult result;
+    _RuleTryMatchResultInternal result;
     result.rule = NULL;
     result.length = 0;
     result.data = NULL;
@@ -269,10 +315,10 @@ MakeEmptyTryMatchResult(void)
     return result;
 }
 
-static _RuleTryMatchResult
+static _RuleTryMatchResultInternal
 MakeTryMatchResult(void* rule, int length, PyObject* data)
 {
-    _RuleTryMatchResult result;
+    _RuleTryMatchResultInternal result;
     result.rule = rule;
     result.length = length;
     result.data = data;
@@ -280,7 +326,7 @@ MakeTryMatchResult(void* rule, int length, PyObject* data)
     return result;
 }
 
-static _RuleTryMatchResult
+static _RuleTryMatchResultInternal
 AbstractRule_tryMatch(AbstractRule* self, _TextToMatchObject* textToMatchObject)
 {
     // Skip if column doesn't match
@@ -312,7 +358,7 @@ DetectChar_dealloc_fields(DetectChar* self)
     Py_XDECREF(self->abstractRuleParams);
 }
 
-static _RuleTryMatchResult
+static _RuleTryMatchResultInternal
 DetectChar_tryMatch(DetectChar* self, _TextToMatchObject* textToMatchObject)
 {
     // TODO dynamic
@@ -606,7 +652,7 @@ Context_parseBlock(Context* self,
             textToMatchObject.wordLength = wordEndIndex - currentColumnIndex;
         }
         
-        _RuleTryMatchResult result;
+        _RuleTryMatchResultInternal result;
         result.rule = NULL;
         
         int countOfNotMatchedSymbols = 0;
@@ -875,6 +921,7 @@ initcParser(void)
     
     REGISTER_TYPE(AbstractRuleParams)
     
+    REGISTER_TYPE(RuleTryMatchResult)
     REGISTER_TYPE(DetectChar)
     
     REGISTER_TYPE(_LineData)
