@@ -182,7 +182,7 @@ class AbstractRule:
         context
         lookAhead
         firstNonSpace
-        column
+        column          -1 if not set
         dynamic
     """
     
@@ -218,7 +218,7 @@ class AbstractRule:
         Returns (contextStack, count, matchedRule) or (contextStack, None, None) if doesn't match
         """
         # Skip if column doesn't match
-        if self.column is not None and \
+        if self.column != -1 and \
            self.column != textToMatchObject.currentColumnIndex:
             return None
         

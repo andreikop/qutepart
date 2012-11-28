@@ -177,7 +177,7 @@ def _loadAbstractRuleParams(parentContext, xmlElement):
     if column is not None:
         column = int(column)
     else:
-        column = None
+        column = -1
     
     return AbstractRuleParams(parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column)
 

@@ -163,9 +163,11 @@ typedef struct {
     bool lineContinue;
 } _LineData;
 
+
 #define AbstractRule_HEAD \
     PyObject_HEAD \
     AbstractRuleParams* abstractRuleParams; \
+    void* _tryMatch;  // _tryMatchFunctionType
 
 typedef struct {
     AbstractRule_HEAD
@@ -188,6 +190,7 @@ typedef struct {
     PyObject* contextData;
 } _TextToMatchObject;
 
+typedef _RuleTryMatchResult (*_tryMatchFunctionType)(PyObject* self, _TextToMatchObject* textToMatchObject);
 
 /********************************************************************************
  *                                AbstractRuleParams
@@ -255,17 +258,46 @@ DECLARE_TYPE(AbstractRuleParams, AbstractRuleParams_methods, "AbstractRule const
  *                                Rules
  ********************************************************************************/
 
-_RuleTryMatchResult AbstractRule_tryMatch(AbstractRule* self, _TextToMatchObject* textToMatchObject)
+static _RuleTryMatchResult
+MakeEmptyTryMatchResult(void)
 {
     _RuleTryMatchResult result;
     result.rule = NULL;
+    result.length = 0;
+    result.data = NULL;
+    
     return result;
+}
+
+static _RuleTryMatchResult
+MakeTryMatchResult(void* rule, int length, PyObject* data)
+{
+    _RuleTryMatchResult result;
+    result.rule = rule;
+    result.length = length;
+    result.data = data;
+    
+    return result;
+}
+
+static _RuleTryMatchResult
+AbstractRule_tryMatch(AbstractRule* self, _TextToMatchObject* textToMatchObject)
+{
+    // Skip if column doesn't match
+    if (self->abstractRuleParams->column != -1 &&
+        self->abstractRuleParams->column != textToMatchObject->currentColumnIndex)
+        return MakeEmptyTryMatchResult();
+    
+    if (self->abstractRuleParams->firstNonSpace &&
+        ( ! textToMatchObject->firstNonSpace))
+        return MakeEmptyTryMatchResult();
+    
+    return ((_tryMatchFunctionType)self->_tryMatch)((PyObject*)self, textToMatchObject);
 }
 
 /********************************************************************************
  *                                DetectChar
  ********************************************************************************/
-
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
@@ -280,9 +312,21 @@ DetectChar_dealloc_fields(DetectChar* self)
     Py_XDECREF(self->abstractRuleParams);
 }
 
+static _RuleTryMatchResult
+DetectChar_tryMatch(DetectChar* self, _TextToMatchObject* textToMatchObject)
+{
+    // TODO dynamic
+    if (self->char_ == textToMatchObject->text[0])
+        return MakeTryMatchResult(self, 1, NULL);
+    else
+        return MakeEmptyTryMatchResult();
+}
+
 static int
 DetectChar_init(DetectChar *self, PyObject *args, PyObject *kwds)
 {
+    self->_tryMatch = DetectChar_tryMatch;
+    
     PyObject* abstractRuleParams = NULL;
     PyObject* char_ = NULL;
     
@@ -295,97 +339,8 @@ DetectChar_init(DetectChar *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static PyObject *
-DetectChar_tryMatch(DetectChar* self, PyObject* args)
-{
-    Py_RETURN_NONE;
-}
-
 DECLARE_RULE_METHODS_AND_TYPE(DetectChar);
 
-
-/********************************************************************************
- *                                Context
- ********************************************************************************/
-
-static void
-Context_dealloc(Context* self)
-{
-    Py_XDECREF(self->parser);
-    Py_XDECREF(self->name);
-    Py_XDECREF(self->attribute);
-    Py_XDECREF(self->format);
-    Py_XDECREF(self->lineEndContext);
-    Py_XDECREF(self->lineBeginContext);
-    Py_XDECREF(self->fallthroughContext);
-
-    self->ob_type->tp_free((PyObject*)self);
-}
-
-static int
-Context_init(Context *self, PyObject *args, PyObject *kwds)
-{
-    PyObject* parser = NULL;
-    PyObject* name = NULL;
-
-    if (! PyArg_ParseTuple(args, "|OO",
-                           &parser, &name))
-        return -1;
-
-    ASSIGN_PYOBJECT_FIELD(parser);
-    ASSIGN_PYOBJECT_FIELD(name);
-
-    return 0;
-}
-
-static PyObject*
-Context_setValues(Context *self, PyObject *args)
-{
-    PyObject* attribute = NULL;
-    PyObject* format = NULL;
-    PyObject* lineEndContext = NULL;
-    PyObject* lineBeginContext = NULL;
-    PyObject* fallthroughContext = NULL;
-    PyObject* dynamic = NULL;
-
-    if (! PyArg_ParseTuple(args, "|OOOOOO",
-                           &attribute, &format, &lineEndContext,
-                           &lineBeginContext, &fallthroughContext,
-                           &dynamic))
-        Py_RETURN_NONE;
-
-    ASSIGN_PYOBJECT_FIELD(attribute);
-    ASSIGN_PYOBJECT_FIELD(format);
-    ASSIGN_PYOBJECT_FIELD(lineEndContext);
-    ASSIGN_PYOBJECT_FIELD(lineBeginContext);
-    ASSIGN_FIELD(ContextSwitcher, fallthroughContext);
-    ASSIGN_BOOL_FIELD(dynamic);
-
-    Py_RETURN_NONE;
-}
-
-static int
-Context_setRules(Context *self, PyObject *args)
-{
-    PyObject* rules = NULL;
-
-    if (! PyArg_ParseTuple(args, "|O",
-                           &rules))
-        return -1;
-
-    ASSIGN_PYOBJECT_FIELD(rules);
-
-    return 0;
-}
-
-
-static PyMethodDef Context_methods[] = {
-    {"setValues", (PyCFunction)Context_setValues, METH_VARARGS,  "Initialize context object with values"},
-    {"setRules", (PyCFunction)Context_setRules, METH_VARARGS,  "Set list of rules"},
-    {NULL}  /* Sentinel */
-};
-
-DECLARE_TYPE(Context, Context_methods, "Parsing context");
 
 /********************************************************************************
  *                                Context stack
@@ -500,11 +455,88 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, _ContextStack* contex
 }
 
 
-
 /********************************************************************************
- *                                Context.parseBlock()
+ *                                Context
  ********************************************************************************/
-// here, because uses ContextStack structure declaration
+
+static void
+Context_dealloc(Context* self)
+{
+    Py_XDECREF(self->parser);
+    Py_XDECREF(self->name);
+    Py_XDECREF(self->attribute);
+    Py_XDECREF(self->format);
+    Py_XDECREF(self->lineEndContext);
+    Py_XDECREF(self->lineBeginContext);
+    Py_XDECREF(self->fallthroughContext);
+
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static int
+Context_init(Context *self, PyObject *args, PyObject *kwds)
+{
+    PyObject* parser = NULL;
+    PyObject* name = NULL;
+
+    if (! PyArg_ParseTuple(args, "|OO",
+                           &parser, &name))
+        return -1;
+
+    ASSIGN_PYOBJECT_FIELD(parser);
+    ASSIGN_PYOBJECT_FIELD(name);
+
+    return 0;
+}
+
+static PyObject*
+Context_setValues(Context *self, PyObject *args)
+{
+    PyObject* attribute = NULL;
+    PyObject* format = NULL;
+    PyObject* lineEndContext = NULL;
+    PyObject* lineBeginContext = NULL;
+    PyObject* fallthroughContext = NULL;
+    PyObject* dynamic = NULL;
+
+    if (! PyArg_ParseTuple(args, "|OOOOOO",
+                           &attribute, &format, &lineEndContext,
+                           &lineBeginContext, &fallthroughContext,
+                           &dynamic))
+        Py_RETURN_NONE;
+
+    ASSIGN_PYOBJECT_FIELD(attribute);
+    ASSIGN_PYOBJECT_FIELD(format);
+    ASSIGN_PYOBJECT_FIELD(lineEndContext);
+    ASSIGN_PYOBJECT_FIELD(lineBeginContext);
+    ASSIGN_FIELD(ContextSwitcher, fallthroughContext);
+    ASSIGN_BOOL_FIELD(dynamic);
+
+    Py_RETURN_NONE;
+}
+
+static int
+Context_setRules(Context *self, PyObject *args)
+{
+    PyObject* rules = NULL;
+
+    if (! PyArg_ParseTuple(args, "|O",
+                           &rules))
+        return -1;
+
+    ASSIGN_PYOBJECT_FIELD(rules);
+
+    return 0;
+}
+
+
+static PyMethodDef Context_methods[] = {
+    {"setValues", (PyCFunction)Context_setValues, METH_VARARGS,  "Initialize context object with values"},
+    {"setRules", (PyCFunction)Context_setRules, METH_VARARGS,  "Set list of rules"},
+    {NULL}  /* Sentinel */
+};
+
+DECLARE_TYPE(Context, Context_methods, "Parsing context");
 
 bool _isDeliminator(Py_UNICODE character, PyObject* deliminatorSet)
 {
