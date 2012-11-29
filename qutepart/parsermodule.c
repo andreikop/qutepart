@@ -94,7 +94,7 @@
     }; \
  \
     static PyMethodDef RULE_TYPE_NAME##_methods[] = { \
-        {"tryMatch", (PyCFunction)RULE_TYPE_NAME##_tryMatch, METH_VARARGS, \
+        {"tryMatch", (PyCFunction)AbstractRule_tryMatch, METH_VARARGS, \
          "Try to parse peace of text" \
         }, \
         {NULL}  /* Sentinel */ \
@@ -187,7 +187,7 @@ typedef struct {
     AbstractRule* rule;
     int length;
     PyObject* data;
-} _RuleTryMatchResultInternal;
+} RuleTryMatchResult_internal;
 
 typedef struct {
     int currentColumnIndex;
@@ -198,9 +198,14 @@ typedef struct {
     bool isWordStart;
     int wordLength;
     PyObject* contextData;
-} _TextToMatchObject;
+} TextToMatchObject_internal;
 
-typedef _RuleTryMatchResultInternal (*_tryMatchFunctionType)(PyObject* self, _TextToMatchObject* textToMatchObject);
+typedef struct {
+    PyObject_HEAD
+    TextToMatchObject_internal internal;
+} TextToMatchObject;
+
+typedef RuleTryMatchResult_internal (*_tryMatchFunctionType)(PyObject* self, TextToMatchObject_internal* textToMatchObject);
 
 /********************************************************************************
  *                                AbstractRuleParams
@@ -301,13 +306,120 @@ RuleTryMatchResult_new(PyObject* rule, int length, PyObject* data)  // not a con
 }
 
 /********************************************************************************
+ *                                TextToMatchObject
+ ********************************************************************************/
+
+static TextToMatchObject_internal
+Make_TextToMatchObject_internal(int column, PyObject* text, PyObject* contextData)
+{
+    TextToMatchObject_internal textToMatchObject;
+    
+    textToMatchObject.currentColumnIndex = column;
+    textToMatchObject.wholeLineText = text;
+    // text and textLen is updated in the loop
+    textToMatchObject.firstNonSpace = true;  // updated in the loop
+    // isWordStart, wordLength is updated in the loop
+    textToMatchObject.contextData = contextData;
+
+    return textToMatchObject;
+}
+
+static bool
+_isDeliminator(Py_UNICODE character, PyObject* deliminatorSet)
+{
+    int deliminatorSetLen = PyUnicode_GET_SIZE(deliminatorSet);
+    Py_UNICODE* deliminatorSetUnicode = PyUnicode_AS_UNICODE(deliminatorSet);
+    
+    int i;
+    for(i = 0; i < deliminatorSetLen; i++)
+        if (deliminatorSetUnicode[i] == character)
+            return true;
+    
+    return false;
+}
+
+static void
+Update_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject,
+                                  int currentColumnIndex,
+                                  PyObject* deliminatorSet)
+{
+    Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(textToMatchObject->wholeLineText);
+    int wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject->wholeLineText);
+    
+   // update text and textLen
+    textToMatchObject->text = wholeLineUnicodeBuffer + currentColumnIndex;
+    textToMatchObject->textLen = wholeLineLen - currentColumnIndex;
+
+    // update firstNonSpace
+    if (textToMatchObject->firstNonSpace && currentColumnIndex > 0)
+    {
+        bool previousCharIsSpace = Py_UNICODE_ISSPACE(wholeLineUnicodeBuffer[currentColumnIndex - 1]);
+        textToMatchObject->firstNonSpace = previousCharIsSpace;
+    }
+    
+    // update isWordStart and wordLength
+    textToMatchObject->isWordStart = \
+        currentColumnIndex == 0 ||
+        Py_UNICODE_ISSPACE(wholeLineUnicodeBuffer[currentColumnIndex - 1]) ||
+        _isDeliminator(wholeLineUnicodeBuffer[currentColumnIndex - 1], deliminatorSet);
+
+    if (textToMatchObject->isWordStart)
+    {
+        int wordEndIndex;
+        
+        for(wordEndIndex = currentColumnIndex; wordEndIndex < wholeLineLen; wordEndIndex++)
+        {
+            if (_isDeliminator(wholeLineUnicodeBuffer[wordEndIndex],
+                               deliminatorSet))
+                break;
+        }
+        
+        wordEndIndex = wholeLineLen;
+        
+        textToMatchObject->wordLength = wordEndIndex - currentColumnIndex;
+    } 
+}
+
+
+static void
+TextToMatchObject_dealloc(TextToMatchObject* self)
+{
+    Py_XDECREF(self->internal.wholeLineText);
+    Py_XDECREF(self->internal.contextData);
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static int
+TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
+{
+    int column = -1;
+    PyObject* text = NULL;
+    PyObject* deliminatorSet = NULL;
+    PyObject* contextData = NULL;
+    
+    if (! PyArg_ParseTuple(args, "|iOOO", &column, &text, &deliminatorSet, &contextData))
+        return -1;
+    
+    self->internal = Make_TextToMatchObject_internal(column, text, contextData);
+    Update_TextToMatchObject_internal(&(self->internal), column, deliminatorSet);
+
+    Py_INCREF(self->internal.wholeLineText);
+    Py_INCREF(self->internal.contextData);
+
+    return 0;
+}
+
+DECLARE_TYPE(TextToMatchObject, NULL, "Rule.tryMatch() input parameter");
+
+
+/********************************************************************************
  *                                Rules
  ********************************************************************************/
 
-static _RuleTryMatchResultInternal
+static RuleTryMatchResult_internal
 MakeEmptyTryMatchResult(void)
 {
-    _RuleTryMatchResultInternal result;
+    RuleTryMatchResult_internal result;
     result.rule = NULL;
     result.length = 0;
     result.data = NULL;
@@ -315,10 +427,10 @@ MakeEmptyTryMatchResult(void)
     return result;
 }
 
-static _RuleTryMatchResultInternal
+static RuleTryMatchResult_internal
 MakeTryMatchResult(void* rule, int length, PyObject* data)
 {
-    _RuleTryMatchResultInternal result;
+    RuleTryMatchResult_internal result;
     result.rule = rule;
     result.length = length;
     result.data = data;
@@ -326,8 +438,8 @@ MakeTryMatchResult(void* rule, int length, PyObject* data)
     return result;
 }
 
-static _RuleTryMatchResultInternal
-AbstractRule_tryMatch(AbstractRule* self, _TextToMatchObject* textToMatchObject)
+static RuleTryMatchResult_internal
+AbstractRule_tryMatch_internal(AbstractRule* self, TextToMatchObject_internal* textToMatchObject)
 {
     // Skip if column doesn't match
     if (self->abstractRuleParams->column != -1 &&
@@ -339,6 +451,23 @@ AbstractRule_tryMatch(AbstractRule* self, _TextToMatchObject* textToMatchObject)
         return MakeEmptyTryMatchResult();
     
     return ((_tryMatchFunctionType)self->_tryMatch)((PyObject*)self, textToMatchObject);
+}
+
+// used only by unit test. C code uses AbstractRule_tryMatch_internal
+static PyObject*
+AbstractRule_tryMatch(AbstractRule* self, PyObject *args, PyObject *kwds)
+{
+    TextToMatchObject* textToMatchObject = NULL;
+    
+    if (! PyArg_ParseTuple(args, "|O", &textToMatchObject))
+        Py_RETURN_NONE;
+
+    RuleTryMatchResult_internal internalResult = AbstractRule_tryMatch_internal(self, &(textToMatchObject->internal));
+    
+    if (NULL == internalResult.rule)
+        Py_RETURN_NONE;
+    else
+        return (PyObject*)RuleTryMatchResult_new((PyObject*)internalResult.rule, internalResult.length, internalResult.data);
 }
 
 /********************************************************************************
@@ -358,8 +487,8 @@ DetectChar_dealloc_fields(DetectChar* self)
     Py_XDECREF(self->abstractRuleParams);
 }
 
-static _RuleTryMatchResultInternal
-DetectChar_tryMatch(DetectChar* self, _TextToMatchObject* textToMatchObject)
+static RuleTryMatchResult_internal
+DetectChar_tryMatch(DetectChar* self, TextToMatchObject_internal* textToMatchObject)
 {
     // TODO dynamic
     if (self->char_ == textToMatchObject->text[0])
@@ -584,19 +713,6 @@ static PyMethodDef Context_methods[] = {
 
 DECLARE_TYPE(Context, Context_methods, "Parsing context");
 
-bool _isDeliminator(Py_UNICODE character, PyObject* deliminatorSet)
-{
-    int deliminatorSetLen = PyUnicode_GET_SIZE(deliminatorSet);
-    Py_UNICODE* deliminatorSetUnicode = PyUnicode_AS_UNICODE(deliminatorSet);
-    
-    int i;
-    for(i = 0; i < deliminatorSetLen; i++)
-        if (deliminatorSetUnicode[i] == character)
-            return true;
-    
-    return false;
-}
-
 static int
 Context_parseBlock(Context* self,
                    int currentColumnIndex,
@@ -605,54 +721,19 @@ Context_parseBlock(Context* self,
                    _ContextStack** pContextStack,
                    bool* pLineContinue)
 {
+    TextToMatchObject_internal textToMatchObject = 
+                    Make_TextToMatchObject_internal(currentColumnIndex,
+                                                    text,
+                                                    _ContextStack_currentData(*pContextStack));
+    
     int startColumnIndex = currentColumnIndex;
-    int wholeLineLen = PyUnicode_GET_SIZE(text);
+    int wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject.wholeLineText);
     
-    _TextToMatchObject textToMatchObject;
-    textToMatchObject.currentColumnIndex = currentColumnIndex;
-    textToMatchObject.wholeLineText = text;
-    // text and textLen is updated in the loop
-    textToMatchObject.firstNonSpace = true;  // updated in the loop
-    // isWordStart, wordLength is updated in the loop
-    textToMatchObject.contextData = _ContextStack_currentData(*pContextStack);
-    
-    Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(text);
     while (currentColumnIndex < wholeLineLen)
     {
-        // update text and textLen
-        textToMatchObject.text = wholeLineUnicodeBuffer + currentColumnIndex;
-        textToMatchObject.textLen = wholeLineLen - currentColumnIndex;
-
-        // update firstNonSpace
-        if (textToMatchObject.firstNonSpace && currentColumnIndex > 0)
-        {
-            bool previousCharIsSpace = Py_UNICODE_ISSPACE(wholeLineUnicodeBuffer[currentColumnIndex - 1]);
-            textToMatchObject.firstNonSpace = previousCharIsSpace;
-        }
+        Update_TextToMatchObject_internal(&textToMatchObject, currentColumnIndex, ((Parser*)self->parser)->deliminatorSet);
         
-        // update isWordStart and wordLength
-        textToMatchObject.isWordStart = \
-            currentColumnIndex == 0 ||
-            Py_UNICODE_ISSPACE(wholeLineUnicodeBuffer[currentColumnIndex - 1]) ||
-            _isDeliminator(wholeLineUnicodeBuffer[currentColumnIndex - 1], ((Parser*)self->parser)->deliminatorSet);
-
-        if (textToMatchObject.isWordStart)
-        {
-            int wordEndIndex;
-            
-            for(wordEndIndex = currentColumnIndex; wordEndIndex < wholeLineLen; wordEndIndex++)
-            {
-                if (_isDeliminator(wholeLineUnicodeBuffer[wordEndIndex],
-                                   ((Parser*)self->parser)->deliminatorSet))
-                    break;
-            }
-            
-            wordEndIndex = wholeLineLen;
-            
-            textToMatchObject.wordLength = wordEndIndex - currentColumnIndex;
-        }
-        
-        _RuleTryMatchResultInternal result;
+        RuleTryMatchResult_internal result;
         result.rule = NULL;
         
         int countOfNotMatchedSymbols = 0;
@@ -660,7 +741,7 @@ Context_parseBlock(Context* self,
         int i;
         for (i = 0; i < PyList_Size(self->rules); i++)
         {
-            result = AbstractRule_tryMatch((AbstractRule*)PyList_GetItem(self->rules, i), &textToMatchObject);
+            result = AbstractRule_tryMatch_internal((AbstractRule*)PyList_GetItem(self->rules, i), &textToMatchObject);
             
             if (NULL != result.rule)
                 break;
@@ -922,6 +1003,7 @@ initcParser(void)
     REGISTER_TYPE(AbstractRuleParams)
     
     REGISTER_TYPE(RuleTryMatchResult)
+    REGISTER_TYPE(TextToMatchObject)
     REGISTER_TYPE(DetectChar)
     
     REGISTER_TYPE(_LineData)

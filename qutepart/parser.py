@@ -120,7 +120,7 @@ class ContextSwitcher:
         
         return contextStack
 
-class _TextToMatchObject:
+class TextToMatchObject:
     """Peace of text, which shall be matched.
     Contains pre-calculated and pre-checked data for performance optimization
     """
@@ -498,7 +498,7 @@ class AbstractNumberRule(AbstractRule):
             return None
         
         if textToMatchObject.currentColumnIndex + index < len(textToMatchObject.wholeLineText):
-            newTextToMatchObject = _TextToMatchObject(textToMatchObject.currentColumnIndex + index,
+            newTextToMatchObject = TextToMatchObject(textToMatchObject.currentColumnIndex + index,
                                                       textToMatchObject.wholeLineText,
                                                       self.parentContext.parser.deliminatorSet,
                                                       textToMatchObject.contextData)
@@ -825,7 +825,7 @@ class Context:
         startColumnIndex = currentColumnIndex
         matchedRules = []
         while currentColumnIndex < len(text):
-            textToMatchObject = _TextToMatchObject(currentColumnIndex,
+            textToMatchObject = TextToMatchObject(currentColumnIndex,
                                                    text,
                                                    self.parser.deliminatorSet,
                                                    contextStack.currentData())
