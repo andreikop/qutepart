@@ -2,7 +2,7 @@ import copy
 import sys
 import xml.etree.ElementTree
 
-from qutepart.parser import *
+from qutepart.cParser import *
 from qutepart.ColorTheme import ColorTheme
 
 

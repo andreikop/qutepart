@@ -5,6 +5,8 @@ import unittest
 
 import sys
 sys.path.insert(0, '..')
+sys.path.insert(0, '.')
+
 from qutepart.syntax import SyntaxManager
 
 class XmlParsingTestCase(unittest.TestCase):

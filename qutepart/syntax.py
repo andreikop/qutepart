@@ -7,7 +7,6 @@ import os.path
 import fnmatch
 import json
 
-import qutepart.parser
 import qutepart.loader
 
 class TextFormat:
@@ -73,7 +72,7 @@ class Syntax:
 class SyntaxManager:
     def __init__(self):
         self._loadedSyntaxes = {}
-        syntaxDbPath = os.path.join(os.path.dirname(__file__), "syntax", "syntax_db.json")
+        syntaxDbPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "syntax", "syntax_db.json")
         with open(syntaxDbPath) as syntaxDbFile:
             syntaxDb = json.load(syntaxDbFile)
         self._syntaxNameToXmlFileName = syntaxDb['syntaxNameToXmlFileName']
