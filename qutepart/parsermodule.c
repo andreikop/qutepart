@@ -73,6 +73,9 @@
 
 #define DECLARE_TYPE_WITHOUT_CONSTRUCTOR_WITH_MEMBERS(TYPE_NAME, METHODS, COMMENT) \
     _DECLARE_TYPE(TYPE_NAME, 0, METHODS, TYPE_NAME##_members, COMMENT)
+    
+#define DECLARE_TYPE_WITH_MEMBERS(TYPE_NAME, METHODS, COMMENT) \
+    _DECLARE_TYPE(TYPE_NAME, (initproc)TYPE_NAME##_init, METHODS, TYPE_NAME##_members, COMMENT)
 
 
 
@@ -211,6 +214,10 @@ typedef RuleTryMatchResult_internal (*_tryMatchFunctionType)(PyObject* self, Tex
  *                                AbstractRuleParams
  ********************************************************************************/
  
+static PyMemberDef AbstractRuleParams_members[] = {
+    {"dynamic", T_BOOL, offsetof(AbstractRuleParams, dynamic), READONLY, "Rule is dynamic"},
+    {NULL}
+};
 
 static void
 AbstractRuleParams_dealloc(AbstractRuleParams* self)
@@ -266,7 +273,7 @@ static PyMethodDef AbstractRuleParams_methods[] = {
     {NULL}  /* Sentinel */
 };
 
-DECLARE_TYPE(AbstractRuleParams, AbstractRuleParams_methods, "AbstractRule constructor parameters");
+DECLARE_TYPE_WITH_MEMBERS(AbstractRuleParams, AbstractRuleParams_methods, "AbstractRule constructor parameters");
 
 
 /********************************************************************************
@@ -1242,8 +1249,9 @@ static int
 ContextSwitcher_init(ContextSwitcher *self, PyObject *args, PyObject *kwds)
 {
     PyObject* _contextToSwitch;
+    PyObject* contextOperation_notUsed; // only for python version
     
-    if (! PyArg_ParseTuple(args, "|iO", &self->_popsCount, &_contextToSwitch))
+    if (! PyArg_ParseTuple(args, "|iOO", &self->_popsCount, &_contextToSwitch, &contextOperation_notUsed))
         return -1;
     
     ASSIGN_PYOBJECT_FIELD(_contextToSwitch);
@@ -1483,6 +1491,11 @@ _LineData_new(_ContextStack* contextStack, bool lineContinue)  // not a construc
 /********************************************************************************
  *                                Parser
  ********************************************************************************/
+static PyMemberDef Parser_members[] = {
+    {"contexts", T_OBJECT_EX, offsetof(Parser, contexts), READONLY, "List of contexts"},
+    {"lists", T_OBJECT_EX, offsetof(Parser, lists), READONLY, "Dictionary of lists of keywords"},
+    {NULL}
+};
 
 static void
 Parser_dealloc(Parser* self)
@@ -1622,7 +1635,7 @@ static PyMethodDef Parser_methods[] = {
     {NULL}  /* Sentinel */
 };
 
-DECLARE_TYPE(Parser, Parser_methods, "Parser");
+DECLARE_TYPE_WITH_MEMBERS(Parser, Parser_methods, "Parser");
 
 
 /********************************************************************************

@@ -99,9 +99,10 @@ class ContextSwitcher:
     """Class parses 'context', 'lineBeginContext', 'lineEndContext', 'fallthroughContext'
     and modifies context stack according to context operation
     """
-    def __init__(self, popsCount, contextToSwitch):
+    def __init__(self, popsCount, contextToSwitch, contextOperation):
         self._popsCount = popsCount
         self._contextToSwitch = contextToSwitch
+        self._contextOperation = contextOperation
     
     def __str__(self):
         return self._contextOperation
