@@ -518,6 +518,652 @@ DECLARE_RULE_METHODS_AND_TYPE(DetectChar);
 
 
 /********************************************************************************
+ *                                Detect2Chars
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} Detect2Chars;
+
+
+static void
+Detect2Chars_dealloc_fields(Detect2Chars* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+Detect2Chars_tryMatch(Detect2Chars* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+Detect2Chars_init(Detect2Chars *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = Detect2Chars_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(Detect2Chars);
+
+
+/********************************************************************************
+ *                                AnyChar
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} AnyChar;
+
+
+static void
+AnyChar_dealloc_fields(AnyChar* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+AnyChar_tryMatch(AnyChar* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+AnyChar_init(AnyChar *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = AnyChar_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(AnyChar);
+
+
+/********************************************************************************
+ *                                StringDetect
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} StringDetect;
+
+
+static void
+StringDetect_dealloc_fields(StringDetect* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+StringDetect_tryMatch(StringDetect* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+StringDetect_init(StringDetect *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = StringDetect_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(StringDetect);
+
+
+/********************************************************************************
+ *                                WordDetect
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} WordDetect;
+
+
+static void
+WordDetect_dealloc_fields(WordDetect* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+WordDetect_tryMatch(WordDetect* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+WordDetect_init(WordDetect *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = WordDetect_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(WordDetect);
+
+
+/********************************************************************************
+ *                                keyword
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} keyword;
+
+
+static void
+keyword_dealloc_fields(keyword* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+keyword_tryMatch(keyword* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+keyword_init(keyword *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = keyword_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(keyword);
+
+
+/********************************************************************************
+ *                                RegExpr
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} RegExpr;
+
+
+static void
+RegExpr_dealloc_fields(RegExpr* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = RegExpr_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(RegExpr);
+
+
+/********************************************************************************
+ *                                Int
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} Int;
+
+
+static void
+Int_dealloc_fields(Int* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+Int_tryMatch(Int* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+Int_init(Int *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = Int_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(Int);
+
+
+/********************************************************************************
+ *                                Float
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} Float;
+
+
+static void
+Float_dealloc_fields(Float* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+Float_tryMatch(Float* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+Float_init(Float *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = Float_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(Float);
+
+
+/********************************************************************************
+ *                                HlCOct
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} HlCOct;
+
+
+static void
+HlCOct_dealloc_fields(HlCOct* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+HlCOct_tryMatch(HlCOct* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+HlCOct_init(HlCOct *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = HlCOct_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(HlCOct);
+
+
+/********************************************************************************
+ *                                HlCHex
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} HlCHex;
+
+
+static void
+HlCHex_dealloc_fields(HlCHex* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+HlCHex_tryMatch(HlCHex* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+HlCHex_init(HlCHex *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = HlCHex_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(HlCHex);
+
+
+/********************************************************************************
+ *                                HlCStringChar
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} HlCStringChar;
+
+
+static void
+HlCStringChar_dealloc_fields(HlCStringChar* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+HlCStringChar_tryMatch(HlCStringChar* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+HlCStringChar_init(HlCStringChar *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = HlCStringChar_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(HlCStringChar);
+
+
+/********************************************************************************
+ *                                HlCChar
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} HlCChar;
+
+
+static void
+HlCChar_dealloc_fields(HlCChar* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+HlCChar_tryMatch(HlCChar* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+HlCChar_init(HlCChar *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = HlCChar_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(HlCChar);
+
+
+/********************************************************************************
+ *                                RangeDetect
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} RangeDetect;
+
+
+static void
+RangeDetect_dealloc_fields(RangeDetect* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+RangeDetect_tryMatch(RangeDetect* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+RangeDetect_init(RangeDetect *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = RangeDetect_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(RangeDetect);
+
+
+/********************************************************************************
+ *                                LineContinue
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} LineContinue;
+
+
+static void
+LineContinue_dealloc_fields(LineContinue* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+LineContinue_tryMatch(LineContinue* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+LineContinue_init(LineContinue *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = LineContinue_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(LineContinue);
+
+
+/********************************************************************************
+ *                                IncludeRules
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} IncludeRules;
+
+
+static void
+IncludeRules_dealloc_fields(IncludeRules* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+IncludeRules_tryMatch(IncludeRules* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+IncludeRules_init(IncludeRules *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = IncludeRules_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(IncludeRules);
+
+
+/********************************************************************************
+ *                                DetectSpaces
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} DetectSpaces;
+
+
+static void
+DetectSpaces_dealloc_fields(DetectSpaces* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+DetectSpaces_tryMatch(DetectSpaces* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+DetectSpaces_init(DetectSpaces *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = DetectSpaces_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(DetectSpaces);
+
+
+/********************************************************************************
+ *                                DetectIdentifier
+ ********************************************************************************/
+typedef struct {
+    AbstractRule_HEAD
+    /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    int index;
+} DetectIdentifier;
+
+
+static void
+DetectIdentifier_dealloc_fields(DetectIdentifier* self)
+{
+    Py_XDECREF(self->abstractRuleParams);
+}
+
+static RuleTryMatchResult_internal
+DetectIdentifier_tryMatch(DetectIdentifier* self, TextToMatchObject_internal* textToMatchObject)
+{
+}
+
+static int
+DetectIdentifier_init(DetectIdentifier *self, PyObject *args, PyObject *kwds)
+{
+    self->_tryMatch = DetectIdentifier_tryMatch;
+    
+#if 0    
+    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+        return -1;
+#endif
+
+    return 0;
+}
+
+DECLARE_RULE_METHODS_AND_TYPE(DetectIdentifier);
+
+
+/********************************************************************************
  *                                Context stack
  ********************************************************************************/
 
@@ -1004,7 +1650,25 @@ initcParser(void)
     
     REGISTER_TYPE(RuleTryMatchResult)
     REGISTER_TYPE(TextToMatchObject)
+    
     REGISTER_TYPE(DetectChar)
+    REGISTER_TYPE(Detect2Chars)
+    REGISTER_TYPE(AnyChar)
+    REGISTER_TYPE(StringDetect)
+    REGISTER_TYPE(WordDetect)
+    REGISTER_TYPE(keyword)
+    REGISTER_TYPE(RegExpr)
+    REGISTER_TYPE(Int)
+    REGISTER_TYPE(Float)
+    REGISTER_TYPE(HlCOct)
+    REGISTER_TYPE(HlCHex)
+    REGISTER_TYPE(HlCStringChar)
+    REGISTER_TYPE(HlCChar)
+    REGISTER_TYPE(RangeDetect)
+    REGISTER_TYPE(IncludeRules)
+    REGISTER_TYPE(LineContinue)
+    REGISTER_TYPE(DetectSpaces)
+    REGISTER_TYPE(DetectIdentifier)
     
     REGISTER_TYPE(_LineData)
     REGISTER_TYPE(_ContextStack)
