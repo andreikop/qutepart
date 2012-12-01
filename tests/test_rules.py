@@ -4,14 +4,18 @@ import unittest
 
 import sys
 sys.path.insert(0, '..')
+sys.path.insert(0, '../build/lib.linux-x86_64-2.6/')
+
 from qutepart.syntax import SyntaxManager
-from qutepart.parser import Context, _TextToMatchObject
+from qutepart.parser import Context, TextToMatchObject
+
+_currentSyntax = None
 
 def tryMatch(rule, column, text):
     return tryMatchWithData(rule, None, column, text)
 
 def tryMatchWithData(rule, contextData, column, text):
-    textToMatchObject = _TextToMatchObject(column, text, rule.parentContext.parser.deliminatorSet, contextData)
+    textToMatchObject = TextToMatchObject(column, text, _currentSyntax.parser.deliminatorSet, contextData)
     ruleTryMatchResult = rule.tryMatch(textToMatchObject)
     if ruleTryMatchResult is not None:
         return ruleTryMatchResult.length
@@ -21,8 +25,9 @@ def tryMatchWithData(rule, contextData, column, text):
 
 class Test(unittest.TestCase):
     def _getRule(self, syntaxName, contextName, ruleIndex):
-        syntax = SyntaxManager().getSyntaxByXmlName(syntaxName)
-        context = syntax.parser.contexts[contextName]
+        global _currentSyntax
+        _currentSyntax = SyntaxManager().getSyntaxByXmlName(syntaxName)
+        context = _currentSyntax.parser.contexts[contextName]
         return context.rules[ruleIndex]
     
     def test_DetectChar(self):

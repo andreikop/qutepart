@@ -1496,6 +1496,7 @@ static PyMemberDef Parser_members[] = {
     {"syntax", T_OBJECT_EX, offsetof(Parser, syntax), READONLY, "Parent Syntax object"},
     {"defaultContext", T_OBJECT_EX, offsetof(Parser, defaultContext), READONLY, "Default context"},
     {"lists", T_OBJECT_EX, offsetof(Parser, lists), READONLY, "Dictionary of lists of keywords"},
+    {"deliminatorSet", T_OBJECT_EX, offsetof(Parser, deliminatorSet), READONLY, "Set of deliminator characters (as string)"},
     {NULL}
 };
 
