@@ -869,9 +869,9 @@ class Parser:
         contexts                Context list as dictionary "context name" : context
         defaultContext          Default context object
     """
-    def __init__(self, syntax, deliminatorSet, lists, keywordsCaseSensitive):
+    def __init__(self, syntax, deliminatorSetAsString, lists, keywordsCaseSensitive):
         self.syntax = syntax
-        self.deliminatorSet = deliminatorSet
+        self.deliminatorSet = set(deliminatorSetAsString)
         self.lists = lists
         self.keywordsCaseSensitive = keywordsCaseSensitive
     

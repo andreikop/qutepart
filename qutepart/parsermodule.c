@@ -306,7 +306,7 @@ RuleTryMatchResult_new(PyObject* rule, int length, PyObject* data)  // not a con
     Py_INCREF(result->rule);
     result->length = length;
     result->data = data;
-    Py_INCREF(result->data);
+    Py_XINCREF(result->data);
     
     return result;
 }
@@ -407,6 +407,7 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
         return -1;
     
     self->internal = Make_TextToMatchObject_internal(column, text, contextData);
+
     Update_TextToMatchObject_internal(&(self->internal), column, deliminatorSet);
 
     Py_INCREF(self->internal.wholeLineText);
@@ -428,7 +429,7 @@ MakeEmptyTryMatchResult(void)
     RuleTryMatchResult_internal result;
     result.rule = NULL;
     result.length = 0;
-    result.data = NULL;
+    result.data = Py_None;
     
     return result;
 }
