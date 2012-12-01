@@ -1493,6 +1493,8 @@ _LineData_new(ContextStack* contextStack, bool lineContinue)  // not a construct
  ********************************************************************************/
 static PyMemberDef Parser_members[] = {
     {"contexts", T_OBJECT_EX, offsetof(Parser, contexts), READONLY, "List of contexts"},
+    {"syntax", T_OBJECT_EX, offsetof(Parser, syntax), READONLY, "Parent Syntax object"},
+    {"defaultContext", T_OBJECT_EX, offsetof(Parser, defaultContext), READONLY, "Default context"},
     {"lists", T_OBJECT_EX, offsetof(Parser, lists), READONLY, "Dictionary of lists of keywords"},
     {NULL}
 };
