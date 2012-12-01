@@ -135,7 +135,7 @@ typedef struct {
     PyObject_HEAD
     PyObject* _contexts;
     PyObject* _data;
-} _ContextStack;
+} ContextStack;
 
 typedef struct {
     PyObject_HEAD
@@ -146,7 +146,7 @@ typedef struct {
     PyObject* keywordsCaseSensitive;
     PyObject* contexts;
     Context* defaultContext;
-    _ContextStack* defaultContextStack;
+    ContextStack* defaultContextStack;
 } Parser;
 
 
@@ -165,7 +165,7 @@ typedef struct {
 
 typedef struct {
     PyObject_HEAD
-    _ContextStack* contextStack;
+    ContextStack* contextStack;
     bool lineContinue;
 } _LineData;
 
@@ -302,7 +302,6 @@ static RuleTryMatchResult*
 RuleTryMatchResult_new(PyObject* rule, int length, PyObject* data)  // not a constructor, just C function
 {
     RuleTryMatchResult* result = PyObject_New(RuleTryMatchResult, &RuleTryMatchResultType);
-
     result->rule = rule;
     Py_INCREF(result->rule);
     result->length = length;
@@ -1175,7 +1174,7 @@ DECLARE_RULE_METHODS_AND_TYPE(DetectIdentifier);
  ********************************************************************************/
 
 static void
-_ContextStack_dealloc(_ContextStack* self)
+ContextStack_dealloc(ContextStack* self)
 {
     Py_XDECREF(self->_contexts);
     Py_XDECREF(self->_data);
@@ -1183,21 +1182,22 @@ _ContextStack_dealloc(_ContextStack* self)
     self->ob_type->tp_free((PyObject*)self);
 }
 
-DECLARE_TYPE_WITHOUT_CONSTRUCTOR(_ContextStack, NULL, "Context stack");
+DECLARE_TYPE_WITHOUT_CONSTRUCTOR(ContextStack, NULL, "Context stack");
 
-static _ContextStack*
-_ContextStack_new(PyObject* contexts, PyObject* data)  // not a constructor, just C function
+static ContextStack*
+ContextStack_new(PyObject* contexts, PyObject* data)  // not a constructor, just C function
 {
-    _ContextStack* contextStack = PyObject_New(_ContextStack, &_ContextStackType);
-
-    ASSIGN_PYOBJECT_VALUE(contextStack->_contexts, contexts);
-    ASSIGN_PYOBJECT_VALUE(contextStack->_data, data);
+    ContextStack* contextStack = PyObject_New(ContextStack, &ContextStackType);
+    contextStack->_contexts = contexts;
+    Py_INCREF(contextStack->_contexts);
+    contextStack->_data = data;
+    Py_INCREF(contextStack->_data);
     
     return contextStack;
 }
 
 static Context*
-_ContextStack_currentContext(_ContextStack* self)
+ContextStack_currentContext(ContextStack* self)
 {
     
     return (Context*)PyList_GetItem(self->_contexts,
@@ -1205,13 +1205,13 @@ _ContextStack_currentContext(_ContextStack* self)
 }
 
 static PyObject*
-_ContextStack_currentData(_ContextStack* self)
+ContextStack_currentData(ContextStack* self)
 {
     return PyList_GetItem(self->_contexts, -1);
 }
 
-static _ContextStack*
-_ContextStack_pop(_ContextStack* self, int count)
+static ContextStack*
+ContextStack_pop(ContextStack* self, int count)
 {
     if (PyList_Size(self->_contexts) - 1 < count)
     {
@@ -1221,11 +1221,11 @@ _ContextStack_pop(_ContextStack* self, int count)
 
     PyObject* contexts = PyList_GetSlice(self->_contexts, -count, PyList_Size(self->_contexts));
     PyObject* data = PyList_GetSlice(self->_data, -count, PyList_Size(self->_data));
-    return _ContextStack_new(contexts, data);
+    return ContextStack_new(contexts, data);
 }
 
-static _ContextStack*
-_ContextStack_append(_ContextStack* self, Context* context, PyObject* data)
+static ContextStack*
+ContextStack_append(ContextStack* self, Context* context, PyObject* data)
 {
     PyList_Append(self->_contexts, (PyObject*)context);
     PyList_Append(self->_data, data);
@@ -1261,13 +1261,13 @@ ContextSwitcher_init(ContextSwitcher *self, PyObject *args, PyObject *kwds)
 
 DECLARE_TYPE(ContextSwitcher, NULL, "Context switcher");
 
-static _ContextStack*
-ContextSwitcher_getNextContextStack(ContextSwitcher* self, _ContextStack* contextStack, PyObject* data)
+static ContextStack*
+ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* contextStack, PyObject* data)
 {
     if (self->_popsCount)
     {
-        _ContextStack* newContextStack = _ContextStack_pop(contextStack, self->_popsCount);
-        ASSIGN_VALUE(_ContextStack, contextStack, newContextStack);
+        ContextStack* newContextStack = ContextStack_pop(contextStack, self->_popsCount);
+        ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
     }
 
     if (Py_None != (PyObject*)self->_contextToSwitch)
@@ -1276,8 +1276,8 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, _ContextStack* contex
         if ( ! contextToSwitch->dynamic)
             data = Py_None;
         
-        _ContextStack* newContextStack = _ContextStack_append(contextStack, contextToSwitch, data);
-        ASSIGN_VALUE(_ContextStack, contextStack, newContextStack);
+        ContextStack* newContextStack = ContextStack_append(contextStack, contextToSwitch, data);
+        ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
     }
 
     return contextStack;
@@ -1372,13 +1372,13 @@ Context_parseBlock(Context* self,
                    int currentColumnIndex,
                    PyObject* text,
                    PyObject* segmentList,
-                   _ContextStack** pContextStack,
+                   ContextStack** pContextStack,
                    bool* pLineContinue)
 {
     TextToMatchObject_internal textToMatchObject = 
                     Make_TextToMatchObject_internal(currentColumnIndex,
                                                     text,
-                                                    _ContextStack_currentData(*pContextStack));
+                                                    ContextStack_currentData(*pContextStack));
     
     int startColumnIndex = currentColumnIndex;
     int wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject.wholeLineText);
@@ -1417,7 +1417,7 @@ Context_parseBlock(Context* self,
             
             if (Py_None != (PyObject*)result.rule->abstractRuleParams->context)
             {
-                _ContextStack* newContextStack = 
+                ContextStack* newContextStack = 
                     ContextSwitcher_getNextContextStack(result.rule->abstractRuleParams->context,
                                                         *pContextStack,
                                                         result.data);
@@ -1436,7 +1436,7 @@ Context_parseBlock(Context* self,
             
             if ((PyObject*)self->fallthroughContext != Py_None)
             {
-                _ContextStack* newContextStack = 
+                ContextStack* newContextStack = 
                         ContextSwitcher_getNextContextStack(self->fallthroughContext,
                                                             *pContextStack,
                                                             Py_None);
@@ -1476,11 +1476,11 @@ _LineData_dealloc(_LineData* self)
 DECLARE_TYPE_WITHOUT_CONSTRUCTOR(_LineData, NULL, "Line data");
 
 static _LineData*
-_LineData_new(_ContextStack* contextStack, bool lineContinue)  // not a constructor, just C function
+_LineData_new(ContextStack* contextStack, bool lineContinue)  // not a constructor, just C function
 {
     _LineData* lineData = PyObject_New(_LineData, &_LineDataType);
-
-    ASSIGN_VALUE(_ContextStack, lineData->contextStack, contextStack);
+    lineData->contextStack = (ContextStack*)lineData->contextStack;
+    Py_INCREF(lineData->contextStack);
     lineData->lineContinue = lineContinue;
 
     return lineData;
@@ -1531,7 +1531,7 @@ Parser_init(Parser *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static _ContextStack*
+static ContextStack*
 _makeDefaultContextStack(Context* defaultContext)
 {
     PyObject* contexts = PyList_New(1);
@@ -1540,7 +1540,7 @@ _makeDefaultContextStack(Context* defaultContext)
     PyObject* data = PyList_New(1);
     PyList_SetItem(data, 0, Py_None);
 
-    return _ContextStack_new(contexts, data);
+    return ContextStack_new(contexts, data);
 }
 
 static PyObject*
@@ -1574,7 +1574,7 @@ Parser_parseBlock(Parser *self, PyObject *args)
 
     assert(PyUnicode_Check(text));
     
-    _ContextStack* contextStack;
+    ContextStack* contextStack;
     bool lineContinuePrevious = false;
     if (Py_None != (PyObject*)prevLineData)
     {
@@ -1585,7 +1585,7 @@ Parser_parseBlock(Parser *self, PyObject *args)
     {
         contextStack = self->defaultContextStack;
     }
-    Context* currentContext = _ContextStack_currentContext(contextStack);
+    Context* currentContext = ContextStack_currentContext(contextStack);
     
     // this code is not tested, because lineBeginContext is not defined by any xml file
     if (currentContext->lineBeginContext != Py_None &&
@@ -1609,13 +1609,13 @@ Parser_parseBlock(Parser *self, PyObject *args)
                                         &contextStack,
                                         &lineContinue);
         currentColumnIndex += length;
-        currentContext = _ContextStack_currentContext(contextStack);
+        currentContext = ContextStack_currentContext(contextStack);
     }
     
     while (currentContext->lineEndContext != Py_None &&
            ( ! lineContinue))
     {
-        _ContextStack* oldStack = contextStack;
+        ContextStack* oldStack = contextStack;
         contextStack = ContextSwitcher_getNextContextStack((ContextSwitcher*)currentContext->lineEndContext,
                                                            contextStack,
                                                            NULL);
@@ -1684,7 +1684,7 @@ initcParser(void)
     REGISTER_TYPE(DetectIdentifier)
     
     REGISTER_TYPE(_LineData)
-    REGISTER_TYPE(_ContextStack)
+    REGISTER_TYPE(ContextStack)
     REGISTER_TYPE(Context)
     REGISTER_TYPE(ContextSwitcher)
     REGISTER_TYPE(Parser)
