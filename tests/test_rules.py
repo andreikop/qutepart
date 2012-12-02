@@ -59,6 +59,16 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, 'xyz'), None)
         self.assertEqual(tryMatch(rule, 0, '{}='), 1)
 
+    def test_StringDetect(self):
+        rule = self._getRule('debiancontrol.xml', 'INIT', 1)
+        self.assertEqual(tryMatch(rule, 0, 'Recommends: xxx'), len('Recommends:'))
+
+    def test_StringDetect_first_non_space(self):
+        """StringDetect with firstNonSpace=true
+        """
+        rule = self._getRule('d.xml', 'normal', 9)
+        self.assertEqual(tryMatch(rule, 2, '  //BEGIN'), len('//BEGIN'))
+
     def test_RegExpr(self):
         rule = self._getRule('debiancontrol.xml', 'Field', 0)
         self.assertEqual(tryMatch(rule, 0, '<sadf@example.com> bla bla'), len('<sadf@example.com>'))
@@ -85,16 +95,6 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 1, ' real'), None)
         self.assertEqual(tryMatch(rule, 0, 'real'), 4)
     
-    def test_StringDetect(self):
-        rule = self._getRule('debiancontrol.xml', 'INIT', 1)
-        self.assertEqual(tryMatch(rule, 0, 'Recommends: xxx'), len('Recommends:'))
-
-    def test_StringDetect_first_non_space(self):
-        """StringDetect with firstNonSpace=true
-        """
-        rule = self._getRule('d.xml', 'normal', 9)
-        self.assertEqual(tryMatch(rule, 2, '  //BEGIN'), len('//BEGIN'))
-
     def test_DetectSpaces(self):
         rule = self._getRule('yacc.xml', 'Pre Start', 1)
         self.assertEqual(tryMatch(rule, 0, '   asdf fdafasd  '), 3)

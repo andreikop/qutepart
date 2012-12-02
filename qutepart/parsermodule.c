@@ -40,6 +40,13 @@
         return RET; \
     }
 
+#define FUNC_CHECK(OBJECT, RET) \
+    if (!PyFunction_Check(OBJECT)) \
+    { \
+        PyErr_SetString(PyExc_TypeError, #OBJECT " must be function"); \
+        return RET; \
+    }
+
 #define TYPE_CHECK(OBJECT, TYPE, RET) \
     if (!PyObject_TypeCheck(OBJECT, &(TYPE##Type))) \
     { \
@@ -748,18 +755,55 @@ DECLARE_RULE_METHODS_AND_TYPE(AnyChar);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
+    PyObject* string;
+    PyObject* makeDynamicStringSubstitutionsFunc;
 } StringDetect;
 
 
 static void
 StringDetect_dealloc_fields(StringDetect* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
+    Py_XDECREF(self->string);
+    Py_XDECREF(self->makeDynamicStringSubstitutionsFunc);
 }
 
 static RuleTryMatchResult_internal
 StringDetect_tryMatch(StringDetect* self, TextToMatchObject_internal* textToMatchObject)
 {
+    PyObject* string = NULL;
+    if (self->abstractRuleParams->dynamic)
+    {
+        string = PyObject_CallFunctionObjArgs(self->makeDynamicStringSubstitutionsFunc,
+                                              self->string, textToMatchObject->contextData, NULL);
+        
+        if (NULL == string)
+        {
+            fprintf(stderr, "Failed to make substitutions");
+            return MakeEmptyTryMatchResult();
+        }
+    }
+    else
+    {
+        string = self->string;
+    }
+    
+    // strncmp
+    int stringLen = PyUnicode_GET_SIZE(string);
+    Py_UNICODE* stringUnicode = PyUnicode_AS_UNICODE(string);
+    if (textToMatchObject->textLen >= stringLen)
+    {
+        int i;
+        for(i = 0; i < stringLen; i++)
+        {
+            if (textToMatchObject->text[i] != stringUnicode[i])
+                return MakeEmptyTryMatchResult();
+        
+        }
+        
+        return MakeTryMatchResult(self, stringLen, NULL);
+    }
+
+    return MakeEmptyTryMatchResult();
 }
 
 static int
@@ -767,18 +811,24 @@ StringDetect_init(StringDetect *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = StringDetect_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
+    PyObject* string = NULL;
+    PyObject* makeDynamicStringSubstitutionsFunc = NULL;
         
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    if (! PyArg_ParseTuple(args, "|OOO", &abstractRuleParams, &string, &makeDynamicStringSubstitutionsFunc))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    UNICODE_CHECK(string, -1);
+    FUNC_CHECK(makeDynamicStringSubstitutionsFunc, -1);
+    
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+    ASSIGN_PYOBJECT_FIELD(string);
+    ASSIGN_PYOBJECT_FIELD(makeDynamicStringSubstitutionsFunc);
 
-#endif
     return 0;
 }
+
 
 DECLARE_RULE_METHODS_AND_TYPE(StringDetect);
 

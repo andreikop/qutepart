@@ -20,6 +20,8 @@ _escapeSequences = \
   't': '\t',}
 
 
+_numSeqReplacer = re.compile('%\d+')  # used by functions, which are used by C extensions
+
 def _processEscapeSequences(replaceText):
     """Replace symbols like \n \\, etc
     """
@@ -214,10 +216,27 @@ def _loadAnyChar(parentContext, xmlElement, attributeToFormatMap):
     string = _safeGetRequiredAttribute(xmlElement, 'String', '')
     return AnyChar(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), string)
 
+def _StringDetect_makeDynamicStringSubsctitutions(string, contextData):
+    """For dynamic rules, replace %d patterns with actual strings
+    Python function, which is used by C extension.
+    """
+    def _replaceFunc(escapeMatchObject):
+        stringIndex = escapeMatchObject.group(0)[1]
+        index = int(stringIndex) - 1
+        if index < len(textToMatchObject.contextData):
+            return textToMatchObject.contextData[index]
+        else:
+            return escapeMatchObject.group(0)  # no any replacements, return original value
+
+    return _numSeqReplacer.sub(_replaceFunc, string)
+
+
 def _loadStringDetect(parentContext, xmlElement, attributeToFormatMap):
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)
     
-    return StringDetect(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), string)
+    return StringDetect(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap),
+                        string,
+                        _StringDetect_makeDynamicStringSubsctitutions)
 
 def _loadWordDetect(parentContext, xmlElement, attributeToFormatMap):
     words = set([_safeGetRequiredAttribute(xmlElement, "String", "")])

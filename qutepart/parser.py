@@ -311,9 +311,10 @@ class StringDetect(AbstractRule):
     """Public attributes:
         string
     """
-    def __init__(self, abstractRuleParams, string):
+    def __init__(self, abstractRuleParams, string, makeDynamicSubstitutionsFunc):
         AbstractRule.__init__(self, abstractRuleParams)
         self.string = string
+        self.makeDynamicSubstitutionsFunc = makeDynamicSubstitutionsFunc
     
     def shortId(self):
         return 'StringDetect(%s)' % self.string
@@ -323,7 +324,7 @@ class StringDetect(AbstractRule):
             return None
         
         if self.dynamic:
-            string = self._makeDynamicStringSubsctitutions(self.string, textToMatchObject.contextData)
+            string = self.makeDynamicStringSubsctitutionsFunc(self.string, textToMatchObject.contextData)
         else:
             string = self.string
         
@@ -331,20 +332,6 @@ class StringDetect(AbstractRule):
             return RuleTryMatchResult(self, len(string))
     
         return None
-    
-    @staticmethod
-    def _makeDynamicStringSubsctitutions(string, contextData):
-        """For dynamic rules, replace %d patterns with actual strings
-        """
-        def _replaceFunc(escapeMatchObject):
-            stringIndex = escapeMatchObject.group(0)[1]
-            index = int(stringIndex) - 1
-            if index < len(textToMatchObject.contextData):
-                return textToMatchObject.contextData[index]
-            else:
-                return escapeMatchObject.group(0)  # no any replacements, return original value
-
-        return AbstractRule._seqReplacer.sub(_replaceFunc, string)
 
 
 class AbstractWordRule(AbstractRule):
