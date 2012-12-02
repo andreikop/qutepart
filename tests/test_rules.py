@@ -274,6 +274,15 @@ class Test(unittest.TestCase):
         count = tryMatchWithData(rule, ('myheredoc',), 0, text)
         self.assertEqual(count, len(text))
 
+    def test_dynamic_detect_char(self):
+        """DetectChar rule, dynamic=true
+        """
+        rule = self._getRule("perl.xml", "ip_string_6", 1)
+        text = "b"
+
+        self.assertEqual(tryMatchWithData(rule, ('a', 'b', 'c'), 0, text), 1)
+        self.assertEqual(tryMatchWithData(rule, ('x', 'y', 'z'), 0, text), None)
+
     def test_some_test(self):
         rule = self._getRule("perl.xml", "string_6", 3)
         text = "abcdXefg"

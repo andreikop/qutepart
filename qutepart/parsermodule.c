@@ -3,39 +3,46 @@
 
 #include <stdbool.h>
 
-#define UNICODE_CHECK(OBJECT) \
+#define UNICODE_CHECK(OBJECT, RET) \
     if (!PyUnicode_Check(OBJECT)) \
     { \
         PyErr_SetString(PyExc_TypeError, #OBJECT " must be unicode"); \
-        return 0; \
+        return RET; \
     }
 
-#define LIST_CHECK(OBJECT) \
+#define LIST_CHECK(OBJECT, RET) \
     if (!PyList_Check(OBJECT)) \
     { \
         PyErr_SetString(PyExc_TypeError, #OBJECT " must be a list"); \
-        return 0; \
+        return RET; \
     }
 
-#define DICT_CHECK(OBJECT) \
+#define TUPLE_CHECK(OBJECT, RET) \
+    if (!PyTuple_Check(OBJECT)) \
+    { \
+        PyErr_SetString(PyExc_TypeError, #OBJECT " must be a list"); \
+        return RET; \
+    }
+
+#define DICT_CHECK(OBJECT, RET) \
     if (!PyDict_Check(OBJECT)) \
     { \
         PyErr_SetString(PyExc_TypeError, #OBJECT " must be a dict"); \
-        return 0; \
+        return RET; \
     }
 
-#define BOOL_CHECK(OBJECT) \
+#define BOOL_CHECK(OBJECT, RET) \
     if (!PyBool_Check(OBJECT)) \
     { \
         PyErr_SetString(PyExc_TypeError, #OBJECT " must be boolean"); \
-        return 0; \
+        return RET; \
     }
 
-#define TYPE_CHECK(OBJECT, TYPE) \
+#define TYPE_CHECK(OBJECT, TYPE, RET) \
     if (!PyObject_TypeCheck(OBJECT, &(TYPE##Type))) \
     { \
         PyErr_SetString(PyExc_TypeError, "Invalid type of " #OBJECT); \
-        return 0; \
+        return RET; \
     }
 
 
@@ -313,9 +320,9 @@ AbstractRuleParams_init(AbstractRuleParams *self, PyObject *args, PyObject *kwds
 
     // parentContext is not checked because of cross-dependencies
     // context is not checked because of cross-dependencies
-    BOOL_CHECK(lookAhead);
-    BOOL_CHECK(firstNonSpace);
-    BOOL_CHECK(dynamic);
+    BOOL_CHECK(lookAhead, -1);
+    BOOL_CHECK(firstNonSpace, -1);
+    BOOL_CHECK(dynamic, -1);
     
     ASSIGN_PYOBJECT_FIELD(parentContext);
     ASSIGN_PYOBJECT_FIELD(format);
@@ -462,10 +469,10 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
     if (! PyArg_ParseTuple(args, "|iOOO", &column, &text, &deliminatorSet, &contextData))
         return -1;
     
-    UNICODE_CHECK(text);
-    UNICODE_CHECK(deliminatorSet);
+    UNICODE_CHECK(text, -1);
+    UNICODE_CHECK(deliminatorSet, -1);
     if (Py_None != contextData)
-        TYPE_CHECK(contextData, LineData);
+        TUPLE_CHECK(contextData, -1);
     
     self->internal = Make_TextToMatchObject_internal(column, text, contextData);
 
@@ -530,7 +537,7 @@ AbstractRule_tryMatch(AbstractRule* self, PyObject *args, PyObject *kwds)
     if (! PyArg_ParseTuple(args, "|O", &textToMatchObject))
         return NULL;
 
-    TYPE_CHECK(textToMatchObject, TextToMatchObject);
+    TYPE_CHECK(textToMatchObject, TextToMatchObject, NULL);
     
     RuleTryMatchResult_internal internalResult = AbstractRule_tryMatch_internal(self, &(textToMatchObject->internal));
     
@@ -578,8 +585,8 @@ DetectChar_init(DetectChar *self, PyObject *args, PyObject *kwds)
     if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
         return -1;
     
-    TYPE_CHECK(abstractRuleParams, AbstractRuleParams);
-    UNICODE_CHECK(char_);
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    UNICODE_CHECK(char_, -1);
     
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
     self->char_ = PyUnicode_AS_UNICODE(char_)[0];
@@ -1321,7 +1328,7 @@ ContextSwitcher_init(ContextSwitcher *self, PyObject *args, PyObject *kwds)
     if (! PyArg_ParseTuple(args, "|iOO", &self->_popsCount, &_contextToSwitch, &contextOperation_notUsed))
         return -1;
     
-    // FIXME TYPE_CHECK(_contextToSwitch, Context);
+    // FIXME TYPE_CHECK(_contextToSwitch, Context, -1);
     ASSIGN_PYOBJECT_FIELD(_contextToSwitch);
 
     return 0;
@@ -1390,7 +1397,7 @@ Context_init(Context *self, PyObject *args, PyObject *kwds)
         return -1;
 
     // parser is not checked because of cross-dependencies
-    UNICODE_CHECK(name);
+    UNICODE_CHECK(name, -1);
     
     ASSIGN_PYOBJECT_FIELD(parser);
     ASSIGN_PYOBJECT_FIELD(name);
@@ -1414,11 +1421,11 @@ Context_setValues(Context *self, PyObject *args)
                            &dynamic))
         Py_RETURN_NONE;
 
-    TYPE_CHECK(lineEndContext, ContextSwitcher);
-    TYPE_CHECK(lineBeginContext, ContextSwitcher);
+    TYPE_CHECK(lineEndContext, ContextSwitcher, NULL);
+    TYPE_CHECK(lineBeginContext, ContextSwitcher, NULL);
     if (Py_None != fallthroughContext)
-        TYPE_CHECK(fallthroughContext, ContextSwitcher);
-    BOOL_CHECK(dynamic);
+        TYPE_CHECK(fallthroughContext, ContextSwitcher, NULL);
+    BOOL_CHECK(dynamic, NULL);
     
     ASSIGN_PYOBJECT_FIELD(attribute);
     ASSIGN_PYOBJECT_FIELD(format);
@@ -1439,7 +1446,7 @@ Context_setRules(Context *self, PyObject *args)
                            &rules))
         return NULL;
 
-    LIST_CHECK(rules);
+    LIST_CHECK(rules, NULL);
     
     ASSIGN_PYOBJECT_FIELD(rules);
 
@@ -1587,9 +1594,9 @@ Parser_init(Parser *self, PyObject *args, PyObject *kwds)
                            &syntax, &deliminatorSet, &lists, &keywordsCaseSensitive))
         return -1;
 
-    UNICODE_CHECK(deliminatorSet);
-    DICT_CHECK(lists);
-    BOOL_CHECK(keywordsCaseSensitive);
+    UNICODE_CHECK(deliminatorSet, -1);
+    DICT_CHECK(lists, -1);
+    BOOL_CHECK(keywordsCaseSensitive, -1);
     
     ASSIGN_PYOBJECT_FIELD(syntax);
     ASSIGN_PYOBJECT_FIELD(deliminatorSet);
@@ -1621,8 +1628,8 @@ Parser_setConexts(Parser *self, PyObject *args)
                            &contexts, &defaultContext))
         Py_RETURN_NONE;
 
-    DICT_CHECK(contexts);
-    TYPE_CHECK(defaultContext, Context);
+    DICT_CHECK(contexts, NULL);
+    TYPE_CHECK(defaultContext, Context, NULL);
     
     ASSIGN_PYOBJECT_FIELD(contexts);
     ASSIGN_FIELD(Context, defaultContext);
@@ -1643,9 +1650,9 @@ Parser_parseBlock(Parser *self, PyObject *args)
                            &text))
         return NULL;
 
-    UNICODE_CHECK(text);
+    UNICODE_CHECK(text, NULL);
     if (Py_None != (PyObject*)(prevLineData))
-        TYPE_CHECK(prevLineData, LineData);
+        TYPE_CHECK(prevLineData, LineData, NULL);
     
     ContextStack* contextStack;
     bool lineContinuePrevious = false;
