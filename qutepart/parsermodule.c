@@ -1,7 +1,9 @@
 #include <Python.h>
+
 #include <structmember.h>
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #define UNICODE_CHECK(OBJECT, RET) \
     if (!PyUnicode_Check(OBJECT)) \
@@ -567,8 +569,38 @@ DetectChar_dealloc_fields(DetectChar* self)
 static RuleTryMatchResult_internal
 DetectChar_tryMatch(DetectChar* self, TextToMatchObject_internal* textToMatchObject)
 {
-    // TODO dynamic
-    if (self->char_ == textToMatchObject->text[0])
+    Py_UNICODE char_;
+    
+    if (self->abstractRuleParams->dynamic)
+    {
+        int index = self->index - 1;
+        if (index >= PyTuple_Size(textToMatchObject->contextData))
+        {
+            fprintf(stderr, "Invalid DetectChar index %d", index);
+            return MakeEmptyTryMatchResult();
+        }
+        
+        PyObject* string = PyTuple_GetItem(textToMatchObject->contextData, index);
+        if ( ! PyUnicode_Check(string))
+        {
+            fprintf(stderr, "Context data must be unicode");
+            return MakeEmptyTryMatchResult();
+        }
+        
+        if (PyUnicode_GET_SIZE(string) != 1)
+        {
+            fprintf(stderr, "Too long DetectChar string");
+            return MakeEmptyTryMatchResult();
+        }
+        
+        char_ = PyUnicode_AS_UNICODE(string)[0];
+    }
+    else
+    {
+        char_ = self->char_;
+    }
+    
+    if (char_ == textToMatchObject->text[0])
         return MakeTryMatchResult(self, 1, NULL);
     else
         return MakeEmptyTryMatchResult();
