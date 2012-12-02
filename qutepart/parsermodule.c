@@ -570,7 +570,6 @@ typedef struct {
 static void
 DetectChar_dealloc_fields(DetectChar* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -650,7 +649,6 @@ typedef struct {
 static void
 Detect2Chars_dealloc_fields(Detect2Chars* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -845,7 +843,6 @@ typedef struct {
 static void
 WordDetect_dealloc_fields(WordDetect* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -886,7 +883,6 @@ typedef struct {
 static void
 keyword_dealloc_fields(keyword* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -927,7 +923,6 @@ typedef struct {
 static void
 RegExpr_dealloc_fields(RegExpr* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -968,7 +963,6 @@ typedef struct {
 static void
 Int_dealloc_fields(Int* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -1009,7 +1003,6 @@ typedef struct {
 static void
 Float_dealloc_fields(Float* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -1050,7 +1043,6 @@ typedef struct {
 static void
 HlCOct_dealloc_fields(HlCOct* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -1091,7 +1083,6 @@ typedef struct {
 static void
 HlCHex_dealloc_fields(HlCHex* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -1132,7 +1123,6 @@ typedef struct {
 static void
 HlCStringChar_dealloc_fields(HlCStringChar* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -1173,7 +1163,6 @@ typedef struct {
 static void
 HlCChar_dealloc_fields(HlCChar* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -1214,7 +1203,6 @@ typedef struct {
 static void
 RangeDetect_dealloc_fields(RangeDetect* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -1255,7 +1243,6 @@ typedef struct {
 static void
 LineContinue_dealloc_fields(LineContinue* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -1296,7 +1283,6 @@ typedef struct {
 static void
 IncludeRules_dealloc_fields(IncludeRules* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -1337,7 +1323,6 @@ typedef struct {
 static void
 DetectSpaces_dealloc_fields(DetectSpaces* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
@@ -1378,7 +1363,6 @@ typedef struct {
 static void
 DetectIdentifier_dealloc_fields(DetectIdentifier* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
 }
 
 static RuleTryMatchResult_internal
