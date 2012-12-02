@@ -636,7 +636,7 @@ typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
     Py_UNICODE char_;
-    int index;
+    Py_UNICODE char1_;
 } Detect2Chars;
 
 
@@ -649,6 +649,15 @@ Detect2Chars_dealloc_fields(Detect2Chars* self)
 static RuleTryMatchResult_internal
 Detect2Chars_tryMatch(Detect2Chars* self, TextToMatchObject_internal* textToMatchObject)
 {
+    if (textToMatchObject->text[0] == self->char_ &&
+        textToMatchObject->text[1] == self->char1_)
+    {
+        return MakeTryMatchResult(self, 2, NULL);
+    }
+    else
+    {
+        return MakeEmptyTryMatchResult();
+    }
 }
 
 static int
@@ -656,10 +665,20 @@ Detect2Chars_init(Detect2Chars *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = Detect2Chars_tryMatch;
     
-#if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+    PyObject* string = NULL;
+    
+    if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &string))
         return -1;
-#endif
+
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+    
+    UNICODE_CHECK(string, -1);
+    
+    Py_UNICODE* unicode = PyUnicode_AS_UNICODE(string);
+    self->char_ = unicode[0];
+    self->char1_ = unicode[1];
 
     return 0;
 }

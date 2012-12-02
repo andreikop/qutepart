@@ -44,6 +44,15 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatchWithData(rule, (u'a', u'b', u'c'), 0, text), 1)
         self.assertEqual(tryMatchWithData(rule, (u'x', u'y', u'z'), 0, text), None)
 
+    def test_Detect2Chars(self):
+        rule = self._getRule('debiancontrol.xml', 'Field', 1)
+        self.assertEqual(tryMatch(rule, 0, '${xxx}'), 2)
+
+    def test_Detect2Chars_shell_escape(self):
+        """Test escape characters processing in Detect2Chars rule
+        """
+        rule = self._getRule('zsh.xml', "FindStrings", 1)
+        self.assertEqual(tryMatch(rule, 0, '\\"'), 2)
 
     def test_RegExpr(self):
         rule = self._getRule('debiancontrol.xml', 'Field', 0)
@@ -80,16 +89,6 @@ class Test(unittest.TestCase):
         """
         rule = self._getRule('d.xml', 'normal', 9)
         self.assertEqual(tryMatch(rule, 2, '  //BEGIN'), len('//BEGIN'))
-
-    def test_Detect2Chars(self):
-        rule = self._getRule('debiancontrol.xml', 'Field', 1)
-        self.assertEqual(tryMatch(rule, 0, '${xxx}'), 2)
-
-    def test_Detect2Chars_shell_escape(self):
-        """Test escape characters processing in Detect2Chars rule
-        """
-        rule = self._getRule('zsh.xml', "FindStrings", 1)
-        self.assertEqual(tryMatch(rule, 0, '\\"'), 2)
 
     def test_DetectSpaces(self):
         rule = self._getRule('yacc.xml', 'Pre Start', 1)
