@@ -312,8 +312,6 @@ _ruleClassDict = \
 
 
 def _loadContexts(highlightingElement, parser, attributeToFormatMap):
-    from .parser import Context  # FIXME
-    
     contextsElement = highlightingElement.find('contexts')
     
     xmlElementList = contextsElement.findall('context')

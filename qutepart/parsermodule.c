@@ -1289,6 +1289,14 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* context
  *                                Context
  ********************************************************************************/
 
+static PyMemberDef Context_members[] = {
+    {"name", T_OBJECT_EX, offsetof(Context, name), READONLY, "Name"},
+    {"parser", T_OBJECT_EX, offsetof(Context, parser), READONLY, "Parser instance"},
+    {"format", T_OBJECT_EX, offsetof(Context, format), READONLY, "Context format"},
+    {NULL}
+};
+
+
 static void
 Context_dealloc(Context* self)
 {
@@ -1345,18 +1353,18 @@ Context_setValues(Context *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-static int
+static PyObject*
 Context_setRules(Context *self, PyObject *args)
 {
     PyObject* rules = NULL;
 
     if (! PyArg_ParseTuple(args, "|O",
                            &rules))
-        return -1;
+        return NULL;
 
     ASSIGN_PYOBJECT_FIELD(rules);
 
-    return 0;
+    Py_RETURN_NONE;
 }
 
 
@@ -1366,7 +1374,7 @@ static PyMethodDef Context_methods[] = {
     {NULL}  /* Sentinel */
 };
 
-DECLARE_TYPE(Context, Context_methods, "Parsing context");
+DECLARE_TYPE_WITH_MEMBERS(Context, Context_methods, "Parsing context");
 
 static int
 Context_parseBlock(Context* self,
