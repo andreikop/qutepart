@@ -3,6 +3,42 @@
 
 #include <stdbool.h>
 
+#define UNICODE_CHECK(OBJECT) \
+    if (!PyUnicode_Check(OBJECT)) \
+    { \
+        PyErr_SetString(PyExc_TypeError, #OBJECT " must be unicode"); \
+        return 0; \
+    }
+
+#define LIST_CHECK(OBJECT) \
+    if (!PyList_Check(OBJECT)) \
+    { \
+        PyErr_SetString(PyExc_TypeError, #OBJECT " must be a list"); \
+        return 0; \
+    }
+
+#define DICT_CHECK(OBJECT) \
+    if (!PyDict_Check(OBJECT)) \
+    { \
+        PyErr_SetString(PyExc_TypeError, #OBJECT " must be a dict"); \
+        return 0; \
+    }
+
+#define BOOL_CHECK(OBJECT) \
+    if (!PyBool_Check(OBJECT)) \
+    { \
+        PyErr_SetString(PyExc_TypeError, #OBJECT " must be boolean"); \
+        return 0; \
+    }
+
+#define TYPE_CHECK(OBJECT, TYPE) \
+    if (!PyObject_TypeCheck(OBJECT, &(TYPE##Type))) \
+    { \
+        PyErr_SetString(PyExc_TypeError, "Invalid type of " #OBJECT); \
+        return 0; \
+    }
+
+
 #define ASSIGN_VALUE(type, to, from) \
     { \
         type* tmp = to; \
@@ -98,7 +134,7 @@
  \
     static PyMethodDef RULE_TYPE_NAME##_methods[] = { \
         {"tryMatch", (PyCFunction)AbstractRule_tryMatch, METH_VARARGS, \
-         "Try to parse peace of text" \
+         "Try to parse a fragment of text" \
         }, \
         {NULL}  /* Sentinel */ \
     }; \
@@ -210,6 +246,34 @@ typedef struct {
 
 typedef RuleTryMatchResult_internal (*_tryMatchFunctionType)(PyObject* self, TextToMatchObject_internal* textToMatchObject);
 
+
+/********************************************************************************
+ *                                LineData
+ ********************************************************************************/
+
+static void
+_LineData_dealloc(_LineData* self)
+{
+    Py_XDECREF(self->contextStack);
+
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+DECLARE_TYPE_WITHOUT_CONSTRUCTOR(_LineData, NULL, "Line data");
+
+static _LineData*
+_LineData_new(ContextStack* contextStack, bool lineContinue)  // not a constructor, just C function
+{
+    _LineData* lineData = PyObject_New(_LineData, &_LineDataType);
+    lineData->contextStack = (ContextStack*)lineData->contextStack;
+    Py_INCREF(lineData->contextStack);
+    lineData->lineContinue = lineContinue;
+
+    return lineData;
+}
+
+
+
 /********************************************************************************
  *                                AbstractRuleParams
  ********************************************************************************/
@@ -247,6 +311,12 @@ AbstractRuleParams_init(AbstractRuleParams *self, PyObject *args, PyObject *kwds
                            &self->column))
         return -1;
 
+    // parentContext is not checked because of cross-dependencies
+    // context is not checked because of cross-dependencies
+    BOOL_CHECK(lookAhead);
+    BOOL_CHECK(firstNonSpace);
+    BOOL_CHECK(dynamic);
+    
     ASSIGN_PYOBJECT_FIELD(parentContext);
     ASSIGN_PYOBJECT_FIELD(format);
     ASSIGN_PYOBJECT_FIELD(attribute);
@@ -259,21 +329,7 @@ AbstractRuleParams_init(AbstractRuleParams *self, PyObject *args, PyObject *kwds
     return 0;
 }
 
-static PyObject *
-AbstractRuleParams_test(AbstractRuleParams* self)
-{
-    printf("~~~ context %s column is %d dynamic %d\n", PyString_AsString(self->parentContext), self->column, self->dynamic);
-    Py_RETURN_NONE;
-}
-
-static PyMethodDef AbstractRuleParams_methods[] = {
-    {"test", (PyCFunction)AbstractRuleParams_test, METH_NOARGS,
-     "just a test"
-    },
-    {NULL}  /* Sentinel */
-};
-
-DECLARE_TYPE_WITH_MEMBERS(AbstractRuleParams, AbstractRuleParams_methods, "AbstractRule constructor parameters");
+DECLARE_TYPE_WITH_MEMBERS(AbstractRuleParams, NULL, "AbstractRule constructor parameters");
 
 
 /********************************************************************************
@@ -406,6 +462,11 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
     if (! PyArg_ParseTuple(args, "|iOOO", &column, &text, &deliminatorSet, &contextData))
         return -1;
     
+    UNICODE_CHECK(text);
+    UNICODE_CHECK(deliminatorSet);
+    if (Py_None != contextData)
+        TYPE_CHECK(contextData, _LineData);
+    
     self->internal = Make_TextToMatchObject_internal(column, text, contextData);
 
     Update_TextToMatchObject_internal(&(self->internal), column, deliminatorSet);
@@ -467,8 +528,10 @@ AbstractRule_tryMatch(AbstractRule* self, PyObject *args, PyObject *kwds)
     TextToMatchObject* textToMatchObject = NULL;
     
     if (! PyArg_ParseTuple(args, "|O", &textToMatchObject))
-        Py_RETURN_NONE;
+        return NULL;
 
+    TYPE_CHECK(textToMatchObject, TextToMatchObject);
+    
     RuleTryMatchResult_internal internalResult = AbstractRule_tryMatch_internal(self, &(textToMatchObject->internal));
     
     if (NULL == internalResult.rule)
@@ -514,6 +577,9 @@ DetectChar_init(DetectChar *self, PyObject *args, PyObject *kwds)
     
     if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
         return -1;
+    
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams);
+    UNICODE_CHECK(char_);
     
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
     self->char_ = PyUnicode_AS_UNICODE(char_)[0];
@@ -1255,6 +1321,7 @@ ContextSwitcher_init(ContextSwitcher *self, PyObject *args, PyObject *kwds)
     if (! PyArg_ParseTuple(args, "|iOO", &self->_popsCount, &_contextToSwitch, &contextOperation_notUsed))
         return -1;
     
+    // FIXME TYPE_CHECK(_contextToSwitch, Context);
     ASSIGN_PYOBJECT_FIELD(_contextToSwitch);
 
     return 0;
@@ -1293,6 +1360,7 @@ static PyMemberDef Context_members[] = {
     {"name", T_OBJECT_EX, offsetof(Context, name), READONLY, "Name"},
     {"parser", T_OBJECT_EX, offsetof(Context, parser), READONLY, "Parser instance"},
     {"format", T_OBJECT_EX, offsetof(Context, format), READONLY, "Context format"},
+    {"rules", T_OBJECT_EX, offsetof(Context, rules), READONLY, "List of rules"},
     {NULL}
 };
 
@@ -1321,6 +1389,9 @@ Context_init(Context *self, PyObject *args, PyObject *kwds)
                            &parser, &name))
         return -1;
 
+    // parser is not checked because of cross-dependencies
+    UNICODE_CHECK(name);
+    
     ASSIGN_PYOBJECT_FIELD(parser);
     ASSIGN_PYOBJECT_FIELD(name);
 
@@ -1343,6 +1414,12 @@ Context_setValues(Context *self, PyObject *args)
                            &dynamic))
         Py_RETURN_NONE;
 
+    TYPE_CHECK(lineEndContext, ContextSwitcher);
+    TYPE_CHECK(lineBeginContext, ContextSwitcher);
+    if (Py_None != fallthroughContext)
+        TYPE_CHECK(fallthroughContext, ContextSwitcher);
+    BOOL_CHECK(dynamic);
+    
     ASSIGN_PYOBJECT_FIELD(attribute);
     ASSIGN_PYOBJECT_FIELD(format);
     ASSIGN_PYOBJECT_FIELD(lineEndContext);
@@ -1362,6 +1439,8 @@ Context_setRules(Context *self, PyObject *args)
                            &rules))
         return NULL;
 
+    LIST_CHECK(rules);
+    
     ASSIGN_PYOBJECT_FIELD(rules);
 
     Py_RETURN_NONE;
@@ -1471,33 +1550,6 @@ Context_parseBlock(Context* self,
 
 
 /********************************************************************************
- *                                LineData
- ********************************************************************************/
-
-static void
-_LineData_dealloc(_LineData* self)
-{
-    Py_XDECREF(self->contextStack);
-
-    self->ob_type->tp_free((PyObject*)self);
-}
-
-DECLARE_TYPE_WITHOUT_CONSTRUCTOR(_LineData, NULL, "Line data");
-
-static _LineData*
-_LineData_new(ContextStack* contextStack, bool lineContinue)  // not a constructor, just C function
-{
-    _LineData* lineData = PyObject_New(_LineData, &_LineDataType);
-    lineData->contextStack = (ContextStack*)lineData->contextStack;
-    Py_INCREF(lineData->contextStack);
-    lineData->lineContinue = lineContinue;
-
-    return lineData;
-}
-
-
-
-/********************************************************************************
  *                                Parser
  ********************************************************************************/
 static PyMemberDef Parser_members[] = {
@@ -1535,6 +1587,10 @@ Parser_init(Parser *self, PyObject *args, PyObject *kwds)
                            &syntax, &deliminatorSet, &lists, &keywordsCaseSensitive))
         return -1;
 
+    UNICODE_CHECK(deliminatorSet);
+    DICT_CHECK(lists);
+    BOOL_CHECK(keywordsCaseSensitive);
+    
     ASSIGN_PYOBJECT_FIELD(syntax);
     ASSIGN_PYOBJECT_FIELD(deliminatorSet);
     ASSIGN_PYOBJECT_FIELD(lists);
@@ -1565,6 +1621,9 @@ Parser_setConexts(Parser *self, PyObject *args)
                            &contexts, &defaultContext))
         Py_RETURN_NONE;
 
+    DICT_CHECK(contexts);
+    TYPE_CHECK(defaultContext, Context);
+    
     ASSIGN_PYOBJECT_FIELD(contexts);
     ASSIGN_FIELD(Context, defaultContext);
     
@@ -1584,7 +1643,9 @@ Parser_parseBlock(Parser *self, PyObject *args)
                            &text))
         return NULL;
 
-    assert(PyUnicode_Check(text));
+    UNICODE_CHECK(text);
+    if (Py_None != (PyObject*)(prevLineData))
+        TYPE_CHECK(prevLineData, _LineData);
     
     ContextStack* contextStack;
     bool lineContinuePrevious = false;

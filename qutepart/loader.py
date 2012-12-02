@@ -80,7 +80,7 @@ def _parseBoolAttribute(value):
 
 def _safeGetRequiredAttribute(xmlElement, name, default):
     if name in xmlElement.attrib:
-        return xmlElement.attrib[name]
+        return unicode(xmlElement.attrib[name])
     else:
         print >> sys.stderr, "Required attribute '%s' is not set for element '%s'" % (name, xmlElement.tag)
         return default
@@ -318,8 +318,8 @@ def _loadContexts(highlightingElement, parser, attributeToFormatMap):
     contextList = []
     for xmlElement in xmlElementList:
         name = _safeGetRequiredAttribute(xmlElement,
-                                         'name',
-                                         'Error: context name is not set!!!')
+                                         u'name',
+                                         u'Error: context name is not set!!!')
         context = Context(parser, name)
         contextList.append(context)
 
@@ -362,7 +362,7 @@ def _loadContext(context, xmlElement, attributeToFormatMap):
     else:
         fallthroughContext = None
     
-    dynamic = xmlElement.attrib.get('dynamic', False)
+    dynamic = _parseBoolAttribute(xmlElement.attrib.get('dynamic', 'false'))
     
     context.setValues(attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic)
     
