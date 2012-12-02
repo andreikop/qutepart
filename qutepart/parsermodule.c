@@ -692,31 +692,49 @@ DECLARE_RULE_METHODS_AND_TYPE(Detect2Chars);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
+    PyObject* string;
 } AnyChar;
 
 
 static void
 AnyChar_dealloc_fields(AnyChar* self)
 {
-    Py_XDECREF(self->abstractRuleParams);
+    Py_XDECREF(self->string);
 }
 
 static RuleTryMatchResult_internal
 AnyChar_tryMatch(AnyChar* self, TextToMatchObject_internal* textToMatchObject)
 {
+    int i;
+    int size = PyUnicode_GET_SIZE(self->string);
+    Py_UNICODE* unicode = PyUnicode_AS_UNICODE(self->string);
+    Py_UNICODE char_ = textToMatchObject->text[0];
+    
+    for (i = 0; i < size; i++)
+    {
+        if (unicode[i] == char_)
+            return MakeTryMatchResult(self, 1, NULL);
+    }
+    
+    return MakeEmptyTryMatchResult();
 }
 
 static int
 AnyChar_init(AnyChar *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = AnyChar_tryMatch;
-    
-#if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+
+    PyObject* abstractRuleParams = NULL;
+    PyObject* string = NULL;
+
+    if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &string))
         return -1;
-#endif
+
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    UNICODE_CHECK(string, -1);
+    
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+    ASSIGN_PYOBJECT_FIELD(string);
 
     return 0;
 }
@@ -730,8 +748,6 @@ DECLARE_RULE_METHODS_AND_TYPE(AnyChar);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } StringDetect;
 
 
@@ -752,10 +768,15 @@ StringDetect_init(StringDetect *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = StringDetect_tryMatch;
     
 #if 0    
+    PyObject* abstractRuleParams = NULL;
+        
     if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -768,8 +789,6 @@ DECLARE_RULE_METHODS_AND_TYPE(StringDetect);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } WordDetect;
 
 
@@ -790,10 +809,15 @@ WordDetect_init(WordDetect *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = WordDetect_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -806,8 +830,6 @@ DECLARE_RULE_METHODS_AND_TYPE(WordDetect);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } keyword;
 
 
@@ -828,10 +850,15 @@ keyword_init(keyword *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = keyword_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -844,8 +871,6 @@ DECLARE_RULE_METHODS_AND_TYPE(keyword);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } RegExpr;
 
 
@@ -866,10 +891,15 @@ RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = RegExpr_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -882,8 +912,6 @@ DECLARE_RULE_METHODS_AND_TYPE(RegExpr);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } Int;
 
 
@@ -904,10 +932,15 @@ Int_init(Int *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = Int_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -920,8 +953,6 @@ DECLARE_RULE_METHODS_AND_TYPE(Int);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } Float;
 
 
@@ -942,10 +973,15 @@ Float_init(Float *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = Float_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -958,8 +994,6 @@ DECLARE_RULE_METHODS_AND_TYPE(Float);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } HlCOct;
 
 
@@ -980,10 +1014,15 @@ HlCOct_init(HlCOct *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = HlCOct_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -996,8 +1035,6 @@ DECLARE_RULE_METHODS_AND_TYPE(HlCOct);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } HlCHex;
 
 
@@ -1018,10 +1055,15 @@ HlCHex_init(HlCHex *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = HlCHex_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -1034,8 +1076,6 @@ DECLARE_RULE_METHODS_AND_TYPE(HlCHex);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } HlCStringChar;
 
 
@@ -1056,10 +1096,15 @@ HlCStringChar_init(HlCStringChar *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = HlCStringChar_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -1072,8 +1117,6 @@ DECLARE_RULE_METHODS_AND_TYPE(HlCStringChar);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } HlCChar;
 
 
@@ -1094,10 +1137,15 @@ HlCChar_init(HlCChar *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = HlCChar_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -1110,8 +1158,6 @@ DECLARE_RULE_METHODS_AND_TYPE(HlCChar);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } RangeDetect;
 
 
@@ -1132,10 +1178,15 @@ RangeDetect_init(RangeDetect *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = RangeDetect_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -1148,8 +1199,6 @@ DECLARE_RULE_METHODS_AND_TYPE(RangeDetect);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } LineContinue;
 
 
@@ -1170,10 +1219,15 @@ LineContinue_init(LineContinue *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = LineContinue_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -1186,8 +1240,6 @@ DECLARE_RULE_METHODS_AND_TYPE(LineContinue);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } IncludeRules;
 
 
@@ -1208,10 +1260,15 @@ IncludeRules_init(IncludeRules *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = IncludeRules_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -1224,8 +1281,6 @@ DECLARE_RULE_METHODS_AND_TYPE(IncludeRules);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } DetectSpaces;
 
 
@@ -1246,10 +1301,15 @@ DetectSpaces_init(DetectSpaces *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = DetectSpaces_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 
@@ -1262,8 +1322,6 @@ DECLARE_RULE_METHODS_AND_TYPE(DetectSpaces);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
-    int index;
 } DetectIdentifier;
 
 
@@ -1284,10 +1342,15 @@ DetectIdentifier_init(DetectIdentifier *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = DetectIdentifier_tryMatch;
     
 #if 0    
-    if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
+    PyObject* abstractRuleParams = NULL;
+        
+    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
-#endif
 
+    TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+
+#endif
     return 0;
 }
 

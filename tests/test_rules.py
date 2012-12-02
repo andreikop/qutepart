@@ -54,6 +54,11 @@ class Test(unittest.TestCase):
         rule = self._getRule('zsh.xml', "FindStrings", 1)
         self.assertEqual(tryMatch(rule, 0, '\\"'), 2)
 
+    def test_AnyChar(self):
+        rule = self._getRule('asp.xml', 'aspsource', 12)
+        self.assertEqual(tryMatch(rule, 0, 'xyz'), None)
+        self.assertEqual(tryMatch(rule, 0, '{}='), 1)
+
     def test_RegExpr(self):
         rule = self._getRule('debiancontrol.xml', 'Field', 0)
         self.assertEqual(tryMatch(rule, 0, '<sadf@example.com> bla bla'), len('<sadf@example.com>'))
@@ -102,11 +107,6 @@ class Test(unittest.TestCase):
         rule = self._getRule('javascript.xml', 'Comment', 1)  # external context ##Alerts
         self.assertEqual(tryMatch(rule, 1, ' NOTE hello, world'), 4)
         self.assertEqual(tryMatch(rule, 1, ' NOET hello, world'), None)
-
-    def test_AnyChar(self):
-        rule = self._getRule('asp.xml', 'aspsource', 12)
-        self.assertEqual(tryMatch(rule, 0, 'xyz'), None)
-        self.assertEqual(tryMatch(rule, 0, '{}='), 1)
 
     def test_WordDetect(self):
         rule = self._getRule('qml.xml', 'Normal', 1)
