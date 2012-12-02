@@ -1,12 +1,15 @@
 import copy
 import sys
 import xml.etree.ElementTree
+import re
 
-from qutepart.cParser import *
 from qutepart.ColorTheme import ColorTheme
 
+def importParserModule():
+    import qutepart.cParser as parser
+    return parser
 
-import re
+_parserModule = importParserModule()
 
 _seqReplacer = re.compile('\\\\.')
 
@@ -106,7 +109,7 @@ def _makeContextSwitcher(contextOperation, contexts):
     elif rest:
         print >> sys.stderr, "Unknown context '%s'" % rest
 
-    contextSwitcher = ContextSwitcher(popsCount, contextToSwitch, contextOperation)
+    contextSwitcher = _parserModule.ContextSwitcher(popsCount, contextToSwitch, contextOperation)
     
     return contextSwitcher
     
@@ -131,7 +134,7 @@ def _loadIncludeRules(parentContext, xmlElement, attributeToFormatMap):
     else:
         context = parentContext.parser.defaultContext
 
-    return IncludeRules(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), context)
+    return _parserModule.IncludeRules(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), context)
 
 def _simpleLoader(classObject):
     def _load(parentContext, xmlElement, attributeToFormatMap):
@@ -179,7 +182,7 @@ def _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap):
     else:
         column = -1
     
-    return AbstractRuleParams(parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column)
+    return _parserModule.AbstractRuleParams(parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column)
 
 def _loadDetectChar(parentContext, xmlElement, attributeToFormatMap):
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap)
@@ -200,7 +203,7 @@ def _loadDetectChar(parentContext, xmlElement, attributeToFormatMap):
             print >> sys.stderr, 'Too little DetectChar index', char
             index = 0
 
-    return DetectChar(abstractRuleParams, unicode(char), index)
+    return _parserModule.DetectChar(abstractRuleParams, unicode(char), index)
 
 def _loadDetect2Chars(parentContext, xmlElement, attributeToFormatMap):
     char = _safeGetRequiredAttribute(xmlElement, 'char', None)
@@ -210,11 +213,11 @@ def _loadDetect2Chars(parentContext, xmlElement, attributeToFormatMap):
     else:
         string = _processEscapeSequences(char) + _processEscapeSequences(char1)
     
-    return Detect2Chars(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), string)
+    return _parserModule.Detect2Chars(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), string)
 
 def _loadAnyChar(parentContext, xmlElement, attributeToFormatMap):
     string = _safeGetRequiredAttribute(xmlElement, 'String', '')
-    return AnyChar(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), string)
+    return _parserModule.AnyChar(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), string)
 
 def _StringDetect_makeDynamicStringSubsctitutions(string, contextData):
     """For dynamic rules, replace %d patterns with actual strings
@@ -234,15 +237,15 @@ def _StringDetect_makeDynamicStringSubsctitutions(string, contextData):
 def _loadStringDetect(parentContext, xmlElement, attributeToFormatMap):
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)
     
-    return StringDetect(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap),
-                        string,
-                        _StringDetect_makeDynamicStringSubsctitutions)
+    return _parserModule.StringDetect(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap),
+                                     string,
+                                     _StringDetect_makeDynamicStringSubsctitutions)
 
 def _loadWordDetect(parentContext, xmlElement, attributeToFormatMap):
     words = set([_safeGetRequiredAttribute(xmlElement, "String", "")])
     insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     
-    return WordDetect(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), words, insensitive)
+    return _parserModule.WordDetect(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), words, insensitive)
 
 def _loadKeyword(parentContext, xmlElement, attributeToFormatMap):
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)
@@ -255,7 +258,7 @@ def _loadKeyword(parentContext, xmlElement, attributeToFormatMap):
     
     insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     
-    return keyword(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), words, insensitive)
+    return _parserModule.keyword(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), words, insensitive)
 
 def _loadRegExpr(parentContext, xmlElement, attributeToFormatMap):
     def _processCraracterCodes(text):
@@ -282,25 +285,25 @@ def _loadRegExpr(parentContext, xmlElement, attributeToFormatMap):
         wordStart = False
         lineStart = False
     
-    return RegExpr(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), string, insensitive, wordStart, lineStart)
+    return _parserModule.RegExpr(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), string, insensitive, wordStart, lineStart)
 
 def _loadAbstractNumberRule(rule, parentContext, xmlElement):
 
-    return NumberRule(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), childRules)
+    return _parserModule.NumberRule(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), childRules)
 
 def _loadInt(parentContext, xmlElement, attributeToFormatMap):
     childRules = _loadChildRules(parentContext, xmlElement, attributeToFormatMap)
-    return Int(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), childRules)
+    return _parserModule.Int(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), childRules)
 
 def _loadFloat(parentContext, xmlElement, attributeToFormatMap):
     childRules = _loadChildRules(parentContext, xmlElement, attributeToFormatMap)
-    return Float(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), childRules)
+    return _parserModule.Float(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), childRules)
 
 def _loadRangeDetect(parentContext, xmlElement, attributeToFormatMap):
     char = _safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
     char1 = _safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
     
-    return RangeDetect(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), char, char1)
+    return _parserModule.RangeDetect(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), char, char1)
 
 
 _ruleClassDict = \
@@ -314,15 +317,15 @@ _ruleClassDict = \
     'keyword': _loadKeyword,
     'Int': _loadInt,
     'Float': _loadFloat,
-    'HlCOct': _simpleLoader(HlCOct),
-    'HlCHex': _simpleLoader(HlCHex),
-    'HlCStringChar': _simpleLoader(HlCStringChar),
-    'HlCChar': _simpleLoader(HlCChar),
+    'HlCOct': _simpleLoader(_parserModule.HlCOct),
+    'HlCHex': _simpleLoader(_parserModule.HlCHex),
+    'HlCStringChar': _simpleLoader(_parserModule.HlCStringChar),
+    'HlCChar': _simpleLoader(_parserModule.HlCChar),
     'RangeDetect': _loadRangeDetect,
-    'LineContinue': _simpleLoader(LineContinue),
+    'LineContinue': _simpleLoader(_parserModule.LineContinue),
     'IncludeRules': _loadIncludeRules,
-    'DetectSpaces': _simpleLoader(DetectSpaces),
-    'DetectIdentifier': _simpleLoader(DetectIdentifier)
+    'DetectSpaces': _simpleLoader(_parserModule.DetectSpaces),
+    'DetectIdentifier': _simpleLoader(_parserModule.DetectIdentifier)
 }
 
 ################################################################################
@@ -339,7 +342,7 @@ def _loadContexts(highlightingElement, parser, attributeToFormatMap):
         name = _safeGetRequiredAttribute(xmlElement,
                                          u'name',
                                          u'Error: context name is not set!!!')
-        context = Context(parser, name)
+        context = _parserModule.Context(parser, name)
         contextList.append(context)
 
     defaultContext = contextList[0]
@@ -497,7 +500,7 @@ def loadSyntax(syntax, filePath):
                 deliminatorSet.update(additionalSet)
 
     deliminatorSetAsString = u''.join(list(deliminatorSet))
-    syntax.parser = Parser(syntax, deliminatorSetAsString, lists, keywordsCaseSensitive)
+    syntax.parser = _parserModule.Parser(syntax, deliminatorSetAsString, lists, keywordsCaseSensitive)
     attributeToFormatMap = _loadAttributeToFormatMap(highlightingElement)
     
     # parse contexts

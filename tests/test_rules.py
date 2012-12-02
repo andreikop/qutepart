@@ -7,7 +7,10 @@ sys.path.insert(0, '..')
 sys.path.insert(0, '../build/lib.linux-x86_64-2.6/')
 
 from qutepart.syntax import SyntaxManager
-from qutepart.cParser import Context, TextToMatchObject
+
+import qutepart.loader
+
+parser = qutepart.loader.importParserModule()
 
 _currentSyntax = None
 
@@ -15,7 +18,7 @@ def tryMatch(rule, column, text):
     return tryMatchWithData(rule, None, column, text)
 
 def tryMatchWithData(rule, contextData, column, text):
-    textToMatchObject = TextToMatchObject(column, unicode(text), _currentSyntax.parser.deliminatorSet, contextData)
+    textToMatchObject = parser.TextToMatchObject(column, unicode(text), _currentSyntax.parser.deliminatorSet, contextData)
     ruleTryMatchResult = rule.tryMatch(textToMatchObject)
     if ruleTryMatchResult is not None:
         return ruleTryMatchResult.length
