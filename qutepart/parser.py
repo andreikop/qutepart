@@ -49,7 +49,7 @@ class MatchedRule:
         self.pos = pos
         self.length = length
 
-class _LineData:
+class LineData:
     """Data of previous line, used for parsing next line
     """
     def __init__(self, contextStack, lineContinue):
@@ -967,7 +967,7 @@ class Parser:
             if oldStack == contextStack:  # avoid infinite while loop if nothing to switch
                 break
         
-        return ParseBlockFullResult(_LineData(contextStack, lineContinue), matchedContexts)
+        return ParseBlockFullResult(LineData(contextStack, lineContinue), matchedContexts)
 
     def parseBlockTextualResults(self, text, prevLineData=None):
         """Execute parseBlock() and return textual results.

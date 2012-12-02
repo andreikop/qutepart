@@ -203,7 +203,7 @@ typedef struct {
     PyObject_HEAD
     ContextStack* contextStack;
     bool lineContinue;
-} _LineData;
+} LineData;
 
 
 #define AbstractRule_HEAD \
@@ -252,19 +252,19 @@ typedef RuleTryMatchResult_internal (*_tryMatchFunctionType)(PyObject* self, Tex
  ********************************************************************************/
 
 static void
-_LineData_dealloc(_LineData* self)
+LineData_dealloc(LineData* self)
 {
     Py_XDECREF(self->contextStack);
 
     self->ob_type->tp_free((PyObject*)self);
 }
 
-DECLARE_TYPE_WITHOUT_CONSTRUCTOR(_LineData, NULL, "Line data");
+DECLARE_TYPE_WITHOUT_CONSTRUCTOR(LineData, NULL, "Line data");
 
-static _LineData*
-_LineData_new(ContextStack* contextStack, bool lineContinue)  // not a constructor, just C function
+static LineData*
+LineData_new(ContextStack* contextStack, bool lineContinue)  // not a constructor, just C function
 {
-    _LineData* lineData = PyObject_New(_LineData, &_LineDataType);
+    LineData* lineData = PyObject_New(LineData, &LineDataType);
     lineData->contextStack = (ContextStack*)lineData->contextStack;
     Py_INCREF(lineData->contextStack);
     lineData->lineContinue = lineContinue;
@@ -465,7 +465,7 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
     UNICODE_CHECK(text);
     UNICODE_CHECK(deliminatorSet);
     if (Py_None != contextData)
-        TYPE_CHECK(contextData, _LineData);
+        TYPE_CHECK(contextData, LineData);
     
     self->internal = Make_TextToMatchObject_internal(column, text, contextData);
 
@@ -1636,7 +1636,7 @@ static PyObject*
 Parser_parseBlock(Parser *self, PyObject *args)
 {
     PyObject* text = NULL;
-    _LineData* prevLineData = NULL;
+    LineData* prevLineData = NULL;
 
     if (! PyArg_ParseTuple(args, "|OO",
                            &prevLineData,
@@ -1645,7 +1645,7 @@ Parser_parseBlock(Parser *self, PyObject *args)
 
     UNICODE_CHECK(text);
     if (Py_None != (PyObject*)(prevLineData))
-        TYPE_CHECK(prevLineData, _LineData);
+        TYPE_CHECK(prevLineData, LineData);
     
     ContextStack* contextStack;
     bool lineContinuePrevious = false;
@@ -1696,7 +1696,7 @@ Parser_parseBlock(Parser *self, PyObject *args)
             break;
     }
 
-    _LineData* lineData = _LineData_new(contextStack, lineContinue);
+    LineData* lineData = LineData_new(contextStack, lineContinue);
     
     return Py_BuildValue("OO", lineData, segmentList);
 }
@@ -1756,7 +1756,7 @@ initcParser(void)
     REGISTER_TYPE(DetectSpaces)
     REGISTER_TYPE(DetectIdentifier)
     
-    REGISTER_TYPE(_LineData)
+    REGISTER_TYPE(LineData)
     REGISTER_TYPE(ContextStack)
     REGISTER_TYPE(Context)
     REGISTER_TYPE(ContextSwitcher)
