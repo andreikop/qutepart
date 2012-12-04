@@ -87,6 +87,45 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 1, '-importx'), None)
         self.assertEqual(tryMatch(rule, 1, 'importx'), None)
 
+    def test_keyword(self):
+        rule = self._getRule("javascript.xml", "Normal", 6)
+        
+        self.assertEqual(tryMatch(rule, 0, "var"), 3)
+        self.assertEqual(tryMatch(rule, 0, "vor"), None)
+        
+        self.assertEqual(tryMatch(rule, 1, " var "), 3)
+        self.assertEqual(tryMatch(rule, 1, " varx "), None)
+        self.assertEqual(tryMatch(rule, 2, " xvar "), None)
+    
+    def test_jsp_keyword(self):
+        rule = self._getRule('jsp.xml', "Jsp Scriptlet", 5)
+        self.assertEqual(tryMatch(rule, 0, "String"), len("String"))
+    
+    def test_mup_keyword(self):
+        """Test for additionalDeliminator syntax attribute
+        """
+        rule = self._getRule('mup.xml', "Value", 2)
+        text = 'key = 3#minor'
+        self.assertEqual(tryMatch(rule, 8, text), 5)
+    
+    def test_keyword_insensitive(self):
+        """Insensitive attribute for particular keyword
+        """
+        rule = self._getRule("cmake.xml", "Normal Text", 1)
+        self.assertEqual(tryMatch(rule, 0, "ADD_definitions()"), len("ADD_definitions"))
+    
+    def test_keyword_insensitive_syntax(self):
+        """Insensitive attribute for whole syntax
+        """
+        rule = self._getRule("css.xml", "RuleSet", 1)
+        self.assertEqual(tryMatch(rule, 0, "backGround"), len("backGround"))
+
+    def test_keyword_weak_delimiter(self):
+        """Test weakDeliminator attribute parsing and usage
+        """
+        rule = self._getRule("css.xml", "RuleSet", 1)
+        self.assertEqual(tryMatch(rule, 0, "background-color"), len("background-color"))
+
     def test_RegExpr(self):
         rule = self._getRule('debiancontrol.xml', 'Field', 0)
         self.assertEqual(tryMatch(rule, 0, '<sadf@example.com> bla bla'), len('<sadf@example.com>'))
@@ -219,44 +258,6 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, "asdf7"), 5)
         self.assertEqual(tryMatch(rule, 0, "7asdf7"), None)
 
-    def test_keyword(self):
-        rule = self._getRule("javascript.xml", "Normal", 6)
-        
-        self.assertEqual(tryMatch(rule, 0, "var"), 3)
-        self.assertEqual(tryMatch(rule, 0, "vor"), None)
-        
-        self.assertEqual(tryMatch(rule, 1, " var "), 3)
-        self.assertEqual(tryMatch(rule, 1, " varx "), None)
-        self.assertEqual(tryMatch(rule, 2, " xvar "), None)
-    
-    def test_jsp_keyword(self):
-        rule = self._getRule('jsp.xml', "Jsp Scriptlet", 5)
-        self.assertEqual(tryMatch(rule, 0, "String"), len("String"))
-    
-    def test_mup_keyword(self):
-        """Test for additionalDeliminator syntax attribute
-        """
-        rule = self._getRule('mup.xml', "Value", 2)
-        text = 'key = 3#minor'
-        self.assertEqual(tryMatch(rule, 8, text), 5)
-    
-    def test_keyword_insensitive(self):
-        """Insensitive attribute for particular keyword
-        """
-        rule = self._getRule("cmake.xml", "Normal Text", 1)
-        self.assertEqual(tryMatch(rule, 0, "ADD_definitions()"), len("ADD_definitions"))
-    
-    def test_keyword_insensitive_syntax(self):
-        """Insensitive attribute for whole syntax
-        """
-        rule = self._getRule("css.xml", "RuleSet", 1)
-        self.assertEqual(tryMatch(rule, 0, "backGround"), len("backGround"))
-
-    def test_keyword_weak_delimiter(self):
-        """Test weakDeliminator attribute parsing and usage
-        """
-        rule = self._getRule("css.xml", "RuleSet", 1)
-        self.assertEqual(tryMatch(rule, 0, "background-color"), len("background-color"))
 
     def test_lookahead(self):
         rule = self._getRule("javascript.xml", "ObjectMember", 3)

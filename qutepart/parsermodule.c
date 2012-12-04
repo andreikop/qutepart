@@ -26,6 +26,13 @@
         return RET; \
     }
 
+#define SET_CHECK(OBJECT, RET) \
+    if (!PySet_Check(OBJECT)) \
+    { \
+        PyErr_SetString(PyExc_TypeError, #OBJECT " must be a set"); \
+        return RET; \
+    }
+
 #define DICT_CHECK(OBJECT, RET) \
     if (!PyDict_Check(OBJECT)) \
     { \
@@ -195,7 +202,7 @@ typedef struct {
     PyObject* syntax;
     PyObject* deliminatorSet;
     PyObject* lists;
-    PyObject* keywordsCaseSensitive;
+    bool keywordsCaseSensitive;
     PyObject* contexts;
     Context* defaultContext;
     ContextStack* defaultContextStack;
@@ -849,6 +856,7 @@ typedef struct {
 static void
 WordDetect_dealloc_fields(WordDetect* self)
 {
+    Py_XDECREF(self->word);
 }
 
 static RuleTryMatchResult_internal
@@ -910,17 +918,43 @@ DECLARE_RULE_METHODS_AND_TYPE(WordDetect);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
+    PyObject* words;
+    bool insensitive;
 } keyword;
 
 
 static void
 keyword_dealloc_fields(keyword* self)
 {
+    Py_XDECREF(self->words);
 }
 
 static RuleTryMatchResult_internal
 keyword_tryMatch(keyword* self, TextToMatchObject_internal* textToMatchObject)
 {
+    if (textToMatchObject->wordLength <= 0)
+        return MakeEmptyTryMatchResult();
+    
+    Py_UNICODE* wordToCheck = textToMatchObject->text;
+    
+    if (self->insensitive ||
+        ( ! ((Parser*)((Context*)self->abstractRuleParams->parentContext)->parser)->keywordsCaseSensitive))
+    {
+        wordToCheck = textToMatchObject->textLower;
+    }
+
+    PyObject* wordToCheckAsObject = PyUnicode_FromUnicode(wordToCheck, textToMatchObject->wordLength);
+    
+    PyObject* boolObjectRes = PyObject_CallMethod(self->words, "__contains__", "O", wordToCheckAsObject);
+    Py_DECREF(wordToCheckAsObject);
+    
+    bool boolRes = Py_True == boolObjectRes;
+    Py_XDECREF(boolObjectRes);
+    
+    if (boolRes)
+        return MakeTryMatchResult(self, textToMatchObject->wordLength, NULL);
+    else
+        return MakeEmptyTryMatchResult();
 }
 
 static int
@@ -928,16 +962,21 @@ keyword_init(keyword *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = keyword_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
+    PyObject* words = NULL;
+    PyObject* insensitive = NULL;
         
-    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
+    if (! PyArg_ParseTuple(args, "|OOO", &abstractRuleParams, &words, &insensitive))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    SET_CHECK(words, -1);
+    BOOL_CHECK(insensitive, -1);
+    
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+    ASSIGN_PYOBJECT_FIELD(words);
+    ASSIGN_BOOL_FIELD(insensitive);
 
-#endif
     return 0;
 }
 
@@ -1755,7 +1794,6 @@ Parser_dealloc(Parser* self)
     Py_XDECREF(self->syntax);
     Py_XDECREF(self->deliminatorSet);
     Py_XDECREF(self->lists);
-    Py_XDECREF(self->keywordsCaseSensitive);
     Py_XDECREF(self->contexts);
     Py_XDECREF(self->defaultContext);
     //Py_XDECREF(self->defaultContextStack);
@@ -1782,7 +1820,7 @@ Parser_init(Parser *self, PyObject *args, PyObject *kwds)
     ASSIGN_PYOBJECT_FIELD(syntax);
     ASSIGN_PYOBJECT_FIELD(deliminatorSet);
     ASSIGN_PYOBJECT_FIELD(lists);
-    ASSIGN_PYOBJECT_FIELD(keywordsCaseSensitive);
+    ASSIGN_BOOL_FIELD(keywordsCaseSensitive);
 
     return 0;
 }
