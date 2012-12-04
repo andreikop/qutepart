@@ -334,20 +334,48 @@ class StringDetect(AbstractRule):
         return None
 
 
-class AbstractWordRule(AbstractRule):
-    """Base class for WordDetect and keyword
-    
-    Public attributes:
-        insensitive  (Not documented in the kate docs)
+class WordDetect(AbstractRule):
+    """Public attributes:
+        words
+    """
+    def __init__(self, abstractRuleParams, word, insensitive):
+        AbstractRule.__init__(self, abstractRuleParams)
+        self.word = word
+        self.insensitive = insensitive
+
+    def shortId(self):
+        return 'WordDetect(%s, %d)' % (self.word, self.insensitive)
+
+    def _tryMatch(self, textToMatchObject):
+        if textToMatchObject.word is None:
+            return None
+        
+        if self.insensitive or \
+           (not self.parentContext.parser.keywordsCaseSensitive):
+            wordToCheck = textToMatchObject.word.lower()
+        else:
+            wordToCheck = textToMatchObject.word
+        
+        if wordToCheck == self.word:
+            return RuleTryMatchResult(self, len(wordToCheck))
+        else:
+            return None
+
+
+class keyword(AbstractRule):
+    """Public attributes:
+        string
+        words
     """
     def __init__(self, abstractRuleParams, words, insensitive):
         AbstractRule.__init__(self, abstractRuleParams)
         self.words = words
         self.insensitive = insensitive
 
+    def shortId(self):
+        return 'keyword(%s, %d)' % (' '.join(list(self.words)), self.insensitive)
+
     def _tryMatch(self, textToMatchObject):
-        # Skip if column doesn't match
-        
         if textToMatchObject.word is None:
             return None
         
@@ -361,21 +389,6 @@ class AbstractWordRule(AbstractRule):
             return RuleTryMatchResult(self, len(wordToCheck))
         else:
             return None
-
-class WordDetect(AbstractWordRule):
-    """Public attributes:
-        words
-    """    
-    def shortId(self):
-        return 'WordDetect(%s, %d)' % (' '.join(list(self.words)), self.insensitive)
-
-class keyword(AbstractWordRule):
-    """Public attributes:
-        string
-        words
-    """
-    def shortId(self):
-        return 'keyword(%s, %d)' % (' '.join(list(self.words)), self.insensitive)
 
 
 class RegExpr(AbstractRule):

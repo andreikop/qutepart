@@ -242,10 +242,10 @@ def _loadStringDetect(parentContext, xmlElement, attributeToFormatMap):
                                      _StringDetect_makeDynamicStringSubsctitutions)
 
 def _loadWordDetect(parentContext, xmlElement, attributeToFormatMap):
-    words = set([_safeGetRequiredAttribute(xmlElement, "String", "")])
+    word = _safeGetRequiredAttribute(xmlElement, "String", "")
     insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     
-    return _parserModule.WordDetect(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), words, insensitive)
+    return _parserModule.WordDetect(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), word, insensitive)
 
 def _loadKeyword(parentContext, xmlElement, attributeToFormatMap):
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)

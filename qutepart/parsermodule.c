@@ -247,7 +247,9 @@ typedef struct {
 typedef struct {
     int currentColumnIndex;
     PyObject* wholeLineText;
+    PyObject* wholeLineTextLower;
     Py_UNICODE* text;
+    Py_UNICODE* textLower;
     int textLen;
     bool firstNonSpace;
     bool isWordStart;
@@ -394,6 +396,7 @@ Make_TextToMatchObject_internal(int column, PyObject* text, PyObject* contextDat
     
     textToMatchObject.currentColumnIndex = column;
     textToMatchObject.wholeLineText = text;
+    textToMatchObject.wholeLineTextLower = PyObject_CallMethod(text, "lower", "");
     // text and textLen is updated in the loop
     textToMatchObject.firstNonSpace = true;  // updated in the loop
     // isWordStart, wordLength is updated in the loop
@@ -422,10 +425,12 @@ Update_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject,
                                   PyObject* deliminatorSet)
 {
     Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(textToMatchObject->wholeLineText);
+    Py_UNICODE* wholeLineUnicodeBufferLower = PyUnicode_AS_UNICODE(textToMatchObject->wholeLineTextLower);
     int wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject->wholeLineText);
     
    // update text and textLen
     textToMatchObject->text = wholeLineUnicodeBuffer + currentColumnIndex;
+    textToMatchObject->textLower = wholeLineUnicodeBufferLower + currentColumnIndex;
     textToMatchObject->textLen = wholeLineLen - currentColumnIndex;
 
     // update firstNonSpace
@@ -451,8 +456,6 @@ Update_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject,
                                deliminatorSet))
                 break;
         }
-        
-        wordEndIndex = wholeLineLen;
         
         textToMatchObject->wordLength = wordEndIndex - currentColumnIndex;
     } 
@@ -837,6 +840,9 @@ DECLARE_RULE_METHODS_AND_TYPE(StringDetect);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
+    PyObject* word;
+    int wordLength;
+    bool insensitive;
 } WordDetect;
 
 
@@ -848,23 +854,50 @@ WordDetect_dealloc_fields(WordDetect* self)
 static RuleTryMatchResult_internal
 WordDetect_tryMatch(WordDetect* self, TextToMatchObject_internal* textToMatchObject)
 {
+    if (self->wordLength != textToMatchObject->wordLength)
+        return MakeEmptyTryMatchResult();
+    
+    Py_UNICODE* wordToCheck = textToMatchObject->text;
+    
+    if (self->insensitive ||
+        ( ! ((Parser*)((Context*)self->abstractRuleParams->parentContext)->parser)->keywordsCaseSensitive))
+    {
+        wordToCheck = textToMatchObject->textLower;
+    }
+    
+    Py_UNICODE* wordAsUnicode = PyUnicode_AS_UNICODE(self->word);
+    int i;
+    for(i = 0; i < self->wordLength; i++)
+    {
+        if (wordToCheck[i] != wordAsUnicode[i])
+            return MakeEmptyTryMatchResult();
+    }
+
+    return MakeTryMatchResult(self, self->wordLength, NULL);
 }
 
 static int
 WordDetect_init(WordDetect *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = WordDetect_tryMatch;
-    
-#if 0    
+
     PyObject* abstractRuleParams = NULL;
+    PyObject* word = NULL;
+    PyObject* insensitive = NULL;
         
-    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
+    if (! PyArg_ParseTuple(args, "|OOO", &abstractRuleParams, &word, &insensitive))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
-    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+    UNICODE_CHECK(word, -1);
+    BOOL_CHECK(insensitive, -1);
 
-#endif
+    ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+    ASSIGN_PYOBJECT_FIELD(word);
+    ASSIGN_BOOL_FIELD(insensitive);
+    
+    self->wordLength = PyUnicode_GET_SIZE(word);
+
     return 0;
 }
 

@@ -72,6 +72,21 @@ class Test(unittest.TestCase):
         rule = self._getRule('d.xml', 'normal', 9)
         self.assertEqual(tryMatch(rule, 2, '  //BEGIN'), len('//BEGIN'))
 
+    def test_WordDetect(self):
+        rule = self._getRule('qml.xml', 'Normal', 1)
+        self.assertEqual(tryMatch(rule, 0, 'import'), 6)
+        self.assertEqual(tryMatch(rule, 0, ' import'), None)
+        
+        self.assertEqual(tryMatch(rule, 1, ' import'), 6)
+        self.assertEqual(tryMatch(rule, 1, '.import'), 6)
+        self.assertEqual(tryMatch(rule, 1, 'ximport'), None)
+
+        self.assertEqual(tryMatch(rule, 1, ' import.'), 6)
+        self.assertEqual(tryMatch(rule, 1, '.import '), 6)
+        
+        self.assertEqual(tryMatch(rule, 1, '-importx'), None)
+        self.assertEqual(tryMatch(rule, 1, 'importx'), None)
+
     def test_RegExpr(self):
         rule = self._getRule('debiancontrol.xml', 'Field', 0)
         self.assertEqual(tryMatch(rule, 0, '<sadf@example.com> bla bla'), len('<sadf@example.com>'))
@@ -110,21 +125,6 @@ class Test(unittest.TestCase):
         rule = self._getRule('javascript.xml', 'Comment', 1)  # external context ##Alerts
         self.assertEqual(tryMatch(rule, 1, ' NOTE hello, world'), 4)
         self.assertEqual(tryMatch(rule, 1, ' NOET hello, world'), None)
-
-    def test_WordDetect(self):
-        rule = self._getRule('qml.xml', 'Normal', 1)
-        self.assertEqual(tryMatch(rule, 0, 'import'), 6)
-        self.assertEqual(tryMatch(rule, 0, ' import'), None)
-        
-        self.assertEqual(tryMatch(rule, 1, ' import'), 6)
-        self.assertEqual(tryMatch(rule, 1, '.import'), 6)
-        self.assertEqual(tryMatch(rule, 1, 'ximport'), None)
-
-        self.assertEqual(tryMatch(rule, 1, ' import.'), 6)
-        self.assertEqual(tryMatch(rule, 1, '.import '), 6)
-        
-        self.assertEqual(tryMatch(rule, 1, '-importx'), None)
-        self.assertEqual(tryMatch(rule, 1, 'importx'), None)
 
     def test_Int(self):
         rule = self._getRule('apache.xml', 'Integer Directives', 1)
