@@ -5,8 +5,13 @@ import re
 
 from qutepart.ColorTheme import ColorTheme
 
+USE_C_PARSER = True
+
 def importParserModule():
-    import qutepart.cParser as parser
+    if USE_C_PARSER:
+        import qutepart.cParser as parser
+    else:
+        import qutepart.parser as parser
     return parser
 
 _parserModule = importParserModule()
@@ -260,6 +265,46 @@ def _loadKeyword(parentContext, xmlElement, attributeToFormatMap):
     
     return _parserModule.keyword(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), words, insensitive)
 
+def _RegExpr_MakeDynamicStringSubsctitutions(string, contextData):
+    """For dynamic rules, replace %d patterns with actual strings
+    Escapes reg exp symbols in the pattern
+    Python function, used by C code
+    """
+    def _replaceFunc(escapeMatchObject):
+        stringIndex = escapeMatchObject.group(0)[1]
+        index = int(stringIndex) - 1
+        if index < len(contextData):
+            return re.escape(contextData[index])
+        else:
+            return escapeMatchObject.group(0)  # no any replacements, return original value
+
+    return _numSeqReplacer.sub(_replaceFunc, string)
+
+def _RegExpr_compileRegExp(string, insensitive):
+    """Compile regular expression.
+    Python function, used by C code
+    """
+    flags = 0
+    if insensitive:
+        flags = re.IGNORECASE
+    
+    try:
+        return re.compile(string)
+    except (re.error, AssertionError) as ex:
+        print >> sys.stderr, "Invalid pattern '%s': %s" % (string, str(ex))
+        return None
+
+def _RegExpr_matchPattern(regExp, string):
+    """Try to match pattern.
+    Returns tuple (whole match, groups) or (None, None)
+    Python function, used by C code
+    """
+    match = regExp.match(string)
+    if match is not None and match.group(0):
+        return match.group(0), match.groups()
+    else:
+        return None, None
+
 def _loadRegExpr(parentContext, xmlElement, attributeToFormatMap):
     def _processCraracterCodes(text):
         """QRegExp use \0ddd notation for character codes, where d in octal digit
@@ -273,7 +318,7 @@ def _loadRegExpr(parentContext, xmlElement, attributeToFormatMap):
             return chr(charCode).decode('latin1')
         return re.sub(r"\\0\d\d\d", replFunc, text)
 
-    insensitive = xmlElement.attrib.get('insensitive', False)
+    insensitive = _parseBoolAttribute(xmlElement.attrib.get('insensitive', 'false'))
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)        
 
     if string is not None:
@@ -285,7 +330,11 @@ def _loadRegExpr(parentContext, xmlElement, attributeToFormatMap):
         wordStart = False
         lineStart = False
     
-    return _parserModule.RegExpr(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap), string, insensitive, wordStart, lineStart)
+    return _parserModule.RegExpr(_loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap),
+                                 string, insensitive, wordStart, lineStart,
+                                 _RegExpr_MakeDynamicStringSubsctitutions,
+                                 _RegExpr_compileRegExp,
+                                 _RegExpr_matchPattern)
 
 def _loadAbstractNumberRule(rule, parentContext, xmlElement):
 

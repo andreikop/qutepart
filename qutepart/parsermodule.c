@@ -388,6 +388,7 @@ RuleTryMatchResult_new(PyObject* rule, int length, PyObject* data)  // not a con
     result->length = length;
     result->data = data;
     Py_XINCREF(result->data);
+    Py_XDECREF(data);
     
     return result;
 }
@@ -528,6 +529,7 @@ MakeTryMatchResult(void* rule, int length, PyObject* data)
     result.rule = rule;
     result.length = length;
     result.data = data;
+    Py_XINCREF(result.data);
     
     return result;
 }
@@ -989,17 +991,102 @@ DECLARE_RULE_METHODS_AND_TYPE(keyword);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
+    PyObject* string;
+    PyObject* insensitive;
+    bool wordStart;
+    bool lineStart;
+    PyObject* makeDynamicSubstitutionsFunc;
+    PyObject* compileRegExpFunc;
+    PyObject* matchPatternFunc;
+    PyObject* regExp;
 } RegExpr;
-
 
 static void
 RegExpr_dealloc_fields(RegExpr* self)
 {
+    Py_XDECREF(self->string);
+    Py_XDECREF(self->insensitive);
+    Py_XDECREF(self->makeDynamicSubstitutionsFunc);
+    Py_XDECREF(self->compileRegExpFunc);
+    Py_XDECREF(self->matchPatternFunc);
+    Py_XDECREF(self->regExp);
 }
 
 static RuleTryMatchResult_internal
 RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
 {
+    // Special case. if pattern starts with \b, we have to check it manually,
+    //because string is passed to .match(..) without beginning
+    if (self->wordStart &&
+        ( ! textToMatchObject->isWordStart))
+            return MakeEmptyTryMatchResult();
+    
+    //Special case. If pattern starts with ^ - check column number manually
+    if (self->lineStart &&
+        textToMatchObject->currentColumnIndex > 0)
+        return MakeEmptyTryMatchResult();
+
+    PyObject* regExp = NULL;
+    
+    if (self->abstractRuleParams->dynamic)
+    {
+        PyObject* string = 
+                PyObject_CallFunctionObjArgs(self->makeDynamicSubstitutionsFunc,
+                                             self->string,
+                                             textToMatchObject->contextData);
+        regExp = PyObject_CallFunctionObjArgs(self->compileRegExpFunc, string, self->insensitive);
+        Py_XDECREF(string);
+        
+        if (NULL == regExp)
+        {
+            fprintf(stderr, "Failed to call compileRegExpFunc\n");
+            return MakeEmptyTryMatchResult();
+        }
+    }
+    else
+    {
+        regExp = self->regExp;
+        Py_INCREF(regExp);
+    }
+    
+    if (regExp == Py_None)
+    {
+        Py_XDECREF(regExp);
+        return MakeEmptyTryMatchResult();
+    }
+    
+    PyObject* textAsUnicode = PyUnicode_FromUnicode(textToMatchObject->text, textToMatchObject->textLen); // TODO  Optimize?
+    PyObject* matchRes = PyObject_CallFunctionObjArgs(self->matchPatternFunc, regExp, textAsUnicode, NULL);
+    Py_XDECREF(textAsUnicode);
+    
+    if (NULL == matchRes)
+    {
+        fprintf(stderr, "Failed to call matchPatternFunc\n");
+        Py_XDECREF(regExp);
+        return MakeEmptyTryMatchResult();
+    }
+    
+    if ( ! PyTuple_Check(matchRes))
+    {
+        fprintf(stderr, "Not a tuple");
+        Py_XDECREF(regExp);
+        return MakeEmptyTryMatchResult();
+    }
+    
+    PyObject* wholeMatch = PyTuple_GetItem(matchRes, 0);
+    PyObject* groups = PyTuple_GetItem(matchRes, 1);
+
+    RuleTryMatchResult_internal retVal;
+    if (wholeMatch != Py_None)
+        retVal = MakeTryMatchResult(self, PyUnicode_GET_SIZE(wholeMatch), groups);
+    else
+        retVal = MakeEmptyTryMatchResult();
+    
+    Py_XDECREF(matchRes);
+    
+    Py_XDECREF(regExp);
+    
+    return retVal;
 }
 
 static int
@@ -1007,16 +1094,55 @@ RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = RegExpr_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
+    
+    PyObject* string = NULL;
+    PyObject* insensitive = NULL;
+    PyObject* wordStart = NULL;
+    PyObject* lineStart = NULL;
+    PyObject* makeDynamicSubstitutionsFunc = NULL;
+    PyObject* compileRegExpFunc = NULL;
+    PyObject* matchPatternFunc = NULL;
         
-    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
+    if (! PyArg_ParseTuple(args, "|OOOOOOOO", &abstractRuleParams,
+                           &string, &insensitive, &wordStart, &lineStart,
+                           &makeDynamicSubstitutionsFunc, &compileRegExpFunc, &matchPatternFunc))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    UNICODE_CHECK(string, -1);
+    BOOL_CHECK(insensitive, -1);
+    BOOL_CHECK(wordStart, -1);
+    BOOL_CHECK(lineStart, -1);
+    FUNC_CHECK(makeDynamicSubstitutionsFunc, -1);
+    FUNC_CHECK(compileRegExpFunc, -1);
+    FUNC_CHECK(matchPatternFunc, -1);
+    
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+    ASSIGN_PYOBJECT_FIELD(string);
+    ASSIGN_PYOBJECT_FIELD(insensitive);
+    ASSIGN_BOOL_FIELD(wordStart);
+    ASSIGN_BOOL_FIELD(lineStart);
+    ASSIGN_PYOBJECT_FIELD(makeDynamicSubstitutionsFunc);
+    ASSIGN_PYOBJECT_FIELD(compileRegExpFunc);
+    ASSIGN_PYOBJECT_FIELD(matchPatternFunc);
 
-#endif
+    if (self->abstractRuleParams->dynamic)
+    {
+        self->regExp = Py_None;
+        Py_INCREF(self->regExp);
+    }
+    else
+    {
+        self->regExp = PyObject_CallFunctionObjArgs(compileRegExpFunc, string, insensitive, NULL);
+        
+        if (NULL == self->regExp)
+        {
+            fprintf(stderr, "Failed to call compileRegExpFunc\n");
+            return -1;
+        }
+    }
+
     return 0;
 }
 
