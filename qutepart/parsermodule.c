@@ -413,6 +413,12 @@ Make_TextToMatchObject_internal(int column, PyObject* text, PyObject* contextDat
     return textToMatchObject;
 }
 
+static void
+Free_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject)
+{
+    Py_XDECREF(textToMatchObject->wholeLineTextLower);
+}
+
 static bool
 _isDeliminator(Py_UNICODE character, PyObject* deliminatorSet)
 {
@@ -475,6 +481,7 @@ TextToMatchObject_dealloc(TextToMatchObject* self)
 {
     Py_XDECREF(self->internal.wholeLineText);
     Py_XDECREF(self->internal.contextData);
+    Free_TextToMatchObject_internal(&self->internal);
     self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -1152,20 +1159,178 @@ DECLARE_RULE_METHODS_AND_TYPE(RegExpr);
 /********************************************************************************
  *                                Int
  ********************************************************************************/
+int AbstractNumberRule_countDigits(Py_UNICODE* text, int textLen)
+{
+    int i;
+    
+    for (i = 0; i < textLen; i++)
+    {
+        if ( !  Py_UNICODE_ISDIGIT(text[i]))
+            break;
+    }
+    
+    return i;
+}
+
+
+static int
+Int_tryMatchText(TextToMatchObject_internal* textToMatchObject)
+{
+    int digitCount = AbstractNumberRule_countDigits(textToMatchObject->text, textToMatchObject->textLen);
+    
+    if (digitCount)
+        return digitCount;
+    else
+        return -1;
+}
+
+static bool
+_symbolsEqual(Py_UNICODE a, const char* b)
+{
+    PyObject* unicode = PyUnicode_FromString(b);
+    bool ret = a == PyUnicode_AS_UNICODE(unicode)[0];
+    Py_XDECREF(unicode);
+    return ret;
+}
+
+static int
+Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
+{
+    bool haveDigit = false;
+    bool havePoint = false;
+    
+    int matchedLength = 0;
+    
+    int digitCount = AbstractNumberRule_countDigits(textToMatchObject->text, textToMatchObject->textLen);
+    if(digitCount)
+    {
+        haveDigit = true;
+        matchedLength += digitCount;
+    }
+    
+    if (textToMatchObject->textLen > matchedLength &&
+        _symbolsEqual(textToMatchObject->text[matchedLength], "."))
+    {
+        havePoint = true;
+        matchedLength += 1;
+    }
+    
+    digitCount = AbstractNumberRule_countDigits(textToMatchObject->text + matchedLength, textToMatchObject->textLen - matchedLength);
+    if(digitCount)
+    {
+        haveDigit = true;
+        matchedLength += digitCount;
+    }
+    
+    if (textToMatchObject->textLen > matchedLength &&
+        _symbolsEqual(textToMatchObject->textLower[matchedLength], "e"))
+    {
+        matchedLength += 1;
+        
+        if (textToMatchObject->textLen > matchedLength &&
+            (_symbolsEqual(textToMatchObject->text[matchedLength], "+") ||
+             _symbolsEqual(textToMatchObject->text[matchedLength], "-")))
+        {
+            matchedLength += 1;
+        }
+        
+        bool haveDigitInExponent = false;
+        
+        digitCount = AbstractNumberRule_countDigits(textToMatchObject->text + matchedLength,
+                                                    textToMatchObject->textLen - matchedLength);
+        if (digitCount)
+        {
+            haveDigitInExponent = true;
+            matchedLength += digitCount;
+        }
+        
+        if( !haveDigitInExponent)
+            return -1;
+        
+        return matchedLength;
+    }
+    else
+    {
+        if( ! havePoint)
+            return -1;
+    }
+    
+    if (matchedLength && haveDigit)
+        return matchedLength;
+    else
+        return -1;
+}
+
+static RuleTryMatchResult_internal
+AbstractNumberRule_tryMatch(AbstractRule* self,
+                            PyObject* childRules,
+                            bool isIntRule,
+                            TextToMatchObject_internal* textToMatchObject)
+{
+    if ( ! textToMatchObject->isWordStart)
+        return MakeEmptyTryMatchResult();
+
+    int index;
+    
+    if (isIntRule)
+        index = Int_tryMatchText(textToMatchObject);
+    else
+        index = Float_tryMatchText(textToMatchObject);
+    
+    if (-1 == index)
+        return MakeEmptyTryMatchResult();
+    
+    int matchEndIndex = textToMatchObject->currentColumnIndex + index;
+    if (matchEndIndex < PyUnicode_GET_SIZE(textToMatchObject->wholeLineText))
+    {
+        TextToMatchObject_internal newTextToMatchObject =
+                Make_TextToMatchObject_internal(textToMatchObject->currentColumnIndex + index,
+                                                textToMatchObject->wholeLineText,
+                                                textToMatchObject->contextData);
+        
+        Update_TextToMatchObject_internal(&newTextToMatchObject,
+                                          matchEndIndex,
+                        ((Parser*)((Context*)self->abstractRuleParams->parentContext)->parser)->deliminatorSet);
+        
+        int i;
+        bool haveMatch = false;
+        for (i = 0; i < PyList_Size(childRules) && ( ! haveMatch); i++)
+        {
+            AbstractRule* rule = (AbstractRule*)PyList_GetItem(childRules, i);
+            RuleTryMatchResult_internal result = AbstractRule_tryMatch_internal(rule, &newTextToMatchObject);
+            
+            if (NULL != result.rule)
+            {
+                index += result.length;
+                haveMatch = true;
+            }
+            // child rule context and attribute is ignored
+        }
+        
+        Free_TextToMatchObject_internal(&newTextToMatchObject);
+    }
+
+    return MakeTryMatchResult(self, index, NULL);
+}
+
+
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
+    PyObject* childRules;
 } Int;
 
 
 static void
 Int_dealloc_fields(Int* self)
 {
+    Py_XDECREF(self->childRules);
 }
 
 static RuleTryMatchResult_internal
 Int_tryMatch(Int* self, TextToMatchObject_internal* textToMatchObject)
 {
+    return AbstractNumberRule_tryMatch((AbstractRule*)self, self->childRules, true, textToMatchObject);
 }
 
 static int
@@ -1173,16 +1338,18 @@ Int_init(Int *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = Int_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
+    PyObject* childRules = NULL;
         
-    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
+    if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &childRules))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    LIST_CHECK(childRules, -1);
+    
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+    ASSIGN_PYOBJECT_FIELD(childRules);
 
-#endif
     return 0;
 }
 
@@ -1195,17 +1362,19 @@ DECLARE_RULE_METHODS_AND_TYPE(Int);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
+    PyObject* childRules;
 } Float;
-
 
 static void
 Float_dealloc_fields(Float* self)
 {
+    Py_XDECREF(self->childRules);
 }
 
 static RuleTryMatchResult_internal
 Float_tryMatch(Float* self, TextToMatchObject_internal* textToMatchObject)
 {
+    return AbstractNumberRule_tryMatch((AbstractRule*)self, self->childRules, false, textToMatchObject);
 }
 
 static int
@@ -1213,16 +1382,18 @@ Float_init(Float *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = Float_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
+    PyObject* childRules = NULL;
         
-    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
+    if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &childRules))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    LIST_CHECK(childRules, -1);
+    
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+    ASSIGN_PYOBJECT_FIELD(childRules);
 
-#endif
     return 0;
 }
 
@@ -1897,6 +2068,8 @@ Context_parseBlock(Context* self,
         }
 
     }
+    
+    Free_TextToMatchObject_internal(&textToMatchObject);
     
     return 0;
 }

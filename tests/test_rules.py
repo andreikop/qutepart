@@ -152,19 +152,6 @@ class Test(unittest.TestCase):
         rule = self._getRule('fortran.xml', 'find_decls', 7)
         self.assertEqual(tryMatch(rule, 1, ' real'), None)
         self.assertEqual(tryMatch(rule, 0, 'real'), 4)
-    
-    def test_DetectSpaces(self):
-        rule = self._getRule('yacc.xml', 'Pre Start', 1)
-        self.assertEqual(tryMatch(rule, 0, '   asdf fdafasd  '), 3)
-
-    def test_IncludeRules(self):
-        rule = self._getRule('yacc.xml', 'Rule In', 0)
-        self.assertEqual(tryMatch(rule, 0, '/* xxx */'), 2)
-
-    def test_IncludeRulesExternal(self):
-        rule = self._getRule('javascript.xml', 'Comment', 1)  # external context ##Alerts
-        self.assertEqual(tryMatch(rule, 1, ' NOTE hello, world'), 4)
-        self.assertEqual(tryMatch(rule, 1, ' NOET hello, world'), None)
 
     def test_Int(self):
         rule = self._getRule('apache.xml', 'Integer Directives', 1)
@@ -195,6 +182,19 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, '4E+10F'), 6)
 
         self.assertEqual(tryMatch(rule, 0, '4e+10'), 5)  # lower case
+
+    def test_DetectSpaces(self):
+        rule = self._getRule('yacc.xml', 'Pre Start', 1)
+        self.assertEqual(tryMatch(rule, 0, '   asdf fdafasd  '), 3)
+
+    def test_IncludeRules(self):
+        rule = self._getRule('yacc.xml', 'Rule In', 0)
+        self.assertEqual(tryMatch(rule, 0, '/* xxx */'), 2)
+
+    def test_IncludeRulesExternal(self):
+        rule = self._getRule('javascript.xml', 'Comment', 1)  # external context ##Alerts
+        self.assertEqual(tryMatch(rule, 1, ' NOTE hello, world'), 4)
+        self.assertEqual(tryMatch(rule, 1, ' NOET hello, world'), None)
 
     def test_HlCOct(self):
         rule = self._getRule("commonlisp.xml", "SpecialNumber", 2)
