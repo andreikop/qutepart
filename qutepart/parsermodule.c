@@ -1184,15 +1184,6 @@ Int_tryMatchText(TextToMatchObject_internal* textToMatchObject)
         return -1;
 }
 
-static bool
-_symbolsEqual(Py_UNICODE a, const char* b)
-{
-    PyObject* unicode = PyUnicode_FromString(b);
-    bool ret = a == PyUnicode_AS_UNICODE(unicode)[0];
-    Py_XDECREF(unicode);
-    return ret;
-}
-
 static int
 Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
 {
@@ -1209,7 +1200,7 @@ Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
     }
     
     if (textToMatchObject->textLen > matchedLength &&
-        _symbolsEqual(textToMatchObject->text[matchedLength], "."))
+        textToMatchObject->text[matchedLength] == '.')
     {
         havePoint = true;
         matchedLength += 1;
@@ -1223,13 +1214,13 @@ Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
     }
     
     if (textToMatchObject->textLen > matchedLength &&
-        _symbolsEqual(textToMatchObject->textLower[matchedLength], "e"))
+        textToMatchObject->textLower[matchedLength] == 'e')
     {
         matchedLength += 1;
         
         if (textToMatchObject->textLen > matchedLength &&
-            (_symbolsEqual(textToMatchObject->text[matchedLength], "+") ||
-             _symbolsEqual(textToMatchObject->text[matchedLength], "-")))
+            (textToMatchObject->text[matchedLength] == '+' ||
+             textToMatchObject->text[matchedLength] == '-'))
         {
             matchedLength += 1;
         }
