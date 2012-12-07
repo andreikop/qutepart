@@ -1414,9 +1414,32 @@ HlCOct_dealloc_fields(HlCOct* self)
 {
 }
 
+static bool
+_isOctChar(Py_UNICODE symbol)
+{
+    return (symbol >= '0' && symbol <= '7');
+}
+
 static RuleTryMatchResult_internal
 HlCOct_tryMatch(HlCOct* self, TextToMatchObject_internal* textToMatchObject)
 {
+    if (textToMatchObject->text[0] != '0')
+        return MakeEmptyTryMatchResult();
+
+    int index = 1;
+    while (index < textToMatchObject->textLen &&
+           _isOctChar(textToMatchObject->text[index]))
+        index ++;
+    
+    if (index == 1)
+        return MakeEmptyTryMatchResult();
+
+    if (index < textToMatchObject->textLen &&
+        (textToMatchObject->textLower[index] =='l' ||
+         textToMatchObject->textLower[index] =='u'))
+            index ++;
+    
+    return MakeTryMatchResult(self, index, NULL);
 }
 
 static int
@@ -1424,7 +1447,6 @@ HlCOct_init(HlCOct *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = HlCOct_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
         
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
@@ -1433,7 +1455,6 @@ HlCOct_init(HlCOct *self, PyObject *args, PyObject *kwds)
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
 
-#endif
     return 0;
 }
 
@@ -1454,9 +1475,37 @@ HlCHex_dealloc_fields(HlCHex* self)
 {
 }
 
+static bool
+_isHexChar(Py_UNICODE symbol)
+{
+    return (symbol >= '0' && symbol <= '9') ||
+           (symbol >= 'a' && symbol <= 'f');
+}
+
 static RuleTryMatchResult_internal
 HlCHex_tryMatch(HlCHex* self, TextToMatchObject_internal* textToMatchObject)
 {
+    if (textToMatchObject->textLen < 3)
+        return MakeEmptyTryMatchResult();
+    
+    if (textToMatchObject->textLower[0] != '0' ||
+        textToMatchObject->textLower[1] != 'x')
+        return MakeEmptyTryMatchResult();
+    
+    int index = 2;
+    while (index < textToMatchObject->textLen &&
+           _isHexChar(textToMatchObject->textLower[index]))
+        index ++;
+    
+    if (index == 2)
+        return MakeEmptyTryMatchResult();
+    
+    if (index < textToMatchObject->textLen &&
+        (textToMatchObject->textLower[index] == 'l' ||
+         textToMatchObject->textLower[index] == 'u'))
+            index ++;
+    
+    return MakeTryMatchResult(self, index, NULL);
 }
 
 static int
@@ -1464,7 +1513,6 @@ HlCHex_init(HlCHex *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = HlCHex_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
         
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
@@ -1473,7 +1521,6 @@ HlCHex_init(HlCHex *self, PyObject *args, PyObject *kwds)
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
 
-#endif
     return 0;
 }
 

@@ -183,19 +183,6 @@ class Test(unittest.TestCase):
 
         self.assertEqual(tryMatch(rule, 0, '4e+10'), 5)  # lower case
 
-    def test_DetectSpaces(self):
-        rule = self._getRule('yacc.xml', 'Pre Start', 1)
-        self.assertEqual(tryMatch(rule, 0, '   asdf fdafasd  '), 3)
-
-    def test_IncludeRules(self):
-        rule = self._getRule('yacc.xml', 'Rule In', 0)
-        self.assertEqual(tryMatch(rule, 0, '/* xxx */'), 2)
-
-    def test_IncludeRulesExternal(self):
-        rule = self._getRule('javascript.xml', 'Comment', 1)  # external context ##Alerts
-        self.assertEqual(tryMatch(rule, 1, ' NOTE hello, world'), 4)
-        self.assertEqual(tryMatch(rule, 1, ' NOET hello, world'), None)
-
     def test_HlCOct(self):
         rule = self._getRule("commonlisp.xml", "SpecialNumber", 2)
         
@@ -215,6 +202,19 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, '0X76L'), 5)
         self.assertEqual(tryMatch(rule, 0, '0X76L'), 5)
         self.assertEqual(tryMatch(rule, 0, '0X76KL'), 4)
+
+    def test_DetectSpaces(self):
+        rule = self._getRule('yacc.xml', 'Pre Start', 1)
+        self.assertEqual(tryMatch(rule, 0, '   asdf fdafasd  '), 3)
+
+    def test_IncludeRules(self):
+        rule = self._getRule('yacc.xml', 'Rule In', 0)
+        self.assertEqual(tryMatch(rule, 0, '/* xxx */'), 2)
+
+    def test_IncludeRulesExternal(self):
+        rule = self._getRule('javascript.xml', 'Comment', 1)  # external context ##Alerts
+        self.assertEqual(tryMatch(rule, 1, ' NOTE hello, world'), 4)
+        self.assertEqual(tryMatch(rule, 1, ' NOET hello, world'), None)
 
     def test_HlCStringChar(self):
         rule = self._getRule("boo.xml", "Tripple A-string", 0)
