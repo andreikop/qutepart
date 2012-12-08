@@ -1956,7 +1956,7 @@ ContextStack_new(PyObject* contexts, PyObject* data)  // not a constructor, just
     Py_INCREF(contextStack->_contexts);
     contextStack->_data = data;
     Py_INCREF(contextStack->_data);
-    
+
     return contextStack;
 }
 
@@ -1985,15 +1985,19 @@ ContextStack_pop(ContextStack* self, int count)
 
     PyObject* contexts = PyList_GetSlice(self->_contexts, 0, PyList_Size(self->_contexts) - count);
     PyObject* data = PyList_GetSlice(self->_data, 0, PyList_Size(self->_data) - count);
+    
     return ContextStack_new(contexts, data);
 }
 
 static ContextStack*
 ContextStack_append(ContextStack* self, Context* context, PyObject* data)
 {
-    PyList_Append(self->_contexts, (PyObject*)context);
-    PyList_Append(self->_data, data);
-    return self;
+    PyObject* newContexts = PyList_GetSlice(self->_contexts, 0, PyList_Size(self->_contexts));  // make a copy
+    PyList_Append(newContexts, (PyObject*)context);
+    PyObject* newData = PyList_GetSlice(self->_data, 0, PyList_Size(self->_data));  // make a copy
+    PyList_Append(newData, (PyObject*)data);
+    
+    return ContextStack_new(newContexts, newData);
 }
 
 
