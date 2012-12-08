@@ -290,7 +290,7 @@ static LineData*
 LineData_new(ContextStack* contextStack, bool lineContinue)  // not a constructor, just C function
 {
     LineData* lineData = PyObject_New(LineData, &LineDataType);
-    lineData->contextStack = (ContextStack*)lineData->contextStack;
+    lineData->contextStack = contextStack;
     Py_INCREF(lineData->contextStack);
     lineData->lineContinue = lineContinue;
 
