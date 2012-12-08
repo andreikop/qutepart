@@ -1521,6 +1521,53 @@ DECLARE_RULE_METHODS_AND_TYPE(HlCHex);
 /********************************************************************************
  *                                HlCStringChar
  ********************************************************************************/
+
+static bool
+_charInString(Py_UNICODE character, const char* string)
+{
+    for( ; *string != '\0'; string++)
+        if (*string == character)
+            return true;
+    return false;
+}
+
+static int
+_checkEscapedChar(Py_UNICODE* textLower, int textLen)
+{
+    int index = 0;
+    if (textLen > 1 && textLower[0] == '\\')
+    {
+        index = 1;
+        
+        if (_charInString(textLower[index], "abefnrtv'\"?\\"))
+        {
+            index += 1;
+        }
+        else if (textLower[index] == 'x')  //  if it's like \xff, eat the x
+        {
+            index += 1;
+            while (index < textLen && _isHexChar(textLower[index]))
+                index += 1;
+            if (index == 2)  // no hex digits
+                return -1;
+        }
+        else if (_isOctChar(textLower[index]))
+        {
+            while (index < 4 && index < textLen && _isOctChar(textLower[index]))
+                index += 1;
+        }
+        else
+        {
+            return -1;
+        }
+        
+        return index;
+    }
+    
+    return -1;
+}
+
+
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
@@ -1535,6 +1582,12 @@ HlCStringChar_dealloc_fields(HlCStringChar* self)
 static RuleTryMatchResult_internal
 HlCStringChar_tryMatch(HlCStringChar* self, TextToMatchObject_internal* textToMatchObject)
 {
+    int res = _checkEscapedChar(textToMatchObject->textLower, textToMatchObject->textLen);
+    if (res != -1)
+        return MakeTryMatchResult(self, res, NULL);
+    else
+        return MakeEmptyTryMatchResult();
+
 }
 
 static int
@@ -1542,7 +1595,6 @@ HlCStringChar_init(HlCStringChar *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = HlCStringChar_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
         
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
@@ -1551,7 +1603,6 @@ HlCStringChar_init(HlCStringChar *self, PyObject *args, PyObject *kwds)
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
 
-#endif
     return 0;
 }
 
