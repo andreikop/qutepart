@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+sys.path.insert(0, 'build/lib.linux-x86_64-2.6/')
 
 import sip
 sip.setapi('QString', 2)
@@ -27,7 +28,7 @@ def main():
     print 'Using syntax', syntax.name
 
     with open(filePath) as file:
-        text = file.read()
+        text = unicode(file.read(), 'utf8')
 
     app = QApplication(sys.argv)
     

@@ -47,6 +47,16 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatchWithData(rule, (u'a', u'b', u'c'), 0, text), 1)
         self.assertEqual(tryMatchWithData(rule, (u'x', u'y', u'z'), 0, text), None)
 
+    def test_DetectChar_dynamic2(self):
+        rule = self._getRule("perl.xml", "string_6", 3)
+        text = "abcdXefg"
+
+        count = tryMatchWithData(rule, (u'X', u'Y', u'Z',), 0, text)
+        self.assertEqual(count, None)
+
+        count = tryMatchWithData(rule, (u'X', u'Y', u'Z',), 4, text)
+        self.assertEqual(count, 1)
+
     def test_Detect2Chars(self):
         rule = self._getRule('debiancontrol.xml', 'Field', 1)
         self.assertEqual(tryMatch(rule, 0, '${xxx}'), 2)
@@ -258,7 +268,6 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, "asdf7"), 5)
         self.assertEqual(tryMatch(rule, 0, "7asdf7"), None)
 
-
     def test_lookahead(self):
         rule = self._getRule("javascript.xml", "ObjectMember", 3)
         text = 'g.r( /dooh/ )'
@@ -286,16 +295,6 @@ class Test(unittest.TestCase):
 
         count = tryMatchWithData(rule, ('myheredoc',), 0, text)
         self.assertEqual(count, len(text))
-
-    def test_some_test(self):
-        rule = self._getRule("perl.xml", "string_6", 3)
-        text = "abcdXefg"
-
-        count = tryMatchWithData(rule, ('X', 'Y', 'Z',), 0, text)
-        self.assertEqual(count, None)
-
-        count = tryMatchWithData(rule, ('X', 'Y', 'Z',), 4, text)
-        self.assertEqual(count, 1)
 
 
 if __name__ == '__main__':

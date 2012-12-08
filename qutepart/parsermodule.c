@@ -1963,7 +1963,6 @@ ContextStack_new(PyObject* contexts, PyObject* data)  // not a constructor, just
 static Context*
 ContextStack_currentContext(ContextStack* self)
 {
-    
     return (Context*)PyList_GetItem(self->_contexts,
                                     PyList_Size(self->_contexts) - 1);
 }
@@ -1983,8 +1982,8 @@ ContextStack_pop(ContextStack* self, int count)
         return self;
     }
 
-    PyObject* contexts = PyList_GetSlice(self->_contexts, -count, PyList_Size(self->_contexts));
-    PyObject* data = PyList_GetSlice(self->_data, -count, PyList_Size(self->_data));
+    PyObject* contexts = PyList_GetSlice(self->_contexts, 0, PyList_Size(self->_contexts) - count);
+    PyObject* data = PyList_GetSlice(self->_data, 0, PyList_Size(self->_data) - count);
     return ContextStack_new(contexts, data);
 }
 
@@ -2210,7 +2209,7 @@ Context_parseBlock(Context* self,
                 if (newContextStack != *pContextStack)
                 {
                     *pContextStack = newContextStack;
-                    return currentColumnIndex - startColumnIndex;
+                    break; // while
                 }
             }
         }
@@ -2235,7 +2234,7 @@ Context_parseBlock(Context* self,
                     }
 
                     *pContextStack = newContextStack;
-                    return currentColumnIndex - startColumnIndex;
+                    break; // while
                 }
             }
         }
@@ -2243,8 +2242,8 @@ Context_parseBlock(Context* self,
     }
     
     Free_TextToMatchObject_internal(&textToMatchObject);
-    
-    return 0;
+
+    return currentColumnIndex - startColumnIndex;
 }
 
 
@@ -2337,8 +2336,8 @@ Parser_parseBlock(Parser *self, PyObject *args)
     LineData* prevLineData = NULL;
 
     if (! PyArg_ParseTuple(args, "|OO",
-                           &prevLineData,
-                           &text))
+                           &text,
+                           &prevLineData))
         return NULL;
 
     UNICODE_CHECK(text, NULL);
@@ -2392,6 +2391,7 @@ Parser_parseBlock(Parser *self, PyObject *args)
                                                            NULL);
         if (oldStack == contextStack)  // avoid infinite while loop if nothing to switch
             break;
+        currentContext = ContextStack_currentContext(contextStack);
     }
 
     LineData* lineData = LineData_new(contextStack, lineContinue);

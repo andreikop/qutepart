@@ -9,6 +9,7 @@ USE_C_PARSER = True
 
 def importParserModule():
     if USE_C_PARSER:
+        print 'Using C parser'
         import qutepart.cParser as parser
     else:
         import qutepart.parser as parser
