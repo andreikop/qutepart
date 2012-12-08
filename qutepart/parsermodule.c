@@ -1626,6 +1626,25 @@ HlCChar_dealloc_fields(HlCChar* self)
 static RuleTryMatchResult_internal
 HlCChar_tryMatch(HlCChar* self, TextToMatchObject_internal* textToMatchObject)
 {
+    if (textToMatchObject->textLen > 2 &&
+        textToMatchObject->text[0] == '\'' &&
+        textToMatchObject->text[1] != '\'')
+    {
+        int result = _checkEscapedChar(textToMatchObject->textLower + 1, textToMatchObject->textLen - 1);
+        int index;
+        if (result != -1)
+            index = 1 + result;
+        else  // 1 not escaped character
+            index = 1 + 1;
+        
+        if (index < textToMatchObject->textLen &&
+            textToMatchObject->text[index] == '\'')
+        {
+            return MakeTryMatchResult(self, index + 1, NULL);
+        }
+    }
+    
+    return MakeEmptyTryMatchResult();
 }
 
 static int
@@ -1633,7 +1652,6 @@ HlCChar_init(HlCChar *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = HlCChar_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
         
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
@@ -1642,7 +1660,6 @@ HlCChar_init(HlCChar *self, PyObject *args, PyObject *kwds)
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
 
-#endif
     return 0;
 }
 
@@ -1655,6 +1672,8 @@ DECLARE_RULE_METHODS_AND_TYPE(HlCChar);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
+    Py_UNICODE char_;
+    Py_UNICODE char1_;
 } RangeDetect;
 
 
@@ -1666,6 +1685,24 @@ RangeDetect_dealloc_fields(RangeDetect* self)
 static RuleTryMatchResult_internal
 RangeDetect_tryMatch(RangeDetect* self, TextToMatchObject_internal* textToMatchObject)
 {
+    if (textToMatchObject->text[0] == self->char_)
+    {
+        int end = -1;
+        int i;
+        for (i = 0; i < textToMatchObject->textLen; i++)
+        {
+            if (textToMatchObject->text[i] == self->char1_)
+            {
+                end = i;
+                break;
+            }
+        }
+        
+        if (-1 != end)
+            return MakeTryMatchResult(self, end + 1, NULL);
+    }
+    
+    return MakeEmptyTryMatchResult();
 }
 
 static int
@@ -1673,16 +1710,21 @@ RangeDetect_init(RangeDetect *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = RangeDetect_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
+    PyObject* char_ = NULL;
+    PyObject* char1_ = NULL;
         
-    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
+    if (! PyArg_ParseTuple(args, "|OOO", &abstractRuleParams, &char_, &char1_))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    UNICODE_CHECK(char_, -1);
+    UNICODE_CHECK(char1_, -1);
+    
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+    self->char_ = PyUnicode_AS_UNICODE(char_)[0];
+    self->char1_ = PyUnicode_AS_UNICODE(char1_)[0];
 
-#endif
     return 0;
 }
 

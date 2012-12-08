@@ -220,6 +220,14 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, "'A"), None)
         self.assertEqual(tryMatch(rule, 0, "'\\x56fe'"), 8)
 
+    def test_RangeDetect(self):
+        rule = self._getRule("ini.xml", "ini", 0)
+        
+        self.assertEqual(tryMatch(rule, 0, "[hello]"), 7)
+        self.assertEqual(tryMatch(rule, 0, "[hello] "), 7)
+        self.assertEqual(tryMatch(rule, 0, "[hello "), None)
+        self.assertEqual(tryMatch(rule, 0, "][hello "), None)
+
     def test_DetectSpaces(self):
         rule = self._getRule('yacc.xml', 'Pre Start', 1)
         self.assertEqual(tryMatch(rule, 0, '   asdf fdafasd  '), 3)
@@ -235,13 +243,6 @@ class Test(unittest.TestCase):
 
 
 
-    def test_RangeDetect(self):
-        rule = self._getRule("ini.xml", "ini", 0)
-        
-        self.assertEqual(tryMatch(rule, 0, "[hello]"), 7)
-        self.assertEqual(tryMatch(rule, 0, "[hello] "), 7)
-        self.assertEqual(tryMatch(rule, 0, "[hello "), None)
-        self.assertEqual(tryMatch(rule, 0, "][hello "), None)
 
     def test_LineContinue(self):
         rule = self._getRule("picsrc.xml", "string", 0)
