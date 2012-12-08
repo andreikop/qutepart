@@ -611,7 +611,7 @@ DetectChar_tryMatch(DetectChar* self, TextToMatchObject_internal* textToMatchObj
         PyObject* string = PyTuple_GetItem(textToMatchObject->contextData, index);
         if ( ! PyUnicode_Check(string))
         {
-            fprintf(stderr, "Context data must be unicode");
+            PyErr_SetString(PyExc_TypeError, "Context data must be unicode");
             return MakeEmptyTryMatchResult();
         }
         
@@ -1079,7 +1079,7 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
     
     if ( ! PyTuple_Check(matchRes))
     {
-        fprintf(stderr, "Not a tuple");
+        PyErr_SetString(PyExc_TypeError, "Match result is not a tuple");
         Py_XDECREF(regExp);
         return MakeEmptyTryMatchResult();
     }
@@ -1970,7 +1970,8 @@ ContextStack_currentContext(ContextStack* self)
 static PyObject*
 ContextStack_currentData(ContextStack* self)
 {
-    return PyList_GetItem(self->_contexts, -1);
+    return PyList_GetItem(self->_data,
+                          PyList_Size(self->_data) - 1);
 }
 
 static ContextStack*
@@ -2394,9 +2395,16 @@ Parser_parseBlock(Parser *self, PyObject *args)
         currentContext = ContextStack_currentContext(contextStack);
     }
 
-    LineData* lineData = LineData_new(contextStack, lineContinue);
-    
-    return Py_BuildValue("OO", lineData, segmentList);
+    if (PyErr_Occurred())
+    {
+        return NULL;
+    }
+    else
+    {
+        LineData* lineData = LineData_new(contextStack, lineContinue);
+        
+        return Py_BuildValue("OO", lineData, segmentList);
+    }
 }
 
 
