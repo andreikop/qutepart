@@ -249,8 +249,9 @@ typedef struct {
 
 typedef struct {
     PyObject_HEAD
-    PyObject* _contexts;
-    PyObject* _data;
+    Context** _contexts;
+    PyObject** _data;
+    int _size;
 } ContextStack;
 
 typedef struct {
@@ -1972,8 +1973,14 @@ DECLARE_RULE_METHODS_AND_TYPE(DetectIdentifier);
 static void
 ContextStack_dealloc(ContextStack* self)
 {
-    Py_XDECREF(self->_contexts);
-    Py_XDECREF(self->_data);
+    PyMem_Free(self->_contexts);
+    
+    int i;
+    for (i = 0; i < self->_size; i++)
+    {
+        if (NULL != self->_data[i])
+            Py_XDECREF(self->_data[i]);
+    }
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -1981,13 +1988,34 @@ ContextStack_dealloc(ContextStack* self)
 DECLARE_TYPE_WITHOUT_CONSTRUCTOR(ContextStack, NULL, "Context stack");
 
 static ContextStack*
-ContextStack_new(PyObject* contexts, PyObject* data)  // not a constructor, just C function
+ContextStack_new(Context** contexts, PyObject** data, int size, Context* newContext, PyObject* newData)  // not a constructor, just C function
 {
     ContextStack* contextStack = PyObject_New(ContextStack, &ContextStackType);
-    contextStack->_contexts = contexts;
-    Py_INCREF(contextStack->_contexts);
-    contextStack->_data = data;
-    Py_INCREF(contextStack->_data);
+    
+    int newSize = size;
+    if (NULL != newContext)
+        newSize++;
+    
+    contextStack->_contexts = PyMem_Malloc(sizeof(Context*) * newSize);
+    memcpy(contextStack->_contexts, contexts, sizeof(Context*) * size);
+    
+    contextStack->_data = PyMem_Malloc(sizeof(PyObject*) * newSize);
+    memcpy(contextStack->_data, data, sizeof(Context*) * size);
+    
+    contextStack->_size = newSize;
+
+    if (NULL != newContext)
+    {
+        contextStack->_contexts[newSize - 1] = newContext;
+        contextStack->_data[newSize - 1] = newData;
+    }
+    
+    int i;
+    for (i = 0; i < contextStack->_size; i++)
+    {
+        if (NULL != contextStack->_data[i])
+            Py_XINCREF(contextStack->_data[i]);
+    }
 
     return contextStack;
 }
@@ -1995,41 +2023,31 @@ ContextStack_new(PyObject* contexts, PyObject* data)  // not a constructor, just
 static Context*
 ContextStack_currentContext(ContextStack* self)
 {
-    return (Context*)PyList_GetItem(self->_contexts,
-                                    PyList_Size(self->_contexts) - 1);
+    return self->_contexts[self->_size - 1];
 }
 
 static PyObject*
 ContextStack_currentData(ContextStack* self)
 {
-    return PyList_GetItem(self->_data,
-                          PyList_Size(self->_data) - 1);
+    return self->_data[self->_size - 1];
 }
 
 static ContextStack*
 ContextStack_pop(ContextStack* self, int count)
 {
-    if (PyList_Size(self->_contexts) - 1 < count)
+    if (self->_size - 1 < count)
     {
         fprintf(stderr, "Qutepart error: #pop value is too big");
         return self;
     }
-
-    PyObject* contexts = PyList_GetSlice(self->_contexts, 0, PyList_Size(self->_contexts) - count);
-    PyObject* data = PyList_GetSlice(self->_data, 0, PyList_Size(self->_data) - count);
     
-    return ContextStack_new(contexts, data);
+    return ContextStack_new(self->_contexts, self->_data, self->_size - count, NULL, NULL);
 }
 
 static ContextStack*
 ContextStack_append(ContextStack* self, Context* context, PyObject* data)
-{
-    PyObject* newContexts = PyList_GetSlice(self->_contexts, 0, PyList_Size(self->_contexts));  // make a copy
-    PyList_Append(newContexts, (PyObject*)context);
-    PyObject* newData = PyList_GetSlice(self->_data, 0, PyList_Size(self->_data));  // make a copy
-    PyList_Append(newData, (PyObject*)data);
-    
-    return ContextStack_new(newContexts, newData);
+{  
+    return ContextStack_new(self->_contexts, self->_data, self->_size, context, data);
 }
 
 
@@ -2340,13 +2358,9 @@ Parser_init(Parser *self, PyObject *args, PyObject *kwds)
 static ContextStack*
 _makeDefaultContextStack(Context* defaultContext)
 {
-    PyObject* contexts = PyList_New(1);
-    PyList_SetItem(contexts, 0, (PyObject*)defaultContext);
-    
-    PyObject* data = PyList_New(1);
-    PyList_SetItem(data, 0, Py_None);
+    PyObject* data = NULL;
 
-    return ContextStack_new(contexts, data);
+    return ContextStack_new(&defaultContext, &data, 1, NULL, NULL);
 }
 
 static PyObject*
