@@ -2035,8 +2035,7 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* context
 {
     if (self->_popsCount)
     {
-        ContextStack* newContextStack = ContextStack_pop(contextStack, self->_popsCount);
-        ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
+        contextStack = ContextStack_pop(contextStack, self->_popsCount);
     }
 
     if (Py_None != (PyObject*)self->_contextToSwitch)
@@ -2045,10 +2044,11 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* context
         if ( ! contextToSwitch->dynamic)
             data = Py_None;
         
-        ContextStack* newContextStack = ContextStack_append(contextStack, contextToSwitch, data);
-        ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
+        contextStack = ContextStack_append(contextStack, contextToSwitch, data);
     }
 
+    // FIXME !!! probably, memory leak. How to free this stacks???
+    
     return contextStack;
 }
 
@@ -2210,7 +2210,7 @@ Context_parseBlock(Context* self,
                     ContextSwitcher_getNextContextStack(result.rule->abstractRuleParams->context,
                                                         *pContextStack,
                                                         result.data);
-                
+
                 if (newContextStack != *pContextStack)
                 {
                     *pContextStack = newContextStack;
@@ -2361,7 +2361,7 @@ Parser_parseBlock(Parser *self, PyObject *args)
         contextStack = self->defaultContextStack;
     }
     Context* currentContext = ContextStack_currentContext(contextStack);
-    
+
     // this code is not tested, because lineBeginContext is not defined by any xml file
     if (currentContext->lineBeginContext != Py_None &&
         (! lineContinuePrevious))
@@ -2372,7 +2372,7 @@ Parser_parseBlock(Parser *self, PyObject *args)
     
     PyObject* segmentList = PyList_New(0);
     bool lineContinue = false;
-    
+
     int currentColumnIndex = 0;
     int textLen = PyUnicode_GET_SIZE(text);
     while (currentColumnIndex < textLen)
@@ -2398,7 +2398,7 @@ Parser_parseBlock(Parser *self, PyObject *args)
             break;
         currentContext = ContextStack_currentContext(contextStack);
     }
-
+    
     if (PyErr_Occurred())
     {
         return NULL;
@@ -2406,7 +2406,6 @@ Parser_parseBlock(Parser *self, PyObject *args)
     else
     {
         LineData* lineData = LineData_new(contextStack, lineContinue);
-        
         return Py_BuildValue("OO", lineData, segmentList);
     }
 }
