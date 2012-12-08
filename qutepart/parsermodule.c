@@ -2171,6 +2171,8 @@ Context_parseBlock(Context* self,
     
     int startColumnIndex = currentColumnIndex;
     int wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject.wholeLineText);
+
+    int countOfNotMatchedSymbols = 0;
     
     while (currentColumnIndex < wholeLineLen)
     {
@@ -2178,8 +2180,6 @@ Context_parseBlock(Context* self,
         
         RuleTryMatchResult_internal result;
         result.rule = NULL;
-        
-        int countOfNotMatchedSymbols = 0;
         
         int i;
         for (i = 0; i < PyList_Size(self->rules); i++)
@@ -2231,19 +2231,19 @@ Context_parseBlock(Context* self,
                                                             Py_None);
                 if (newContextStack != *pContextStack)
                 {
-                    if (countOfNotMatchedSymbols > 0)
-                    {
-                        PyObject* segment = Py_BuildValue("iO", countOfNotMatchedSymbols, self->format);
-                        PyList_Append(segmentList, segment);
-                        countOfNotMatchedSymbols = 0;
-                    }
-
                     *pContextStack = newContextStack;
                     break; // while
                 }
             }
         }
 
+    }
+
+    if (countOfNotMatchedSymbols > 0)
+    {
+        PyObject* segment = Py_BuildValue("iO", countOfNotMatchedSymbols, self->format);
+        PyList_Append(segmentList, segment);
+        countOfNotMatchedSymbols = 0;
     }
     
     Free_TextToMatchObject_internal(&textToMatchObject);
