@@ -741,7 +741,8 @@ class DetectSpaces(AbstractRule):
             return RuleTryMatchResult(self, spaceLen)
         else:
             return None
-        
+
+
 class DetectIdentifier(AbstractRule):
     _regExp = re.compile('[a-zA-Z][a-zA-Z0-9]*')
     def shortId(self):

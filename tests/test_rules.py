@@ -228,9 +228,13 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, "[hello "), None)
         self.assertEqual(tryMatch(rule, 0, "][hello "), None)
 
-    def test_DetectSpaces(self):
-        rule = self._getRule('yacc.xml', 'Pre Start', 1)
-        self.assertEqual(tryMatch(rule, 0, '   asdf fdafasd  '), 3)
+    def test_LineContinue(self):
+        rule = self._getRule("picsrc.xml", "string", 0)
+        
+        self.assertEqual(tryMatch(rule, 0, "\\"), 1)
+        self.assertEqual(tryMatch(rule, 0, "\\ "), None)
+        self.assertEqual(tryMatch(rule, 0, " \\"), None)
+        self.assertEqual(tryMatch(rule, 0, "x"), None)
 
     def test_IncludeRules(self):
         rule = self._getRule('yacc.xml', 'Rule In', 0)
@@ -241,16 +245,9 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 1, ' NOTE hello, world'), 4)
         self.assertEqual(tryMatch(rule, 1, ' NOET hello, world'), None)
 
-
-
-
-    def test_LineContinue(self):
-        rule = self._getRule("picsrc.xml", "string", 0)
-        
-        self.assertEqual(tryMatch(rule, 0, "\\"), 1)
-        self.assertEqual(tryMatch(rule, 0, "\\ "), None)
-        self.assertEqual(tryMatch(rule, 0, " \\"), None)
-        self.assertEqual(tryMatch(rule, 0, "x"), None)
+    def test_DetectSpaces(self):
+        rule = self._getRule('yacc.xml', 'Pre Start', 1)
+        self.assertEqual(tryMatch(rule, 0, '   asdf fdafasd  '), 3)
 
     def test_DetectIdentifier(self):
         rule = self._getRule("dtd.xml", "Normal", 7)

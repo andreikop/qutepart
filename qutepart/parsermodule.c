@@ -1748,6 +1748,13 @@ LineContinue_dealloc_fields(LineContinue* self)
 static RuleTryMatchResult_internal
 LineContinue_tryMatch(LineContinue* self, TextToMatchObject_internal* textToMatchObject)
 {
+    if (textToMatchObject->textLen == 1 &&
+        textToMatchObject->text[0] == '\\')
+    {
+        return MakeTryMatchResult(self, 1, NULL);
+    }
+    
+    return MakeEmptyTryMatchResult();
 }
 
 static int
@@ -1755,7 +1762,6 @@ LineContinue_init(LineContinue *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = LineContinue_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
         
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
@@ -1764,7 +1770,6 @@ LineContinue_init(LineContinue *self, PyObject *args, PyObject *kwds)
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
 
-#endif
     return 0;
 }
 
@@ -1777,17 +1782,31 @@ DECLARE_RULE_METHODS_AND_TYPE(LineContinue);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
+    Context* context;
 } IncludeRules;
 
 
 static void
 IncludeRules_dealloc_fields(IncludeRules* self)
 {
+    Py_XDECREF(self->context);
 }
 
 static RuleTryMatchResult_internal
 IncludeRules_tryMatch(IncludeRules* self, TextToMatchObject_internal* textToMatchObject)
 {
+    PyObject* rules = self->context->rules;
+    int size = PyList_Size(rules);
+    int i;
+    for (i = 0; i < size; i++)
+    {
+        AbstractRule* rule = (AbstractRule*)PyList_GetItem(rules, i);
+        RuleTryMatchResult_internal ruleTryMatchResult = AbstractRule_tryMatch_internal(rule, textToMatchObject);
+        if (NULL != ruleTryMatchResult.rule)
+            return ruleTryMatchResult;
+    }
+    
+    return MakeEmptyTryMatchResult();
 }
 
 static int
@@ -1795,16 +1814,18 @@ IncludeRules_init(IncludeRules *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = IncludeRules_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
+    PyObject* context = NULL;
         
-    if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
+    if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &context))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
+    //  cross-dependencies problem TYPE_CHECK(context, Context, -1);
+    
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
+    ASSIGN_FIELD(Context, context);
 
-#endif
     return 0;
 }
 
@@ -1828,6 +1849,15 @@ DetectSpaces_dealloc_fields(DetectSpaces* self)
 static RuleTryMatchResult_internal
 DetectSpaces_tryMatch(DetectSpaces* self, TextToMatchObject_internal* textToMatchObject)
 {
+    int spaceLen = 0;
+    while(spaceLen < textToMatchObject->textLen &&
+          Py_UNICODE_ISSPACE(textToMatchObject->text[spaceLen]))
+        spaceLen++;
+    
+    if (spaceLen > 0)
+        return MakeTryMatchResult(self, spaceLen, NULL);
+    else
+        return MakeEmptyTryMatchResult();
 }
 
 static int
@@ -1835,7 +1865,6 @@ DetectSpaces_init(DetectSpaces *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = DetectSpaces_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
         
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
@@ -1843,8 +1872,7 @@ DetectSpaces_init(DetectSpaces *self, PyObject *args, PyObject *kwds)
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
-
-#endif
+    
     return 0;
 }
 
@@ -1868,6 +1896,18 @@ DetectIdentifier_dealloc_fields(DetectIdentifier* self)
 static RuleTryMatchResult_internal
 DetectIdentifier_tryMatch(DetectIdentifier* self, TextToMatchObject_internal* textToMatchObject)
 {
+    if (Py_UNICODE_ISALPHA(textToMatchObject->text[0]))
+    {
+        int index = 1;
+        while(index < textToMatchObject->textLen &&
+              (Py_UNICODE_ISALPHA(textToMatchObject->text[index]) ||
+               Py_UNICODE_ISDIGIT(textToMatchObject->text[index])))
+            index ++;
+        
+        return MakeTryMatchResult(self, index, NULL);
+    }
+    
+    return MakeEmptyTryMatchResult();
 }
 
 static int
@@ -1875,7 +1915,6 @@ DetectIdentifier_init(DetectIdentifier *self, PyObject *args, PyObject *kwds)
 {
     self->_tryMatch = DetectIdentifier_tryMatch;
     
-#if 0    
     PyObject* abstractRuleParams = NULL;
         
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
@@ -1884,7 +1923,6 @@ DetectIdentifier_init(DetectIdentifier *self, PyObject *args, PyObject *kwds)
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
 
-#endif
     return 0;
 }
 
