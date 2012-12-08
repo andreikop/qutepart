@@ -472,7 +472,11 @@ Update_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject,
         }
         
         textToMatchObject->wordLength = wordEndIndex - currentColumnIndex;
-    } 
+    }
+    else
+    {
+        textToMatchObject->wordLength = 0;
+    }
 }
 
 
