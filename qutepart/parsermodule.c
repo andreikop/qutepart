@@ -168,46 +168,11 @@
 /********************************************************************************
  *                                Types declaration
  ********************************************************************************/
-
 typedef struct {
     PyObject_HEAD
     int _popsCount;
     PyObject* _contextToSwitch;  // Context*
 } ContextSwitcher;
-
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    PyObject* parser;  // Parser*
-    PyObject* name;
-    PyObject* attribute;
-    PyObject* format;
-    PyObject* lineEndContext;
-    PyObject* lineBeginContext;
-    ContextSwitcher* fallthroughContext;
-    PyObject* rules;
-    bool dynamic;
-} Context;
-
-typedef struct {
-    PyObject_HEAD
-    PyObject* _contexts;
-    PyObject* _data;
-} ContextStack;
-
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go here. */
-    PyObject* syntax;
-    PyObject* deliminatorSet;
-    PyObject* lists;
-    bool keywordsCaseSensitive;
-    PyObject* contexts;
-    Context* defaultContext;
-    ContextStack* defaultContextStack;
-} Parser;
-
 
 typedef struct {
     PyObject_HEAD
@@ -221,12 +186,6 @@ typedef struct {
     bool dynamic;
     int column;
 } AbstractRuleParams;
-
-typedef struct {
-    PyObject_HEAD
-    ContextStack* contextStack;
-    bool lineContinue;
-} LineData;
 
 
 #define AbstractRule_HEAD \
@@ -271,6 +230,66 @@ typedef struct {
 
 typedef RuleTryMatchResult_internal (*_tryMatchFunctionType)(PyObject* self, TextToMatchObject_internal* textToMatchObject);
 
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    PyObject* parser;  // Parser*
+    PyObject* name;
+    PyObject* attribute;
+    PyObject* format;
+    PyObject* lineEndContext;
+    PyObject* lineBeginContext;
+    ContextSwitcher* fallthroughContext;
+    PyObject* rulesPython;
+    AbstractRule** rulesC;
+    int rulesSize;
+    bool dynamic;
+} Context;
+
+typedef struct {
+    PyObject_HEAD
+    PyObject* _contexts;
+    PyObject* _data;
+} ContextStack;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    PyObject* syntax;
+    PyObject* deliminatorSet;
+    PyObject* lists;
+    bool keywordsCaseSensitive;
+    PyObject* contexts;
+    Context* defaultContext;
+    ContextStack* defaultContextStack;
+} Parser;
+
+
+typedef struct {
+    PyObject_HEAD
+    ContextStack* contextStack;
+    bool lineContinue;
+} LineData;
+
+
+
+
+/********************************************************************************
+ *                                _listToDynamicallyAllocatedArray
+ ********************************************************************************/
+static PyObject**
+_listToDynamicallyAllocatedArray(PyObject* list, int* size)
+{
+    *size = PyList_Size(list);
+    PyObject** array = PyMem_Malloc((sizeof (PyObject*)) * *size);
+    
+    int i;
+    for (i = 0; i < *size; i++)
+        array[i] = PyList_GetItem(list, i);
+    
+    return array;
+}
 
 /********************************************************************************
  *                                LineData
@@ -1262,7 +1281,8 @@ Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
 
 static RuleTryMatchResult_internal
 AbstractNumberRule_tryMatch(AbstractRule* self,
-                            PyObject* childRules,
+                            AbstractRule** childRules,
+                            int childRulesSize,
                             bool isIntRule,
                             TextToMatchObject_internal* textToMatchObject)
 {
@@ -1293,10 +1313,9 @@ AbstractNumberRule_tryMatch(AbstractRule* self,
         
         int i;
         bool haveMatch = false;
-        for (i = 0; i < PyList_Size(childRules) && ( ! haveMatch); i++)
+        for (i = 0; i < childRulesSize && ( ! haveMatch); i++)
         {
-            AbstractRule* rule = (AbstractRule*)PyList_GetItem(childRules, i);
-            RuleTryMatchResult_internal result = AbstractRule_tryMatch_internal(rule, &newTextToMatchObject);
+            RuleTryMatchResult_internal result = AbstractRule_tryMatch_internal(childRules[i], &newTextToMatchObject);
             
             if (NULL != result.rule)
             {
@@ -1316,21 +1335,25 @@ AbstractNumberRule_tryMatch(AbstractRule* self,
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    PyObject* childRules;
+    PyObject* childRulesPython;
+    AbstractRule** childRulesC;
+    int childRulesSize;
 } Int;
 
 
 static void
 Int_dealloc_fields(Int* self)
 {
-    Py_XDECREF(self->childRules);
+    Py_XDECREF(self->childRulesPython);
+    PyMem_Free(self->childRulesC);
 }
 
 static RuleTryMatchResult_internal
 Int_tryMatch(Int* self, TextToMatchObject_internal* textToMatchObject)
 {
-    return AbstractNumberRule_tryMatch((AbstractRule*)self, self->childRules, true, textToMatchObject);
+    return AbstractNumberRule_tryMatch((AbstractRule*)self, self->childRulesC, self->childRulesSize, true, textToMatchObject);
 }
+
 
 static int
 Int_init(Int *self, PyObject *args, PyObject *kwds)
@@ -1338,16 +1361,18 @@ Int_init(Int *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = Int_tryMatch;
     
     PyObject* abstractRuleParams = NULL;
-    PyObject* childRules = NULL;
+    PyObject* childRulesPython = NULL;
         
-    if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &childRules))
+    if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &childRulesPython))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
-    LIST_CHECK(childRules, -1);
+    LIST_CHECK(childRulesPython, -1);
     
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
-    ASSIGN_PYOBJECT_FIELD(childRules);
+    ASSIGN_PYOBJECT_FIELD(childRulesPython);
+    
+    self->childRulesC = (AbstractRule**)_listToDynamicallyAllocatedArray(childRulesPython, &self->childRulesSize);
 
     return 0;
 }
@@ -1361,19 +1386,22 @@ DECLARE_RULE_METHODS_AND_TYPE(Int);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    PyObject* childRules;
+    PyObject* childRulesPython;
+    AbstractRule** childRulesC;
+    int childRulesSize;
 } Float;
 
 static void
 Float_dealloc_fields(Float* self)
 {
-    Py_XDECREF(self->childRules);
+    Py_XDECREF(self->childRulesPython);
+    PyMem_Free(self->childRulesC);
 }
 
 static RuleTryMatchResult_internal
 Float_tryMatch(Float* self, TextToMatchObject_internal* textToMatchObject)
 {
-    return AbstractNumberRule_tryMatch((AbstractRule*)self, self->childRules, false, textToMatchObject);
+    return AbstractNumberRule_tryMatch((AbstractRule*)self, self->childRulesC, self->childRulesSize, false, textToMatchObject);
 }
 
 static int
@@ -1382,16 +1410,18 @@ Float_init(Float *self, PyObject *args, PyObject *kwds)
     self->_tryMatch = Float_tryMatch;
     
     PyObject* abstractRuleParams = NULL;
-    PyObject* childRules = NULL;
+    PyObject* childRulesPython = NULL;
         
-    if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &childRules))
+    if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &childRulesPython))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
-    LIST_CHECK(childRules, -1);
+    LIST_CHECK(childRulesPython, -1);
     
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
-    ASSIGN_PYOBJECT_FIELD(childRules);
+    ASSIGN_PYOBJECT_FIELD(childRulesPython);
+    
+    self->childRulesC = (AbstractRule**)_listToDynamicallyAllocatedArray(childRulesPython, &self->childRulesSize);
 
     return 0;
 }
@@ -1803,13 +1833,11 @@ IncludeRules_dealloc_fields(IncludeRules* self)
 static RuleTryMatchResult_internal
 IncludeRules_tryMatch(IncludeRules* self, TextToMatchObject_internal* textToMatchObject)
 {
-    PyObject* rules = self->context->rules;
-    int size = PyList_Size(rules);
+    AbstractRule** rules = self->context->rulesC;
     int i;
-    for (i = 0; i < size; i++)
+    for (i = 0; i < self->context->rulesSize; i++)
     {
-        AbstractRule* rule = (AbstractRule*)PyList_GetItem(rules, i);
-        RuleTryMatchResult_internal ruleTryMatchResult = AbstractRule_tryMatch_internal(rule, textToMatchObject);
+        RuleTryMatchResult_internal ruleTryMatchResult = AbstractRule_tryMatch_internal(rules[i], textToMatchObject);
         if (NULL != ruleTryMatchResult.rule)
             return ruleTryMatchResult;
     }
@@ -2065,7 +2093,7 @@ static PyMemberDef Context_members[] = {
     {"name", T_OBJECT_EX, offsetof(Context, name), READONLY, "Name"},
     {"parser", T_OBJECT_EX, offsetof(Context, parser), READONLY, "Parser instance"},
     {"format", T_OBJECT_EX, offsetof(Context, format), READONLY, "Context format"},
-    {"rules", T_OBJECT_EX, offsetof(Context, rules), READONLY, "List of rules"},
+    {"rules", T_OBJECT_EX, offsetof(Context, rulesPython), READONLY, "List of rules"},
     {NULL}
 };
 
@@ -2080,6 +2108,9 @@ Context_dealloc(Context* self)
     Py_XDECREF(self->lineEndContext);
     Py_XDECREF(self->lineBeginContext);
     Py_XDECREF(self->fallthroughContext);
+    Py_XDECREF(self->rulesPython);
+    
+    PyMem_Free(self->rulesC);
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -2138,15 +2169,16 @@ Context_setValues(Context *self, PyObject *args)
 static PyObject*
 Context_setRules(Context *self, PyObject *args)
 {
-    PyObject* rules = NULL;
+    PyObject* rulesPython = NULL;
 
     if (! PyArg_ParseTuple(args, "|O",
-                           &rules))
+                           &rulesPython))
         return NULL;
 
-    LIST_CHECK(rules, NULL);
+    LIST_CHECK(rulesPython, NULL);
+    ASSIGN_PYOBJECT_FIELD(rulesPython);
     
-    ASSIGN_PYOBJECT_FIELD(rules);
+    self->rulesC = (AbstractRule**)_listToDynamicallyAllocatedArray(rulesPython, &self->rulesSize);
 
     Py_RETURN_NONE;
 }
@@ -2186,9 +2218,9 @@ Context_parseBlock(Context* self,
         result.rule = NULL;
         
         int i;
-        for (i = 0; i < PyList_Size(self->rules); i++)
+        for (i = 0; i < self->rulesSize; i++)
         {
-            result = AbstractRule_tryMatch_internal((AbstractRule*)PyList_GetItem(self->rules, i), &textToMatchObject);
+            result = AbstractRule_tryMatch_internal((AbstractRule*)self->rulesC[i], &textToMatchObject);
             
             if (NULL != result.rule)
                 break;
