@@ -538,6 +538,9 @@ MakeTryMatchResult(void* rule, int length, PyObject* data)
     result.data = data;
     Py_XINCREF(result.data);
     
+    if (((AbstractRule*)rule)->abstractRuleParams->lookAhead)
+        result.length = 0;
+    
     return result;
 }
 
