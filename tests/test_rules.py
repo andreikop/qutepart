@@ -275,7 +275,7 @@ class Test(unittest.TestCase):
         """
         rule = self._getRule("ruby.xml", "gdl_dq_string_5", 2)  # "\s*%1"
         text = '%|a| x'
-        count = tryMatchWithData(rule, ('|'), 3, text)
+        count = tryMatchWithData(rule, ('|', ), 3, text)
         self.assertEqual(count, 1)
 
     def test_dynamic_string_detect(self):

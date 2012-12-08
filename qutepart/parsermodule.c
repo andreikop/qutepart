@@ -22,7 +22,7 @@
 #define TUPLE_CHECK(OBJECT, RET) \
     if (!PyTuple_Check(OBJECT)) \
     { \
-        PyErr_SetString(PyExc_TypeError, #OBJECT " must be a list"); \
+        PyErr_SetString(PyExc_TypeError, #OBJECT " must be a tuple"); \
         return RET; \
     }
 
@@ -1040,8 +1040,9 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
         PyObject* string = 
                 PyObject_CallFunctionObjArgs(self->makeDynamicSubstitutionsFunc,
                                              self->string,
-                                             textToMatchObject->contextData);
-        regExp = PyObject_CallFunctionObjArgs(self->compileRegExpFunc, string, self->insensitive);
+                                             textToMatchObject->contextData,
+                                             NULL);
+        regExp = PyObject_CallFunctionObjArgs(self->compileRegExpFunc, string, self->insensitive, NULL);
         Py_XDECREF(string);
         
         if (NULL == regExp)
