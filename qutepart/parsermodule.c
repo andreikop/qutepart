@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include <pcre.h>
+
 #define UNICODE_CHECK(OBJECT, RET) \
     if (!PyUnicode_Check(OBJECT)) \
     { \
@@ -1032,7 +1034,7 @@ typedef struct {
     PyObject* makeDynamicSubstitutionsFunc;
     PyObject* compileRegExpFunc;
     PyObject* matchPatternFunc;
-    PyObject* regExp;
+    pcre* regExp;
 } RegExpr;
 
 static void
@@ -1043,7 +1045,66 @@ RegExpr_dealloc_fields(RegExpr* self)
     Py_XDECREF(self->makeDynamicSubstitutionsFunc);
     Py_XDECREF(self->compileRegExpFunc);
     Py_XDECREF(self->matchPatternFunc);
+    if (NULL != self->regExp)
+        pcre_free(self->regExp);
     Py_XDECREF(self->regExp);
+}
+
+static pcre*
+_compileRegExp(PyObject* string, bool insensitive)
+{
+    const char* errptr = NULL;
+    int erroffset = 0;
+    
+    int options = PCRE_UTF8 | PCRE_ANCHORED;
+    if (insensitive)
+        options |= PCRE_CASELESS;
+    
+    
+    PyObject* utf8String = PyUnicode_AsUTF8String(string);
+    
+    pcre* regExp = pcre_compile(PyString_AS_STRING(utf8String),
+                                options,
+                                &errptr, &erroffset, NULL);
+    Py_DECREF(utf8String);
+    
+    if (NULL == regExp)
+    {
+        if (NULL != errptr)
+            fprintf(stderr, "Failed to compile reg exp. At pos %d: %s. Pattern: ", erroffset, errptr);
+        else
+            fprintf(stderr, "Failed to compile reg exp. Pattern:");
+        PyObject_Print(string, stderr, 0);
+    }
+    
+    return regExp;
+}
+
+static int
+_matchRegExp(pcre* regExp, Py_UNICODE* string, int stringLen)
+{
+    PyObject* utf8String = PyUnicode_EncodeUTF8(string, stringLen, 0);
+    
+    int ovector[30];
+    int rc = pcre_exec(regExp, NULL,
+                         PyString_AS_STRING(utf8String), stringLen,
+                         0, PCRE_NOTEMPTY | PCRE_NO_UTF8_CHECK,
+                         ovector, sizeof ovector / sizeof ovector[0]);
+    Py_DECREF(utf8String);
+
+    if (rc > 0)
+    {
+        return ovector[1] - ovector[0];
+    }
+    else if (rc < 0 && rc != -1)
+    {
+        fprintf(stderr, "Failed to call pcre_exec: error %d\n", rc);
+        return 0;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 static RuleTryMatchResult_internal
@@ -1060,7 +1121,7 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
         textToMatchObject->currentColumnIndex > 0)
         return MakeEmptyTryMatchResult();
 
-    PyObject* regExp = NULL;
+    pcre* regExp = NULL;
     
     if (self->abstractRuleParams->dynamic)
     {
@@ -1069,59 +1130,28 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
                                              self->string,
                                              textToMatchObject->contextData,
                                              NULL);
-        regExp = PyObject_CallFunctionObjArgs(self->compileRegExpFunc, string, self->insensitive, NULL);
+        regExp = _compileRegExp(string, self->insensitive);
         Py_XDECREF(string);
-        
-        if (NULL == regExp)
-        {
-            fprintf(stderr, "Failed to call compileRegExpFunc\n");
-            return MakeEmptyTryMatchResult();
-        }
     }
     else
     {
         regExp = self->regExp;
-        Py_INCREF(regExp);
     }
     
-    if (regExp == Py_None)
-    {
-        Py_XDECREF(regExp);
+    if (NULL == regExp)
         return MakeEmptyTryMatchResult();
-    }
     
-    PyObject* textAsUnicode = PyUnicode_FromUnicode(textToMatchObject->text, textToMatchObject->textLen); // TODO  Optimize?
-    PyObject* matchRes = PyObject_CallFunctionObjArgs(self->matchPatternFunc, regExp, textAsUnicode, NULL);
-    Py_XDECREF(textAsUnicode);
+    int matchLen = _matchRegExp(regExp, textToMatchObject->text, textToMatchObject->textLen);
     
-    if (NULL == matchRes)
-    {
-        fprintf(stderr, "Failed to call matchPatternFunc\n");
-        Py_XDECREF(regExp);
-        return MakeEmptyTryMatchResult();
-    }
-    
-    if ( ! PyTuple_Check(matchRes))
-    {
-        PyErr_SetString(PyExc_TypeError, "Match result is not a tuple");
-        Py_XDECREF(regExp);
-        return MakeEmptyTryMatchResult();
-    }
-    
+#if 0    
     PyObject* wholeMatch = PyTuple_GetItem(matchRes, 0);
     PyObject* groups = PyTuple_GetItem(matchRes, 1);
+#endif
 
-    RuleTryMatchResult_internal retVal;
-    if (wholeMatch != Py_None)
-        retVal = MakeTryMatchResult(self, PyUnicode_GET_SIZE(wholeMatch), groups);
+    if (matchLen != 0)
+        return MakeTryMatchResult(self, matchLen, NULL/*FIXME groups*/);
     else
-        retVal = MakeEmptyTryMatchResult();
-    
-    Py_XDECREF(matchRes);
-    
-    Py_XDECREF(regExp);
-    
-    return retVal;
+        return MakeEmptyTryMatchResult();
 }
 
 static int
@@ -1163,20 +1193,9 @@ RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
     ASSIGN_PYOBJECT_FIELD(matchPatternFunc);
 
     if (self->abstractRuleParams->dynamic)
-    {
-        self->regExp = Py_None;
-        Py_INCREF(self->regExp);
-    }
+        self->regExp = NULL;
     else
-    {
-        self->regExp = PyObject_CallFunctionObjArgs(compileRegExpFunc, string, insensitive, NULL);
-        
-        if (NULL == self->regExp)
-        {
-            fprintf(stderr, "Failed to call compileRegExpFunc\n");
-            return -1;
-        }
-    }
+        self->regExp = _compileRegExp(string, insensitive);
 
     return 0;
 }

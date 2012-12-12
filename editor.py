@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-sys.path.insert(0, 'build/lib.linux-x86_64-2.6/')
+sys.path.insert(0, 'build/lib.linux-x86_64-2.7/')
 
 import sip
 sip.setapi('QString', 2)
@@ -41,7 +41,7 @@ def main():
     pte.show()
     
     from PyQt4.QtCore import QTimer
-    #QTimer.singleShot(0, app.quit)
+    QTimer.singleShot(0, app.quit)
     return app.exec_()
     
 

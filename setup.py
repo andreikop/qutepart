@@ -8,8 +8,9 @@ package_data={'qutepart' : ['syntax/*.xml',
                             'syntax/syntax_db.json']
              }
 
-extension = Extension('qutepart.cParser', sources = ['qutepart/parsermodule.c'])
-extension.extra_compile_args = ['-O0', '-g']
+extension = Extension('qutepart.cParser',
+                      sources = ['qutepart/parsermodule.c'],
+                      libraries = ['pcre'])
 
 
 setup (name = 'qutepart',

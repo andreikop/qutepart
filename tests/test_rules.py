@@ -4,7 +4,7 @@ import unittest
 
 import sys
 sys.path.insert(0, '..')
-sys.path.insert(0, '../build/lib.linux-x86_64-2.6/')
+sys.path.insert(0, '../build/lib.linux-x86_64-2.7/')
 
 from qutepart.syntax import SyntaxManager
 
