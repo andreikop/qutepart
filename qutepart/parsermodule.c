@@ -214,10 +214,12 @@ typedef struct {
 
 typedef struct {
     int currentColumnIndex;
-    PyObject* wholeLineText;
-    PyObject* wholeLineTextLower;
-    Py_UNICODE* text;
-    Py_UNICODE* textLower;
+    PyObject* wholeLineUnicodeText;
+    PyObject* wholeLineUnicodeTextLower;
+    PyObject* wholeLineUtf8Text;
+    Py_UNICODE* unicodeText;
+    Py_UNICODE* unicodeTextLower;
+    const char* utf8Text;
     int textLen;
     bool firstNonSpace;
     bool isWordStart;
@@ -419,14 +421,33 @@ RuleTryMatchResult_new(PyObject* rule, int length, PyObject* data)  // not a con
  *                                TextToMatchObject
  ********************************************************************************/
 
+static int
+_utf8TextFirstCharacterLength(const char* text)
+{
+    if ((text[0] & 0x80) == 0)
+        return 1;
+    else if ((text[0] & 0xe0) == 0xc0)
+        return 2;
+    else if ((text[0] & 0xf0) == 0xe0)
+        return 3;
+    else if ((text[0] & 0xf8) == 0xf0)
+        return 4;
+    
+    fprintf(stderr, "Invalid unicode character 0x%02x\n", text[0]);
+    return 1;
+}
+
 static TextToMatchObject_internal
-Make_TextToMatchObject_internal(int column, PyObject* text, PyObject* contextData)
+Make_TextToMatchObject_internal(int column, PyObject* unicodeText, PyObject* contextData)
 {
     TextToMatchObject_internal textToMatchObject;
     
     textToMatchObject.currentColumnIndex = column;
-    textToMatchObject.wholeLineText = text;
-    textToMatchObject.wholeLineTextLower = PyObject_CallMethod(text, "lower", "");
+    textToMatchObject.wholeLineUnicodeText = unicodeText;
+    textToMatchObject.wholeLineUnicodeTextLower = PyObject_CallMethod(unicodeText, "lower", "");
+    textToMatchObject.wholeLineUtf8Text = PyUnicode_AsUTF8String(unicodeText);
+    textToMatchObject.utf8Text = PyString_AS_STRING(textToMatchObject.wholeLineUtf8Text);
+
     // text and textLen is updated in the loop
     textToMatchObject.firstNonSpace = true;  // updated in the loop
     // isWordStart, wordLength is updated in the loop
@@ -438,7 +459,8 @@ Make_TextToMatchObject_internal(int column, PyObject* text, PyObject* contextDat
 static void
 Free_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject)
 {
-    Py_XDECREF(textToMatchObject->wholeLineTextLower);
+    Py_XDECREF(textToMatchObject->wholeLineUnicodeTextLower);
+    Py_XDECREF(textToMatchObject->wholeLineUtf8Text);
 }
 
 static bool
@@ -460,14 +482,23 @@ Update_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject,
                                   int currentColumnIndex,
                                   PyObject* deliminatorSet)
 {
-    Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(textToMatchObject->wholeLineText);
-    Py_UNICODE* wholeLineUnicodeBufferLower = PyUnicode_AS_UNICODE(textToMatchObject->wholeLineTextLower);
-    int wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject->wholeLineText);
+    Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(textToMatchObject->wholeLineUnicodeText);
+    Py_UNICODE* wholeLineUnicodeBufferLower = PyUnicode_AS_UNICODE(textToMatchObject->wholeLineUnicodeTextLower);
+    int wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject->wholeLineUnicodeText);
     
    // update text and textLen
-    textToMatchObject->text = wholeLineUnicodeBuffer + currentColumnIndex;
-    textToMatchObject->textLower = wholeLineUnicodeBufferLower + currentColumnIndex;
-    textToMatchObject->textLen = wholeLineLen - currentColumnIndex;
+    textToMatchObject->unicodeText = wholeLineUnicodeBuffer + currentColumnIndex;
+    textToMatchObject->unicodeTextLower = wholeLineUnicodeBufferLower + currentColumnIndex;
+    
+    int newTextLen = wholeLineLen - currentColumnIndex;
+    int prevTextLen = textToMatchObject->textLen;
+    int i;
+    for (i = 0; i < (prevTextLen - newTextLen); i++)
+    {
+        textToMatchObject->utf8Text += _utf8TextFirstCharacterLength(textToMatchObject->utf8Text);
+    }
+    
+    textToMatchObject->textLen = newTextLen;
 
     // update firstNonSpace
     if (textToMatchObject->firstNonSpace && currentColumnIndex > 0)
@@ -505,7 +536,7 @@ Update_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject,
 static void
 TextToMatchObject_dealloc(TextToMatchObject* self)
 {
-    Py_XDECREF(self->internal.wholeLineText);
+    Py_XDECREF(self->internal.wholeLineUnicodeText);
     Py_XDECREF(self->internal.contextData);
     Free_TextToMatchObject_internal(&self->internal);
     self->ob_type->tp_free((PyObject*)self);
@@ -531,7 +562,7 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
 
     Update_TextToMatchObject_internal(&(self->internal), column, deliminatorSet);
 
-    Py_INCREF(self->internal.wholeLineText);
+    Py_INCREF(self->internal.wholeLineUnicodeText);
     Py_INCREF(self->internal.contextData);
 
     return 0;
@@ -654,7 +685,7 @@ DetectChar_tryMatch(DetectChar* self, TextToMatchObject_internal* textToMatchObj
         char_ = self->char_;
     }
     
-    if (char_ == textToMatchObject->text[0])
+    if (char_ == textToMatchObject->unicodeText[0])
         return MakeTryMatchResult(self, 1, NULL);
     else
         return MakeEmptyTryMatchResult();
@@ -702,8 +733,8 @@ Detect2Chars_dealloc_fields(Detect2Chars* self)
 static RuleTryMatchResult_internal
 Detect2Chars_tryMatch(Detect2Chars* self, TextToMatchObject_internal* textToMatchObject)
 {
-    if (textToMatchObject->text[0] == self->char_ &&
-        textToMatchObject->text[1] == self->char1_)
+    if (textToMatchObject->unicodeText[0] == self->char_ &&
+        textToMatchObject->unicodeText[1] == self->char1_)
     {
         return MakeTryMatchResult(self, 2, NULL);
     }
@@ -761,7 +792,7 @@ AnyChar_tryMatch(AnyChar* self, TextToMatchObject_internal* textToMatchObject)
     int i;
     int size = PyUnicode_GET_SIZE(self->string);
     Py_UNICODE* unicode = PyUnicode_AS_UNICODE(self->string);
-    Py_UNICODE char_ = textToMatchObject->text[0];
+    Py_UNICODE char_ = textToMatchObject->unicodeText[0];
     
     for (i = 0; i < size; i++)
     {
@@ -841,7 +872,7 @@ StringDetect_tryMatch(StringDetect* self, TextToMatchObject_internal* textToMatc
         int i;
         for(i = 0; i < stringLen; i++)
         {
-            if (textToMatchObject->text[i] != stringUnicode[i])
+            if (textToMatchObject->unicodeText[i] != stringUnicode[i])
                 return MakeEmptyTryMatchResult();
         
         }
@@ -903,12 +934,12 @@ WordDetect_tryMatch(WordDetect* self, TextToMatchObject_internal* textToMatchObj
     if (self->wordLength != textToMatchObject->wordLength)
         return MakeEmptyTryMatchResult();
     
-    Py_UNICODE* wordToCheck = textToMatchObject->text;
+    Py_UNICODE* wordToCheck = textToMatchObject->unicodeText;
     
     if (self->insensitive ||
         ( ! ((Parser*)((Context*)self->abstractRuleParams->parentContext)->parser)->keywordsCaseSensitive))
     {
-        wordToCheck = textToMatchObject->textLower;
+        wordToCheck = textToMatchObject->unicodeTextLower;
     }
     
     Py_UNICODE* wordAsUnicode = PyUnicode_AS_UNICODE(self->word);
@@ -973,12 +1004,12 @@ keyword_tryMatch(keyword* self, TextToMatchObject_internal* textToMatchObject)
     if (textToMatchObject->wordLength <= 0)
         return MakeEmptyTryMatchResult();
     
-    Py_UNICODE* wordToCheck = textToMatchObject->text;
+    Py_UNICODE* wordToCheck = textToMatchObject->unicodeText;
     
     if (self->insensitive ||
         ( ! ((Parser*)((Context*)self->abstractRuleParams->parentContext)->parser)->keywordsCaseSensitive))
     {
-        wordToCheck = textToMatchObject->textLower;
+        wordToCheck = textToMatchObject->unicodeTextLower;
     }
 
     PyObject* wordToCheckAsObject = PyUnicode_FromUnicode(wordToCheck, textToMatchObject->wordLength);
@@ -1035,6 +1066,7 @@ typedef struct {
     PyObject* compileRegExpFunc;
     PyObject* matchPatternFunc;
     pcre* regExp;
+    pcre_extra* extra;
 } RegExpr;
 
 static void
@@ -1047,16 +1079,18 @@ RegExpr_dealloc_fields(RegExpr* self)
     Py_XDECREF(self->matchPatternFunc);
     if (NULL != self->regExp)
         pcre_free(self->regExp);
+    if (NULL != self->extra)
+        pcre_free(self->extra);
     Py_XDECREF(self->regExp);
 }
 
 static pcre*
-_compileRegExp(PyObject* string, bool insensitive)
+_compileRegExp(PyObject* string, bool insensitive, pcre_extra** pExtra)
 {
     const char* errptr = NULL;
     int erroffset = 0;
     
-    int options = PCRE_UTF8 | PCRE_ANCHORED;
+    int options = PCRE_ANCHORED | PCRE_UTF8 | PCRE_NO_UTF8_CHECK;
     if (insensitive)
         options |= PCRE_CASELESS;
     
@@ -1077,20 +1111,25 @@ _compileRegExp(PyObject* string, bool insensitive)
         PyObject_Print(string, stderr, 0);
     }
     
+#if defined PCRE_STUDY_JIT_COMPILE
+    #define STUDY_OPTIONS PCRE_STUDY_JIT_COMPILE
+#else
+    #define STUDY_OPTIONS 0
+#endif
+    if (NULL != pExtra)
+        *pExtra = pcre_study(regExp, STUDY_OPTIONS, &errptr);
+
     return regExp;
 }
 
 static int
-_matchRegExp(pcre* regExp, Py_UNICODE* string, int stringLen)
+_matchRegExp(pcre* regExp, pcre_extra* extra, const char* utf8Text, int textLen)
 {
-    PyObject* utf8String = PyUnicode_EncodeUTF8(string, stringLen, 0);
-    
     int ovector[30];
-    int rc = pcre_exec(regExp, NULL,
-                         PyString_AS_STRING(utf8String), stringLen,
-                         0, PCRE_NOTEMPTY | PCRE_NO_UTF8_CHECK,
-                         ovector, sizeof ovector / sizeof ovector[0]);
-    Py_DECREF(utf8String);
+    int rc = pcre_exec(regExp, extra,
+                       utf8Text, textLen,
+                       0, PCRE_NOTEMPTY | PCRE_NO_UTF8_CHECK,
+                       ovector, sizeof ovector / sizeof ovector[0]);
 
     if (rc > 0)
     {
@@ -1122,6 +1161,7 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
         return MakeEmptyTryMatchResult();
 
     pcre* regExp = NULL;
+    pcre_extra* extra = NULL;
     
     if (self->abstractRuleParams->dynamic)
     {
@@ -1130,18 +1170,19 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
                                              self->string,
                                              textToMatchObject->contextData,
                                              NULL);
-        regExp = _compileRegExp(string, self->insensitive);
+        regExp = _compileRegExp(string, self->insensitive, NULL);
         Py_XDECREF(string);
     }
     else
     {
         regExp = self->regExp;
+        extra = self->extra;
     }
     
     if (NULL == regExp)
         return MakeEmptyTryMatchResult();
     
-    int matchLen = _matchRegExp(regExp, textToMatchObject->text, textToMatchObject->textLen);
+    int matchLen = _matchRegExp(regExp, extra, textToMatchObject->utf8Text, textToMatchObject->textLen);
     
 #if 0    
     PyObject* wholeMatch = PyTuple_GetItem(matchRes, 0);
@@ -1193,9 +1234,14 @@ RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
     ASSIGN_PYOBJECT_FIELD(matchPatternFunc);
 
     if (self->abstractRuleParams->dynamic)
+    {
         self->regExp = NULL;
+        self->extra = NULL;
+    }
     else
-        self->regExp = _compileRegExp(string, insensitive);
+    {
+        self->regExp = _compileRegExp(string, insensitive, &(self->extra));
+    }
 
     return 0;
 }
@@ -1223,7 +1269,7 @@ int AbstractNumberRule_countDigits(Py_UNICODE* text, int textLen)
 static int
 Int_tryMatchText(TextToMatchObject_internal* textToMatchObject)
 {
-    int digitCount = AbstractNumberRule_countDigits(textToMatchObject->text, textToMatchObject->textLen);
+    int digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText, textToMatchObject->textLen);
     
     if (digitCount)
         return digitCount;
@@ -1239,7 +1285,7 @@ Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
     
     int matchedLength = 0;
     
-    int digitCount = AbstractNumberRule_countDigits(textToMatchObject->text, textToMatchObject->textLen);
+    int digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText, textToMatchObject->textLen);
     if(digitCount)
     {
         haveDigit = true;
@@ -1247,13 +1293,13 @@ Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
     }
     
     if (textToMatchObject->textLen > matchedLength &&
-        textToMatchObject->text[matchedLength] == '.')
+        textToMatchObject->unicodeText[matchedLength] == '.')
     {
         havePoint = true;
         matchedLength += 1;
     }
     
-    digitCount = AbstractNumberRule_countDigits(textToMatchObject->text + matchedLength, textToMatchObject->textLen - matchedLength);
+    digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText + matchedLength, textToMatchObject->textLen - matchedLength);
     if(digitCount)
     {
         haveDigit = true;
@@ -1261,20 +1307,20 @@ Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
     }
     
     if (textToMatchObject->textLen > matchedLength &&
-        textToMatchObject->textLower[matchedLength] == 'e')
+        textToMatchObject->unicodeTextLower[matchedLength] == 'e')
     {
         matchedLength += 1;
         
         if (textToMatchObject->textLen > matchedLength &&
-            (textToMatchObject->text[matchedLength] == '+' ||
-             textToMatchObject->text[matchedLength] == '-'))
+            (textToMatchObject->unicodeText[matchedLength] == '+' ||
+             textToMatchObject->unicodeText[matchedLength] == '-'))
         {
             matchedLength += 1;
         }
         
         bool haveDigitInExponent = false;
         
-        digitCount = AbstractNumberRule_countDigits(textToMatchObject->text + matchedLength,
+        digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText + matchedLength,
                                                     textToMatchObject->textLen - matchedLength);
         if (digitCount)
         {
@@ -1320,11 +1366,11 @@ AbstractNumberRule_tryMatch(AbstractRule* self,
         return MakeEmptyTryMatchResult();
     
     int matchEndIndex = textToMatchObject->currentColumnIndex + index;
-    if (matchEndIndex < PyUnicode_GET_SIZE(textToMatchObject->wholeLineText))
+    if (matchEndIndex < PyUnicode_GET_SIZE(textToMatchObject->wholeLineUnicodeText))
     {
         TextToMatchObject_internal newTextToMatchObject =
                 Make_TextToMatchObject_internal(textToMatchObject->currentColumnIndex + index,
-                                                textToMatchObject->wholeLineText,
+                                                textToMatchObject->wholeLineUnicodeText,
                                                 textToMatchObject->contextData);
         
         Update_TextToMatchObject_internal(&newTextToMatchObject,
@@ -1472,20 +1518,20 @@ _isOctChar(Py_UNICODE symbol)
 static RuleTryMatchResult_internal
 HlCOct_tryMatch(HlCOct* self, TextToMatchObject_internal* textToMatchObject)
 {
-    if (textToMatchObject->text[0] != '0')
+    if (textToMatchObject->unicodeText[0] != '0')
         return MakeEmptyTryMatchResult();
 
     int index = 1;
     while (index < textToMatchObject->textLen &&
-           _isOctChar(textToMatchObject->text[index]))
+           _isOctChar(textToMatchObject->unicodeText[index]))
         index ++;
     
     if (index == 1)
         return MakeEmptyTryMatchResult();
 
     if (index < textToMatchObject->textLen &&
-        (textToMatchObject->textLower[index] =='l' ||
-         textToMatchObject->textLower[index] =='u'))
+        (textToMatchObject->unicodeTextLower[index] =='l' ||
+         textToMatchObject->unicodeTextLower[index] =='u'))
             index ++;
     
     return MakeTryMatchResult(self, index, NULL);
@@ -1537,21 +1583,21 @@ HlCHex_tryMatch(HlCHex* self, TextToMatchObject_internal* textToMatchObject)
     if (textToMatchObject->textLen < 3)
         return MakeEmptyTryMatchResult();
     
-    if (textToMatchObject->textLower[0] != '0' ||
-        textToMatchObject->textLower[1] != 'x')
+    if (textToMatchObject->unicodeTextLower[0] != '0' ||
+        textToMatchObject->unicodeTextLower[1] != 'x')
         return MakeEmptyTryMatchResult();
     
     int index = 2;
     while (index < textToMatchObject->textLen &&
-           _isHexChar(textToMatchObject->textLower[index]))
+           _isHexChar(textToMatchObject->unicodeTextLower[index]))
         index ++;
     
     if (index == 2)
         return MakeEmptyTryMatchResult();
     
     if (index < textToMatchObject->textLen &&
-        (textToMatchObject->textLower[index] == 'l' ||
-         textToMatchObject->textLower[index] == 'u'))
+        (textToMatchObject->unicodeTextLower[index] == 'l' ||
+         textToMatchObject->unicodeTextLower[index] == 'u'))
             index ++;
     
     return MakeTryMatchResult(self, index, NULL);
@@ -1640,7 +1686,7 @@ HlCStringChar_dealloc_fields(HlCStringChar* self)
 static RuleTryMatchResult_internal
 HlCStringChar_tryMatch(HlCStringChar* self, TextToMatchObject_internal* textToMatchObject)
 {
-    int res = _checkEscapedChar(textToMatchObject->textLower, textToMatchObject->textLen);
+    int res = _checkEscapedChar(textToMatchObject->unicodeTextLower, textToMatchObject->textLen);
     if (res != -1)
         return MakeTryMatchResult(self, res, NULL);
     else
@@ -1685,10 +1731,10 @@ static RuleTryMatchResult_internal
 HlCChar_tryMatch(HlCChar* self, TextToMatchObject_internal* textToMatchObject)
 {
     if (textToMatchObject->textLen > 2 &&
-        textToMatchObject->text[0] == '\'' &&
-        textToMatchObject->text[1] != '\'')
+        textToMatchObject->unicodeText[0] == '\'' &&
+        textToMatchObject->unicodeText[1] != '\'')
     {
-        int result = _checkEscapedChar(textToMatchObject->textLower + 1, textToMatchObject->textLen - 1);
+        int result = _checkEscapedChar(textToMatchObject->unicodeTextLower + 1, textToMatchObject->textLen - 1);
         int index;
         if (result != -1)
             index = 1 + result;
@@ -1696,7 +1742,7 @@ HlCChar_tryMatch(HlCChar* self, TextToMatchObject_internal* textToMatchObject)
             index = 1 + 1;
         
         if (index < textToMatchObject->textLen &&
-            textToMatchObject->text[index] == '\'')
+            textToMatchObject->unicodeText[index] == '\'')
         {
             return MakeTryMatchResult(self, index + 1, NULL);
         }
@@ -1743,13 +1789,13 @@ RangeDetect_dealloc_fields(RangeDetect* self)
 static RuleTryMatchResult_internal
 RangeDetect_tryMatch(RangeDetect* self, TextToMatchObject_internal* textToMatchObject)
 {
-    if (textToMatchObject->text[0] == self->char_)
+    if (textToMatchObject->unicodeText[0] == self->char_)
     {
         int end = -1;
         int i;
         for (i = 0; i < textToMatchObject->textLen; i++)
         {
-            if (textToMatchObject->text[i] == self->char1_)
+            if (textToMatchObject->unicodeText[i] == self->char1_)
             {
                 end = i;
                 break;
@@ -1807,7 +1853,7 @@ static RuleTryMatchResult_internal
 LineContinue_tryMatch(LineContinue* self, TextToMatchObject_internal* textToMatchObject)
 {
     if (textToMatchObject->textLen == 1 &&
-        textToMatchObject->text[0] == '\\')
+        textToMatchObject->unicodeText[0] == '\\')
     {
         return MakeTryMatchResult(self, 1, NULL);
     }
@@ -1907,7 +1953,7 @@ DetectSpaces_tryMatch(DetectSpaces* self, TextToMatchObject_internal* textToMatc
 {
     int spaceLen = 0;
     while(spaceLen < textToMatchObject->textLen &&
-          Py_UNICODE_ISSPACE(textToMatchObject->text[spaceLen]))
+          Py_UNICODE_ISSPACE(textToMatchObject->unicodeText[spaceLen]))
         spaceLen++;
     
     if (spaceLen > 0)
@@ -1952,12 +1998,12 @@ DetectIdentifier_dealloc_fields(DetectIdentifier* self)
 static RuleTryMatchResult_internal
 DetectIdentifier_tryMatch(DetectIdentifier* self, TextToMatchObject_internal* textToMatchObject)
 {
-    if (Py_UNICODE_ISALPHA(textToMatchObject->text[0]))
+    if (Py_UNICODE_ISALPHA(textToMatchObject->unicodeText[0]))
     {
         int index = 1;
         while(index < textToMatchObject->textLen &&
-              (Py_UNICODE_ISALPHA(textToMatchObject->text[index]) ||
-               Py_UNICODE_ISDIGIT(textToMatchObject->text[index])))
+              (Py_UNICODE_ISALPHA(textToMatchObject->unicodeText[index]) ||
+               Py_UNICODE_ISDIGIT(textToMatchObject->unicodeText[index])))
             index ++;
         
         return MakeTryMatchResult(self, index, NULL);
@@ -2232,18 +2278,18 @@ DECLARE_TYPE_WITH_MEMBERS(Context, Context_methods, "Parsing context");
 static int
 Context_parseBlock(Context* self,
                    int currentColumnIndex,
-                   PyObject* text,
+                   PyObject* unicodeText,
                    PyObject* segmentList,
                    ContextStack** pContextStack,
                    bool* pLineContinue)
 {
     TextToMatchObject_internal textToMatchObject = 
                     Make_TextToMatchObject_internal(currentColumnIndex,
-                                                    text,
+                                                    unicodeText,
                                                     ContextStack_currentData(*pContextStack));
     
     int startColumnIndex = currentColumnIndex;
-    int wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject.wholeLineText);
+    int wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject.wholeLineUnicodeText);
 
     int countOfNotMatchedSymbols = 0;
     
@@ -2406,15 +2452,15 @@ Parser_setConexts(Parser *self, PyObject *args)
 static PyObject*
 Parser_parseBlock(Parser *self, PyObject *args)
 {
-    PyObject* text = NULL;
+    PyObject* unicodeText = NULL;
     LineData* prevLineData = NULL;
 
     if (! PyArg_ParseTuple(args, "|OO",
-                           &text,
+                           &unicodeText,
                            &prevLineData))
         return NULL;
 
-    UNICODE_CHECK(text, NULL);
+    UNICODE_CHECK(unicodeText, NULL);
     if (Py_None != (PyObject*)(prevLineData))
         TYPE_CHECK(prevLineData, LineData, NULL);
     
@@ -2443,12 +2489,12 @@ Parser_parseBlock(Parser *self, PyObject *args)
     bool lineContinue = false;
 
     int currentColumnIndex = 0;
-    int textLen = PyUnicode_GET_SIZE(text);
+    int textLen = PyUnicode_GET_SIZE(unicodeText);
     while (currentColumnIndex < textLen)
     {
         int length = Context_parseBlock( currentContext,
                                          currentColumnIndex,
-                                         text,
+                                         unicodeText,
                                          segmentList,
                                         &contextStack,
                                         &lineContinue);
