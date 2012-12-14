@@ -7,6 +7,8 @@
 
 #include <pcre.h>
 
+#include <strmap/strmap.h>
+
 #define UNICODE_CHECK(OBJECT, RET) \
     if (!PyUnicode_Check(OBJECT)) \
     { \
@@ -214,16 +216,20 @@ typedef struct {
 
 typedef struct {
     int currentColumnIndex;
+    int wholeLineLen;
     PyObject* wholeLineUnicodeText;
     PyObject* wholeLineUnicodeTextLower;
     PyObject* wholeLineUtf8Text;
+    PyObject* wholeLineUtf8TextLower;
     Py_UNICODE* unicodeText;
     Py_UNICODE* unicodeTextLower;
     const char* utf8Text;
+    const char* utf8TextLower;
     int textLen;
     bool firstNonSpace;
     bool isWordStart;
     int wordLength;
+    int utf8WordLength;   // word length in bytes of utf8 code
     PyObject* contextData;
 } TextToMatchObject_internal;
 
@@ -490,18 +496,33 @@ _utf8TextFirstCharacterLength(const char* text)
     return 1;
 }
 
+static int
+_utf8CharactersLength(const char* unicodeBuffer, int count)
+{
+    const char* currentPointer = unicodeBuffer;
+
+    while(count--)
+        currentPointer += _utf8TextFirstCharacterLength(currentPointer);
+    
+    return currentPointer - unicodeBuffer;
+}
+
 static TextToMatchObject_internal
 Make_TextToMatchObject_internal(int column, PyObject* unicodeText, PyObject* contextData)
 {
     TextToMatchObject_internal textToMatchObject;
     
+    textToMatchObject.wholeLineLen = PyUnicode_GET_SIZE(unicodeText);
     textToMatchObject.currentColumnIndex = column;
     textToMatchObject.wholeLineUnicodeText = unicodeText;
     textToMatchObject.wholeLineUnicodeTextLower = PyObject_CallMethod(unicodeText, "lower", "");
     textToMatchObject.wholeLineUtf8Text = PyUnicode_AsUTF8String(unicodeText);
+    textToMatchObject.wholeLineUtf8TextLower = PyUnicode_AsUTF8String(textToMatchObject.wholeLineUnicodeTextLower);
     textToMatchObject.utf8Text = PyString_AS_STRING(textToMatchObject.wholeLineUtf8Text);
+    textToMatchObject.utf8TextLower = PyString_AS_STRING(textToMatchObject.wholeLineUtf8TextLower);
 
     // text and textLen is updated in the loop
+    textToMatchObject.textLen = textToMatchObject.wholeLineLen;
     textToMatchObject.firstNonSpace = true;  // updated in the loop
     // isWordStart, wordLength is updated in the loop
     textToMatchObject.contextData = contextData;
@@ -514,6 +535,7 @@ Free_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject)
 {
     Py_XDECREF(textToMatchObject->wholeLineUnicodeTextLower);
     Py_XDECREF(textToMatchObject->wholeLineUtf8Text);
+    Py_XDECREF(textToMatchObject->wholeLineUtf8TextLower);
 }
 
 static void
@@ -523,18 +545,21 @@ Update_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject,
 {
     Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(textToMatchObject->wholeLineUnicodeText);
     Py_UNICODE* wholeLineUnicodeBufferLower = PyUnicode_AS_UNICODE(textToMatchObject->wholeLineUnicodeTextLower);
-    int wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject->wholeLineUnicodeText);
     
    // update text and textLen
     textToMatchObject->unicodeText = wholeLineUnicodeBuffer + currentColumnIndex;
     textToMatchObject->unicodeTextLower = wholeLineUnicodeBufferLower + currentColumnIndex;
     
-    int newTextLen = wholeLineLen - currentColumnIndex;
+    int newTextLen = textToMatchObject->wholeLineLen - currentColumnIndex;
     int prevTextLen = textToMatchObject->textLen;
+    int step = prevTextLen - newTextLen;
+
     int i;
-    for (i = 0; i < (prevTextLen - newTextLen); i++)
+    for (i = 0; i < step; i++)
     {
-        textToMatchObject->utf8Text += _utf8TextFirstCharacterLength(textToMatchObject->utf8Text);
+        int firstCharacterLength = _utf8TextFirstCharacterLength(textToMatchObject->utf8Text);
+        textToMatchObject->utf8Text += firstCharacterLength;
+        textToMatchObject->utf8TextLower += firstCharacterLength;
     }
     
     textToMatchObject->textLen = newTextLen;
@@ -552,22 +577,24 @@ Update_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject,
         Py_UNICODE_ISSPACE(wholeLineUnicodeBuffer[currentColumnIndex - 1]) ||
         _isDeliminator(wholeLineUnicodeBuffer[currentColumnIndex - 1], deliminatorSet);
 
+    // word start and length
     if (textToMatchObject->isWordStart)
     {
         int wordEndIndex;
         
-        for(wordEndIndex = currentColumnIndex; wordEndIndex < wholeLineLen; wordEndIndex++)
+        for(wordEndIndex = currentColumnIndex; wordEndIndex < textToMatchObject->wholeLineLen; wordEndIndex++)
         {
             if (_isDeliminator(wholeLineUnicodeBuffer[wordEndIndex],
                                deliminatorSet))
                 break;
         }
-        
         textToMatchObject->wordLength = wordEndIndex - currentColumnIndex;
+        textToMatchObject->utf8WordLength = _utf8CharactersLength(textToMatchObject->utf8Text,
+                                                                  textToMatchObject->wordLength);
     }
     else
     {
-        textToMatchObject->wordLength = 0;
+        textToMatchObject->utf8WordLength = 0;
     }
 }
 
@@ -958,8 +985,8 @@ DECLARE_RULE_METHODS_AND_TYPE(StringDetect);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    PyObject* word;
-    int wordLength;
+    char* utf8Word;
+    int utf8WordLength;
     bool insensitive;
 } WordDetect;
 
@@ -967,32 +994,28 @@ typedef struct {
 static void
 WordDetect_dealloc_fields(WordDetect* self)
 {
-    Py_XDECREF(self->word);
+    if (NULL != self->utf8Word)
+        free(self->utf8Word);
 }
 
 static RuleTryMatchResult_internal
 WordDetect_tryMatch(WordDetect* self, TextToMatchObject_internal* textToMatchObject)
 {
-    if (self->wordLength != textToMatchObject->wordLength)
+    if (self->utf8WordLength != textToMatchObject->utf8WordLength)
         return MakeEmptyTryMatchResult();
     
-    Py_UNICODE* wordToCheck = textToMatchObject->unicodeText;
+    const char* wordToCheck = textToMatchObject->utf8Text;
     
     if (self->insensitive ||
         ( ! ((Parser*)((Context*)self->abstractRuleParams->parentContext)->parser)->keywordsCaseSensitive))
     {
-        wordToCheck = textToMatchObject->unicodeTextLower;
+        wordToCheck = textToMatchObject->utf8TextLower;
     }
     
-    Py_UNICODE* wordAsUnicode = PyUnicode_AS_UNICODE(self->word);
-    int i;
-    for(i = 0; i < self->wordLength; i++)
-    {
-        if (wordToCheck[i] != wordAsUnicode[i])
-            return MakeEmptyTryMatchResult();
-    }
-
-    return MakeTryMatchResult(self, self->wordLength, NULL);
+    if (0 == strncmp(wordToCheck, self->utf8Word, textToMatchObject->utf8WordLength))
+        return MakeTryMatchResult(self, textToMatchObject->wordLength, NULL);
+    else
+        return MakeEmptyTryMatchResult();
 }
 
 static int
@@ -1012,10 +1035,13 @@ WordDetect_init(WordDetect *self, PyObject *args, PyObject *kwds)
     BOOL_CHECK(insensitive, -1);
 
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
-    ASSIGN_PYOBJECT_FIELD(word);
     ASSIGN_BOOL_FIELD(insensitive);
     
-    self->wordLength = PyUnicode_GET_SIZE(word);
+    PyObject* utf8Word = PyUnicode_AsUTF8String(word);
+    self->utf8Word = strdup(PyString_AS_STRING(utf8Word));
+    Py_XDECREF(utf8Word);
+    
+    self->utf8WordLength = strlen(self->utf8Word);
 
     return 0;
 }
@@ -1029,7 +1055,7 @@ DECLARE_RULE_METHODS_AND_TYPE(WordDetect);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    PyObject* words;
+    StrMap* words;
     bool insensitive;
 } keyword;
 
@@ -1037,32 +1063,33 @@ typedef struct {
 static void
 keyword_dealloc_fields(keyword* self)
 {
-    Py_XDECREF(self->words);
+    if (NULL != self->words)
+        sm_delete(self->words);
 }
 
 static RuleTryMatchResult_internal
 keyword_tryMatch(keyword* self, TextToMatchObject_internal* textToMatchObject)
 {
-    if (textToMatchObject->wordLength <= 0)
+    if (textToMatchObject->utf8WordLength <= 0)
         return MakeEmptyTryMatchResult();
     
-    Py_UNICODE* wordToCheck = textToMatchObject->unicodeText;
+    char wordBuffer[64];
+    
+    if (textToMatchObject->utf8WordLength >= sizeof(wordBuffer))
+        return MakeEmptyTryMatchResult();
     
     if (self->insensitive ||
         ( ! ((Parser*)((Context*)self->abstractRuleParams->parentContext)->parser)->keywordsCaseSensitive))
     {
-        wordToCheck = textToMatchObject->unicodeTextLower;
+        strncpy(wordBuffer, textToMatchObject->utf8TextLower, textToMatchObject->utf8WordLength);
     }
+    else
+    {
+        strncpy(wordBuffer, textToMatchObject->utf8Text, textToMatchObject->utf8WordLength);
+    }
+    wordBuffer[textToMatchObject->utf8WordLength] = 0;
 
-    PyObject* wordToCheckAsObject = PyUnicode_FromUnicode(wordToCheck, textToMatchObject->wordLength);
-    
-    PyObject* boolObjectRes = PyObject_CallMethod(self->words, "__contains__", "O", wordToCheckAsObject);
-    Py_DECREF(wordToCheckAsObject);
-    
-    bool boolRes = Py_True == boolObjectRes;
-    Py_XDECREF(boolObjectRes);
-    
-    if (boolRes)
+    if (sm_exists(self->words, wordBuffer))
         return MakeTryMatchResult(self, textToMatchObject->wordLength, NULL);
     else
         return MakeEmptyTryMatchResult();
@@ -1081,12 +1108,22 @@ keyword_init(keyword *self, PyObject *args, PyObject *kwds)
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
-    SET_CHECK(words, -1);
+    LIST_CHECK(words, -1);
     BOOL_CHECK(insensitive, -1);
     
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
-    ASSIGN_PYOBJECT_FIELD(words);
     ASSIGN_BOOL_FIELD(insensitive);
+    
+    self->words = sm_new(10);
+    int size = PyList_Size(words);
+    int i;
+    for (i = 0; i < size; i++)
+    {
+        PyObject* word = PyList_GetItem(words, i);
+        PyObject* utf8Word = PyUnicode_AsUTF8String(word);
+        sm_put(self->words, PyString_AS_STRING(utf8Word), "");
+        Py_XDECREF(utf8Word);
+    }
 
     return 0;
 }

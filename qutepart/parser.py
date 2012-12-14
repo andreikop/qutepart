@@ -369,7 +369,7 @@ class keyword(AbstractRule):
     """
     def __init__(self, abstractRuleParams, words, insensitive):
         AbstractRule.__init__(self, abstractRuleParams)
-        self.words = words
+        self.words = set(words)
         self.insensitive = insensitive
 
     def shortId(self):

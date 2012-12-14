@@ -9,7 +9,9 @@ package_data={'qutepart' : ['syntax/*.xml',
              }
 
 extension = Extension('qutepart.cParser',
-                      sources = ['qutepart/parsermodule.c'],
+                      sources = ['qutepart/parsermodule.c',
+                                 'qutepart/strmap/strmap.c'],
+                      include_dirs = ['qutepart'],
                       libraries = ['pcre'])
 
 

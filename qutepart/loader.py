@@ -256,11 +256,11 @@ def _loadWordDetect(parentContext, xmlElement, attributeToFormatMap):
 def _loadKeyword(parentContext, xmlElement, attributeToFormatMap):
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)
     try:
-        words = set(parentContext.parser.lists[string])
+        words = parentContext.parser.lists[string]
     except KeyError:
         print >> sys.stderr, "List '%s' not found" % string
         
-        words = set()
+        words = list()
     
     insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
     
@@ -489,7 +489,7 @@ def _loadLists(root, highlightingElement):
     lists = {}  # list name: list
     for listElement in highlightingElement.findall('list'):
         # Sometimes item.text is none. Broken xml files
-        items = [item.text.strip() \
+        items = [unicode(item.text.strip()) \
                     for item in listElement.findall('item') \
                         if item.text is not None]
         name = _safeGetRequiredAttribute(listElement, 'name', 'Error: list name is not set!!!')
