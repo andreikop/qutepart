@@ -258,11 +258,18 @@ typedef struct {
     int _size;
 } ContextStack;
 
+#define DELIMINATOR_SET_CACHE_SIZE 128
+
+typedef struct {
+    PyObject* setAsUnicodeString;
+    bool cache[DELIMINATOR_SET_CACHE_SIZE];
+} DeliminatorSet;
+
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     PyObject* syntax;
-    PyObject* deliminatorSet;
+    DeliminatorSet deliminatorSet;
     PyObject* lists;
     bool keywordsCaseSensitive;
     PyObject* contexts;
@@ -294,6 +301,52 @@ _listToDynamicallyAllocatedArray(PyObject* list, int* size)
         array[i] = PyList_GetItem(list, i);
     
     return array;
+}
+
+/********************************************************************************
+ *                                DeliminatorSet
+ ********************************************************************************/
+static bool
+_isDeliminatorNoCache(Py_UNICODE character, PyObject* setAsUnicodeString)
+{
+    int deliminatorSetLen = PyUnicode_GET_SIZE(setAsUnicodeString);
+    Py_UNICODE* deliminatorSetUnicode = PyUnicode_AS_UNICODE(setAsUnicodeString);
+    
+    int i;
+    for(i = 0; i < deliminatorSetLen; i++)
+        if (deliminatorSetUnicode[i] == character)
+            return true;
+    
+    return false;
+}
+
+static bool
+_isDeliminator(Py_UNICODE character, DeliminatorSet* deliminatorSet)
+{
+    if (character < DELIMINATOR_SET_CACHE_SIZE)
+        return deliminatorSet->cache[character];
+    else
+        return _isDeliminatorNoCache(character, deliminatorSet->setAsUnicodeString);
+}
+
+static DeliminatorSet
+_MakeDeliminatorSet(PyObject* setAsUnicodeString)
+{
+    DeliminatorSet deliminatorSet;
+    int i;
+    for (i = 0; i < DELIMINATOR_SET_CACHE_SIZE; i++)
+        deliminatorSet.cache[i] = _isDeliminatorNoCache(i, setAsUnicodeString);
+    
+    ASSIGN_PYOBJECT_VALUE(deliminatorSet.setAsUnicodeString, setAsUnicodeString);
+    
+    return deliminatorSet;
+}
+
+void
+_FreeDeliminatorSet(DeliminatorSet* deliminatorSet)
+{
+    Py_XDECREF(deliminatorSet->setAsUnicodeString);
+    deliminatorSet->setAsUnicodeString = NULL;
 }
 
 /********************************************************************************
@@ -463,24 +516,10 @@ Free_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject)
     Py_XDECREF(textToMatchObject->wholeLineUtf8Text);
 }
 
-static bool
-_isDeliminator(Py_UNICODE character, PyObject* deliminatorSet)
-{
-    int deliminatorSetLen = PyUnicode_GET_SIZE(deliminatorSet);
-    Py_UNICODE* deliminatorSetUnicode = PyUnicode_AS_UNICODE(deliminatorSet);
-    
-    int i;
-    for(i = 0; i < deliminatorSetLen; i++)
-        if (deliminatorSetUnicode[i] == character)
-            return true;
-    
-    return false;
-}
-
 static void
 Update_TextToMatchObject_internal(TextToMatchObject_internal* textToMatchObject,
                                   int currentColumnIndex,
-                                  PyObject* deliminatorSet)
+                                  DeliminatorSet* deliminatorSet)
 {
     Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(textToMatchObject->wholeLineUnicodeText);
     Py_UNICODE* wholeLineUnicodeBufferLower = PyUnicode_AS_UNICODE(textToMatchObject->wholeLineUnicodeTextLower);
@@ -547,20 +586,23 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
 {
     int column = -1;
     PyObject* text = NULL;
-    PyObject* deliminatorSet = NULL;
+    PyObject* deliminatorSetAsUnicodeString = NULL;
     PyObject* contextData = NULL;
     
-    if (! PyArg_ParseTuple(args, "|iOOO", &column, &text, &deliminatorSet, &contextData))
+    if (! PyArg_ParseTuple(args, "|iOOO", &column, &text, &deliminatorSetAsUnicodeString, &contextData))
         return -1;
     
     UNICODE_CHECK(text, -1);
-    UNICODE_CHECK(deliminatorSet, -1);
+    UNICODE_CHECK(deliminatorSetAsUnicodeString, -1);
     if (Py_None != contextData)
         TUPLE_CHECK(contextData, -1);
     
     self->internal = Make_TextToMatchObject_internal(column, text, contextData);
 
-    Update_TextToMatchObject_internal(&(self->internal), column, deliminatorSet);
+    DeliminatorSet deliminatorSet = _MakeDeliminatorSet(deliminatorSetAsUnicodeString);
+    
+    Update_TextToMatchObject_internal(&(self->internal), column, &deliminatorSet);
+    _FreeDeliminatorSet(&deliminatorSet);
 
     Py_INCREF(self->internal.wholeLineUnicodeText);
     Py_INCREF(self->internal.contextData);
@@ -1373,9 +1415,11 @@ AbstractNumberRule_tryMatch(AbstractRule* self,
                                                 textToMatchObject->wholeLineUnicodeText,
                                                 textToMatchObject->contextData);
         
+        Context* parentContext = (Context*)self->abstractRuleParams->parentContext;
+        Parser* parentParser = (Parser*)parentContext->parser;
         Update_TextToMatchObject_internal(&newTextToMatchObject,
                                           matchEndIndex,
-                        ((Parser*)((Context*)self->abstractRuleParams->parentContext)->parser)->deliminatorSet);
+                                         &parentParser->deliminatorSet);
         
         int i;
         bool haveMatch = false;
@@ -2295,7 +2339,8 @@ Context_parseBlock(Context* self,
     
     while (currentColumnIndex < wholeLineLen)
     {
-        Update_TextToMatchObject_internal(&textToMatchObject, currentColumnIndex, ((Parser*)self->parser)->deliminatorSet);
+        Parser* parentParser = (Parser*)self->parser;
+        Update_TextToMatchObject_internal(&textToMatchObject, currentColumnIndex, &parentParser->deliminatorSet);
         
         RuleTryMatchResult_internal result;
         result.rule = NULL;
@@ -2379,7 +2424,8 @@ static PyMemberDef Parser_members[] = {
     {"syntax", T_OBJECT_EX, offsetof(Parser, syntax), READONLY, "Parent Syntax object"},
     {"defaultContext", T_OBJECT_EX, offsetof(Parser, defaultContext), READONLY, "Default context"},
     {"lists", T_OBJECT_EX, offsetof(Parser, lists), READONLY, "Dictionary of lists of keywords"},
-    {"deliminatorSet", T_OBJECT_EX, offsetof(Parser, deliminatorSet), READONLY, "Set of deliminator characters (as string)"},
+    {"deliminatorSet", T_OBJECT_EX, offsetof(Parser, deliminatorSet.setAsUnicodeString), READONLY,
+                "Set of deliminator characters (as string)"},
     {NULL}
 };
 
@@ -2387,7 +2433,7 @@ static void
 Parser_dealloc(Parser* self)
 {
     Py_XDECREF(self->syntax);
-    Py_XDECREF(self->deliminatorSet);
+    _FreeDeliminatorSet(&(self->deliminatorSet));
     Py_XDECREF(self->lists);
     Py_XDECREF(self->contexts);
     Py_XDECREF(self->defaultContext);
@@ -2413,10 +2459,11 @@ Parser_init(Parser *self, PyObject *args, PyObject *kwds)
     BOOL_CHECK(keywordsCaseSensitive, -1);
     
     ASSIGN_PYOBJECT_FIELD(syntax);
-    ASSIGN_PYOBJECT_FIELD(deliminatorSet);
     ASSIGN_PYOBJECT_FIELD(lists);
     ASSIGN_BOOL_FIELD(keywordsCaseSensitive);
-
+    
+    self->deliminatorSet = _MakeDeliminatorSet(deliminatorSet);
+    
     return 0;
 }
 
