@@ -12,6 +12,8 @@
 
 typedef long long int _StringHash;
 
+#define QUTEPART_MAX_CONTEXT_STACK_DEPTH 8
+
 #define UNICODE_CHECK(OBJECT, RET) \
     if (!PyUnicode_Check(OBJECT)) \
     { \
@@ -264,8 +266,8 @@ typedef struct {
 
 typedef struct {
     PyObject_HEAD
-    Context** _contexts;
-    PyObject** _data;
+    Context* _contexts[QUTEPART_MAX_CONTEXT_STACK_DEPTH];
+    PyObject* _data[QUTEPART_MAX_CONTEXT_STACK_DEPTH];
     int _size;
 } ContextStack;
 
@@ -2236,13 +2238,10 @@ DECLARE_RULE_METHODS_AND_TYPE(DetectIdentifier);
 static void
 ContextStack_dealloc(ContextStack* self)
 {
-    PyMem_Free(self->_contexts);
-    
     int i;
     for (i = 0; i < self->_size; i++)
     {
-        if (NULL != self->_data[i])
-            Py_XDECREF(self->_data[i]);
+        Py_XDECREF(self->_data[i]);
     }
 
     self->ob_type->tp_free((PyObject*)self);
@@ -2251,34 +2250,18 @@ ContextStack_dealloc(ContextStack* self)
 DECLARE_TYPE_WITHOUT_CONSTRUCTOR(ContextStack, NULL, "Context stack");
 
 static ContextStack*
-ContextStack_new(Context** contexts, PyObject** data, int size, Context* newContext, PyObject* newData)  // not a constructor, just C function
+ContextStack_new(Context** contexts, PyObject** data, int size)  // not a constructor, just C function
 {
     ContextStack* contextStack = PyObject_New(ContextStack, &ContextStackType);
-    
-    int newSize = size;
-    if (NULL != newContext)
-        newSize++;
-    
-    contextStack->_contexts = PyMem_Malloc(sizeof(Context*) * newSize);
-    memcpy(contextStack->_contexts, contexts, sizeof(Context*) * size);
-    
-    contextStack->_data = PyMem_Malloc(sizeof(PyObject*) * newSize);
-    memcpy(contextStack->_data, data, sizeof(Context*) * size);
-    
-    contextStack->_size = newSize;
 
-    if (NULL != newContext)
-    {
-        contextStack->_contexts[newSize - 1] = newContext;
-        contextStack->_data[newSize - 1] = newData;
-    }
-    
     int i;
-    for (i = 0; i < contextStack->_size; i++)
+    for (i = 0; i < size; i++)
     {
-        if (NULL != contextStack->_data[i])
-            Py_XINCREF(contextStack->_data[i]);
+        contextStack->_contexts[i] = contexts[i];
+        contextStack->_data[i] = data[i];
+        Py_XINCREF(contextStack->_data[i]);
     }
+    contextStack->_size = size;
 
     return contextStack;
 }
@@ -2304,13 +2287,27 @@ ContextStack_pop(ContextStack* self, int count)
         return self;
     }
     
-    return ContextStack_new(self->_contexts, self->_data, self->_size - count, NULL, NULL);
+    return ContextStack_new(self->_contexts, self->_data, self->_size - count);
 }
 
 static ContextStack*
 ContextStack_append(ContextStack* self, Context* context, PyObject* data)
-{  
-    return ContextStack_new(self->_contexts, self->_data, self->_size, context, data);
+{
+    ContextStack* newContextStack = ContextStack_new(self->_contexts, self->_data, self->_size);
+    
+    if (self->_size < QUTEPART_MAX_CONTEXT_STACK_DEPTH)
+    {
+        newContextStack->_contexts[self->_size] = context;
+        newContextStack->_data[self->_size] = data;
+        Py_INCREF(data);
+        newContextStack->_size = self->_size + 1;
+    }
+    else
+    {
+        return ContextStack_new(self->_contexts, self->_data, self->_size);
+    }
+
+    return newContextStack;
 }
 
 
@@ -2633,7 +2630,7 @@ _makeDefaultContextStack(Context* defaultContext)
 {
     PyObject* data = NULL;
 
-    return ContextStack_new(&defaultContext, &data, 1, NULL, NULL);
+    return ContextStack_new(&defaultContext, &data, 1);
 }
 
 static PyObject*
