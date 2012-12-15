@@ -1055,26 +1055,28 @@ DECLARE_RULE_METHODS_AND_TYPE(WordDetect);
  *                                keyword
  ********************************************************************************/
 typedef struct {
+    // Words are grouped by length
+    // Every item contains sorted list of words of equal length, separated with \0
     char* words[QUTEPART_MAX_WORD_LENGTH];
+    int wordCount[QUTEPART_MAX_WORD_LENGTH];
 } _WordTree;
 
 static void
 _WordTree_init(_WordTree* self, PyObject* listOfUnicodeStrings)
 {
-    int wordsCount[QUTEPART_MAX_WORD_LENGTH];
-    memset(wordsCount, 0, sizeof(int) * QUTEPART_MAX_WORD_LENGTH);
+    memset(self->wordCount, 0, sizeof(int) * QUTEPART_MAX_WORD_LENGTH);
     
     // first pass, calculate length
-    int wordCount = PyList_Size(listOfUnicodeStrings);
+    int totalWordCount = PyList_Size(listOfUnicodeStrings);
     int i;
-    for (i = 0; i < wordCount; i++)
+    for (i = 0; i < totalWordCount; i++)
     {
         PyObject* unicodeWord = PyList_GetItem(listOfUnicodeStrings, i);
         PyObject* utf8Word = PyUnicode_AsUTF8String(unicodeWord);
         int wordLength = PyString_GET_SIZE(utf8Word);
         
         if (wordLength <= QUTEPART_MAX_WORD_LENGTH)
-            wordsCount[wordLength]++;
+            self->wordCount[wordLength]++;
         else
             fprintf(stderr, "Too long word '%s'\n", PyString_AS_STRING(utf8Word));
         
@@ -1085,11 +1087,9 @@ _WordTree_init(_WordTree* self, PyObject* listOfUnicodeStrings)
     int wordLength;
     for (wordLength = 0; wordLength < QUTEPART_MAX_WORD_LENGTH; wordLength++)
     {
-        if (wordsCount[wordLength] > 0)
+        if (self->wordCount[wordLength] > 0)
         {
-            int bufferSize = 1 +  // space at the beginning
-                            ((wordLength + 1) * wordsCount[wordLength]) + // word + space as separator
-                            1;  // zero
+            int bufferSize = (wordLength + 1) * self->wordCount[wordLength];  // word + \0
             self->words[wordLength] = PyMem_Malloc(bufferSize);
         }
         else
@@ -1098,27 +1098,23 @@ _WordTree_init(_WordTree* self, PyObject* listOfUnicodeStrings)
         }
     }
     
-    char* currentPointer[QUTEPART_MAX_WORD_LENGTH];
-    memset(currentPointer, 0, sizeof (char*) * QUTEPART_MAX_WORD_LENGTH);
+    int currentWordIndex[QUTEPART_MAX_WORD_LENGTH];
+    memset(currentWordIndex, 0, sizeof(int) * QUTEPART_MAX_WORD_LENGTH);
     
     // second pass, copy data
-    for (i = 0; i < wordCount; i++)
+    for (i = 0; i < totalWordCount; i++)
     {
         PyObject* unicodeWord = PyList_GetItem(listOfUnicodeStrings, i);
         PyObject* utf8Word = PyUnicode_AsUTF8String(unicodeWord);
         int wordLength = PyString_GET_SIZE(utf8Word);
         
-        if (NULL == currentPointer[wordLength])  // first word
-        {
-            currentPointer[wordLength] = self->words[wordLength];
-            *(currentPointer[wordLength]) = ' ';
-            currentPointer[wordLength]++;
-        }
-        
-        strncpy(currentPointer[wordLength], PyString_AS_STRING(utf8Word), wordLength);  // copy without zero
-        currentPointer[wordLength] += wordLength;
-        *(currentPointer[wordLength]) = ' ';
-        currentPointer[wordLength]++;
+        int wordIndex = currentWordIndex[wordLength];
+        int wordOffset = (wordLength + 1) * wordIndex;
+        char* wordPointer = self->words[wordLength] + wordOffset;
+        strncpy(wordPointer, PyString_AS_STRING(utf8Word), wordLength);  // copy without zero
+        wordPointer += wordLength;
+        *wordPointer = '\0';
+        currentWordIndex[wordLength]++;
 
         Py_XDECREF(utf8Word);
     }
@@ -1145,13 +1141,16 @@ _WordTree_contains(_WordTree* self, const char* utf8Word, int wordLength)
     if (NULL == self->words[wordLength]) // no any words
         return false;
     
-    char wordBuffer[QUTEPART_MAX_WORD_LENGTH + 3];  // space at start, space at end, 0
-    wordBuffer[0] = ' ';
-    strncpy(wordBuffer + 1, utf8Word, wordLength);  // copy without \0
-    wordBuffer[wordLength + 1] = ' ';
-    wordBuffer[wordLength + 2] = '\0';
-
-    return NULL != strstr(self->words[wordLength], wordBuffer);
+    int wordIndex;
+    for(wordIndex = 0; wordIndex < self->wordCount[wordLength]; wordIndex++)
+    {
+        int wordOffset = (wordLength + 1) * wordIndex;
+        const char* wordPointer = self->words[wordLength] + wordOffset;
+        if (0 == strncmp(wordPointer, utf8Word, wordLength))
+            return true;
+    }
+    
+    return false;
 }
 
 typedef struct {
