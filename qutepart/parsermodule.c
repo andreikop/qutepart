@@ -10,6 +10,7 @@
 
 #define QUTEPART_MAX_WORD_LENGTH 128  // max found in existing rules when developing the parser is 65
 
+typedef long long int _StringHash;
 
 #define UNICODE_CHECK(OBJECT, RET) \
     if (!PyUnicode_Check(OBJECT)) \
@@ -603,11 +604,11 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
         }
         else
         {
-            *(long long int*)self->utf8Word = 0;
+            *(_StringHash*)self->utf8Word = 0;
             strncpy(self->utf8Word, self->utf8Text, self->utf8WordLength);  // without \0
             self->utf8Word[self->utf8WordLength] = '\0';
             
-            *(long long int*)self->utf8WordLower = 0;
+            *(_StringHash*)self->utf8WordLower = 0;
             strncpy(self->utf8WordLower, self->utf8TextLower, self->utf8WordLength);  // without \0
             self->utf8WordLower[self->utf8WordLength] = '\0';
         }
@@ -1072,9 +1073,13 @@ DECLARE_RULE_METHODS_AND_TYPE(WordDetect);
 /********************************************************************************
  *                                keyword
  ********************************************************************************/
+
+/* Words are grouped by length
+ * Every item contains list of words of equal length, separated with \0
+ * First 8 bytes of string (sizeof _StringHash) are used as hash value
+ * If word length is less, than size of _StringHash, rest is filled with 0
+ */
 typedef struct {
-    // Words are grouped by length
-    // Every item contains sorted list of words of equal length, separated with \0
     char* words[QUTEPART_MAX_WORD_LENGTH];
     int wordCount[QUTEPART_MAX_WORD_LENGTH];
 } _WordTree;
@@ -1083,8 +1088,8 @@ static int
 _WordTree_wordBufferSize(int wordLength)
 {
     // +1 for \0
-    if (wordLength + 1 < sizeof(long long int))
-        return sizeof(long long int);
+    if (wordLength + 1 < sizeof(_StringHash))
+        return sizeof(_StringHash);
     else
         return wordLength + 1;
 }
@@ -1172,7 +1177,7 @@ _WordTree_contains(_WordTree* self, const char* utf8Word, int wordLength)
 
     for(wordPointer = self->words[wordLength]; wordPointer != outOfStringPointer; wordPointer += step)
     {
-        if (*(long long int*)wordPointer == *(long long int*)utf8Word &&
+        if (*(_StringHash*)wordPointer == *(_StringHash*)utf8Word &&
             0 == strcmp(wordPointer, utf8Word))
             return true;
     }
