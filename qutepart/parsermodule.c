@@ -2234,7 +2234,6 @@ DECLARE_RULE_METHODS_AND_TYPE(DetectIdentifier);
 /********************************************************************************
  *                                Context stack
  ********************************************************************************/
-
 static void
 ContextStack_dealloc(ContextStack* self)
 {
@@ -2278,39 +2277,6 @@ ContextStack_currentData(ContextStack* self)
     return self->_data[self->_size - 1];
 }
 
-static ContextStack*
-ContextStack_pop(ContextStack* self, int count)
-{
-    if (self->_size - 1 < count)
-    {
-        fprintf(stderr, "Qutepart error: #pop value is too big");
-        return self;
-    }
-    
-    return ContextStack_new(self->_contexts, self->_data, self->_size - count);
-}
-
-static ContextStack*
-ContextStack_append(ContextStack* self, Context* context, PyObject* data)
-{
-    ContextStack* newContextStack = ContextStack_new(self->_contexts, self->_data, self->_size);
-    
-    if (self->_size < QUTEPART_MAX_CONTEXT_STACK_DEPTH)
-    {
-        newContextStack->_contexts[self->_size] = context;
-        newContextStack->_data[self->_size] = data;
-        Py_INCREF(data);
-        newContextStack->_size = self->_size + 1;
-    }
-    else
-    {
-        return ContextStack_new(self->_contexts, self->_data, self->_size);
-    }
-
-    return newContextStack;
-}
-
-
 /********************************************************************************
  *                                ContextSwitcher
  ********************************************************************************/
@@ -2343,23 +2309,32 @@ DECLARE_TYPE(ContextSwitcher, NULL, "Context switcher");
 static ContextStack*
 ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* contextStack, PyObject* data)
 {
-    if (self->_popsCount)
-    {
-        contextStack = ContextStack_pop(contextStack, self->_popsCount);
-    }
-
+    ContextStack* newContextStack = ContextStack_new(contextStack->_contexts,
+                                                     contextStack->_data,
+                                                     contextStack->_size - self->_popsCount);
+    
     if (Py_None != (PyObject*)self->_contextToSwitch)
     {
-        Context* contextToSwitch = (Context*)self->_contextToSwitch;
-        if ( ! contextToSwitch->dynamic)
-            data = Py_None;
-        
-        contextStack = ContextStack_append(contextStack, contextToSwitch, data);
+        if (newContextStack->_size < QUTEPART_MAX_CONTEXT_STACK_DEPTH)
+        {
+            Context* contextToSwitch = (Context*)self->_contextToSwitch;
+            newContextStack->_contexts[newContextStack->_size] = contextToSwitch;
+            
+            if (contextToSwitch->dynamic)
+            {
+                newContextStack->_data[newContextStack->_size] = data;
+                Py_XDECREF(data);
+            }
+            else
+            {
+                newContextStack->_data[newContextStack->_size] = NULL;
+            }
+            
+            newContextStack->_size++;
+        }
     }
-
-    // FIXME !!! probably, memory leak. How to free this stacks???
     
-    return contextStack;
+    return newContextStack;
 }
 
 
@@ -2428,8 +2403,10 @@ Context_setValues(Context *self, PyObject *args)
                            &dynamic))
         Py_RETURN_NONE;
 
-    TYPE_CHECK(lineEndContext, ContextSwitcher, NULL);
-    TYPE_CHECK(lineBeginContext, ContextSwitcher, NULL);
+    if (Py_None != lineEndContext)
+        TYPE_CHECK(lineEndContext, ContextSwitcher, NULL);
+    if (Py_None != lineBeginContext)
+        TYPE_CHECK(lineBeginContext, ContextSwitcher, NULL);
     if (Py_None != fallthroughContext)
         TYPE_CHECK(fallthroughContext, ContextSwitcher, NULL);
     BOOL_CHECK(dynamic, NULL);
@@ -2533,10 +2510,10 @@ Context_parseBlock(Context* self,
                     ContextSwitcher_getNextContextStack(result.rule->abstractRuleParams->context,
                                                         *pContextStack,
                                                         result.data);
-
+                
                 if (newContextStack != *pContextStack)
                 {
-                    *pContextStack = newContextStack;
+                    ASSIGN_VALUE(ContextStack, *pContextStack, newContextStack);
                     break; // while
                 }
             }
@@ -2554,7 +2531,7 @@ Context_parseBlock(Context* self,
                                                             Py_None);
                 if (newContextStack != *pContextStack)
                 {
-                    *pContextStack = newContextStack;
+                    ASSIGN_VALUE(ContextStack, *pContextStack, newContextStack);
                     break; // while
                 }
             }
@@ -2633,6 +2610,15 @@ _makeDefaultContextStack(Context* defaultContext)
     return ContextStack_new(&defaultContext, &data, 1);
 }
 
+static bool
+Parser_lineDataEqualToDefault(Context* defaultContext, ContextStack* contextStack, bool lineContinue)
+{
+    return contextStack->_size == 1 &&
+           ContextStack_currentContext(contextStack) == defaultContext &&
+           ContextStack_currentData(contextStack) == NULL &&
+           ( ! lineContinue);
+}
+
 static PyObject*
 Parser_setConexts(Parser *self, PyObject *args)
 {
@@ -2684,6 +2670,7 @@ Parser_parseBlock(Parser *self, PyObject *args)
     else
     {
         contextStack = self->defaultContextStack;
+        Py_INCREF(contextStack);
     }
     Context* currentContext = ContextStack_currentContext(contextStack);
 
@@ -2692,7 +2679,8 @@ Parser_parseBlock(Parser *self, PyObject *args)
         (! lineContinuePrevious))
     {
         ContextSwitcher* contextSwitcher = (ContextSwitcher*)currentContext->lineBeginContext;
-        contextStack = ContextSwitcher_getNextContextStack(contextSwitcher, contextStack, Py_None);
+        ContextStack* newContextStack = ContextSwitcher_getNextContextStack(contextSwitcher, contextStack, Py_None);
+        ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
     }
     
     PyObject* segmentList = NULL;
@@ -2725,12 +2713,12 @@ Parser_parseBlock(Parser *self, PyObject *args)
     while (currentContext->lineEndContext != Py_None &&
            ( ! lineContinue))
     {
-        ContextStack* oldStack = contextStack;
-        contextStack = ContextSwitcher_getNextContextStack((ContextSwitcher*)currentContext->lineEndContext,
+        ContextStack* newContextStack =
+                       ContextSwitcher_getNextContextStack((ContextSwitcher*)currentContext->lineEndContext,
                                                            contextStack,
                                                            NULL);
-        if (oldStack == contextStack)  // avoid infinite while loop if nothing to switch
-            break;
+        ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
+        
         currentContext = ContextStack_currentContext(contextStack);
     }
     
@@ -2740,7 +2728,17 @@ Parser_parseBlock(Parser *self, PyObject *args)
     }
     else
     {
-        LineData* lineData = LineData_new(contextStack, lineContinue);
+        LineData* lineData;
+        if (Parser_lineDataEqualToDefault(self->defaultContext, contextStack, lineContinue))
+        {
+            lineData = (LineData*)Py_None;
+            Py_INCREF(Py_None);
+        }
+        else
+        {
+            lineData = LineData_new(contextStack, lineContinue);
+        }
+
         if (Py_None != segmentList)
             return Py_BuildValue("OO", lineData, segmentList);
         else

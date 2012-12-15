@@ -115,9 +115,10 @@ def _makeContextSwitcher(contextOperation, contexts):
     elif rest:
         print >> sys.stderr, "Unknown context '%s'" % rest
 
-    contextSwitcher = _parserModule.ContextSwitcher(popsCount, contextToSwitch, contextOperation)
-    
-    return contextSwitcher
+    if popsCount > 0 or contextToSwitch != None:
+        return _parserModule.ContextSwitcher(popsCount, contextToSwitch, contextOperation)
+    else:
+        return None
     
 
 ################################################################################
