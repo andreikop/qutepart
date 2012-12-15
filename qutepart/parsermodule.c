@@ -488,30 +488,19 @@ RuleTryMatchResult_new(PyObject* rule, int length, PyObject* data)  // not a con
  ********************************************************************************/
 
 static int
-_utf8TextFirstCharacterLength(const char* text)
+_utf8TextCharacterLength(char character)
 {
-    if ((text[0] & 0x80) == 0)
+    if ((character & 0x80) == 0)
         return 1;
-    else if ((text[0] & 0xe0) == 0xc0)
+    else if ((character & 0xe0) == 0xc0)
         return 2;
-    else if ((text[0] & 0xf0) == 0xe0)
+    else if ((character & 0xf0) == 0xe0)
         return 3;
-    else if ((text[0] & 0xf8) == 0xf0)
+    else if ((character & 0xf8) == 0xf0)
         return 4;
     
-    fprintf(stderr, "Invalid unicode character 0x%02x\n", text[0]);
+    fprintf(stderr, "Invalid unicode character 0x%02x\n", character);
     return 1;
-}
-
-static int
-_utf8CharactersLength(const char* unicodeBuffer, int count)
-{
-    const char* currentPointer = unicodeBuffer;
-
-    while(count--)
-        currentPointer += _utf8TextFirstCharacterLength(currentPointer);
-    
-    return currentPointer - unicodeBuffer;
 }
 
 static TextToMatchObject_internal
@@ -566,7 +555,7 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
     int i;
     for (i = 0; i < step; i++)
     {
-        int firstCharacterLength = _utf8TextFirstCharacterLength(self->utf8Text);
+        int firstCharacterLength = _utf8TextCharacterLength(self->utf8Text[0]);
         self->utf8Text += firstCharacterLength;
         self->utf8TextLower += firstCharacterLength;
     }
@@ -588,32 +577,37 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
     // word start and length
     if (self->isWordStart)
     {
-        int wordEndIndex;
-        
-        for(wordEndIndex = currentColumnIndex; wordEndIndex < self->wholeLineLen; wordEndIndex++)
+        if (_isDeliminator(self->unicodeText[0], deliminatorSet))  // no word
         {
-            if (_isDeliminator(wholeLineUnicodeBuffer[wordEndIndex],
-                               deliminatorSet))
-                break;
-        }
-        self->wordLength = wordEndIndex - currentColumnIndex;
-        
-        self->utf8WordLength = _utf8CharactersLength(self->utf8Text,
-                                                     self->wordLength);
-        
-        if (self->utf8WordLength > QUTEPART_MAX_WORD_LENGTH)
-        {
+            self->wordLength = 0;
             self->utf8WordLength = 0;
         }
-        else
+        else // word
         {
-            *(_StringHash*)self->utf8Word = 0;
-            strncpy(self->utf8Word, self->utf8Text, self->utf8WordLength);  // without \0
-            self->utf8Word[self->utf8WordLength] = '\0';
+            self->wordLength = 1;
+            self->utf8WordLength = _utf8TextCharacterLength(self->utf8Text[0]);
+
+            while(self->wordLength < self->textLen &&
+                  ( ! _isDeliminator(self->unicodeText[self->wordLength], deliminatorSet)))
+            {
+                self->wordLength++;
+                self->utf8WordLength += _utf8TextCharacterLength(self->utf8Text[self->utf8WordLength]);
+            }
             
-            *(_StringHash*)self->utf8WordLower = 0;
-            strncpy(self->utf8WordLower, self->utf8TextLower, self->utf8WordLength);  // without \0
-            self->utf8WordLower[self->utf8WordLength] = '\0';
+            if (self->utf8WordLength > QUTEPART_MAX_WORD_LENGTH)
+            {
+                self->utf8WordLength = 0;
+            }
+            else
+            {
+                *(_StringHash*)self->utf8Word = 0;
+                strncpy(self->utf8Word, self->utf8Text, self->utf8WordLength);  // without \0
+                self->utf8Word[self->utf8WordLength] = '\0';
+                
+                *(_StringHash*)self->utf8WordLower = 0;
+                strncpy(self->utf8WordLower, self->utf8TextLower, self->utf8WordLength);  // without \0
+                self->utf8WordLower[self->utf8WordLength] = '\0';
+            }
         }
     }
     else
