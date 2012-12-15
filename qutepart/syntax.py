@@ -60,7 +60,7 @@ class Syntax:
     def __init__(self, manager):
         self.manager = manager
         
-    def highlighBlock(self, text, prevLineData):
+    def highlightBlock(self, text, prevLineData):
         """Parse line of text and return
             (lineData, highlightedSegments)
         where

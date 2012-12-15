@@ -607,6 +607,25 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
             {
                 self->utf8WordLength = 0;
             }
+            else if (self->utf8WordLength <= sizeof(_StringHash) &&
+                     self->textLen >= sizeof(_StringHash))  // may use optimized version of strncpy
+            {
+                static const long long int maskForDifference[] = 
+                    { 0x0,
+                      0xff,
+                      0xffff,
+                      0xffffff,
+                      0xffffffff,
+                      0xffffffffff,
+                      0xffffffffffff,
+                      0xffffffffffffff,
+                      0xffffffffffffffff};
+                
+                _StringHash mask = maskForDifference[sizeof(_StringHash) - self->utf8WordLength];
+                *(_StringHash*)self->utf8Word = *(_StringHash*)self->utf8Text & mask;
+                *(_StringHash*)self->utf8WordLower = *(_StringHash*)self->utf8TextLower & mask;
+                // FIXME make sure it works on big endian and little endian
+            }
             else
             {
                 *(_StringHash*)self->utf8Word = 0;
