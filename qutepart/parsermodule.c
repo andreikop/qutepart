@@ -532,6 +532,8 @@ TextToMatchObject_internal_make(int column, PyObject* unicodeText, PyObject* con
     textToMatchObject.textLen = textToMatchObject.wholeLineLen;
     textToMatchObject.firstNonSpace = true;  // updated in the loop
     // isWordStart, wordLength is updated in the loop
+    textToMatchObject.firstNonSpace = true;
+    textToMatchObject.isWordStart = true;
     textToMatchObject.contextData = contextData;
 
     return textToMatchObject;
@@ -557,9 +559,9 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
     self->unicodeText = wholeLineUnicodeBuffer + currentColumnIndex;
     self->unicodeTextLower = wholeLineUnicodeBufferLower + currentColumnIndex;
     
-    int newTextLen = self->wholeLineLen - currentColumnIndex;
     int prevTextLen = self->textLen;
-    int step = prevTextLen - newTextLen;
+    self->textLen = self->wholeLineLen - currentColumnIndex;
+    int step = prevTextLen - self->textLen;
 
     int i;
     for (i = 0; i < step; i++)
@@ -569,20 +571,19 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
         self->utf8TextLower += firstCharacterLength;
     }
     
-    self->textLen = newTextLen;
-
-    // update firstNonSpace
-    if (self->firstNonSpace && currentColumnIndex > 0)
+    if (currentColumnIndex > 0)
     {
-        bool previousCharIsSpace = Py_UNICODE_ISSPACE(wholeLineUnicodeBuffer[currentColumnIndex - 1]);
-        self->firstNonSpace = previousCharIsSpace;
+        Py_UNICODE prevChar = wholeLineUnicodeBuffer[currentColumnIndex - 1];
+        bool previousCharIsSpace = Py_UNICODE_ISSPACE(prevChar);
+        
+        // update firstNonSpace
+        self->firstNonSpace = self->firstNonSpace && previousCharIsSpace;
+    
+        // update isWordStart and wordLength
+        self->isWordStart = previousCharIsSpace ||
+                            _isDeliminator(prevChar, deliminatorSet);
     }
     
-    // update isWordStart and wordLength
-    self->isWordStart = \
-        currentColumnIndex == 0 ||
-        Py_UNICODE_ISSPACE(wholeLineUnicodeBuffer[currentColumnIndex - 1]) ||
-        _isDeliminator(wholeLineUnicodeBuffer[currentColumnIndex - 1], deliminatorSet);
 
     // word start and length
     if (self->isWordStart)
