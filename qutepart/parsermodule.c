@@ -487,6 +487,8 @@ RuleTryMatchResult_new(PyObject* rule, int length, PyObject* data)  // not a con
  *                                TextToMatchObject
  ********************************************************************************/
 
+static int _utf8CharacterLengthTable[0xff];
+
 static int
 _utf8TextCharacterLength(char character)
 {
@@ -499,8 +501,15 @@ _utf8TextCharacterLength(char character)
     else if ((character & 0xf8) == 0xf0)
         return 4;
     
-    fprintf(stderr, "Invalid unicode character 0x%02x\n", character);
     return 1;
+}
+
+static void
+_utf8CharacterLengthTable_init(void)
+{
+    int i;
+    for (i = 0; i < 0xff; i++)
+        _utf8CharacterLengthTable[i] = _utf8TextCharacterLength(i);
 }
 
 static TextToMatchObject_internal
@@ -555,7 +564,7 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
     int i;
     for (i = 0; i < step; i++)
     {
-        int firstCharacterLength = _utf8TextCharacterLength(self->utf8Text[0]);
+        int firstCharacterLength = _utf8CharacterLengthTable[(unsigned char)self->utf8Text[0]];
         self->utf8Text += firstCharacterLength;
         self->utf8TextLower += firstCharacterLength;
     }
@@ -585,13 +594,13 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
         else // word
         {
             self->wordLength = 1;
-            self->utf8WordLength = _utf8TextCharacterLength(self->utf8Text[0]);
+            self->utf8WordLength = _utf8CharacterLengthTable[(unsigned char)self->utf8Text[0]];
 
             while(self->wordLength < self->textLen &&
                   ( ! _isDeliminator(self->unicodeText[self->wordLength], deliminatorSet)))
             {
                 self->wordLength++;
-                self->utf8WordLength += _utf8TextCharacterLength(self->utf8Text[self->utf8WordLength]);
+                self->utf8WordLength += _utf8CharacterLengthTable[(unsigned char)self->utf8Text[self->utf8WordLength]];
             }
             
             if (self->utf8WordLength > QUTEPART_MAX_WORD_LENGTH)
@@ -2766,6 +2775,8 @@ static PyMethodDef cParser_methods[] = {
 PyMODINIT_FUNC
 initcParser(void) 
 {
+    _utf8CharacterLengthTable_init();
+    
     PyObject* m;
 
     m = Py_InitModule3("cParser", cParser_methods,
