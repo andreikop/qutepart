@@ -43,16 +43,17 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self.setFormat(start, length, qtFormat)
 
     def highlightBlock(self, text):
-        lineData, highlightedSegments = self._syntax.parseBlock(text, self._prevData())
-        
-        #self._syntax.parseAndPrintBlockTextualResults(text, self._prevData())
-        currentPos = 0
-        
-        for length, format in highlightedSegments:
-            self._setFormat(currentPos, length, format)
-            currentPos += length
-        
+        if False:
+            lineData, highlightedSegments = self._syntax.highlightBlock(text, self._prevData())
+            
+            currentPos = 0
+            for length, format in highlightedSegments:
+                self._setFormat(currentPos, length, format)
+                currentPos += length
+        else:
+            lineData = self._syntax.parseBlock(text, self._prevData())
         self.setCurrentBlockUserData(_TextBlockUserData(lineData))
+            
 
     def _prevData(self):
         prevBlock = self.currentBlock().previous()

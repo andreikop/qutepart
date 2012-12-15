@@ -59,15 +59,28 @@ class Syntax:
     """
     def __init__(self, manager):
         self.manager = manager
-    
-    def parseBlock(self, text, prevLineData):
+        
+    def highlighBlock(self, text, prevLineData):
         """Parse line of text and return
             (lineData, highlightedSegments)
         where
             lineData is data, which shall be saved and used for parsing next line
             highlightedSegments is list of touples (segmentLength, segmentFormat)
         """
-        return self.parser.parseBlock(text, prevLineData)
+        return self.parser.parseBlock(text, prevLineData, True)
+        
+    def parseBlock(self, text, prevLineData):
+        """Parse line of text and return
+            lineData
+        where
+            lineData is data, which shall be saved and used for parsing next line
+            
+        This is quicker version of highlighBlock, which doesn't return results,
+        but only parsers the block and produces data, which is necessary for parsing next line.
+        Use it for invisible lines
+        """
+        return self.parser.parseBlock(text, prevLineData, False)
+
 
 class SyntaxManager:
     def __init__(self):

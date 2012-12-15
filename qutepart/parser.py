@@ -906,8 +906,12 @@ class Parser:
 
         return (parseBlockFullResult.lineData, highlightedSegments)
 
-    def parseBlock(self, text, prevLineData):
-        return self._makeParseBlockResult(self.parseBlockFullResults(text, prevLineData))
+    def parseBlock(self, text, prevLineData, returnSegments):
+        lineData, highlightedSegments = self._makeParseBlockResult(self.parseBlockFullResults(text, prevLineData))
+        if returnSegments:
+            return lineData, highlightedSegments
+        else:
+            return lineData
     
     def parseBlockFullResults(self, text, prevLineData):
         """Parse block and return ParseBlockFullResult

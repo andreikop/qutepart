@@ -2473,6 +2473,16 @@ static PyMethodDef Context_methods[] = {
 
 DECLARE_TYPE_WITH_MEMBERS(Context, Context_methods, "Parsing context");
 
+static void
+Context_appendSegment(PyObject* segmentList, int count, PyObject* format)
+{
+    if (Py_None != segmentList)
+    {
+        PyObject* segment = Py_BuildValue("iO", count, format);
+        PyList_Append(segmentList, segment);
+    }
+}
+
 static int
 Context_parseBlock(Context* self,
                    int currentColumnIndex,
@@ -2512,13 +2522,11 @@ Context_parseBlock(Context* self,
         {
             if (countOfNotMatchedSymbols > 0)
             {
-                PyObject* segment = Py_BuildValue("iO", countOfNotMatchedSymbols, self->format);
-                PyList_Append(segmentList, segment);
+                Context_appendSegment(segmentList, countOfNotMatchedSymbols, self->format);
                 countOfNotMatchedSymbols = 0;
             }
             
-            PyObject* segment = Py_BuildValue("iO", result.length, result.rule->abstractRuleParams->format);
-            PyList_Append(segmentList, segment);
+            Context_appendSegment(segmentList, result.length, result.rule->abstractRuleParams->format);
             
             currentColumnIndex += result.length;
             
@@ -2559,8 +2567,7 @@ Context_parseBlock(Context* self,
 
     if (countOfNotMatchedSymbols > 0)
     {
-        PyObject* segment = Py_BuildValue("iO", countOfNotMatchedSymbols, self->format);
-        PyList_Append(segmentList, segment);
+        Context_appendSegment(segmentList, countOfNotMatchedSymbols, self->format);
         countOfNotMatchedSymbols = 0;
     }
     
@@ -2655,15 +2662,20 @@ Parser_parseBlock(Parser *self, PyObject *args)
 {
     PyObject* unicodeText = NULL;
     LineData* prevLineData = NULL;
+    PyObject* returnSegmentsObject = NULL;
 
-    if (! PyArg_ParseTuple(args, "|OO",
+    if (! PyArg_ParseTuple(args, "|OOO",
                            &unicodeText,
-                           &prevLineData))
+                           &prevLineData,
+                           &returnSegmentsObject))
         return NULL;
 
     UNICODE_CHECK(unicodeText, NULL);
     if (Py_None != (PyObject*)(prevLineData))
         TYPE_CHECK(prevLineData, LineData, NULL);
+    BOOL_CHECK(returnSegmentsObject, NULL);
+    
+    bool returnSegments = Py_True == returnSegmentsObject;
     
     ContextStack* contextStack;
     bool lineContinuePrevious = false;
@@ -2686,7 +2698,17 @@ Parser_parseBlock(Parser *self, PyObject *args)
         contextStack = ContextSwitcher_getNextContextStack(contextSwitcher, contextStack, Py_None);
     }
     
-    PyObject* segmentList = PyList_New(0);
+    PyObject* segmentList = NULL;
+    if (returnSegments)
+    {
+        segmentList = PyList_New(0);
+    }
+    else
+    {
+        segmentList = Py_None;
+        Py_INCREF(Py_None);
+    }
+
     bool lineContinue = false;
 
     int currentColumnIndex = 0;
@@ -2722,7 +2744,10 @@ Parser_parseBlock(Parser *self, PyObject *args)
     else
     {
         LineData* lineData = LineData_new(contextStack, lineContinue);
-        return Py_BuildValue("OO", lineData, segmentList);
+        if (Py_None != segmentList)
+            return Py_BuildValue("OO", lineData, segmentList);
+        else
+            return (PyObject*)lineData;
     }
 }
 
