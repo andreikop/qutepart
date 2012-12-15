@@ -7,7 +7,9 @@
 
 #include <pcre.h>
 
-#include <strmap/strmap.h>
+
+#define QUTEPART_MAX_WORD_LENGTH 128  // max found in existing rules when developing the parser is 65
+
 
 #define UNICODE_CHECK(OBJECT, RET) \
     if (!PyUnicode_Check(OBJECT)) \
@@ -1053,9 +1055,109 @@ DECLARE_RULE_METHODS_AND_TYPE(WordDetect);
  *                                keyword
  ********************************************************************************/
 typedef struct {
+    char* words[QUTEPART_MAX_WORD_LENGTH];
+} _WordTree;
+
+static void
+_WordTree_init(_WordTree* self, PyObject* listOfUnicodeStrings)
+{
+    int wordsCount[QUTEPART_MAX_WORD_LENGTH];
+    memset(wordsCount, 0, sizeof(int) * QUTEPART_MAX_WORD_LENGTH);
+    
+    // first pass, calculate length
+    int wordCount = PyList_Size(listOfUnicodeStrings);
+    int i;
+    for (i = 0; i < wordCount; i++)
+    {
+        PyObject* unicodeWord = PyList_GetItem(listOfUnicodeStrings, i);
+        PyObject* utf8Word = PyUnicode_AsUTF8String(unicodeWord);
+        int wordLength = PyString_GET_SIZE(utf8Word);
+        
+        if (wordLength <= QUTEPART_MAX_WORD_LENGTH)
+            wordsCount[wordLength]++;
+        else
+            fprintf(stderr, "Too long word '%s'\n", PyString_AS_STRING(utf8Word));
+        
+        Py_XDECREF(utf8Word);
+    }
+
+    // allocate the buffers
+    int wordLength;
+    for (wordLength = 0; wordLength < QUTEPART_MAX_WORD_LENGTH; wordLength++)
+    {
+        if (wordsCount[wordLength] > 0)
+        {
+            int bufferSize = 1 +  // space at the beginning
+                            ((wordLength + 1) * wordsCount[wordLength]) + // word + space as separator
+                            1;  // zero
+            self->words[wordLength] = PyMem_Malloc(bufferSize);
+        }
+        else
+        {
+            self->words[wordLength] = NULL;
+        }
+    }
+    
+    char* currentPointer[QUTEPART_MAX_WORD_LENGTH];
+    memset(currentPointer, 0, sizeof (char*) * QUTEPART_MAX_WORD_LENGTH);
+    
+    // second pass, copy data
+    for (i = 0; i < wordCount; i++)
+    {
+        PyObject* unicodeWord = PyList_GetItem(listOfUnicodeStrings, i);
+        PyObject* utf8Word = PyUnicode_AsUTF8String(unicodeWord);
+        int wordLength = PyString_GET_SIZE(utf8Word);
+        
+        if (NULL == currentPointer[wordLength])  // first word
+        {
+            currentPointer[wordLength] = self->words[wordLength];
+            *(currentPointer[wordLength]) = ' ';
+            currentPointer[wordLength]++;
+        }
+        
+        strncpy(currentPointer[wordLength], PyString_AS_STRING(utf8Word), wordLength);  // copy without zero
+        currentPointer[wordLength] += wordLength;
+        *(currentPointer[wordLength]) = ' ';
+        currentPointer[wordLength]++;
+
+        Py_XDECREF(utf8Word);
+    }
+
+}
+
+static void
+_WordTree_free(_WordTree* self)
+{
+    int i;
+    for (i = 0; i < QUTEPART_MAX_WORD_LENGTH; i++)
+    {
+        if (NULL != self->words[i])
+            PyMem_Free(self->words[i]);
+    }
+}
+
+static bool
+_WordTree_contains(_WordTree* self, const char* utf8Word, int wordLength)
+{
+    if (wordLength > QUTEPART_MAX_WORD_LENGTH)
+        return false;
+    
+    if (NULL == self->words[wordLength]) // no any words
+        return false;
+    
+    char wordBuffer[QUTEPART_MAX_WORD_LENGTH + 3];  // space at start, space at end, 0
+    wordBuffer[0] = ' ';
+    strncpy(wordBuffer + 1, utf8Word, wordLength);  // copy without \0
+    wordBuffer[wordLength + 1] = ' ';
+    wordBuffer[wordLength + 2] = '\0';
+
+    return NULL != strstr(self->words[wordLength], wordBuffer);
+}
+
+typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    StrMap* words;
+    _WordTree wordTree;
     bool insensitive;
 } keyword;
 
@@ -1063,8 +1165,7 @@ typedef struct {
 static void
 keyword_dealloc_fields(keyword* self)
 {
-    if (NULL != self->words)
-        sm_delete(self->words);
+    _WordTree_free(&(self->wordTree));
 }
 
 static RuleTryMatchResult_internal
@@ -1073,24 +1174,19 @@ keyword_tryMatch(keyword* self, TextToMatchObject_internal* textToMatchObject)
     if (textToMatchObject->utf8WordLength <= 0)
         return MakeEmptyTryMatchResult();
     
-    char wordBuffer[64];
-    
-    if (textToMatchObject->utf8WordLength >= sizeof(wordBuffer))
-        return MakeEmptyTryMatchResult();
-    
+    const char* utf8Word;
     if (self->insensitive ||
         ( ! ((Parser*)((Context*)self->abstractRuleParams->parentContext)->parser)->keywordsCaseSensitive))
     {
-        strncpy(wordBuffer, textToMatchObject->utf8TextLower, textToMatchObject->utf8WordLength);
+        utf8Word = textToMatchObject->utf8TextLower;
     }
     else
     {
-        strncpy(wordBuffer, textToMatchObject->utf8Text, textToMatchObject->utf8WordLength);
+        utf8Word = textToMatchObject->utf8Text;
     }
-    wordBuffer[textToMatchObject->utf8WordLength] = 0;
-
-    if (sm_exists(self->words, wordBuffer))
-        return MakeTryMatchResult(self, textToMatchObject->wordLength, NULL);
+    
+    if (_WordTree_contains(&(self->wordTree), utf8Word, textToMatchObject->utf8WordLength))
+        return MakeTryMatchResult(self, textToMatchObject->utf8WordLength, NULL);
     else
         return MakeEmptyTryMatchResult();
 }
@@ -1114,17 +1210,8 @@ keyword_init(keyword *self, PyObject *args, PyObject *kwds)
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
     ASSIGN_BOOL_FIELD(insensitive);
     
-    self->words = sm_new(10);
-    int size = PyList_Size(words);
-    int i;
-    for (i = 0; i < size; i++)
-    {
-        PyObject* word = PyList_GetItem(words, i);
-        PyObject* utf8Word = PyUnicode_AsUTF8String(word);
-        sm_put(self->words, PyString_AS_STRING(utf8Word), "");
-        Py_XDECREF(utf8Word);
-    }
-
+    _WordTree_init(&(self->wordTree), words);
+    
     return 0;
 }
 
