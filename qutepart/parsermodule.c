@@ -2664,24 +2664,19 @@ Parser_setConexts(Parser *self, PyObject *args)
 }
 
 static PyObject*
-Parser_parseBlock(Parser *self, PyObject *args)
+Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
 {
     PyObject* unicodeText = NULL;
     LineData* prevLineData = NULL;
-    PyObject* returnSegmentsObject = NULL;
 
     if (! PyArg_ParseTuple(args, "|OOO",
                            &unicodeText,
-                           &prevLineData,
-                           &returnSegmentsObject))
+                           &prevLineData))
         return NULL;
 
     UNICODE_CHECK(unicodeText, NULL);
     if (Py_None != (PyObject*)(prevLineData))
         TYPE_CHECK(prevLineData, LineData, NULL);
-    BOOL_CHECK(returnSegmentsObject, NULL);
-    
-    bool returnSegments = Py_True == returnSegmentsObject;
     
     ContextStack* contextStack;
     bool lineContinuePrevious = false;
@@ -2768,11 +2763,25 @@ Parser_parseBlock(Parser *self, PyObject *args)
             return (PyObject*)lineData;
     }
 }
+    
 
+static PyObject*
+Parser_parseBlock(Parser *self, PyObject *args)
+{
+    return Parser_parseBlock_internal(self, args, false);
+}
+
+static PyObject*
+Parser_highlightBlock(Parser *self, PyObject *args)
+{
+    return Parser_parseBlock_internal(self, args, true);
+}
 
 static PyMethodDef Parser_methods[] = {
     {"setContexts", (PyCFunction)Parser_setConexts, METH_VARARGS,  "Set list of parser contexts"},
-    {"parseBlock", (PyCFunction)Parser_parseBlock, METH_VARARGS,  "Parse line of text"},
+    {"parseBlock", (PyCFunction)Parser_parseBlock, METH_VARARGS,  "Parse line of text and return line data"},
+    {"highlightBlock", (PyCFunction)Parser_highlightBlock, METH_VARARGS, 
+            "Parse line of text and return line data and highlighted segments"},
     {NULL}  /* Sentinel */
 };
 

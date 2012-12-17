@@ -574,7 +574,7 @@ def loadSyntax(syntax, filePath, formatConverterFunction = None):
                 deliminatorSet.update(additionalSet)
 
     deliminatorSetAsString = u''.join(list(deliminatorSet))
-    syntax.parser = _parserModule.Parser(syntax, deliminatorSetAsString, lists, keywordsCaseSensitive)
+    syntax._setParser(_parserModule.Parser(syntax, deliminatorSetAsString, lists, keywordsCaseSensitive))
     attributeToFormatMap = _loadAttributeToFormatMap(highlightingElement)
     
     # parse contexts

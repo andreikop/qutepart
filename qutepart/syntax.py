@@ -59,7 +59,13 @@ class Syntax:
     """
     def __init__(self, manager):
         self.manager = manager
-        
+    
+    def _setParser(self, parser):
+        self.parser = parser
+        # performance optimization, avoid 1 function call
+        self.highlightBlock = parser.highlightBlock
+        self.parseBlock = parser.parseBlock
+    
     def highlightBlock(self, text, prevLineData):
         """Parse line of text and return
             (lineData, highlightedSegments)
@@ -67,7 +73,7 @@ class Syntax:
             lineData is data, which shall be saved and used for parsing next line
             highlightedSegments is list of touples (segmentLength, segmentFormat)
         """
-        return self.parser.parseBlock(text, prevLineData, True)
+        return self.parser.highlightBlock(text, prevLineData)
         
     def parseBlock(self, text, prevLineData):
         """Parse line of text and return
@@ -79,7 +85,7 @@ class Syntax:
         but only parsers the block and produces data, which is necessary for parsing next line.
         Use it for invisible lines
         """
-        return self.parser.parseBlock(text, prevLineData, False)
+        return self.parser.parseBlock(text, prevLineData)
 
 
 class SyntaxManager:

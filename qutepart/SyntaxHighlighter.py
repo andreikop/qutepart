@@ -36,7 +36,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self.setFormat(start, length, format)
 
     def highlightBlock(self, text):
-        if True:
+        if False:
             lineData, highlightedSegments = self._syntax.highlightBlock(text, self._prevData())
             
             currentPos = 0
