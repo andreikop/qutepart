@@ -20,7 +20,7 @@ def main():
     filePath = sys.argv[1]
     
     try:
-        syntax = SyntaxManager().getSyntaxBySourceFileName(filePath)
+        syntax = SyntaxManager().getSyntaxBySourceFileName(filePath, SyntaxHighlighter.formatConverterFunction)
     except KeyError:
         print 'No syntax for', filePath
         return

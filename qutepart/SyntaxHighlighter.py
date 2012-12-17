@@ -18,7 +18,8 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self._syntax = syntax
         self._quteparserToQtFormat = {}
     
-    def _makeQtFormat(self, format):
+    @staticmethod
+    def formatConverterFunction(format):
         qtFormat = QTextCharFormat()
         qtFormat.setForeground(QBrush(QColor(format.color)))
         qtFormat.setBackground(QBrush(QColor(format.background)))
@@ -26,24 +27,16 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         qtFormat.setFontWeight(QFont.Bold if format.bold else QFont.Normal)
         qtFormat.setFontUnderline(format.underline)
         qtFormat.setFontStrikeOut(format.strikeOut)
+
         return qtFormat
     
-    def _getQtFormat(self, format):
-        try:
-            return self._quteparserToQtFormat[id(format)]
-        except KeyError:
-            qtFormat = self._makeQtFormat(format)
-            self._quteparserToQtFormat[id(format)] = qtFormat
-            return qtFormat
-
     def _setFormat(self, start, length, format):
         if format is None:
             return
-        qtFormat = self._getQtFormat(format)
-        self.setFormat(start, length, qtFormat)
+        self.setFormat(start, length, format)
 
     def highlightBlock(self, text):
-        if False:
+        if True:
             lineData, highlightedSegments = self._syntax.highlightBlock(text, self._prevData())
             
             currentPos = 0

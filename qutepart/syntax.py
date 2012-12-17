@@ -92,26 +92,26 @@ class SyntaxManager:
         self._mimeTypeToXmlFileName = syntaxDb['mimeTypeToXmlFileName']
         self._extensionToXmlFileName = syntaxDb['extensionToXmlFileName']
 
-    def getSyntaxByXmlName(self, xmlFileName):
+    def getSyntaxByXmlName(self, xmlFileName, formatConverterFunction = None):
         if not xmlFileName in self._loadedSyntaxes:
             xmlFilePath = os.path.join(os.path.dirname(__file__), "syntax", xmlFileName)
             syntax = Syntax(self)
             self._loadedSyntaxes[xmlFileName] = syntax
-            qutepart.loader.loadSyntax(syntax, xmlFilePath)
+            qutepart.loader.loadSyntax(syntax, xmlFilePath, formatConverterFunction)
         
         return self._loadedSyntaxes[xmlFileName]
 
-    def getSyntaxByName(self, syntaxName):
+    def getSyntaxByName(self, syntaxName, formatConverterFunction = None):
         xmlFileName = self._syntaxNameToXmlFileName[syntaxName]
-        return self.getSyntaxByXmlName(xmlFileName)
+        return self.getSyntaxByXmlName(xmlFileName, formatConverterFunction)
     
-    def getSyntaxBySourceFileName(self, name):
+    def getSyntaxBySourceFileName(self, name, formatConverterFunction = None):
         for pattern, xmlFileName in self._extensionToXmlFileName.items():
             if fnmatch.fnmatch(name, pattern):
-                return self.getSyntaxByXmlName(xmlFileName)
+                return self.getSyntaxByXmlName(xmlFileName, formatConverterFunction)
         else:
             raise KeyError("No syntax for " + name)
 
-    def getSyntaxByMimeType(self, mimeType):
+    def getSyntaxByMimeType(self, mimeType, formatConverterFunction = None):
         xmlFileName = self._mimeTypeToXmlFileName[mimeType]
-        return self.getSyntaxByXmlName(xmlFileName)
+        return self.getSyntaxByXmlName(xmlFileName, formatConverterFunction)
