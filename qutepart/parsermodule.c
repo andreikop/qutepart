@@ -8,12 +8,6 @@
 #include <pcre.h>
 
 
-#define QUTEPART_MAX_WORD_LENGTH 128  // max found in existing rules when developing the parser is 65
-
-typedef long long int _StringHash;
-
-#define QUTEPART_MAX_CONTEXT_STACK_DEPTH 8
-
 #define UNICODE_CHECK(OBJECT, RET) \
     if (!PyUnicode_Check(OBJECT)) \
     { \
@@ -177,6 +171,18 @@ typedef long long int _StringHash;
 /********************************************************************************
  *                                Types declaration
  ********************************************************************************/
+#define QUTEPART_MAX_WORD_LENGTH 128  // max found in existing rules when developing the parser is 65
+
+typedef long long int _StringHash;
+
+#define QUTEPART_MAX_CONTEXT_STACK_DEPTH 8
+
+typedef struct {
+    int size;
+    const char** data;
+    int refCount;
+} _RegExpMatchGroups;
+
 typedef struct {
     PyObject_HEAD
     int _popsCount;
@@ -216,11 +222,11 @@ typedef struct {
 typedef struct {
     AbstractRule* rule;
     int length;
-    PyObject* data;
+    _RegExpMatchGroups* data;
 } RuleTryMatchResult_internal;
 
 typedef struct {
-    PyObject* contextData;
+    _RegExpMatchGroups* contextData;
     int currentColumnIndex;
     int wholeLineLen;
     PyObject* wholeLineUnicodeText;
@@ -267,7 +273,7 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     Context* _contexts[QUTEPART_MAX_CONTEXT_STACK_DEPTH];
-    PyObject* _data[QUTEPART_MAX_CONTEXT_STACK_DEPTH];
+    _RegExpMatchGroups* _data[QUTEPART_MAX_CONTEXT_STACK_DEPTH];
     int _size;
 } ContextStack;
 
@@ -299,6 +305,51 @@ typedef struct {
 
 
 
+
+/********************************************************************************
+ *                                _RegExpMatchGroups
+ ********************************************************************************/
+static _RegExpMatchGroups*
+_RegExpMatchGroups_new(int size, const char** data)
+{
+    _RegExpMatchGroups* self = PyMem_Malloc(sizeof *self);
+    self->refCount = 1;
+    self->data = data;
+    
+    return self;
+}
+
+static void
+_RegExpMatchGroups_release(_RegExpMatchGroups* self)
+{
+    if (NULL == self)
+        return;
+
+    self->refCount--;
+    
+    if (0 == self->refCount)
+    {
+        pcre_free(self->data);
+        PyMem_Free(self);
+    }
+}
+
+static _RegExpMatchGroups*
+_RegExpMatchGroups_duplicate(_RegExpMatchGroups* self)
+{
+    if (NULL != self)
+        self->refCount++;
+    return self;
+}
+
+static int
+_RegExpMatchGroups_size(_RegExpMatchGroups* self)
+{
+    if (NULL == self)
+        return 0;
+    else
+        return self->size;
+}
 
 /********************************************************************************
  *                                _listToDynamicallyAllocatedArray
@@ -470,15 +521,14 @@ static PyMemberDef RuleTryMatchResult_members[] = {
 DECLARE_TYPE_WITHOUT_CONSTRUCTOR_WITH_MEMBERS(RuleTryMatchResult, NULL, "Rule.tryMatch() result structure");
 
 static RuleTryMatchResult*
-RuleTryMatchResult_new(PyObject* rule, int length, PyObject* data)  // not a constructor, just C function
+RuleTryMatchResult_new(PyObject* rule, int length)  // not a constructor, just C function
 {
     RuleTryMatchResult* result = PyObject_New(RuleTryMatchResult, &RuleTryMatchResultType);
     result->rule = rule;
     Py_INCREF(result->rule);
     result->length = length;
-    result->data = data;
-    Py_XINCREF(result->data);
-    Py_XDECREF(data);
+    result->data = Py_None;
+    Py_INCREF(result->data);
     
     return result;
 }
@@ -513,7 +563,7 @@ _utf8CharacterLengthTable_init(void)
 }
 
 static TextToMatchObject_internal
-TextToMatchObject_internal_make(int column, PyObject* unicodeText, PyObject* contextData)
+TextToMatchObject_internal_make(int column, PyObject* unicodeText, _RegExpMatchGroups* contextData)
 {
     TextToMatchObject_internal textToMatchObject;
     
@@ -670,7 +720,7 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
     if (Py_None != contextData)
         TUPLE_CHECK(contextData, -1);
     
-    self->internal = TextToMatchObject_internal_make(column, text, contextData);
+    self->internal = TextToMatchObject_internal_make(column, text, NULL);  // NOTE contextData is NULL
 
     DeliminatorSet deliminatorSet = _MakeDeliminatorSet(deliminatorSetAsUnicodeString);
     
@@ -696,24 +746,29 @@ MakeEmptyTryMatchResult(void)
     RuleTryMatchResult_internal result;
     result.rule = NULL;
     result.length = 0;
-    result.data = Py_None;
+    result.data = NULL;
     
     return result;
 }
 
 static RuleTryMatchResult_internal
-MakeTryMatchResult(void* rule, int length, PyObject* data)
+MakeTryMatchResult(void* rule, int length, _RegExpMatchGroups* data)
 {
     RuleTryMatchResult_internal result;
     result.rule = rule;
     result.length = length;
-    result.data = data;
-    Py_XINCREF(result.data);
+    result.data = _RegExpMatchGroups_duplicate(data);
     
     if (((AbstractRule*)rule)->abstractRuleParams->lookAhead)
         result.length = 0;
     
     return result;
+}
+
+static void
+RuleTryMatchResult_internal_free(RuleTryMatchResult_internal* self)
+{
+    _RegExpMatchGroups_release(self->data);
 }
 
 static RuleTryMatchResult_internal
@@ -731,6 +786,18 @@ AbstractRule_tryMatch_internal(AbstractRule* self, TextToMatchObject_internal* t
     return ((_tryMatchFunctionType)self->_tryMatch)((PyObject*)self, textToMatchObject);
 }
 
+
+Context* AbstractRule_parentContext(AbstractRuleParams* params)
+{
+    return (Context*)params->parentContext;
+}
+
+Parser* AbstractRule_parentParser(AbstractRuleParams* params)
+{
+    return (Parser*)AbstractRule_parentContext(params)->parser;
+}
+
+
 // used only by unit test. C code uses AbstractRule_tryMatch_internal
 static PyObject*
 AbstractRule_tryMatch(AbstractRule* self, PyObject *args, PyObject *kwds)
@@ -744,10 +811,19 @@ AbstractRule_tryMatch(AbstractRule* self, PyObject *args, PyObject *kwds)
     
     RuleTryMatchResult_internal internalResult = AbstractRule_tryMatch_internal(self, &(textToMatchObject->internal));
     
+    PyObject* retVal;
     if (NULL == internalResult.rule)
-        Py_RETURN_NONE;
+    {
+        retVal = Py_None;
+        Py_INCREF(retVal);
+    }
     else
-        return (PyObject*)RuleTryMatchResult_new((PyObject*)internalResult.rule, internalResult.length, internalResult.data);
+    {
+        retVal = (PyObject*)RuleTryMatchResult_new((PyObject*)internalResult.rule, internalResult.length);
+    }
+    RuleTryMatchResult_internal_free(&internalResult);
+    
+    return retVal;
 }
 
 /********************************************************************************
@@ -774,12 +850,12 @@ DetectChar_tryMatch(DetectChar* self, TextToMatchObject_internal* textToMatchObj
     if (self->abstractRuleParams->dynamic)
     {
         int index = self->index - 1;
-        if (index >= PyTuple_Size(textToMatchObject->contextData))
+        if (index >= _RegExpMatchGroups_size(textToMatchObject->contextData))
         {
             fprintf(stderr, "Invalid DetectChar index %d", index);
             return MakeEmptyTryMatchResult();
         }
-        
+#if 0
         PyObject* string = PyTuple_GetItem(textToMatchObject->contextData, index);
         if ( ! PyUnicode_Check(string))
         {
@@ -794,6 +870,9 @@ DetectChar_tryMatch(DetectChar* self, TextToMatchObject_internal* textToMatchObj
         }
         
         char_ = PyUnicode_AS_UNICODE(string)[0];
+#else
+    #warning Implement dynamic detectchar
+#endif
     }
     else
     {
@@ -1052,8 +1131,9 @@ WordDetect_tryMatch(WordDetect* self, TextToMatchObject_internal* textToMatchObj
     
     const char* wordToCheck = textToMatchObject->utf8Text;
     
+    Parser* parentParser = AbstractRule_parentParser(self->abstractRuleParams);
     if (self->insensitive ||
-        ( ! ((Parser*)((Context*)self->abstractRuleParams->parentContext)->parser)->keywordsCaseSensitive))
+        ( ! (parentParser->keywordsCaseSensitive)))
     {
         wordToCheck = textToMatchObject->utf8TextLower;
     }
@@ -1261,9 +1341,8 @@ keyword_init(keyword *self, PyObject *args, PyObject *kwds)
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
     ASSIGN_BOOL_FIELD(insensitive);
     
-    Context* parentContext = (Context*)self->abstractRuleParams->parentContext;
-    Parser* parser = (Parser*)parentContext->parser;
-    self->insensitive = self->insensitive || ( ! parser->keywordsCaseSensitive);
+    Parser* parentParser = AbstractRule_parentParser(self->abstractRuleParams);
+    self->insensitive = self->insensitive || ( ! parentParser->keywordsCaseSensitive);
     
     _WordTree_init(&(self->wordTree), words);
     
@@ -1344,7 +1423,7 @@ _compileRegExp(PyObject* string, bool insensitive, pcre_extra** pExtra)
 }
 
 static int
-_matchRegExp(pcre* regExp, pcre_extra* extra, const char* utf8Text, int textLen)
+_matchRegExp(pcre* regExp, pcre_extra* extra, const char* utf8Text, int textLen, _RegExpMatchGroups** pGroups)
 {
     int ovector[30];
     int rc = pcre_exec(regExp, extra,
@@ -1354,6 +1433,13 @@ _matchRegExp(pcre* regExp, pcre_extra* extra, const char* utf8Text, int textLen)
 
     if (rc > 0)
     {
+        if (NULL != pGroups)
+        {
+            const char** data = NULL;
+            pcre_get_substring_list(utf8Text, ovector, rc, &data);
+            *pGroups = _RegExpMatchGroups_new(rc, data);
+        }
+        
         return ovector[1] - ovector[0];
     }
     else if (rc < 0 && rc != -1)
@@ -1403,15 +1489,17 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
     if (NULL == regExp)
         return MakeEmptyTryMatchResult();
     
-    int matchLen = _matchRegExp(regExp, extra, textToMatchObject->utf8Text, textToMatchObject->textLen);
+    _RegExpMatchGroups* groups = NULL;
+    Context* parentContext = AbstractRule_parentContext(self->abstractRuleParams);
+    int matchLen;
     
-#if 0    
-    PyObject* wholeMatch = PyTuple_GetItem(matchRes, 0);
-    PyObject* groups = PyTuple_GetItem(matchRes, 1);
-#endif
-
+    if (parentContext->dynamic)
+        matchLen = _matchRegExp(regExp, extra, textToMatchObject->utf8Text, textToMatchObject->textLen, &groups);
+    else
+        matchLen = _matchRegExp(regExp, extra, textToMatchObject->utf8Text, textToMatchObject->textLen, NULL);
+    
     if (matchLen != 0)
-        return MakeTryMatchResult(self, matchLen, NULL/*FIXME groups*/);
+        return MakeTryMatchResult(self, matchLen, groups);
     else
         return MakeEmptyTryMatchResult();
 }
@@ -1594,8 +1682,7 @@ AbstractNumberRule_tryMatch(AbstractRule* self,
                                                 textToMatchObject->wholeLineUnicodeText,
                                                 textToMatchObject->contextData);
         
-        Context* parentContext = (Context*)self->abstractRuleParams->parentContext;
-        Parser* parentParser = (Parser*)parentContext->parser;
+        Parser* parentParser = AbstractRule_parentParser(self->abstractRuleParams);
         TextToMatchObject_internal_update(&newTextToMatchObject,
                                           matchEndIndex,
                                          &parentParser->deliminatorSet);
@@ -1610,6 +1697,7 @@ AbstractNumberRule_tryMatch(AbstractRule* self,
             {
                 index += result.length;
                 haveMatch = true;
+                RuleTryMatchResult_internal_free(&result);
             }
             // child rule context and attribute is ignored
         }
@@ -2262,9 +2350,7 @@ ContextStack_dealloc(ContextStack* self)
 {
     int i;
     for (i = 0; i < self->_size; i++)
-    {
-        Py_XDECREF(self->_data[i]);
-    }
+        _RegExpMatchGroups_release(self->_data[i]);
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -2272,7 +2358,7 @@ ContextStack_dealloc(ContextStack* self)
 DECLARE_TYPE_WITHOUT_CONSTRUCTOR(ContextStack, NULL, "Context stack");
 
 static ContextStack*
-ContextStack_new(Context** contexts, PyObject** data, int size)  // not a constructor, just C function
+ContextStack_new(Context** contexts, _RegExpMatchGroups** data, int size)  // not a constructor, just C function
 {
     ContextStack* contextStack = PyObject_New(ContextStack, &ContextStackType);
 
@@ -2280,8 +2366,7 @@ ContextStack_new(Context** contexts, PyObject** data, int size)  // not a constr
     for (i = 0; i < size; i++)
     {
         contextStack->_contexts[i] = contexts[i];
-        contextStack->_data[i] = data[i];
-        Py_XINCREF(contextStack->_data[i]);
+        contextStack->_data[i] = _RegExpMatchGroups_duplicate(data[i]);
     }
     contextStack->_size = size;
 
@@ -2294,7 +2379,7 @@ ContextStack_currentContext(ContextStack* self)
     return self->_contexts[self->_size - 1];
 }
 
-static PyObject*
+static _RegExpMatchGroups*
 ContextStack_currentData(ContextStack* self)
 {
     return self->_data[self->_size - 1];
@@ -2330,7 +2415,7 @@ ContextSwitcher_init(ContextSwitcher *self, PyObject *args, PyObject *kwds)
 DECLARE_TYPE(ContextSwitcher, NULL, "Context switcher");
 
 static ContextStack*
-ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* contextStack, PyObject* data)
+ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* contextStack, _RegExpMatchGroups* data)
 {
     ContextStack* newContextStack = ContextStack_new(contextStack->_contexts,
                                                      contextStack->_data,
@@ -2344,14 +2429,9 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* context
             newContextStack->_contexts[newContextStack->_size] = contextToSwitch;
             
             if (contextToSwitch->dynamic)
-            {
-                newContextStack->_data[newContextStack->_size] = data;
-                Py_XDECREF(data);
-            }
+                newContextStack->_data[newContextStack->_size] = _RegExpMatchGroups_duplicate(data);
             else
-            {
                 newContextStack->_data[newContextStack->_size] = NULL;
-            }
             
             newContextStack->_size++;
         }
@@ -2534,6 +2614,8 @@ Context_parseBlock(Context* self,
                                                         *pContextStack,
                                                         result.data);
                 
+                RuleTryMatchResult_internal_free(&result);
+                
                 if (newContextStack != *pContextStack)
                 {
                     ASSIGN_VALUE(ContextStack, *pContextStack, newContextStack);
@@ -2551,7 +2633,7 @@ Context_parseBlock(Context* self,
                 ContextStack* newContextStack = 
                         ContextSwitcher_getNextContextStack(self->fallthroughContext,
                                                             *pContextStack,
-                                                            Py_None);
+                                                            NULL);
                 if (newContextStack != *pContextStack)
                 {
                     ASSIGN_VALUE(ContextStack, *pContextStack, newContextStack);
@@ -2628,7 +2710,7 @@ Parser_init(Parser *self, PyObject *args, PyObject *kwds)
 static ContextStack*
 _makeDefaultContextStack(Context* defaultContext)
 {
-    PyObject* data = NULL;
+    _RegExpMatchGroups* data = NULL;
 
     return ContextStack_new(&defaultContext, &data, 1);
 }
@@ -2697,7 +2779,7 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
         (! lineContinuePrevious))
     {
         ContextSwitcher* contextSwitcher = (ContextSwitcher*)currentContext->lineBeginContext;
-        ContextStack* newContextStack = ContextSwitcher_getNextContextStack(contextSwitcher, contextStack, Py_None);
+        ContextStack* newContextStack = ContextSwitcher_getNextContextStack(contextSwitcher, contextStack, NULL);
         ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
     }
     

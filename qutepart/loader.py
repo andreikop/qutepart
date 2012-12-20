@@ -266,7 +266,7 @@ def _loadWordDetect(parentContext, xmlElement, attributeToFormatMap, formatConve
     
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
     
-    return _parserModule.WordDetect(formatConverterFunction, word, insensitive)
+    return _parserModule.WordDetect(abstractRuleParams, word, insensitive)
 
 def _loadKeyword(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)
@@ -404,7 +404,6 @@ _ruleClassDict = \
 
 
 def _loadContexts(highlightingElement, parser, attributeToFormatMap, formatConverterFunction):
-    assert formatConverterFunction is not None
     contextsElement = highlightingElement.find('contexts')
     
     xmlElementList = contextsElement.findall('context')
