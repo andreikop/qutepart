@@ -351,6 +351,12 @@ _RegExpMatchGroups_size(_RegExpMatchGroups* self)
         return self->size;
 }
 
+static const char*
+_RegExpMatchGroups_getItem(_RegExpMatchGroups* self, int index)
+{
+    return self->data[index];
+}
+
 /********************************************************************************
  *                                _listToDynamicallyAllocatedArray
  ********************************************************************************/
@@ -710,17 +716,55 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
     int column = -1;
     PyObject* text = NULL;
     PyObject* deliminatorSetAsUnicodeString = NULL;
-    PyObject* contextData = NULL;
+    PyObject* contextDataTuple = NULL;
     
-    if (! PyArg_ParseTuple(args, "|iOOO", &column, &text, &deliminatorSetAsUnicodeString, &contextData))
+    if (! PyArg_ParseTuple(args, "|iOOO", &column, &text, &deliminatorSetAsUnicodeString, &contextDataTuple))
         return -1;
     
     UNICODE_CHECK(text, -1);
     UNICODE_CHECK(deliminatorSetAsUnicodeString, -1);
-    if (Py_None != contextData)
-        TUPLE_CHECK(contextData, -1);
     
-    self->internal = TextToMatchObject_internal_make(column, text, NULL);  // NOTE contextData is NULL
+    _RegExpMatchGroups* contextData = NULL;
+    if (Py_None != contextDataTuple)
+    {
+        TUPLE_CHECK(contextDataTuple, -1);
+        int size = PyTuple_GET_SIZE(contextDataTuple);
+        int memsize = (size + 1) * sizeof(const char*);  // size + NULL pointer
+        int i;
+        for (i = 0; i < size; i++)
+        {
+            PyObject* unicodeString = PyTuple_GET_ITEM(contextDataTuple, i);
+
+            if ( ! PyUnicode_Check(unicodeString))
+            {
+                PyErr_SetString(PyExc_TypeError, "Context data items must be unicode");
+                return -1;
+            }
+            PyObject* utf8String = PyUnicode_AsUTF8String(unicodeString);
+            memsize += PyString_GET_SIZE(utf8String) + 1; // + null char
+            Py_XDECREF(utf8String);
+        }
+        char* data = pcre_malloc(memsize);
+        
+        char* freeSpaceForString = data + ((size + 1) * sizeof(char*));
+        const char** charPointers = (const char**)data;
+        
+        for (i = 0; i < size; i++)
+        {
+            PyObject* unicodeString = PyTuple_GET_ITEM(contextDataTuple, i);
+            PyObject* utf8String = PyUnicode_AsUTF8String(unicodeString);
+            int printedSize = sprintf(freeSpaceForString, PyString_AS_STRING(utf8String)) + 1;
+            charPointers[i] = freeSpaceForString;
+            freeSpaceForString += printedSize;
+            Py_XDECREF(utf8String);
+        }
+
+        charPointers[size] = NULL;
+        
+        contextData = _RegExpMatchGroups_new(size, charPointers);
+    }
+    
+    self->internal = TextToMatchObject_internal_make(column, text, contextData);
 
     DeliminatorSet deliminatorSet = _MakeDeliminatorSet(deliminatorSetAsUnicodeString);
     
@@ -728,7 +772,6 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
     _FreeDeliminatorSet(&deliminatorSet);
 
     Py_INCREF(self->internal.wholeLineUnicodeText);
-    Py_INCREF(self->internal.contextData);
 
     return 0;
 }
@@ -832,7 +875,7 @@ AbstractRule_tryMatch(AbstractRule* self, PyObject *args, PyObject *kwds)
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    Py_UNICODE char_;
+    char utf8Char[4 + 1];  // 4 bytes of utf8 character + zero
     int index;
 } DetectChar;
 
@@ -845,44 +888,36 @@ DetectChar_dealloc_fields(DetectChar* self)
 static RuleTryMatchResult_internal
 DetectChar_tryMatch(DetectChar* self, TextToMatchObject_internal* textToMatchObject)
 {
-    Py_UNICODE char_;
+    const char* utf8Char;
     
     if (self->abstractRuleParams->dynamic)
     {
         int index = self->index - 1;
         if (index >= _RegExpMatchGroups_size(textToMatchObject->contextData))
         {
-            fprintf(stderr, "Invalid DetectChar index %d", index);
+            fprintf(stderr, "Invalid DetectChar index %d\n", index);
             return MakeEmptyTryMatchResult();
         }
-#if 0
-        PyObject* string = PyTuple_GetItem(textToMatchObject->contextData, index);
-        if ( ! PyUnicode_Check(string))
-        {
-            PyErr_SetString(PyExc_TypeError, "Context data must be unicode");
-            return MakeEmptyTryMatchResult();
-        }
-        
-        if (PyUnicode_GET_SIZE(string) != 1)
-        {
-            fprintf(stderr, "Too long DetectChar string");
-            return MakeEmptyTryMatchResult();
-        }
-        
-        char_ = PyUnicode_AS_UNICODE(string)[0];
-#else
-    #warning Implement dynamic detectchar
-#endif
+
+        utf8Char = _RegExpMatchGroups_getItem(textToMatchObject->contextData, index);
     }
     else
     {
-        char_ = self->char_;
+        utf8Char = self->utf8Char;
     }
     
-    if (char_ == textToMatchObject->unicodeText[0])
-        return MakeTryMatchResult(self, 1, NULL);
-    else
+    if (utf8Char[0] != textToMatchObject->utf8Text[0])
         return MakeEmptyTryMatchResult();
+    
+    int charIndex = 1;
+    while (utf8Char[charIndex] != '\0' &&
+           textToMatchObject->utf8Text[charIndex] != '\0')
+    {
+        if (utf8Char[charIndex] != textToMatchObject->utf8Text[charIndex])
+            return MakeEmptyTryMatchResult();
+        charIndex++;
+    }
+    return MakeTryMatchResult(self, charIndex, NULL);
 }
 
 static int
@@ -900,7 +935,10 @@ DetectChar_init(DetectChar *self, PyObject *args, PyObject *kwds)
     UNICODE_CHECK(char_, -1);
     
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
-    self->char_ = PyUnicode_AS_UNICODE(char_)[0];
+    
+    PyObject* utf8Text = PyUnicode_AsUTF8String(char_);
+    strncpy(self->utf8Char, PyString_AS_STRING(utf8Text), sizeof self->utf8Char);
+    Py_XDECREF(utf8Text);
 
     return 0;
 }
@@ -1409,6 +1447,7 @@ _compileRegExp(PyObject* string, bool insensitive, pcre_extra** pExtra)
         else
             fprintf(stderr, "Failed to compile reg exp. Pattern:");
         PyObject_Print(string, stderr, 0);
+        fprintf(stderr, "\n");
     }
     
 #if defined PCRE_STUDY_JIT_COMPILE
@@ -1472,6 +1511,8 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
     
     if (self->abstractRuleParams->dynamic)
     {
+        return MakeEmptyTryMatchResult();  // FIXME
+        
         PyObject* string = 
                 PyObject_CallFunctionObjArgs(self->makeDynamicSubstitutionsFunc,
                                              self->string,
