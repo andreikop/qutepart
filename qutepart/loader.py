@@ -238,27 +238,12 @@ def _loadAnyChar(parentContext, xmlElement, attributeToFormatMap, formatConverte
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
     return _parserModule.AnyChar(abstractRuleParams, string)
 
-def _StringDetect_makeDynamicStringSubsctitutions(string, contextData):
-    """For dynamic rules, replace %d patterns with actual strings
-    Python function, which is used by C extension.
-    """
-    def _replaceFunc(escapeMatchObject):
-        stringIndex = escapeMatchObject.group(0)[1]
-        index = int(stringIndex) - 1
-        if index < len(textToMatchObject.contextData):
-            return textToMatchObject.contextData[index]
-        else:
-            return escapeMatchObject.group(0)  # no any replacements, return original value
-
-    return _numSeqReplacer.sub(_replaceFunc, string)
-
 def _loadStringDetect(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)
     
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
     return _parserModule.StringDetect(abstractRuleParams,
-                                      string,
-                                      _StringDetect_makeDynamicStringSubsctitutions)
+                                      string)
 
 def _loadWordDetect(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     word = _safeGetRequiredAttribute(xmlElement, "String", "")

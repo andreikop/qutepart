@@ -15,6 +15,9 @@ import sys
 import re
 
 
+_numSeqReplacer = re.compile('%\d+')
+
+
 class ParseBlockFullResult:
     """Result of Parser.parseBlock() call.
     Public attributes:
@@ -311,10 +314,9 @@ class StringDetect(AbstractRule):
     """Public attributes:
         string
     """
-    def __init__(self, abstractRuleParams, string, makeDynamicSubstitutionsFunc):
+    def __init__(self, abstractRuleParams, string):
         AbstractRule.__init__(self, abstractRuleParams)
         self.string = string
-        self.makeDynamicSubstitutionsFunc = makeDynamicSubstitutionsFunc
     
     def shortId(self):
         return 'StringDetect(%s)' % self.string
@@ -324,7 +326,7 @@ class StringDetect(AbstractRule):
             return None
         
         if self.dynamic:
-            string = self.makeDynamicStringSubsctitutionsFunc(self.string, textToMatchObject.contextData)
+            string = self._makeDynamicSubsctitutions(self.string, textToMatchObject.contextData)
         else:
             string = self.string
         
@@ -332,6 +334,22 @@ class StringDetect(AbstractRule):
             return RuleTryMatchResult(self, len(string))
     
         return None
+    
+    @staticmethod
+    def _makeDynamicSubsctitutions(string, contextData):
+        """For dynamic rules, replace %d patterns with actual strings
+        Python function, which is used by C extension.
+        """
+        def _replaceFunc(escapeMatchObject):
+            stringIndex = escapeMatchObject.group(0)[1]
+            index = int(stringIndex) - 1
+            if index < len(textToMatchObject.contextData):
+                return textToMatchObject.contextData[index]
+            else:
+                return escapeMatchObject.group(0)  # no any replacements, return original value
+
+        return _numSeqReplacer.sub(_replaceFunc, string)
+
 
 
 class WordDetect(AbstractRule):
@@ -906,12 +924,12 @@ class Parser:
 
         return (parseBlockFullResult.lineData, highlightedSegments)
 
-    def parseBlock(self, text, prevLineData, returnSegments):
+    def highlightBlock(self, text, prevLineData):
+        return self._makeParseBlockResult(self.parseBlockFullResults(text, prevLineData))
+    
+    def parseBlock(self, text, prevLineData):
         lineData, highlightedSegments = self._makeParseBlockResult(self.parseBlockFullResults(text, prevLineData))
-        if returnSegments:
-            return lineData, highlightedSegments
-        else:
-            return lineData
+        return lineData
     
     def parseBlockFullResults(self, text, prevLineData):
         """Parse block and return ParseBlockFullResult

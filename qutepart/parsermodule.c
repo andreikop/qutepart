@@ -1061,55 +1061,90 @@ DECLARE_RULE_METHODS_AND_TYPE(AnyChar);
 /********************************************************************************
  *                                StringDetect
  ********************************************************************************/
+
+#define STRING_DETECT_MAX_STRING_LENGTH 512
+
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    PyObject* string;
-    PyObject* makeDynamicStringSubstitutionsFunc;
+    char* utf8String;
+    int stringLen; // without \0
 } StringDetect;
 
+static int
+_numPlaceholderIndex(char* text)
+{
+    if ('%' == *text && isdigit(*(text + 1)))
+        return *(text + 1) - '0';
+    else
+        return -1;
+}
+
+static int
+StringDetect_makeDynamicSubstitutions(StringDetect* self,
+                                      char* buffer,
+                                      int maxResultLen,
+                                      _RegExpMatchGroups* contextData)
+{
+    int resultLen = 0;
+    
+    int i;
+    for (i = 0; i < self->stringLen && resultLen < maxResultLen; i++)
+    {
+        int index = _numPlaceholderIndex(&self->utf8String[i]);
+        if (index > 0)
+        {
+            if (index >= _RegExpMatchGroups_size(contextData))
+            {
+                fprintf(stderr, "Invalid dynamic string index %d\n", index);
+                return -1;
+            }
+
+            const char* group = _RegExpMatchGroups_getItem(contextData, index);
+            int groupLen = strlen(group);
+
+            if (groupLen > (maxResultLen - resultLen))
+                return -1;
+            
+            strcpy(buffer + resultLen, group);
+            resultLen += strlen(group);
+            i++; // skip number
+        }
+        else
+        {
+            buffer[resultLen] = self->utf8String[i];
+            resultLen++;
+        }
+    }
+    
+    buffer[resultLen] = '\0';
+    
+    return resultLen;
+}
 
 static void
 StringDetect_dealloc_fields(StringDetect* self)
 {
-    Py_XDECREF(self->string);
-    Py_XDECREF(self->makeDynamicStringSubstitutionsFunc);
+    if (NULL != self->utf8String)
+        PyMem_Free(self->utf8String);
 }
 
 static RuleTryMatchResult_internal
 StringDetect_tryMatch(StringDetect* self, TextToMatchObject_internal* textToMatchObject)
 {
-    PyObject* string = NULL;
     if (self->abstractRuleParams->dynamic)
     {
-        string = PyObject_CallFunctionObjArgs(self->makeDynamicStringSubstitutionsFunc,
-                                              self->string, textToMatchObject->contextData, NULL);
+        char buffer[STRING_DETECT_MAX_STRING_LENGTH];
+        int stringLen = StringDetect_makeDynamicSubstitutions(self, buffer, sizeof buffer - 1,
+                                                              textToMatchObject->contextData);
         
-        if (NULL == string)
-        {
-            fprintf(stderr, "Failed to make substitutions");
-            return MakeEmptyTryMatchResult();
-        }
+        if (stringLen > 0 && 0 == strncmp(buffer, textToMatchObject->utf8Text, stringLen))
+            return MakeTryMatchResult(self, stringLen, NULL);
     }
     else
     {
-        string = self->string;
-    }
-    
-    // strncmp
-    int stringLen = PyUnicode_GET_SIZE(string);
-    Py_UNICODE* stringUnicode = PyUnicode_AS_UNICODE(string);
-    if (textToMatchObject->textLen >= stringLen)
-    {
-        int i;
-        for(i = 0; i < stringLen; i++)
-        {
-            if (textToMatchObject->unicodeText[i] != stringUnicode[i])
-                return MakeEmptyTryMatchResult();
-        
-        }
-        
-        return MakeTryMatchResult(self, stringLen, NULL);
+        if (0 == strncmp(self->utf8String, textToMatchObject->utf8Text, self->stringLen))
+            return MakeTryMatchResult(self, self->stringLen, NULL);
     }
 
     return MakeEmptyTryMatchResult();
@@ -1122,18 +1157,20 @@ StringDetect_init(StringDetect *self, PyObject *args, PyObject *kwds)
     
     PyObject* abstractRuleParams = NULL;
     PyObject* string = NULL;
-    PyObject* makeDynamicStringSubstitutionsFunc = NULL;
         
-    if (! PyArg_ParseTuple(args, "|OOO", &abstractRuleParams, &string, &makeDynamicStringSubstitutionsFunc))
+    if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &string))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
     UNICODE_CHECK(string, -1);
-    FUNC_CHECK(makeDynamicStringSubstitutionsFunc, -1);
     
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
-    ASSIGN_PYOBJECT_FIELD(string);
-    ASSIGN_PYOBJECT_FIELD(makeDynamicStringSubstitutionsFunc);
+    
+    PyObject* utf8String = PyUnicode_AsUTF8String(string);
+    self->stringLen = PyString_GET_SIZE(utf8String);
+    self->utf8String = PyMem_Malloc(self->stringLen + 1);
+    strncpy(self->utf8String, PyString_AS_STRING(utf8String), self->stringLen + 1);
+    Py_DECREF(utf8String);
 
     return 0;
 }
