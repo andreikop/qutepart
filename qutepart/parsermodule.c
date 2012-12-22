@@ -314,6 +314,7 @@ _RegExpMatchGroups_new(int size, const char** data)
 {
     _RegExpMatchGroups* self = PyMem_Malloc(sizeof *self);
     self->refCount = 1;
+    self->size = size;
     self->data = data;
     
     return self;
@@ -830,14 +831,102 @@ AbstractRule_tryMatch_internal(AbstractRule* self, TextToMatchObject_internal* t
 }
 
 
-Context* AbstractRule_parentContext(AbstractRuleParams* params)
+static Context*
+AbstractRule_parentContext(AbstractRuleParams* params)
 {
     return (Context*)params->parentContext;
 }
 
-Parser* AbstractRule_parentParser(AbstractRuleParams* params)
+static Parser*
+AbstractRule_parentParser(AbstractRuleParams* params)
 {
     return (Parser*)AbstractRule_parentContext(params)->parser;
+}
+
+
+static int
+_numPlaceholderIndex(char* text)
+{
+    if ('%' == *text && isdigit(*(text + 1)))
+    {
+        int digit = *(text + 1) - '0';
+        return digit - 1;  // convert from numeration from 1 to numeration from zero
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+#define QUTEPART_DYNAMIC_STRING_MAX_LENGTH 512
+
+// for dynamic StringDetect and RegExpr
+// returns -1 if something goes wrong
+static int
+_makeDynamicSubstitutions(char* utf8String,
+                          int stringLen,
+                          char* buffer,
+                          int maxResultLen,
+                          _RegExpMatchGroups* contextData,
+                          bool escapeRegEx)
+{
+    int resultLen = 0;
+    
+    int i;
+    for (i = 0; i < stringLen && resultLen < maxResultLen; i++)
+    {
+        int index = _numPlaceholderIndex(&utf8String[i]);
+        if (index >= 0)
+        {
+            if (index >= _RegExpMatchGroups_size(contextData))
+            {
+                fprintf(stderr, "Invalid dynamic string index %d\n", index);
+                return -1;
+            }
+            const char* group = _RegExpMatchGroups_getItem(contextData, index);
+            int groupLen = strlen(group);
+            
+            if (escapeRegEx)
+            {
+                // check if have space for all escaped chars. Quicker, than checking every step
+                if ((groupLen * 2) > (maxResultLen - resultLen))
+                    return -1;
+                
+                int groupCharIndex;
+                for (groupCharIndex = 0; groupCharIndex < groupLen; groupCharIndex++)
+                {
+                    if (group[groupCharIndex] > 0x7f ||
+                        isdigit(group[groupCharIndex]) ||
+                        isalpha(group[groupCharIndex])) // leave as is
+                    {
+                        buffer[resultLen++] = group[groupCharIndex];
+                    }
+                    else // escape
+                    {
+                        buffer[resultLen++] = '\\';
+                        buffer[resultLen++] = group[groupCharIndex];
+                    }
+                }
+            }
+            else
+            {
+                if (groupLen > (maxResultLen - resultLen))
+                    return -1;
+
+                strcpy(buffer + resultLen, group);
+                resultLen += strlen(group);
+            }
+            i++; // skip number
+        }
+        else
+        {
+            buffer[resultLen] = utf8String[i];
+            resultLen++;
+        }
+    }
+    buffer[resultLen] = '\0';
+    
+    return resultLen;
 }
 
 
@@ -1062,8 +1151,6 @@ DECLARE_RULE_METHODS_AND_TYPE(AnyChar);
  *                                StringDetect
  ********************************************************************************/
 
-#define STRING_DETECT_MAX_STRING_LENGTH 512
-
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
@@ -1071,56 +1158,6 @@ typedef struct {
     int stringLen; // without \0
 } StringDetect;
 
-static int
-_numPlaceholderIndex(char* text)
-{
-    if ('%' == *text && isdigit(*(text + 1)))
-        return *(text + 1) - '0';
-    else
-        return -1;
-}
-
-static int
-StringDetect_makeDynamicSubstitutions(StringDetect* self,
-                                      char* buffer,
-                                      int maxResultLen,
-                                      _RegExpMatchGroups* contextData)
-{
-    int resultLen = 0;
-    
-    int i;
-    for (i = 0; i < self->stringLen && resultLen < maxResultLen; i++)
-    {
-        int index = _numPlaceholderIndex(&self->utf8String[i]);
-        if (index > 0)
-        {
-            if (index >= _RegExpMatchGroups_size(contextData))
-            {
-                fprintf(stderr, "Invalid dynamic string index %d\n", index);
-                return -1;
-            }
-
-            const char* group = _RegExpMatchGroups_getItem(contextData, index);
-            int groupLen = strlen(group);
-
-            if (groupLen > (maxResultLen - resultLen))
-                return -1;
-            
-            strcpy(buffer + resultLen, group);
-            resultLen += strlen(group);
-            i++; // skip number
-        }
-        else
-        {
-            buffer[resultLen] = self->utf8String[i];
-            resultLen++;
-        }
-    }
-    
-    buffer[resultLen] = '\0';
-    
-    return resultLen;
-}
 
 static void
 StringDetect_dealloc_fields(StringDetect* self)
@@ -1134,9 +1171,11 @@ StringDetect_tryMatch(StringDetect* self, TextToMatchObject_internal* textToMatc
 {
     if (self->abstractRuleParams->dynamic)
     {
-        char buffer[STRING_DETECT_MAX_STRING_LENGTH];
-        int stringLen = StringDetect_makeDynamicSubstitutions(self, buffer, sizeof buffer - 1,
-                                                              textToMatchObject->contextData);
+        char buffer[QUTEPART_DYNAMIC_STRING_MAX_LENGTH];
+        int stringLen = _makeDynamicSubstitutions(self->utf8String, self->stringLen,
+                                                  buffer, sizeof buffer - 1,
+                                                  textToMatchObject->contextData,
+                                                  false);
         
         if (stringLen > 0 && 0 == strncmp(buffer, textToMatchObject->utf8Text, stringLen))
             return MakeTryMatchResult(self, stringLen, NULL);
@@ -1433,13 +1472,11 @@ DECLARE_RULE_METHODS_AND_TYPE(keyword);
 typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
-    PyObject* string;
-    PyObject* insensitive;
+    char* utf8String;
+    int stringLen;
+    bool insensitive;
     bool wordStart;
     bool lineStart;
-    PyObject* makeDynamicSubstitutionsFunc;
-    PyObject* compileRegExpFunc;
-    PyObject* matchPatternFunc;
     pcre* regExp;
     pcre_extra* extra;
 } RegExpr;
@@ -1447,20 +1484,16 @@ typedef struct {
 static void
 RegExpr_dealloc_fields(RegExpr* self)
 {
-    Py_XDECREF(self->string);
-    Py_XDECREF(self->insensitive);
-    Py_XDECREF(self->makeDynamicSubstitutionsFunc);
-    Py_XDECREF(self->compileRegExpFunc);
-    Py_XDECREF(self->matchPatternFunc);
+    PyMem_Free(self->utf8String);
+
     if (NULL != self->regExp)
         pcre_free(self->regExp);
     if (NULL != self->extra)
         pcre_free(self->extra);
-    Py_XDECREF(self->regExp);
 }
 
 static pcre*
-_compileRegExp(PyObject* string, bool insensitive, pcre_extra** pExtra)
+_compileRegExp(const char* utf8String, bool insensitive, pcre_extra** pExtra)
 {
     const char* errptr = NULL;
     int erroffset = 0;
@@ -1469,22 +1502,16 @@ _compileRegExp(PyObject* string, bool insensitive, pcre_extra** pExtra)
     if (insensitive)
         options |= PCRE_CASELESS;
     
-    
-    PyObject* utf8String = PyUnicode_AsUTF8String(string);
-    
-    pcre* regExp = pcre_compile(PyString_AS_STRING(utf8String),
+    pcre* regExp = pcre_compile(utf8String,
                                 options,
                                 &errptr, &erroffset, NULL);
-    Py_DECREF(utf8String);
     
     if (NULL == regExp)
     {
         if (NULL != errptr)
-            fprintf(stderr, "Failed to compile reg exp. At pos %d: %s. Pattern: ", erroffset, errptr);
+            fprintf(stderr, "Failed to compile reg exp. At pos %d: %s. Pattern: '%s'\n", erroffset, errptr, utf8String);
         else
-            fprintf(stderr, "Failed to compile reg exp. Pattern:");
-        PyObject_Print(string, stderr, 0);
-        fprintf(stderr, "\n");
+            fprintf(stderr, "Failed to compile reg exp. Pattern: '%s'\n", utf8String);
     }
     
 #if defined PCRE_STUDY_JIT_COMPILE
@@ -1548,15 +1575,15 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
     
     if (self->abstractRuleParams->dynamic)
     {
-        return MakeEmptyTryMatchResult();  // FIXME
-        
-        PyObject* string = 
-                PyObject_CallFunctionObjArgs(self->makeDynamicSubstitutionsFunc,
-                                             self->string,
-                                             textToMatchObject->contextData,
-                                             NULL);
-        regExp = _compileRegExp(string, self->insensitive, NULL);
-        Py_XDECREF(string);
+        char buffer[QUTEPART_DYNAMIC_STRING_MAX_LENGTH];
+        int stringLen = _makeDynamicSubstitutions(self->utf8String, self->stringLen,
+                                                  buffer, sizeof buffer - 1,
+                                                  textToMatchObject->contextData,
+                                                  true);
+        if (stringLen <= 0)
+            return MakeEmptyTryMatchResult();
+
+        regExp = _compileRegExp(buffer, self->insensitive, NULL);
     }
     else
     {
@@ -1593,13 +1620,9 @@ RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
     PyObject* insensitive = NULL;
     PyObject* wordStart = NULL;
     PyObject* lineStart = NULL;
-    PyObject* makeDynamicSubstitutionsFunc = NULL;
-    PyObject* compileRegExpFunc = NULL;
-    PyObject* matchPatternFunc = NULL;
         
-    if (! PyArg_ParseTuple(args, "|OOOOOOOO", &abstractRuleParams,
-                           &string, &insensitive, &wordStart, &lineStart,
-                           &makeDynamicSubstitutionsFunc, &compileRegExpFunc, &matchPatternFunc))
+    if (! PyArg_ParseTuple(args, "|OOOOO", &abstractRuleParams,
+                           &string, &insensitive, &wordStart, &lineStart))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
@@ -1607,28 +1630,25 @@ RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
     BOOL_CHECK(insensitive, -1);
     BOOL_CHECK(wordStart, -1);
     BOOL_CHECK(lineStart, -1);
-    FUNC_CHECK(makeDynamicSubstitutionsFunc, -1);
-    FUNC_CHECK(compileRegExpFunc, -1);
-    FUNC_CHECK(matchPatternFunc, -1);
     
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
-    ASSIGN_PYOBJECT_FIELD(string);
-    ASSIGN_PYOBJECT_FIELD(insensitive);
+    
+    ASSIGN_BOOL_FIELD(insensitive);
     ASSIGN_BOOL_FIELD(wordStart);
     ASSIGN_BOOL_FIELD(lineStart);
-    ASSIGN_PYOBJECT_FIELD(makeDynamicSubstitutionsFunc);
-    ASSIGN_PYOBJECT_FIELD(compileRegExpFunc);
-    ASSIGN_PYOBJECT_FIELD(matchPatternFunc);
 
+    PyObject* utf8String = PyUnicode_AsUTF8String(string);    
     if (self->abstractRuleParams->dynamic)
     {
-        self->regExp = NULL;
-        self->extra = NULL;
+        self->stringLen = PyString_GET_SIZE(utf8String);
+        self->utf8String = PyMem_Malloc(self->stringLen + 1);
+        strcpy(self->utf8String, PyString_AS_STRING(utf8String));
     }
     else
     {
-        self->regExp = _compileRegExp(string, insensitive, &(self->extra));
+        self->regExp = _compileRegExp(PyString_AS_STRING(utf8String), insensitive, &(self->extra));
     }
+    Py_DECREF(utf8String);
 
     return 0;
 }

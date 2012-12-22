@@ -267,46 +267,6 @@ def _loadKeyword(parentContext, xmlElement, attributeToFormatMap, formatConverte
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
     return _parserModule.keyword(abstractRuleParams, words, insensitive)
 
-def _RegExpr_MakeDynamicStringSubsctitutions(string, contextData):
-    """For dynamic rules, replace %d patterns with actual strings
-    Escapes reg exp symbols in the pattern
-    Python function, used by C code
-    """
-    def _replaceFunc(escapeMatchObject):
-        stringIndex = escapeMatchObject.group(0)[1]
-        index = int(stringIndex) - 1
-        if index < len(contextData):
-            return re.escape(contextData[index])
-        else:
-            return escapeMatchObject.group(0)  # no any replacements, return original value
-
-    return _numSeqReplacer.sub(_replaceFunc, string)
-
-def _RegExpr_compileRegExp(string, insensitive):
-    """Compile regular expression.
-    Python function, used by C code
-    """
-    flags = 0
-    if insensitive:
-        flags = re.IGNORECASE
-    
-    try:
-        return re.compile(string)
-    except (re.error, AssertionError) as ex:
-        print >> sys.stderr, "Invalid pattern '%s': %s" % (string, str(ex))
-        return None
-
-def _RegExpr_matchPattern(regExp, string):
-    """Try to match pattern.
-    Returns tuple (whole match, groups) or (None, None)
-    Python function, used by C code
-    """
-    match = regExp.match(string)
-    if match is not None and match.group(0):
-        return match.group(0), match.groups()
-    else:
-        return None, None
-
 def _loadRegExpr(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     def _processCraracterCodes(text):
         """QRegExp use \0ddd notation for character codes, where d in octal digit
@@ -334,10 +294,7 @@ def _loadRegExpr(parentContext, xmlElement, attributeToFormatMap, formatConverte
     
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
     return _parserModule.RegExpr(abstractRuleParams,
-                                 string, insensitive, wordStart, lineStart,
-                                 _RegExpr_MakeDynamicStringSubsctitutions,
-                                 _RegExpr_compileRegExp,
-                                 _RegExpr_matchPattern)
+                                 string, insensitive, wordStart, lineStart)
 
 def _loadAbstractNumberRule(rule, parentContext, xmlElement):
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)

@@ -418,24 +418,17 @@ class RegExpr(AbstractRule):
         lineStart
     """
     def __init__(self, abstractRuleParams,
-                 string, insensitive, wordStart, lineStart,
-                 makeDynamicSubsctitutionsFunc,
-                 compileRegExpFunc,
-                 matchPatternFunc):
+                 string, insensitive, wordStart, lineStart):
         AbstractRule.__init__(self, abstractRuleParams)
         self.string = string
         self.insensitive = insensitive
         self.wordStart = wordStart
         self.lineStart = lineStart
         
-        self._makeDynamicSubsctitutionsFunc = makeDynamicSubsctitutionsFunc
-        self._compileRegExpFunc = compileRegExpFunc
-        self._matchPatternFunc = matchPatternFunc
-        
         if self.dynamic:
             self.regExp = None
         else:
-            self.regExp = self._compileRegExpFunc(string, insensitive)
+            self.regExp = self._compileRegExp(string, insensitive)
 
     
     def shortId(self):
@@ -445,8 +438,8 @@ class RegExpr(AbstractRule):
         """Tries to parse text. If matched - saves data for dynamic context
         """
         if self.dynamic:
-            string = self._makeDynamicSubsctitutionsFunc(self.string, textToMatchObject.contextData)
-            regExp = self._compileRegExpFunc(string, self.insensitive)
+            string = self._makeDynamicSubsctitutions(self.string, textToMatchObject.contextData)
+            regExp = self._compileRegExp(string, self.insensitive)
         else:
             regExp = self.regExp
         
@@ -464,13 +457,56 @@ class RegExpr(AbstractRule):
            textToMatchObject.currentColumnIndex > 0:
             return None
 
-        wholeMatch, groups = self._matchPatternFunc(regExp, textToMatchObject.text)
+        wholeMatch, groups = self._matchPattern(regExp, textToMatchObject.text)
 
         if wholeMatch is not None:
             count = len(wholeMatch)
             return RuleTryMatchResult(self, count, groups)
         else:
             return None
+
+    @staticmethod
+    def _makeDynamicSubsctitutions(string, contextData):
+        """For dynamic rules, replace %d patterns with actual strings
+        Escapes reg exp symbols in the pattern
+        Python function, used by C code
+        """
+        def _replaceFunc(escapeMatchObject):
+            stringIndex = escapeMatchObject.group(0)[1]
+            index = int(stringIndex) - 1
+            if index < len(contextData):
+                return re.escape(contextData[index])
+            else:
+                return escapeMatchObject.group(0)  # no any replacements, return original value
+
+        return _numSeqReplacer.sub(_replaceFunc, string)
+
+    @staticmethod
+    def _compileRegExp(string, insensitive):
+        """Compile regular expression.
+        Python function, used by C code
+        """
+        flags = 0
+        if insensitive:
+            flags = re.IGNORECASE
+        
+        try:
+            return re.compile(string)
+        except (re.error, AssertionError) as ex:
+            print >> sys.stderr, "Invalid pattern '%s': %s" % (string, str(ex))
+            return None
+
+    @staticmethod
+    def _matchPattern(regExp, string):
+        """Try to match pattern.
+        Returns tuple (whole match, groups) or (None, None)
+        Python function, used by C code
+        """
+        match = regExp.match(string)
+        if match is not None and match.group(0):
+            return match.group(0), match.groups()
+        else:
+            return None, None
 
 
 class AbstractNumberRule(AbstractRule):
