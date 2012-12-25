@@ -667,21 +667,34 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
             else if (self->utf8WordLength <= sizeof(_StringHash) &&
                      self->textLen >= sizeof(_StringHash))  // may use optimized version of strncpy
             {
-                static const long long int maskForDifference[] = 
-                    { 0x0,
-                      0xff,
-                      0xffff,
-                      0xffffff,
-                      0xffffffff,
-                      0xffffffffff,
-                      0xffffffffffff,
-                      0xffffffffffffff,
-                      0xffffffffffffffff};
+                static const long long int maskForDifference[] = {
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+                      0xffffffffffffffff,
+                      0x00ffffffffffffff,
+                      0x0000ffffffffffff,
+                      0x000000ffffffffff,
+                      0x00000000ffffffff,
+                      0x0000000000ffffff,
+                      0x000000000000ffff,
+                      0x00000000000000ff,
+                      0x0000000000000000
+#else
+                      0xffffffffffffffff,
+                      0xffffffffffffff00,
+                      0xffffffffffff0000,
+                      0xffffffffff000000,
+                      0xffffffff00000000,
+                      0xffffff0000000000,
+                      0xffff000000000000,
+                      0xff00000000000000,
+                      0x0000000000000000
+#endif
+                    };
                 
                 _StringHash mask = maskForDifference[sizeof(_StringHash) - self->utf8WordLength];
                 *(_StringHash*)self->utf8Word = *(_StringHash*)self->utf8Text & mask;
                 *(_StringHash*)self->utf8WordLower = *(_StringHash*)self->utf8TextLower & mask;
-                // FIXME make sure it works on big endian and little endian
+                // FIXME not tested on big endian
             }
             else
             {
