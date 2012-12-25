@@ -2930,7 +2930,14 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
         if (Parser_lineDataEqualToDefault(self->defaultContext, contextStack, lineContinue))
         {
             lineData = (LineData*)Py_None;
-            Py_INCREF(Py_None);
+            Py_INCREF(lineData);
+        }
+        else if (Py_None != (PyObject*)prevLineData &&
+                 contextStack == prevLineData->contextStack &&
+                 lineContinue == prevLineData->lineContinue)
+        {
+            lineData = prevLineData;
+            Py_INCREF(lineData);
         }
         else
         {
