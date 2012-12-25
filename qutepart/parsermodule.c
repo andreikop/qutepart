@@ -2849,7 +2849,7 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     PyObject* unicodeText = NULL;
     LineData* prevLineData = NULL;
 
-    if (! PyArg_ParseTuple(args, "|OOO",
+    if (! PyArg_ParseTuple(args, "|OO",
                            &unicodeText,
                            &prevLineData))
         return NULL;
