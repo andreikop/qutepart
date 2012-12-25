@@ -2515,11 +2515,23 @@ DECLARE_TYPE(ContextSwitcher, NULL, "Context switcher");
 static ContextStack*
 ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* contextStack, _RegExpMatchGroups* data)
 {
+    bool haveContextToSwitch = Py_None != (PyObject*)self->_contextToSwitch;
+    
+    if (contextStack->_size - self->_popsCount < 0 ||
+        (contextStack->_size - self->_popsCount == 0 && 
+         ( ! haveContextToSwitch)))
+    {
+        fprintf(stderr, "Attempt to pop the last context\n");
+        return ContextStack_new(contextStack->_contexts,
+                                contextStack->_data,
+                                contextStack->_size);
+    }
+    
     ContextStack* newContextStack = ContextStack_new(contextStack->_contexts,
                                                      contextStack->_data,
                                                      contextStack->_size - self->_popsCount);
     
-    if (Py_None != (PyObject*)self->_contextToSwitch)
+    if (haveContextToSwitch)
     {
         if (newContextStack->_size < QUTEPART_MAX_CONTEXT_STACK_DEPTH)
         {

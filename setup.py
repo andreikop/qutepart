@@ -12,7 +12,7 @@ extension = Extension('qutepart.cParser',
                       sources = ['qutepart/parsermodule.c'],
                       include_dirs = ['qutepart'],
                       libraries = ['pcre'])
-
+#extension.extra_compile_args = ['-O0', '-g']
 
 setup (name = 'qutepart',
        version = '1.0',
