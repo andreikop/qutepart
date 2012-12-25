@@ -73,6 +73,7 @@ class Syntax:
             lineData is data, which shall be saved and used for parsing next line
             highlightedSegments is list of touples (segmentLength, segmentFormat)
         """
+        #self.parser.parseAndPrintBlockTextualResults(text, prevLineData)
         return self.parser.highlightBlock(text, prevLineData)
         
     def parseBlock(self, text, prevLineData):

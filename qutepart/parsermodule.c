@@ -2735,9 +2735,6 @@ Context_parseBlock(Context* self,
         }
         else // no match
         {
-            countOfNotMatchedSymbols++;
-            currentColumnIndex++;
-            
             if ((PyObject*)self->fallthroughContext != Py_None)
             {
                 ContextStack* newContextStack = 
@@ -2750,6 +2747,9 @@ Context_parseBlock(Context* self,
                     break; // while
                 }
             }
+            
+            countOfNotMatchedSymbols++;
+            currentColumnIndex++;
         }
 
     }
