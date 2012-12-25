@@ -2,8 +2,9 @@
 Uses syntax module for doing the job
 """
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QBrush, QColor, QFont, QSyntaxHighlighter, QTextCharFormat, QTextBlockUserData
+from PyQt4.QtCore import Qt, QObject
+from PyQt4.QtGui import QBrush, QColor, QFont, \
+                        QTextBlockUserData, QTextCharFormat, QTextDocument, QTextLayout
 
 
 class _TextBlockUserData(QTextBlockUserData):
@@ -12,12 +13,22 @@ class _TextBlockUserData(QTextBlockUserData):
         self.data = data
 
 
-class SyntaxHighlighter(QSyntaxHighlighter):
-    def __init__(self, syntax, *args):
-        QSyntaxHighlighter.__init__(self, *args)
+class SyntaxHighlighter(QObject):
+    def __init__(self, syntax, object):
+        if isinstance(object, QTextDocument):
+            document = object
+        elif isinstance(object, QTextEdit):
+            document = object.document()
+            assert document is not None
+        else:
+            raise TypeError("object must be QTextDocument or QTextEdit")
+        
+        QObject.__init__(self, document)
         self._syntax = syntax
-        self._quteparserToQtFormat = {}
-    
+        self._document = document
+        
+        self._parseAll()
+        
     @staticmethod
     def formatConverterFunction(format):
         qtFormat = QTextCharFormat()
@@ -29,29 +40,54 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         qtFormat.setFontStrikeOut(format.strikeOut)
 
         return qtFormat
+
+    def _parseAll(self):
+        syntax = self._syntax
+        block = self._document.firstBlock()
+        lineData = None
+        while block.isValid():
+            lineData = syntax.parseBlock(block.text(), lineData)
+            block.setUserData(_TextBlockUserData(lineData))
+            block = block.next()
     
-    def _setFormat(self, start, length, format):
-        if format is None:
-            return
-        self.setFormat(start, length, format)
+    def _highlightAll(self):
+        syntax = self._syntax
+        block = self._document.firstBlock()
+        lineData = None
+        while block.isValid():
+            lineData, highlightedSegments = syntax.highlightBlock(block.text(), lineData)
+            block.setUserData(_TextBlockUserData(lineData))
+            self._applyHighlightedSegments(block, highlightedSegments)
+            block = block.next()
 
-    def highlightBlock(self, text):
-        if False:
-            lineData, highlightedSegments = self._syntax.highlightBlock(text, self._prevData())
-            
-            currentPos = 0
-            for length, format in highlightedSegments:
-                self._setFormat(currentPos, length, format)
-                currentPos += length
+    def _highlightBlock(self, block):
+        if True:
+            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), self._prevData(block))
+            self._applyHighlightedSegments(block, highlightedSegments)
         else:
-            lineData = self._syntax.parseBlock(text, self._prevData())
-        self.setCurrentBlockUserData(_TextBlockUserData(lineData))
-            
+            lineData = self._syntax.parseBlock(text, self._prevData(block))
 
-    def _prevData(self):
-        prevBlock = self.currentBlock().previous()
+        block.setUserData(_TextBlockUserData(lineData))
+
+    def _prevData(self, block):
+        prevBlock = block.previous()
         if prevBlock.isValid():
             dataObject = prevBlock.userData()
             if dataObject is not None:
                 return dataObject.data
         return None
+    
+    def _applyHighlightedSegments(self, block, highlightedSegments):
+        layout = block.layout()
+        ranges = []
+        currentPos = 0
+        for length, format in highlightedSegments:
+            range = QTextLayout.FormatRange()
+            range.format = format
+            range.start = currentPos
+            range.length = length
+            ranges.append(range)
+            currentPos += length
+            
+        layout.setAdditionalFormats(ranges)
+        self._document.markContentsDirty(block.position(), block.length())
