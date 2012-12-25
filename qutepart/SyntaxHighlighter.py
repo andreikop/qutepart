@@ -41,7 +41,7 @@ class SyntaxHighlighter(QObject):
         
         document.contentsChange.connect(self._onContentsChange)
         
-        self._highlightAll()
+        self._highlightAllInitial()
 
     def _parseAll(self):
         syntax = self._syntax
@@ -52,13 +52,14 @@ class SyntaxHighlighter(QObject):
             block.setUserData(_TextBlockUserData(lineData))
             block = block.next()
     
-    def _highlightAll(self):
+    def _highlightAllInitial(self):
         syntax = self._syntax
         block = self._document.firstBlock()
         lineData = None
         while block.isValid():
             lineData, highlightedSegments = syntax.highlightBlock(block.text(), lineData)
-            block.setUserData(_TextBlockUserData(lineData))
+            if lineData is not None:
+                block.setUserData(_TextBlockUserData(lineData))
             self._applyHighlightedSegments(block, highlightedSegments)
             block = block.next()
 
