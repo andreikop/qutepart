@@ -2880,8 +2880,9 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     else
     {
         contextStack = self->defaultContextStack;
-        Py_INCREF(contextStack);
     }
+    Py_INCREF(contextStack);
+    
     Context* currentContext = ContextStack_currentContext(contextStack);
 
     // this code is not tested, because lineBeginContext is not defined by any xml file
@@ -2934,6 +2935,7 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     
     if (PyErr_Occurred())
     {
+        Py_DECREF(contextStack);
         return NULL;
     }
     else
@@ -2955,6 +2957,7 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
         {
             lineData = LineData_new(contextStack, lineContinue);
         }
+        Py_DECREF(contextStack);
 
         if (Py_None != segmentList)
             return Py_BuildValue("OO", lineData, segmentList);
