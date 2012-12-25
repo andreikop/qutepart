@@ -862,8 +862,7 @@ _numPlaceholderIndex(char* text)
 {
     if ('%' == *text && isdigit(*(text + 1)))
     {
-        int digit = *(text + 1) - '0';
-        return digit - 1;  // convert from numeration from 1 to numeration from zero
+        return *(text + 1) - '0';
     }
     else
     {
@@ -1608,13 +1607,10 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
         return MakeEmptyTryMatchResult();
     
     _RegExpMatchGroups* groups = NULL;
-    Context* parentContext = AbstractRule_parentContext(self->abstractRuleParams);
+
     int matchLen;
     
-    if (parentContext->dynamic)
-        matchLen = _matchRegExp(regExp, extra, textToMatchObject->utf8Text, textToMatchObject->textLen, &groups);
-    else
-        matchLen = _matchRegExp(regExp, extra, textToMatchObject->utf8Text, textToMatchObject->textLen, NULL);
+    matchLen = _matchRegExp(regExp, extra, textToMatchObject->utf8Text, textToMatchObject->textLen, &groups);
     
     if (matchLen != 0)
         return MakeTryMatchResult(self, matchLen, groups);
