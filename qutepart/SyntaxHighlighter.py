@@ -43,13 +43,14 @@ class SyntaxHighlighter(QObject):
         
         self._highlightAllInitial()
 
-    def _parseAll(self):
+    def _parseAllInitial(self):
         syntax = self._syntax
         block = self._document.firstBlock()
         lineData = None
         while block.isValid():
             lineData = syntax.parseBlock(block.text(), lineData)
-            block.setUserData(_TextBlockUserData(lineData))
+            if lineData is not None:
+                block.setUserData(_TextBlockUserData(lineData))
             block = block.next()
     
     def _highlightAllInitial(self):
@@ -97,25 +98,24 @@ class SyntaxHighlighter(QObject):
 
     def _onContentsChange(self, from_, charsRemoved, charsAdded):
         block = self._document.findBlock(from_)
-        endPosition = from_ + charsAdded
-        lastBlock = self._document.findBlock(from_ + charsAdded)
-        
-        if charsRemoved:
-            afterLast = lastBlock.next()
-            if afterLast.isValid():
-                lastBlock = afterLast
-        
+        lastBlockNumber = self._document.findBlock(from_ + charsAdded).blockNumber()
+
+        # unconditional parsing
         lineData = self._lineData(block.previous())
-        while block.position() <= endPosition:
+        for i in xrange(block.blockNumber(), lastBlockNumber - 1):
             lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), lineData)
             block.setUserData(_TextBlockUserData(lineData))
             self._applyHighlightedSegments(block, highlightedSegments)
             block = block.next()
 
+        # parse next only while data changed
         prevLineData = self._lineData(block)
         while block.isValid():
             lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), lineData)
-            block.setUserData(_TextBlockUserData(lineData))
+            if lineData is not None:
+                block.setUserData(_TextBlockUserData(lineData))
+            else:
+                block.setUserData(None)
             self._applyHighlightedSegments(block, highlightedSegments)
             if prevLineData == lineData:
                 break
