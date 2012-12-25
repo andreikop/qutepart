@@ -38,10 +38,11 @@ def main():
     pte.setFont(QFont("Monospace"))
     
     hl = SyntaxHighlighter(syntax, pte.document())
+    pte.resize(800, 600)
     pte.show()
     
     from PyQt4.QtCore import QTimer
-    QTimer.singleShot(0, app.quit)
+    #QTimer.singleShot(0, app.quit)
     return app.exec_()
     
 

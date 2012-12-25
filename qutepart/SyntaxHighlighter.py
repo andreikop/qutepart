@@ -14,6 +14,18 @@ class _TextBlockUserData(QTextBlockUserData):
 
 
 class SyntaxHighlighter(QObject):
+    @staticmethod
+    def formatConverterFunction(format):
+        qtFormat = QTextCharFormat()
+        qtFormat.setForeground(QBrush(QColor(format.color)))
+        qtFormat.setBackground(QBrush(QColor(format.background)))
+        qtFormat.setFontItalic(format.italic)
+        qtFormat.setFontWeight(QFont.Bold if format.bold else QFont.Normal)
+        qtFormat.setFontUnderline(format.underline)
+        qtFormat.setFontStrikeOut(format.strikeOut)
+
+        return qtFormat
+
     def __init__(self, syntax, object):
         if isinstance(object, QTextDocument):
             document = object
@@ -27,19 +39,9 @@ class SyntaxHighlighter(QObject):
         self._syntax = syntax
         self._document = document
         
-        self._parseAll()
+        document.contentsChange.connect(self._onContentsChange)
         
-    @staticmethod
-    def formatConverterFunction(format):
-        qtFormat = QTextCharFormat()
-        qtFormat.setForeground(QBrush(QColor(format.color)))
-        qtFormat.setBackground(QBrush(QColor(format.background)))
-        qtFormat.setFontItalic(format.italic)
-        qtFormat.setFontWeight(QFont.Bold if format.bold else QFont.Normal)
-        qtFormat.setFontUnderline(format.underline)
-        qtFormat.setFontStrikeOut(format.strikeOut)
-
-        return qtFormat
+        self._highlightAll()
 
     def _parseAll(self):
         syntax = self._syntax
@@ -69,13 +71,13 @@ class SyntaxHighlighter(QObject):
 
         block.setUserData(_TextBlockUserData(lineData))
 
-    def _prevData(self, block):
-        prevBlock = block.previous()
-        if prevBlock.isValid():
-            dataObject = prevBlock.userData()
-            if dataObject is not None:
-                return dataObject.data
-        return None
+    @staticmethod
+    def _lineData(block):
+        dataObject = block.userData()
+        if dataObject is not None:
+            return dataObject.data
+        else:
+            return None
     
     def _applyHighlightedSegments(self, block, highlightedSegments):
         layout = block.layout()
@@ -91,3 +93,30 @@ class SyntaxHighlighter(QObject):
             
         layout.setAdditionalFormats(ranges)
         self._document.markContentsDirty(block.position(), block.length())
+
+    def _onContentsChange(self, from_, charsRemoved, charsAdded):
+        block = self._document.findBlock(from_)
+        endPosition = from_ + charsAdded
+        lastBlock = self._document.findBlock(from_ + charsAdded)
+        
+        if charsRemoved:
+            afterLast = lastBlock.next()
+            if afterLast.isValid():
+                lastBlock = afterLast
+        
+        lineData = self._lineData(block.previous())
+        while block.position() <= endPosition:
+            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), lineData)
+            block.setUserData(_TextBlockUserData(lineData))
+            self._applyHighlightedSegments(block, highlightedSegments)
+            block = block.next()
+
+        prevLineData = self._lineData(block)
+        while block.isValid():
+            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), lineData)
+            block.setUserData(_TextBlockUserData(lineData))
+            self._applyHighlightedSegments(block, highlightedSegments)
+            if prevLineData == lineData:
+                break
+            block = block.next()
+            prevLineData = self._lineData(block)
