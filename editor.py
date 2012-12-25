@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import sys
-sys.path.insert(0, 'build/lib.linux-x86_64-2.7/')
+
+if not '-p' in sys.argv:
+    sys.path.insert(0, 'build/lib.linux-x86_64-2.7/')
 
 import sip
 sip.setapi('QString', 2)
@@ -14,10 +16,13 @@ from qutepart.syntax import SyntaxManager
 
 
 def main():
-    if len(sys.argv) != 2:
+    args = [arg for arg in sys.argv \
+                if not arg.startswith('-')]
+
+    if len(args) != 2:
         print 'Usage:\n\t%s FILE' % sys.argv[0]
 
-    filePath = sys.argv[1]
+    filePath = args[1]
     
     try:
         syntax = SyntaxManager().getSyntaxBySourceFileName(filePath, SyntaxHighlighter.formatConverterFunction)
@@ -42,7 +47,8 @@ def main():
     pte.show()
     
     from PyQt4.QtCore import QTimer
-    #QTimer.singleShot(0, app.quit)
+    if '-q' in sys.argv:
+        QTimer.singleShot(0, app.quit)
     return app.exec_()
     
 

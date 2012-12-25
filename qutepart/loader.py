@@ -5,7 +5,7 @@ import re
 
 from qutepart.ColorTheme import ColorTheme
 
-USE_C_PARSER = True
+USE_C_PARSER = not '-p' in sys.argv
 
 def importParserModule():
     if USE_C_PARSER:
