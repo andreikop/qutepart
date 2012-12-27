@@ -342,8 +342,7 @@ class StringDetect(AbstractRule):
         """
         def _replaceFunc(escapeMatchObject):
             stringIndex = escapeMatchObject.group(0)[1]
-            print stringIndex
-            index = int(stringIndex) - 1
+            index = int(stringIndex)
             if index < len(textToMatchObject.contextData):
                 return textToMatchObject.contextData[index]
             else:
@@ -474,7 +473,7 @@ class RegExpr(AbstractRule):
         """
         def _replaceFunc(escapeMatchObject):
             stringIndex = escapeMatchObject.group(0)[1]
-            index = int(stringIndex) - 1
+            index = int(stringIndex)
             if index < len(contextData):
                 return re.escape(contextData[index])
             else:
