@@ -667,34 +667,23 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
             else if (self->utf8WordLength <= sizeof(_StringHash) &&
                      self->textLen >= sizeof(_StringHash))  // may use optimized version of strncpy
             {
-                static const long long int maskForDifference[] = {
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-                      0xffffffffffffffff,
-                      0x00ffffffffffffff,
-                      0x0000ffffffffffff,
-                      0x000000ffffffffff,
-                      0x00000000ffffffff,
-                      0x0000000000ffffff,
-                      0x000000000000ffff,
-                      0x00000000000000ff,
-                      0x0000000000000000
-#else
-                      0xffffffffffffffff,
-                      0xffffffffffffff00,
-                      0xffffffffffff0000,
-                      0xffffffffff000000,
-                      0xffffffff00000000,
-                      0xffffff0000000000,
-                      0xffff000000000000,
-                      0xff00000000000000,
-                      0x0000000000000000
-#endif
-                    };
+                static const char maskForDifferenceChar[8][8] =
+                {
+                    {0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+                    {0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+                    {0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00},
+                    {0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00},
+                    {0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00},
+                    {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00},
+                    {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00},
+                    {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+                };
                 
-                _StringHash mask = maskForDifference[sizeof(_StringHash) - self->utf8WordLength];
+                _StringHash* pMask = (_StringHash*)maskForDifferenceChar[self->utf8WordLength - 1];
+                _StringHash mask = *pMask;
+                
                 *(_StringHash*)self->utf8Word = *(_StringHash*)self->utf8Text & mask;
                 *(_StringHash*)self->utf8WordLower = *(_StringHash*)self->utf8TextLower & mask;
-                // FIXME not tested on big endian
             }
             else
             {
