@@ -2,7 +2,9 @@
 Uses syntax module for doing the job
 """
 
-from PyQt4.QtCore import Qt, QObject
+import time
+
+from PyQt4.QtCore import Qt, QObject, QTimer
 from PyQt4.QtGui import QBrush, QColor, QFont, \
                         QTextBlockUserData, QTextCharFormat, QTextDocument, QTextLayout
 
@@ -14,6 +16,9 @@ class _TextBlockUserData(QTextBlockUserData):
 
 
 class SyntaxHighlighter(QObject):
+    
+    MAX_PARSING_TIME_SEC = 0.02
+
     @staticmethod
     def formatConverterFunction(format):
         qtFormat = QTextCharFormat()
@@ -39,39 +44,15 @@ class SyntaxHighlighter(QObject):
         self._syntax = syntax
         self._document = document
         
-        document.contentsChange.connect(self._onContentsChange)
+        self._pendingBlock = None
+        self._pendingAtLeastUntilBlock = None
         
-        self._highlightAllInitial()
-
-    def _parseAllInitial(self):
-        syntax = self._syntax
-        block = self._document.firstBlock()
-        lineData = None
-        while block.isValid():
-            lineData = syntax.parseBlock(block.text(), lineData)
-            if lineData is not None:
-                block.setUserData(_TextBlockUserData(lineData))
-            block = block.next()
-    
-    def _highlightAllInitial(self):
-        syntax = self._syntax
-        block = self._document.firstBlock()
-        lineData = None
-        while block.isValid():
-            lineData, highlightedSegments = syntax.highlightBlock(block.text(), lineData)
-            if lineData is not None:
-                block.setUserData(_TextBlockUserData(lineData))
-            self._applyHighlightedSegments(block, highlightedSegments)
-            block = block.next()
-
-    def _highlightBlock(self, block):
-        if True:
-            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), self._prevData(block))
-            self._applyHighlightedSegments(block, highlightedSegments)
-        else:
-            lineData = self._syntax.parseBlock(text, self._prevData(block))
-
-        block.setUserData(_TextBlockUserData(lineData))
+        self._continueTimer = QTimer()
+        self._continueTimer.setSingleShot(True)
+        self._continueTimer.timeout.connect(self._onContinueHighlighting)
+        
+        document.contentsChange.connect(self._onContentsChange)
+        self._highlighBlocks(self._document.firstBlock(), self._document.lastBlock())
 
     @staticmethod
     def _lineData(block):
@@ -81,6 +62,62 @@ class SyntaxHighlighter(QObject):
         else:
             return None
     
+    def _onContentsChange(self, from_, charsRemoved, charsAdded):
+        self._continueTimer.stop()
+        self._highlighBlocks(self._document.findBlock(from_),
+                             self._document.findBlock(from_ + charsAdded))
+
+    def _onContinueHighlighting(self):
+        self._highlighBlocks(self._pendingBlock, self._pendingAtLeastUntilBlock)
+
+    def _highlighBlocks(self, fromBlock, atLeastUntilBlock):
+        endTime = time.clock() + self.MAX_PARSING_TIME_SEC
+
+        block = fromBlock
+        lineData = self._lineData(block.previous())
+        
+        while block.isValid() and block != atLeastUntilBlock:
+            if time.clock() >= endTime:  # time is over, schedule parsing later and release event loop
+                self._pendingBlock = block
+                self._pendingAtLeastUntilBlock = atLeastUntilBlock
+                self._continueTimer.start()
+                return
+            
+            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), lineData)
+            if lineData is not None:
+                block.setUserData(_TextBlockUserData(lineData))
+            else:
+                block.setUserData(None)
+            
+            self._applyHighlightedSegments(block, highlightedSegments)
+            block = block.next()
+        
+        # reached atLeastUntilBlock, now parse next only while data changed
+        prevLineData = self._lineData(block)
+        while block.isValid():
+            if time.clock() >= endTime:  # time is over, schedule parsing later and release event loop
+                self._pendingBlock = block
+                self._pendingAtLeastUntilBlock = atLeastUntilBlock
+                self._continueTimer.start()
+                return
+
+            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), lineData)
+            if lineData is not None:
+                block.setUserData(_TextBlockUserData(lineData))
+            else:
+                block.setUserData(None)
+            
+            self._applyHighlightedSegments(block, highlightedSegments)
+            if prevLineData == lineData:
+                break
+            
+            block = block.next()
+            prevLineData = self._lineData(block)
+        
+        # sucessfully finished, reset pending tasks
+        self._pendingBlock = None
+        self._pendingAtLeastUntilBlock = None
+
     def _applyHighlightedSegments(self, block, highlightedSegments):
         layout = block.layout()
         ranges = []
@@ -95,29 +132,3 @@ class SyntaxHighlighter(QObject):
             
         layout.setAdditionalFormats(ranges)
         self._document.markContentsDirty(block.position(), block.length())
-
-    def _onContentsChange(self, from_, charsRemoved, charsAdded):
-        block = self._document.findBlock(from_)
-        lastBlockNumber = self._document.findBlock(from_ + charsAdded).blockNumber()
-
-        # unconditional parsing
-        lineData = self._lineData(block.previous())
-        for i in xrange(block.blockNumber(), lastBlockNumber - 1):
-            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), lineData)
-            block.setUserData(_TextBlockUserData(lineData))
-            self._applyHighlightedSegments(block, highlightedSegments)
-            block = block.next()
-
-        # parse next only while data changed
-        prevLineData = self._lineData(block)
-        while block.isValid():
-            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), lineData)
-            if lineData is not None:
-                block.setUserData(_TextBlockUserData(lineData))
-            else:
-                block.setUserData(None)
-            self._applyHighlightedSegments(block, highlightedSegments)
-            if prevLineData == lineData:
-                break
-            block = block.next()
-            prevLineData = self._lineData(block)
