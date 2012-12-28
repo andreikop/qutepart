@@ -63,9 +63,22 @@ class SyntaxHighlighter(QObject):
             return None
     
     def _onContentsChange(self, from_, charsRemoved, charsAdded):
-        self._continueTimer.stop()
-        self._highlighBlocks(self._document.findBlock(from_),
-                             self._document.findBlock(from_ + charsAdded))
+        firstBlock = self._document.findBlock(from_)
+        untilBlock = self._document.findBlock(from_ + charsAdded)
+        
+        if self._continueTimer.isActive():  # have not finished task.
+            """ Intersect ranges. Might produce a lot of extra highlighting work
+            More complicated algorithm might be invented later
+            """
+            if self._pendingBlock.blockNumber() < firstBlock.blockNumber():
+                firstBlock = self._pendingBlock
+            if self._pendingAtLeastUntilBlock.blockNumber() > untilBlock.blockNumber():
+                untilBlock = self._pendingAtLeastUntilBlock
+            
+            self._continueTimer.stop()
+        
+        self._highlighBlocks(firstBlock,
+                             untilBlock)
 
     def _onContinueHighlighting(self):
         self._highlighBlocks(self._pendingBlock, self._pendingAtLeastUntilBlock)
