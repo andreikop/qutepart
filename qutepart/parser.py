@@ -61,6 +61,11 @@ class LineData:
     def __init__(self, contextStack, lineContinue):
         self.contextStack = contextStack
         self.lineContinue = lineContinue
+    
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and \
+               self.contextStack == other.contextStack and \
+               self.lineContinue == other.lineContinue
 
 class ContextStack:
     def __init__(self, contexts, data):
