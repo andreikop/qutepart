@@ -24,8 +24,6 @@ _escapeSequences = \
   't': '\t',}
 
 
-_numSeqReplacer = re.compile('%\d+')  # used by functions, which are used by C extensions
-
 def _processEscapeSequences(replaceText):
     """Replace symbols like \n \\, etc
     """
