@@ -5,17 +5,12 @@ import re
 
 from qutepart.ColorTheme import ColorTheme
 
-USE_C_PARSER = not '-p' in sys.argv
+try:
+    import qutepart.cParser as _parserModule
+except ImportError:
+    print >> sys.stderr, 'Failed to import quick parser in C. Using slow parser for syntax highlighting'
+    import qutepart.parser as _parserModule
 
-def importParserModule():
-    if USE_C_PARSER:
-        print 'Using C parser'
-        import qutepart.cParser as parser
-    else:
-        import qutepart.parser as parser
-    return parser
-
-_parserModule = importParserModule()
 
 _seqReplacer = re.compile('\\\\.')
 
