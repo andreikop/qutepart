@@ -1,3 +1,6 @@
+"""This module is a set of functions, which load Parser from Kate XML files
+"""
+
 import copy
 import sys
 import xml.etree.ElementTree

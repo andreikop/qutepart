@@ -1,4 +1,7 @@
 """Kate syntax definition parser and representation
+
+Do not use this module directly. Use 'syntax' module
+
 Read http://kate-editor.org/2005/03/24/writing-a-syntax-highlighting-file/ 
 if you want to understand something
 

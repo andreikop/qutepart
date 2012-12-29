@@ -1,3 +1,9 @@
+/* Kate syntax definition parser and representation
+ *
+ * This file is written in C fast and complicated version of parser.py
+ * Read parser.py at first, if you want to understand this module
+ */
+
 #include <Python.h>
 
 #include <structmember.h>

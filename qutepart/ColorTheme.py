@@ -1,4 +1,5 @@
-
+"""Default color theme
+"""
 
 class ColorTheme:
     """Color theme.

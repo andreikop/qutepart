@@ -1,13 +1,14 @@
-"""This module manages knows file => parser class associations and 
-holds already created Parser instances
-Use this module for getting Parser'es
+"""This module knows file => parser class associations and holds already created Parser instances.
+It also contains Syntax class, which is an API for parser
 """
+
 
 import os.path
 import fnmatch
 import json
 
 import qutepart.loader
+
 
 class TextFormat:
     """Text format definition.
@@ -39,7 +40,6 @@ class TextFormat:
         self.underline = underline
         self.strikeOut = strikeOut
         self.spellChecking = spellChecking
-
 
 
 class Syntax:
