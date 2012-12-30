@@ -21,40 +21,6 @@ import re
 _numSeqReplacer = re.compile('%\d+')
 
 
-class ParseBlockFullResult:
-    """Result of Parser.parseBlock() call.
-    Public attributes:
-        lineData                Data, which shall be saved and passed to Parser.parseBlock() for the next line
-        matchedContextsFull     Highlighting results, 
-    """
-    def __init__(self, lineData, matchedContexts):
-        self.lineData = lineData
-        self.matchedContexts = matchedContexts
-
-class MatchedContext:
-    """Matched section of ParseBlockFullResult
-    Public attributes:
-        context
-        length
-        matchedRules    List of MatchedRule
-    """
-    def __init__(self, context, length, matchedRules):
-        self.context = context
-        self.length = length
-        self.matchedRules = matchedRules
-
-class MatchedRule:
-    """Matched rule section
-    Public attributes:
-        rule
-        pos
-        length
-    """
-    def __init__(self, rule, pos, length):
-        self.rule = rule
-        self.pos = pos
-        self.length = length
-
 class LineData:
     """Data of previous line, used for parsing next line
     """
@@ -863,12 +829,13 @@ class Context:
     def parseBlock(self, contextStack, currentColumnIndex, text):
         """Parse block
         Exits, when reached end of the text, or when context is switched
-        Returns (length, newContextStack, matchedRules)
-        where matchedRules is:
-            (Rule, pos, length)
+        Returns (length, newContextStack, highlightedSegments, lineContinue)
         """
         startColumnIndex = currentColumnIndex
-        matchedRules = []
+        countOfNotMatchedSymbols = 0
+        highlightedSegments = []
+        ruleTryMatchResult = None
+        
         while currentColumnIndex < len(text):
             textToMatchObject = TextToMatchObject(currentColumnIndex,
                                                    text,
@@ -877,15 +844,20 @@ class Context:
             for rule in self.rules:
                 ruleTryMatchResult = rule.tryMatch(textToMatchObject)
                 if ruleTryMatchResult is not None:
-                    matchedRules.append(MatchedRule(ruleTryMatchResult.rule,
-                                                    currentColumnIndex,
-                                                    ruleTryMatchResult.length))
+                    if countOfNotMatchedSymbols > 0:
+                        highlightedSegments.append((countOfNotMatchedSymbols, self.format))
+                        countOfNotMatchedSymbols = 0
+                    
+                    highlightedSegments.append((ruleTryMatchResult.length, ruleTryMatchResult.rule.format))
+
                     currentColumnIndex += ruleTryMatchResult.length
                     if ruleTryMatchResult.rule.context is not None:
                         newContextStack = ruleTryMatchResult.rule.context.getNextContextStack(contextStack,
                                                                                               ruleTryMatchResult.data)
                         if newContextStack != contextStack:
-                            return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
+                            lineContinue = isinstance(ruleTryMatchResult.rule, LineContinue)
+
+                            return currentColumnIndex - startColumnIndex, newContextStack, highlightedSegments, lineContinue
                     
                     break  # for loop
             else:  # no matched rules
@@ -895,8 +867,15 @@ class Context:
                         return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
 
                 currentColumnIndex += 1
+                countOfNotMatchedSymbols += 1
+        
+        if countOfNotMatchedSymbols > 0:
+            highlightedSegments.append((countOfNotMatchedSymbols, self.format))
 
-        return (currentColumnIndex - startColumnIndex, contextStack, matchedRules)
+        lineContinue = ruleTryMatchResult is not None and \
+                       isinstance(ruleTryMatchResult.rule, LineContinue)
+
+        return currentColumnIndex - startColumnIndex, contextStack, highlightedSegments, lineContinue
 
 
 class Parser:
@@ -945,37 +924,7 @@ class Parser:
         
         return res
 
-    @staticmethod
-    def _makeParseBlockResult(parseBlockFullResult):
-        highlightedSegments = []
-        
-        def _appendHighlightedSegment(length, format):
-            highlightedSegments.append((length, format))
-        
-        currentPos = 0
-        for matchedContext in parseBlockFullResult.matchedContexts:
-            matchedContextStartPos = currentPos
-            for matchedRule in matchedContext.matchedRules:
-                if matchedRule.pos > currentPos:
-                    _appendHighlightedSegment(matchedRule.pos - currentPos,
-                                                   matchedContext.context.format)
-                _appendHighlightedSegment(matchedRule.length,
-                                               matchedRule.rule.format)
-                currentPos = matchedRule.pos + matchedRule.length
-            if currentPos < matchedContextStartPos + matchedContext.length:
-                _appendHighlightedSegment(matchedContextStartPos + matchedContext.length - currentPos,
-                                               matchedContext.context.format)
-
-        return (parseBlockFullResult.lineData, highlightedSegments)
-
     def highlightBlock(self, text, prevLineData):
-        return self._makeParseBlockResult(self.parseBlockFullResults(text, prevLineData))
-    
-    def parseBlock(self, text, prevLineData):
-        lineData, highlightedSegments = self._makeParseBlockResult(self.parseBlockFullResults(text, prevLineData))
-        return lineData
-    
-    def parseBlockFullResults(self, text, prevLineData):
         """Parse block and return ParseBlockFullResult
         """
         if prevLineData is not None:
@@ -990,67 +939,25 @@ class Parser:
            (not lineContinue):
             contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
         
-        matchedContexts = []
+        highlightedSegments = []
         
         currentColumnIndex = 0
         while currentColumnIndex < len(text):
-            length, newContextStack, matchedRules = \
+            length, newContextStack, segments, lineContinue = \
                         contextStack.currentContext().parseBlock(contextStack, currentColumnIndex, text)
             
-            matchedContexts.append(MatchedContext(contextStack.currentContext(), length, matchedRules))
-            
+            highlightedSegments += segments
             contextStack = newContextStack
             currentColumnIndex += length
 
-        lineContinue = False
-        if matchedContexts and \
-           matchedContexts[-1].matchedRules and \
-           isinstance(matchedContexts[-1].matchedRules[-1].rule, LineContinue):
-            lineContinue = True
-
-        while contextStack.currentContext().lineEndContext is not None and \
-              (not lineContinue):
-            oldStack = contextStack
-            contextStack = contextStack.currentContext().lineEndContext.getNextContextStack(contextStack)
-            if oldStack == contextStack:  # avoid infinite while loop if nothing to switch
-                break
+        if not lineContinue:
+            while contextStack.currentContext().lineEndContext is not None:
+                oldStack = contextStack
+                contextStack = contextStack.currentContext().lineEndContext.getNextContextStack(contextStack)
+                if oldStack == contextStack:  # avoid infinite while loop if nothing to switch
+                    break
         
-        return ParseBlockFullResult(LineData(contextStack, lineContinue), matchedContexts)
+        return LineData(contextStack, lineContinue), highlightedSegments
 
-    def parseBlockTextualResults(self, text, prevLineData=None):
-        """Execute parseBlock() and return textual results.
-        For debugging"""
-        parseBlockFullResult = self.parseBlockFullResults(text, prevLineData)
-        lineDataTextual = [context.name for context in parseBlockFullResult.lineData.contextStack._contexts]
-        matchedContextsTextual = \
-         [ (matchedContext.context.name,
-            matchedContext.length,
-            [ (matchedRule.rule.shortId(), matchedRule.pos, matchedRule.length) \
-                for matchedRule in matchedContext.matchedRules]) \
-                    for matchedContext in parseBlockFullResult.matchedContexts]
-        
-        return matchedContextsTextual
-
-    def _printParseBlockTextualResults(self, text, results):
-        """For debugging
-        """
-        contextStart = 0
-        for name, length, rules in results:
-            print repr(text[contextStart:contextStart + length]), name
-            contextStart += length
-            for rule, pos, len in rules:
-                print '\t', repr(text[pos: pos + len]), rule
-
-    def parseAndPrintBlockTextualResults(self, text, prevLineData=None):
-        """For debugging
-        """
-        res = self.parseBlockTextualResults(text, prevLineData)
-        return self._printParseBlockTextualResults(text, res)
-    
-    def parseBlockContextStackTextual(self, text, prevLineData=None):
-        """Execute parseBlock() and return context stack as list of context names
-        For debugging"""
-        parseBlockFullResult = self.parseBlockFullResults(text, prevLineData)
-        lineDataTextual = [context.name for context in parseBlockFullResult.lineData.contextStack._contexts]
-        
-        return lineDataTextual
+    def parseBlock(self, text, prevLineData):
+        return self.highlightBlock(text, prevLineData)[0]
