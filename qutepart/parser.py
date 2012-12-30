@@ -21,18 +21,6 @@ import re
 _numSeqReplacer = re.compile('%\d+')
 
 
-class LineData:
-    """Data of previous line, used for parsing next line
-    """
-    def __init__(self, contextStack, lineContinue):
-        self.contextStack = contextStack
-        self.lineContinue = lineContinue
-    
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and \
-               self.contextStack == other.contextStack and \
-               self.lineContinue == other.lineContinue
-
 class ContextStack:
     def __init__(self, contexts, data):
         """Create default context stack for syntax
@@ -41,12 +29,6 @@ class ContextStack:
         self._contexts = contexts
         self._data = data
     
-    @staticmethod
-    def makeDefault(parser):
-        """Make default stack for parser
-        """
-        return ContextStack([parser.defaultContext], [None])
-
     def pop(self, count):
         """Returns new context stack, which doesn't contain few levels
         """
@@ -901,6 +883,7 @@ class Parser:
     def setContexts(self, contexts, defaultContext):
         self.contexts = contexts
         self.defaultContext = defaultContext
+        self._defaultContextStack = ContextStack([self.defaultContext], [None])
     
     def __str__(self):
         """Serialize.
@@ -928,19 +911,12 @@ class Parser:
         """Parse block and return ParseBlockFullResult
         """
         if prevLineData is not None:
-            contextStack = prevLineData.contextStack
-            lineContinue = prevLineData.lineContinue
+            contextStack = prevLineData
         else:
-            contextStack = ContextStack.makeDefault(self)
-            lineContinue = False
-        
-        # this code is not tested, because lineBeginContext is not defined by any xml file
-        if contextStack.currentContext().lineBeginContext is not None and \
-           (not lineContinue):
-            contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
+            contextStack = self._defaultContextStack
         
         highlightedSegments = []
-        
+        lineContinue = False
         currentColumnIndex = 0
         while currentColumnIndex < len(text):
             length, newContextStack, segments, lineContinue = \
@@ -956,8 +932,12 @@ class Parser:
                 contextStack = contextStack.currentContext().lineEndContext.getNextContextStack(contextStack)
                 if oldStack == contextStack:  # avoid infinite while loop if nothing to switch
                     break
+            
+            # this code is not tested, because lineBeginContext is not defined by any xml file
+            if contextStack.currentContext().lineBeginContext is not None:
+                contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
         
-        return LineData(contextStack, lineContinue), highlightedSegments
+        return contextStack, highlightedSegments
 
     def parseBlock(self, text, prevLineData):
         return self.highlightBlock(text, prevLineData)[0]
