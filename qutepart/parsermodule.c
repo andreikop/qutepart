@@ -303,15 +303,6 @@ typedef struct {
 } Parser;
 
 
-typedef struct {
-    PyObject_HEAD
-    ContextStack* contextStack;
-    bool lineContinue;
-} LineData;
-
-
-
-
 /********************************************************************************
  *                                _RegExpMatchGroups
  ********************************************************************************/
@@ -425,32 +416,6 @@ _FreeDeliminatorSet(DeliminatorSet* deliminatorSet)
     Py_XDECREF(deliminatorSet->setAsUnicodeString);
     deliminatorSet->setAsUnicodeString = NULL;
 }
-
-/********************************************************************************
- *                                LineData
- ********************************************************************************/
-
-static void
-LineData_dealloc(LineData* self)
-{
-    Py_XDECREF(self->contextStack);
-
-    self->ob_type->tp_free((PyObject*)self);
-}
-
-DECLARE_TYPE_WITHOUT_CONSTRUCTOR(LineData, NULL, "Line data");
-
-static LineData*
-LineData_new(ContextStack* contextStack, bool lineContinue)  // not a constructor, just C function
-{
-    LineData* lineData = PyObject_New(LineData, &LineDataType);
-    lineData->contextStack = contextStack;
-    Py_INCREF(lineData->contextStack);
-    lineData->lineContinue = lineContinue;
-
-    return lineData;
-}
-
 
 
 /********************************************************************************
@@ -2791,7 +2756,7 @@ Parser_dealloc(Parser* self)
     Py_XDECREF(self->lists);
     Py_XDECREF(self->contexts);
     Py_XDECREF(self->defaultContext);
-    //Py_XDECREF(self->defaultContextStack);
+    Py_XDECREF(self->defaultContextStack);
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -2829,14 +2794,6 @@ _makeDefaultContextStack(Context* defaultContext)
     return ContextStack_new(&defaultContext, &data, 1);
 }
 
-static bool
-Parser_lineDataEqualToDefault(Context* defaultContext, ContextStack* contextStack, bool lineContinue)
-{
-    return contextStack->_size == 1 &&
-           ContextStack_currentContext(contextStack) == defaultContext &&
-           ContextStack_currentData(contextStack) == NULL &&
-           ( ! lineContinue);
-}
 
 static PyObject*
 Parser_setConexts(Parser *self, PyObject *args)
@@ -2859,44 +2816,40 @@ Parser_setConexts(Parser *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+
+static bool
+Parser_contextStackEqualToDefault(Context* defaultContext, ContextStack* contextStack)
+{
+    return contextStack->_size == 1 &&
+           ContextStack_currentContext(contextStack) == defaultContext &&
+           ContextStack_currentData(contextStack) == NULL;
+}
+
+
 static PyObject*
 Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
 {
     PyObject* unicodeText = NULL;
-    LineData* prevLineData = NULL;
+    ContextStack* prevContextStack = NULL;
 
     if (! PyArg_ParseTuple(args, "|OO",
                            &unicodeText,
-                           &prevLineData))
+                           &prevContextStack))
         return NULL;
 
     UNICODE_CHECK(unicodeText, NULL);
-    if (Py_None != (PyObject*)(prevLineData))
-        TYPE_CHECK(prevLineData, LineData, NULL);
+    if (Py_None != (PyObject*)(prevContextStack))
+        TYPE_CHECK(prevContextStack, ContextStack, NULL);
     
     ContextStack* contextStack;
-    bool lineContinuePrevious = false;
-    if (Py_None != (PyObject*)prevLineData)
-    {
-        contextStack = prevLineData->contextStack;
-        lineContinuePrevious = prevLineData->lineContinue;
-    }
+    if (Py_None != (PyObject*)prevContextStack)
+        contextStack = prevContextStack;
     else
-    {
         contextStack = self->defaultContextStack;
-    }
+
     Py_INCREF(contextStack);
     
     Context* currentContext = ContextStack_currentContext(contextStack);
-
-    // this code is not tested, because lineBeginContext is not defined by any xml file
-    if (currentContext->lineBeginContext != Py_None &&
-        (! lineContinuePrevious))
-    {
-        ContextSwitcher* contextSwitcher = (ContextSwitcher*)currentContext->lineBeginContext;
-        ContextStack* newContextStack = ContextSwitcher_getNextContextStack(contextSwitcher, contextStack, NULL);
-        ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
-    }
     
     PyObject* segmentList = NULL;
     if (returnSegments)
@@ -2910,7 +2863,6 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     }
 
     bool lineContinue = false;
-
     int currentColumnIndex = 0;
     int textLen = PyUnicode_GET_SIZE(unicodeText);
     while (currentColumnIndex < textLen)
@@ -2925,16 +2877,30 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
         currentContext = ContextStack_currentContext(contextStack);
     }
     
-    while (currentContext->lineEndContext != Py_None &&
-           ( ! lineContinue))
+    if ( ! lineContinue)
     {
-        ContextStack* newContextStack =
-                       ContextSwitcher_getNextContextStack((ContextSwitcher*)currentContext->lineEndContext,
-                                                           contextStack,
-                                                           NULL);
-        ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
+        while (currentContext->lineEndContext != Py_None)
+        {
+            ContextStack* newContextStack =
+                           ContextSwitcher_getNextContextStack((ContextSwitcher*)currentContext->lineEndContext,
+                                                               contextStack,
+                                                               NULL);
+            ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
+            
+            currentContext = ContextStack_currentContext(contextStack);
+        }
         
-        currentContext = ContextStack_currentContext(contextStack);
+        // this code is not tested, because lineBeginContext is not defined by any xml file
+        if (currentContext->lineBeginContext != Py_None)
+        {
+            ContextStack* newContextStack =
+                           ContextSwitcher_getNextContextStack((ContextSwitcher*)currentContext->lineBeginContext,
+                                                               contextStack,
+                                                               NULL);
+            ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
+            
+            currentContext = ContextStack_currentContext(contextStack);
+        }
     }
     
     if (PyErr_Occurred())
@@ -2944,32 +2910,25 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     }
     else
     {
-        LineData* lineData;
-        if (Parser_lineDataEqualToDefault(self->defaultContext, contextStack, lineContinue))
+        PyObject* retData = NULL;
+        if ( ! Parser_contextStackEqualToDefault(self->defaultContext, contextStack))
         {
-            lineData = (LineData*)Py_None;
-            Py_INCREF(lineData);
-        }
-        else if (Py_None != (PyObject*)prevLineData &&
-                 contextStack == prevLineData->contextStack &&
-                 lineContinue == prevLineData->lineContinue)
-        {
-            lineData = prevLineData;
-            Py_INCREF(lineData);
+            retData = (PyObject*)contextStack;
         }
         else
         {
-            lineData = LineData_new(contextStack, lineContinue);
+            retData = Py_None;
+            Py_INCREF(retData);
+            Py_DECREF(contextStack);
         }
-        Py_DECREF(contextStack);
-
+        
         if (Py_None != segmentList)
-            return Py_BuildValue("OO", lineData, segmentList);
+            return Py_BuildValue("OO", retData, segmentList);
         else
-            return (PyObject*)lineData;
+            return retData;
     }
 }
-    
+
 
 static PyObject*
 Parser_parseBlock(Parser *self, PyObject *args)
@@ -3041,7 +3000,6 @@ initcParser(void)
     REGISTER_TYPE(DetectSpaces)
     REGISTER_TYPE(DetectIdentifier)
     
-    REGISTER_TYPE(LineData)
     REGISTER_TYPE(ContextStack)
     REGISTER_TYPE(Context)
     REGISTER_TYPE(ContextSwitcher)
