@@ -9,7 +9,7 @@ package_data={'qutepart' : ['syntax/*.xml',
              }
 
 extension = Extension('qutepart.cParser',
-                      sources = ['qutepart/parsermodule.c'],
+                      sources = ['qutepart/cParser.c'],
                       include_dirs = ['qutepart'],
                       libraries = ['pcre'])
 #extension.extra_compile_args = ['-O0', '-g']
