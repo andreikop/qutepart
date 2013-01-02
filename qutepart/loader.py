@@ -6,7 +6,7 @@ import sys
 import xml.etree.ElementTree
 import re
 
-from qutepart.ColorTheme import ColorTheme
+from qutepart.colortheme import ColorTheme
 
 try:
     import qutepart.cParser as _parserModule

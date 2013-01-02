@@ -11,7 +11,7 @@ sip.setapi('QString', 2)
 from PyQt4.QtGui import QApplication, QFont, QPlainTextEdit, QSyntaxHighlighter, \
     QTextCharFormat, QTextBlockUserData
 
-from qutepart.SyntaxHighlighter import SyntaxHighlighter
+from qutepart.syntaxhighlighter import SyntaxHighlighter
 from qutepart.syntax import SyntaxManager
 
 
