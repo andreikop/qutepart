@@ -17,7 +17,7 @@ class _TextBlockUserData(QTextBlockUserData):
 
 class SyntaxHighlighter(QObject):
     
-    MAX_PARSING_TIME_SEC = 1000
+    MAX_PARSING_TIME_SEC = 0.02
 
     @staticmethod
     def formatConverterFunction(format):
