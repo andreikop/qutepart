@@ -299,8 +299,8 @@ class StringDetect(AbstractRule):
         def _replaceFunc(escapeMatchObject):
             stringIndex = escapeMatchObject.group(0)[1]
             index = int(stringIndex)
-            if index < len(textToMatchObject.contextData):
-                return textToMatchObject.contextData[index]
+            if index < len(contextData):
+                return contextData[index]
             else:
                 return escapeMatchObject.group(0)  # no any replacements, return original value
 
