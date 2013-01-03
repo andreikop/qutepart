@@ -7,7 +7,7 @@ import xml.etree.ElementTree
 import re
 
 from qutepart.syntax.colortheme import ColorTheme
-from qutepart.syntax.syntax import TextFormat
+from qutepart.syntax import TextFormat
 
 
 try:

@@ -8,7 +8,7 @@ sys.path.insert(0, '../..')
 sys.path.insert(0, '.')
 sys.path.insert(0, '../../build/lib.linux-x86_64-2.6/')
 
-from qutepart.syntax.syntax import SyntaxManager
+from qutepart.syntax import SyntaxManager
 
 class XmlParsingTestCase(unittest.TestCase):
     def test_parse_all_definitions(self):

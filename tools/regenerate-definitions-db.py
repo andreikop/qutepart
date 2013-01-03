@@ -8,7 +8,7 @@ sys.path.append('.')
 sys.path.append('..')
 
 from qutepart.syntax.loader import loadSyntax
-from qutepart.syntax.syntax import SyntaxManager, Syntax
+from qutepart.syntax import SyntaxManager, Syntax
 
 def main():
     xmlFilesPath = os.path.join(os.path.dirname(__file__), '..', 'qutepart', 'syntax', 'data')
