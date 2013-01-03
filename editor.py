@@ -3,7 +3,7 @@
 import sys
 
 if not '-p' in sys.argv:
-    sys.path.insert(0, 'build/lib.linux-x86_64-2.7/')
+    sys.path.insert(0, 'build/lib.linux-x86_64-2.6/')
 
 import sip
 sip.setapi('QString', 2)
@@ -11,8 +11,8 @@ sip.setapi('QString', 2)
 from PyQt4.QtGui import QApplication, QFont, QPlainTextEdit, QSyntaxHighlighter, \
     QTextCharFormat, QTextBlockUserData
 
-from qutepart.syntaxhighlighter import SyntaxHighlighter
-from qutepart.syntax import SyntaxManager
+from qutepart.syntax.highlighter import SyntaxHighlighter
+from qutepart.syntax.syntax import SyntaxManager
 
 
 def main():
