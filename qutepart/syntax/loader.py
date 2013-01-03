@@ -129,7 +129,8 @@ def _loadIncludeRules(parentContext, xmlElement, attributeToFormatMap, formatCon
     if contextName is not None:
         if contextName in parentContext.parser.contexts:
             context = parentContext.parser.contexts[contextName]
-        elif contextName.startswith('##'):
+        elif contextName.startswith('##') and \
+             parentContext.parser.syntax.manager is not None:  # might be None, if loader is used by regenerate-definitions-db.py
             syntaxName = contextName[2:]
             parser = parentContext.parser.syntax.manager.getSyntaxByName(syntaxName, formatConverterFunction).parser
             context = parser.defaultContext

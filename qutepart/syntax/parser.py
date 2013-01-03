@@ -889,7 +889,7 @@ class Parser:
         """Serialize.
         For debug logs
         """
-        res = u'Parser %s\n' % self.name
+        res = u'Parser\n'
         for name, value in vars(self).iteritems():
             if not name.startswith('_') and \
                not name in ('defaultContext', 'deliminatorSet', 'contexts', 'lists') and \
