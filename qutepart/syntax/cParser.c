@@ -405,7 +405,8 @@ _MakeDeliminatorSet(PyObject* setAsUnicodeString)
     for (i = 0; i < DELIMINATOR_SET_CACHE_SIZE; i++)
         deliminatorSet.cache[i] = _isDeliminatorNoCache(i, setAsUnicodeString);
     
-    ASSIGN_PYOBJECT_VALUE(deliminatorSet.setAsUnicodeString, setAsUnicodeString);
+    deliminatorSet.setAsUnicodeString = setAsUnicodeString;
+    Py_INCREF(deliminatorSet.setAsUnicodeString);
     
     return deliminatorSet;
 }
