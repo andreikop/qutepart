@@ -10,10 +10,11 @@ from PyQt4.QtGui import QFont, QPlainTextEdit
 from qutepart.syntax import SyntaxManager
 from qutepart.highlighter import SyntaxHighlighter
 
-
 class Qutepart(QPlainTextEdit):
     """Code editor component for PyQt and Pyside
     """
+    
+    _globalSyntaxManager = SyntaxManager()
     
     def __init__(self, *args):
         QPlainTextEdit.__init__(self, *args)
@@ -35,11 +36,11 @@ class Qutepart(QPlainTextEdit):
         """
         self.clearSyntax()
         
-        syntax = SyntaxManager().getSyntax(SyntaxHighlighter.formatConverterFunction,
-                                           xmlFileName = xmlFileName,
-                                           mimeType = mimeType,
-                                           languageName = languageName,
-                                           sourceFilePath = sourceFilePath)
+        syntax = self._globalSyntaxManager.getSyntax(SyntaxHighlighter.formatConverterFunction,
+                                                     xmlFileName = xmlFileName,
+                                                     mimeType = mimeType,
+                                                     languageName = languageName,
+                                                     sourceFilePath = sourceFilePath)
 
         if syntax is not None:
             self._highlighter = SyntaxHighlighter(syntax, self.document())

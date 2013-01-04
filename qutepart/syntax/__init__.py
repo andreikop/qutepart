@@ -4,6 +4,7 @@
 import os.path
 import fnmatch
 import json
+import threading
 
 
 class TextFormat:
@@ -90,6 +91,7 @@ class SyntaxManager:
     load Syntax by its name or by source file name
     """
     def __init__(self):
+        self._loadedSyntaxesLock = threading.RLock()
         self._loadedSyntaxes = {}
         syntaxDbPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data", "syntax_db.json")
         with open(syntaxDbPath) as syntaxDbFile:
@@ -102,13 +104,15 @@ class SyntaxManager:
         """Get Syntax by its xml file name
         """
         import qutepart.syntax.loader  # delayed import for avoid cross-imports problem
-        if not xmlFileName in self._loadedSyntaxes:
-            xmlFilePath = os.path.join(os.path.dirname(__file__), "data", xmlFileName)
-            syntax = Syntax(self)
-            self._loadedSyntaxes[xmlFileName] = syntax
-            qutepart.syntax.loader.loadSyntax(syntax, xmlFilePath, formatConverterFunction)
         
-        return self._loadedSyntaxes[xmlFileName]
+        with self._loadedSyntaxesLock:
+            if not xmlFileName in self._loadedSyntaxes:
+                xmlFilePath = os.path.join(os.path.dirname(__file__), "data", xmlFileName)
+                syntax = Syntax(self)
+                self._loadedSyntaxes[xmlFileName] = syntax
+                qutepart.syntax.loader.loadSyntax(syntax, xmlFilePath, formatConverterFunction)
+        
+            return self._loadedSyntaxes[xmlFileName]
 
     def _getSyntaxByLanguageName(self, syntaxName, formatConverterFunction = None):
         """Get syntax by its name. Name is defined in the xml file
