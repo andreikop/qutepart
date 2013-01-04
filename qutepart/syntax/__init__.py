@@ -98,7 +98,7 @@ class SyntaxManager:
         self._mimeTypeToXmlFileName = syntaxDb['mimeTypeToXmlFileName']
         self._extensionToXmlFileName = syntaxDb['extensionToXmlFileName']
 
-    def getSyntaxByXmlName(self, xmlFileName, formatConverterFunction = None):
+    def _getSyntaxByXmlFileName(self, xmlFileName, formatConverterFunction = None):
         """Get Syntax by its xml file name
         """
         import qutepart.syntax.loader  # delayed import for avoid cross-imports problem
@@ -110,23 +110,60 @@ class SyntaxManager:
         
         return self._loadedSyntaxes[xmlFileName]
 
-    def getSyntaxByName(self, syntaxName, formatConverterFunction = None):
+    def _getSyntaxByLanguageName(self, syntaxName, formatConverterFunction = None):
         """Get syntax by its name. Name is defined in the xml file
         """
         xmlFileName = self._syntaxNameToXmlFileName[syntaxName]
-        return self.getSyntaxByXmlName(xmlFileName, formatConverterFunction)
+        return self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
     
-    def getSyntaxBySourceFileName(self, name, formatConverterFunction = None):
+    def _getSyntaxBySourceFileName(self, name, formatConverterFunction = None):
         """Get Syntax by source name of file, which is going to be highlighted
         """
         for pattern, xmlFileName in self._extensionToXmlFileName.items():
             if fnmatch.fnmatch(name, pattern):
-                return self.getSyntaxByXmlName(xmlFileName, formatConverterFunction)
+                return self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
         else:
             raise KeyError("No syntax for " + name)
 
-    def getSyntaxByMimeType(self, mimeType, formatConverterFunction = None):
+    def _getSyntaxByMimeType(self, mimeType, formatConverterFunction = None):
         """Get Syntax by file mime type
         """
         xmlFileName = self._mimeTypeToXmlFileName[mimeType]
-        return self.getSyntaxByXmlName(xmlFileName, formatConverterFunction)
+        return self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
+
+    def getSyntax(self, formatConverterFunction, xmlFileName = None, mimeType = None, languageName = None, sourceFilePath = None):
+        """Get syntax by one of parameters:
+            * xmlFileName
+            * mimeType
+            * languageName
+            * sourceFilePath
+        First parameter in the list has biggest priority
+        """
+        syntax = None
+        
+        if syntax is None and xmlFileName is not None:
+            try:
+                syntax = self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
+            except KeyError:
+                print 'No xml definition', xmlFileName
+        
+        if syntax is None and mimeType is not None:
+            try:
+                syntax = self._getSyntaxByMimeType(mimeType, formatConverterFunction)
+            except KeyError:
+                print 'No syntax for mime type', mimeType
+        
+        if syntax is None and languageName is not None:
+            try:
+                syntax = self._getSyntaxByLanguageName(languageName, formatConverterFunction)
+            except KeyError:
+                print 'No syntax for language', languageName
+        
+        if syntax is None and sourceFilePath is not None:
+            baseName = os.path.basename(sourceFilePath)
+            try:
+                syntax = self._getSyntaxBySourceFileName(baseName, formatConverterFunction)
+            except KeyError:
+                print 'No syntax for source file', baseName
+
+        return syntax

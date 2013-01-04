@@ -8,11 +8,10 @@ if not '-p' in sys.argv:
 import sip
 sip.setapi('QString', 2)
 
-from PyQt4.QtGui import QApplication, QFont, QPlainTextEdit, QSyntaxHighlighter, \
-    QTextCharFormat, QTextBlockUserData
+from PyQt4.QtGui import QApplication
 
-from qutepart.syntax.highlighter import SyntaxHighlighter
-from qutepart.syntax import SyntaxManager
+
+import qutepart
 
 
 def main():
@@ -24,31 +23,25 @@ def main():
 
     filePath = args[1]
     
-    try:
-        syntax = SyntaxManager().getSyntaxBySourceFileName(filePath, SyntaxHighlighter.formatConverterFunction)
-    except KeyError:
-        print 'No syntax for', filePath
-        return
-    
-    print 'Using syntax', syntax.name
-
     with open(filePath) as file:
         text = unicode(file.read(), 'utf8')
 
     app = QApplication(sys.argv)
     
-    pte = QPlainTextEdit()
-    pte.setPlainText(text)
-    pte.setWindowTitle(filePath)
-    pte.setFont(QFont("Monospace"))
+    qpart = qutepart.Qutepart()
     
-    hl = SyntaxHighlighter(syntax, pte.document())
-    pte.resize(800, 600)
-    pte.show()
+    qpart.detectSyntax(sourceFilePath = filePath)
+    
+    qpart.setPlainText(text)
+    qpart.setWindowTitle(filePath)
+    
+    qpart.resize(800, 600)
+    qpart.show()
     
     from PyQt4.QtCore import QTimer
     if '-q' in sys.argv:
         QTimer.singleShot(0, app.quit)
+    
     return app.exec_()
     
 

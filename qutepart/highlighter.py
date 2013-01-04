@@ -53,6 +53,16 @@ class SyntaxHighlighter(QObject):
         
         document.contentsChange.connect(self._onContentsChange)
         self._highlighBlocks(self._document.firstBlock(), self._document.lastBlock())
+    
+    def del_(self):
+        self._document.contentsChange.disconnect(self._onContentsChange)
+        self._continueTimer.stop()
+        block = self._document.firstBlock()
+        while block.isValid():
+            block.layout().setAdditionalFormats([])
+            block.setUserData(None)
+            self._document.markContentsDirty(block.position(), block.length())
+            block = block.next()
 
     @staticmethod
     def _lineData(block):
@@ -132,7 +142,6 @@ class SyntaxHighlighter(QObject):
         self._pendingAtLeastUntilBlock = None
 
     def _applyHighlightedSegments(self, block, highlightedSegments):
-        layout = block.layout()
         ranges = []
         currentPos = 0
         for length, format in highlightedSegments:
@@ -143,5 +152,5 @@ class SyntaxHighlighter(QObject):
             ranges.append(range)
             currentPos += length
             
-        layout.setAdditionalFormats(ranges)
+        block.layout().setAdditionalFormats(ranges)
         self._document.markContentsDirty(block.position(), block.length())
