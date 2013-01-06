@@ -18,7 +18,7 @@ class XmlParsingTestCase(unittest.TestCase):
         xmlFilesPath = os.path.join(os.path.dirname(__file__), '..', '..', 'qutepart', 'syntax', 'data')
         for xmlFileName in os.listdir(xmlFilesPath):
             if xmlFileName.endswith('.xml'):
-                SyntaxManager().getSyntaxByXmlName(xmlFileName)
+                syntax = SyntaxManager().getSyntax(None, xmlFileName = xmlFileName)
 
 if __name__ == '__main__':
     unittest.main()

@@ -64,6 +64,11 @@ class SyntaxHighlighter(QObject):
             self._document.markContentsDirty(block.position(), block.length())
             block = block.next()
 
+    def syntax(self):
+        """Return own syntax
+        """
+        return self._syntax
+
     @staticmethod
     def _lineData(block):
         dataObject = block.userData()

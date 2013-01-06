@@ -6,11 +6,12 @@ Use Qutepart class as an API
 import os.path
 
 from PyQt4.QtCore import QRect, Qt
-from PyQt4.QtGui import QColor, QFont, QPainter, QPlainTextEdit, QTextEdit, QTextFormat, QWidget
+from PyQt4.QtGui import QColor, QFont, QKeySequence, QPainter, QPlainTextEdit, QTextEdit, QTextFormat, QWidget
 
 from qutepart.syntax import SyntaxManager
 from qutepart.syntaxhlighter import SyntaxHighlighter
 from qutepart.brackethlighter import BracketHighlighter
+from qutepart.indenter import Indenter
 
 
 class _LineNumberArea(QWidget):
@@ -71,6 +72,8 @@ class Qutepart(QPlainTextEdit):
         self._highlighter = None
         self._bracketHighlighter = BracketHighlighter()
         
+        self._indenter = Indenter(self)
+        
         self.setFont(QFont("Monospace"))
 
         self._lineNumberArea = _LineNumberArea(self)
@@ -114,6 +117,15 @@ class Qutepart(QPlainTextEdit):
             self._highlighter.del_()
             self._highlighter = None
     
+    def languageName(self):
+        """Get current language name
+        Return None for plain text
+        """
+        if self._highlighter is None:
+            return None
+        else:
+            return self._highlighter.syntax().name
+    
     def _updateLineNumberAreaWidth(self, newBlockCount):
         """Set line number are width according to current lines count
         """
@@ -141,6 +153,28 @@ class Qutepart(QPlainTextEdit):
 
         cr = self.contentsRect()
         self._lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self._lineNumberArea.width(), cr.height()))
+
+    def keyPressEvent(self, event):
+        """QPlainTextEdit.keyPressEvent() implementation.
+        Key pressing handler
+        """
+        if event.matches(QKeySequence.InsertParagraphSeparator):
+            self._insertNewBlock()
+        else:
+            super(Qutepart, self).keyPressEvent(event)
+
+    def _insertNewBlock(self):
+        """Enter pressed.
+        Insert properly indented block
+        """
+        cursor = self.textCursor()
+        cursor.beginEditBlock()
+        try:
+            cursor.insertBlock()
+            indent = self._indenter.computeIndent(self.textCursor().block())
+            cursor.insertText(indent)
+        finally:
+            cursor.endEditBlock()
 
     def _currentLineExtraSelection(self):
         """QTextEdit.ExtraSelection, which highlightes current line

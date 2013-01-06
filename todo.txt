@@ -1,2 +1,3 @@
 Support DetectComments##Roff
 Replace mode. Match bracke under cursor in replace mode
+Make sure brace matcher won't freeze the editor
