@@ -9,7 +9,8 @@ from PyQt4.QtCore import QRect, Qt
 from PyQt4.QtGui import QColor, QFont, QPainter, QPlainTextEdit, QTextEdit, QTextFormat, QWidget
 
 from qutepart.syntax import SyntaxManager
-from qutepart.highlighter import SyntaxHighlighter
+from qutepart.syntaxhlighter import SyntaxHighlighter
+from qutepart.brackethlighter import BracketHighlighter
 
 
 class _LineNumberArea(QWidget):
@@ -68,6 +69,7 @@ class Qutepart(QPlainTextEdit):
         QPlainTextEdit.__init__(self, *args)
         
         self._highlighter = None
+        self._bracketHighlighter = BracketHighlighter()
         
         self.setFont(QFont("Monospace"))
 
@@ -76,10 +78,10 @@ class Qutepart(QPlainTextEdit):
 
         self.blockCountChanged.connect(self._updateLineNumberAreaWidth)
         self.updateRequest.connect(self._updateLineNumberArea)
-        self.cursorPositionChanged.connect(self._highlightCurrentLine)
+        self.cursorPositionChanged.connect(self._updatePositionHighlighting)
 
         self._updateLineNumberAreaWidth(0)
-        self._highlightCurrentLine()
+        self._updatePositionHighlighting()
     
     def detectSyntax(self, xmlFileName = None, mimeType = None, languageName = None, sourceFilePath = None):
         """Get syntax by one of parameters:
@@ -140,20 +142,24 @@ class Qutepart(QPlainTextEdit):
         cr = self.contentsRect()
         self._lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self._lineNumberArea.width(), cr.height()))
 
-    def _highlightCurrentLine(self):
+    def _currentLineExtraSelection(self):
+        """QTextEdit.ExtraSelection, which highlightes current line
+        """
+        selection = QTextEdit.ExtraSelection()
+
+        lineColor = QColor(Qt.yellow).lighter(160)
+
+        selection.format.setBackground(lineColor)
+        selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+        selection.cursor = self.textCursor()
+        selection.cursor.clearSelection()
+        
+        return selection
+
+    def _updatePositionHighlighting(self):
         """Highlight current line
         """
-        extraSelections = []
-
-        if not self.isReadOnly():
-            selection = QTextEdit.ExtraSelection()
-
-            lineColor = QColor(Qt.yellow).lighter(160)
-
-            selection.format.setBackground(lineColor)
-            selection.format.setProperty(QTextFormat.FullWidthSelection, True)
-            selection.cursor = self.textCursor()
-            selection.cursor.clearSelection()
-            extraSelections.append(selection)
-        
-        self.setExtraSelections(extraSelections)
+        currentLineSelection = self._currentLineExtraSelection()
+        bracketSelections = self._bracketHighlighter.extraSelections(self.textCursor().block(),
+                                                                     self.textCursor().positionInBlock())
+        self.setExtraSelections([currentLineSelection] + bracketSelections)

@@ -1,1 +1,2 @@
 Support DetectComments##Roff
+Replace mode. Match bracke under cursor in replace mode
