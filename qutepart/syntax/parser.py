@@ -846,7 +846,9 @@ class Context:
                 if self.fallthroughContext is not None:
                     newContextStack = self.fallthroughContext.getNextContextStack(contextStack)
                     if newContextStack != contextStack:
-                        return (currentColumnIndex - startColumnIndex, newContextStack, matchedRules)
+                        if countOfNotMatchedSymbols > 0:
+                            highlightedSegments.append((countOfNotMatchedSymbols, self.format))
+                        return (currentColumnIndex - startColumnIndex, newContextStack, highlightedSegments, False)
 
                 currentColumnIndex += 1
                 countOfNotMatchedSymbols += 1
