@@ -11,7 +11,7 @@ from PyQt4.QtGui import QColor, QFont, QKeySequence, QPainter, QPlainTextEdit, Q
 from qutepart.syntax import SyntaxManager
 from qutepart.syntaxhlighter import SyntaxHighlighter
 from qutepart.brackethlighter import BracketHighlighter
-from qutepart.indenter import Indenter
+from qutepart.indenter import getIndenter
 
 
 class _LineNumberArea(QWidget):
@@ -72,7 +72,7 @@ class Qutepart(QPlainTextEdit):
         self._highlighter = None
         self._bracketHighlighter = BracketHighlighter()
         
-        self._indenter = Indenter(self)
+        self._indenter = getIndenter('Python', '    ')
         
         self.setFont(QFont("Monospace"))
 
