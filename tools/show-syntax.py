@@ -13,6 +13,6 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         print 'Usage:\n\t%s SYNTAX_FILE_NAME' % sys.argv[0]
     else:
-        syntax = SyntaxManager().getSyntaxByXmlName(sys.argv[1])
-        string = unicode(syntax.parser)
-        print string
+        syntax = SyntaxManager().getSyntax(xmlFileName = sys.argv[1])
+        print unicode(syntax)
+

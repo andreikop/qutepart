@@ -1,20 +1,46 @@
-"""Module indentation for block
+"""Module computes indentation for block
+It contains implementation of indenters, which are supported by katepart xml files
 """
 
-def getIndenter(languageName, indentText):
-    if languageName == 'Python':
-        return IndenterPython(indentText)
-    else:
-        return IndenterNormal(indentText)
+
+def getIndenter(indenterName, indentText):
+    """Get indenter by name.
+    Available indenters are none, normal, cstyle, haskell, lilypond, lisp, python, ruby, xml
+    Indenter name is not case sensitive
+    Raise KeyError if not found
+    indentText is indentation, which shall be used. i.e. '\t' for tabs, '    ' for 4 space symbols
+    """
+    indenters = {
+        'none' : IndenterNone,
+        'normal' : IndenterNormal,
+        'cstyle' : IndenterCStyle,
+        'haskell' : IndenterHaskell,
+        'lilypond' : IndenterLilypond,
+        'lisp' : IndenterLisp,
+        'python' : IndenterPython,
+        'ruby' : IndenterRuby,
+        'xml' : IndenterXml
+    }
+    
+    indenterClass = indenters[indenterName.lower()]  # KeyError is ok, raise it up
+    
+    return indenterClass(indentText)
 
 
-class IndenterNormal:
-    """Class automatically computes indentation for lines
-    This is basic indenter, which knows nothing about programming languages
+class IndenterNone:
+    """No any indentation
     """
     def __init__(self, indentText):
         self._indentText = indentText
     
+    def computeIndent(self, block):
+        return ''
+
+
+class IndenterNormal(IndenterNone):
+    """Class automatically computes indentation for lines
+    This is basic indenter, which knows nothing about programming languages
+    """
     @staticmethod
     def _prevNonEmptyLineText(block):
         """Return text previous block, which is non empty (contains something, except spaces)
@@ -43,7 +69,30 @@ class IndenterNormal:
         """Compute indent for block
         """
         return self._prevBlockIndent(block)
-    
+
+class IndenterCStyle(IndenterNormal):
+    """TODO implement
+    """
+    pass
+
+
+class IndenterHaskell(IndenterNormal):
+    """TODO implement
+    """
+    pass
+
+
+class IndenterLilypond(IndenterNormal):
+    """TODO implement
+    """
+    pass
+
+
+class IndenterLisp(IndenterNormal):
+    """TODO implement
+    """
+    pass
+
 
 class IndenterPython(IndenterNormal):
     """Indenter for Python language.
@@ -86,3 +135,16 @@ class IndenterPython(IndenterNormal):
                 return prevIndent
 
         return prevIndent
+
+
+class IndenterRuby(IndenterNormal):
+    """TODO implement
+    """
+    pass
+
+
+class IndenterXml(IndenterNormal):
+    """TODO implement
+    """
+    pass
+

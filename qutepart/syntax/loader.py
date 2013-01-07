@@ -476,6 +476,10 @@ def _loadSyntaxDescription(root, syntax):
     syntax.author = root.attrib.get('author', None)
     syntax.license = root.attrib.get('license', None)
     syntax.hidden = _parseBoolAttribute(root.attrib.get('hidden', 'false'))
+    
+    # not documented
+    syntax.indenter = root.attrib.get('indenter', None)
+
 
 def loadSyntax(syntax, filePath, formatConverterFunction = None):
     with open(filePath, 'r') as definitionFile:
@@ -492,7 +496,7 @@ def loadSyntax(syntax, filePath, formatConverterFunction = None):
     
     # parse itemData
     keywordsCaseSensitive = True
-
+    
     generalElement = root.find('general')
     if generalElement is not None:
         keywordsElement = generalElement.find('keywords')
@@ -510,6 +514,12 @@ def loadSyntax(syntax, filePath, formatConverterFunction = None):
             if 'additionalDeliminator' in keywordsElement.attrib:
                 additionalSet = keywordsElement.attrib['additionalDeliminator']
                 deliminatorSet.update(additionalSet)
+        
+        indentationElement = generalElement.find('indentation')
+        
+        if indentationElement is not None and \
+           'mode' in indentationElement.attrib:
+            syntax.indenter = indentationElement.attrib['mode']
 
     deliminatorSetAsString = u''.join(list(deliminatorSet))
     syntax._setParser(_parserModule.Parser(syntax, deliminatorSetAsString, lists, keywordsCaseSensitive))

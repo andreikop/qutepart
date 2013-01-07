@@ -865,7 +865,7 @@ class Context:
 class Parser:
     """Parser implementation
         
-        syntaxDescription       SyntaxDescription instance
+        syntax                  Syntax instance
         
         attributeToFormatMap    Map "attribute" : TextFormat
         
@@ -894,7 +894,7 @@ class Parser:
         res = u'Parser\n'
         for name, value in vars(self).iteritems():
             if not name.startswith('_') and \
-               not name in ('defaultContext', 'deliminatorSet', 'contexts', 'lists') and \
+               not name in ('defaultContext', 'deliminatorSet', 'contexts', 'lists', 'syntax') and \
                not value is None:
                 res += '\t%s: %s\n' % (name, value)
         

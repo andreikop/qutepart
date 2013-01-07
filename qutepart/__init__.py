@@ -64,6 +64,8 @@ class Qutepart(QPlainTextEdit):
     """Code editor component for PyQt and Pyside
     """
     
+    _DEFAULT_INDENTATION = '    '
+    
     _globalSyntaxManager = SyntaxManager()
     
     def __init__(self, *args):
@@ -72,7 +74,7 @@ class Qutepart(QPlainTextEdit):
         self._highlighter = None
         self._bracketHighlighter = BracketHighlighter()
         
-        self._indenter = getIndenter('Python', '    ')
+        self._indenter = getIndenter('normal', self._DEFAULT_INDENTATION)
         
         self.setFont(QFont("Monospace"))
 
@@ -107,6 +109,23 @@ class Qutepart(QPlainTextEdit):
 
         if syntax is not None:
             self._highlighter = SyntaxHighlighter(syntax, self.document())
+            self._indenter = self._getIndenter(syntax)
+
+    def _getIndenter(self, syntax):
+        """Get indenter for syntax
+        """
+        if syntax.indenter is not None:
+            try:
+                return getIndenter(syntax.indenter, self._DEFAULT_INDENTATION)
+            except KeyError:
+                print >> sys.stderr, "Indenter '%s' not found" % syntax.indenter
+        
+        try:
+            return getIndenter(syntax.name, self._DEFAULT_INDENTATION)
+        except KeyError:
+            pass
+        
+        return getIndenter('normal', self._DEFAULT_INDENTATION)
 
     def clearSyntax(self):
         """Clear syntax. Disables syntax highlighting

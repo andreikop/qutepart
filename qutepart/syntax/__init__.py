@@ -53,9 +53,30 @@ class Syntax:
         author          Author
         license         License
         hidden          Shall be hidden in the menu
+        indenter        Indenter for the syntax. Possible values are 
+                            none, normal, cstyle, haskell, lilypond, lisp, python, ruby, xml
+                        None, if not set by xml file
     """
     def __init__(self, manager):
         self.manager = manager
+        self.parser = None
+    
+    def __str__(self):
+        res = 'Syntax\n'
+        res += ' name: %s\n' % self.name
+        res += ' section: %s\n' % self.section
+        res += ' extensions: %s\n' % self.extensions
+        res += ' mimetype: %s\n' % self.mimetype
+        res += ' version: %s\n' % self.version
+        res += ' kateversion: %s\n' % self.kateversion
+        res += ' priority: %s\n' % self.priority
+        res += ' author: %s\n' % self.author
+        res += ' license: %s\n' % self.license
+        res += ' hidden: %s\n' % self.hidden
+        res += ' indenter: %s\n' % self.indenter
+        res += unicode(self.parser)
+        
+        return res
     
     def _setParser(self, parser):
         self.parser = parser
@@ -100,7 +121,7 @@ class SyntaxManager:
         self._mimeTypeToXmlFileName = syntaxDb['mimeTypeToXmlFileName']
         self._extensionToXmlFileName = syntaxDb['extensionToXmlFileName']
 
-    def _getSyntaxByXmlFileName(self, xmlFileName, formatConverterFunction = None):
+    def _getSyntaxByXmlFileName(self, xmlFileName, formatConverterFunction):
         """Get Syntax by its xml file name
         """
         import qutepart.syntax.loader  # delayed import for avoid cross-imports problem
@@ -114,13 +135,13 @@ class SyntaxManager:
         
             return self._loadedSyntaxes[xmlFileName]
 
-    def _getSyntaxByLanguageName(self, syntaxName, formatConverterFunction = None):
+    def _getSyntaxByLanguageName(self, syntaxName, formatConverterFunction):
         """Get syntax by its name. Name is defined in the xml file
         """
         xmlFileName = self._syntaxNameToXmlFileName[syntaxName]
         return self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
     
-    def _getSyntaxBySourceFileName(self, name, formatConverterFunction = None):
+    def _getSyntaxBySourceFileName(self, name, formatConverterFunction):
         """Get Syntax by source name of file, which is going to be highlighted
         """
         for pattern, xmlFileName in self._extensionToXmlFileName.items():
@@ -129,13 +150,14 @@ class SyntaxManager:
         else:
             raise KeyError("No syntax for " + name)
 
-    def _getSyntaxByMimeType(self, mimeType, formatConverterFunction = None):
+    def _getSyntaxByMimeType(self, mimeType, formatConverterFunction):
         """Get Syntax by file mime type
         """
         xmlFileName = self._mimeTypeToXmlFileName[mimeType]
         return self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
 
-    def getSyntax(self, formatConverterFunction, xmlFileName = None, mimeType = None, languageName = None, sourceFilePath = None):
+    def getSyntax(self, formatConverterFunction = None,
+                  xmlFileName = None, mimeType = None, languageName = None, sourceFilePath = None):
         """Get syntax by one of parameters:
             * xmlFileName
             * mimeType
