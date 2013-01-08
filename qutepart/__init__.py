@@ -12,6 +12,7 @@ from qutepart.syntax import SyntaxManager
 from qutepart.syntaxhlighter import SyntaxHighlighter
 from qutepart.brackethlighter import BracketHighlighter
 from qutepart.indenter import getIndenter
+from qutepart.completer import Completer
 
 
 class _LineNumberArea(QWidget):
@@ -75,6 +76,8 @@ class Qutepart(QPlainTextEdit):
         self._bracketHighlighter = BracketHighlighter()
         
         self._indenter = getIndenter('normal', self._DEFAULT_INDENTATION)
+        
+        self._completer = Completer(self)
         
         self.setFont(QFont("Monospace"))
 
@@ -213,6 +216,10 @@ class Qutepart(QPlainTextEdit):
         """Highlight current line
         """
         currentLineSelection = self._currentLineExtraSelection()
+
+        # TODO use positionInBlock when Qt 4.6 is not supported
+        cursorColumnIndex = self.textCursor().position() - self.textCursor().block().position()
+        
         bracketSelections = self._bracketHighlighter.extraSelections(self.textCursor().block(),
-                                                                     self.textCursor().positionInBlock())
+                                                                     cursorColumnIndex)
         self.setExtraSelections([currentLineSelection] + bracketSelections)
