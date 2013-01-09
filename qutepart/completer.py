@@ -4,6 +4,9 @@
 from PyQt4.QtCore import QAbstractItemModel, QModelIndex, QObject, QSize, Qt
 from PyQt4.QtGui import QListView, QStyle, QStyledItemDelegate
 
+from qutepart.htmldelegate import HTMLDelegate
+
+
 class _CompletionModel(QAbstractItemModel):
     """QAbstractItemModel implementation for a list of completion variants
     """
@@ -19,7 +22,10 @@ class _CompletionModel(QAbstractItemModel):
         """QAbstractItemModel method implementation
         """
         if role == Qt.DisplayRole:
-            return "test data"
+            text = "test data"
+            typed = text[:6]
+            notTyped = text[6:]
+            return '<html><b>%s</b>%s</html>' % (typed, notTyped)
         else:
             return None
         
@@ -49,25 +55,12 @@ class _CompletionModel(QAbstractItemModel):
         return QModelIndex()
 
 
-class _StyledItemDelegate(QStyledItemDelegate):
-    """Draw QListView items without dotted focus frame
-    http://qt-project.org/faq/answer/how_can_i_remove_the_dotted_rectangle_from_the_cell_that_has_focus_in_my_qt
-    """
-    def __init__(self, parent):
-        QStyledItemDelegate.__init__(self, parent)
-        
-    def paint(self, painter, option, index):
-        opt = option
-        opt.state &= ~QStyle.State_HasFocus
-        QStyledItemDelegate.paint(self, painter, opt, index)
-
-
 class _ListView(QListView):
     """Completion list widget
     """
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
-        self.setItemDelegate(_StyledItemDelegate(self))
+        self.setItemDelegate(HTMLDelegate(self))
         
         qpart.setFocus()
         
