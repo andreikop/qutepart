@@ -8,7 +8,7 @@ class _CompletionModel(QAbstractItemModel):
     """QAbstractItemModel implementation for a list of completion variants
     """
     def __init__(self):
-        QObject.__init__(self)
+        QAbstractItemModel.__init__(self)
 
     def flags(self, index):
         """QAbstractItemModel method implementation
@@ -72,8 +72,14 @@ class _ListView(QListView):
         self._qpart = qpart
         self.setModel(model)
         
-        
         qpart.cursorPositionChanged.connect(self._onCursorPositionChanged)
+    
+    def __del__(self):
+        """Without this empty destructor Qt prints strange trace
+            QObject::startTimer: QTimer can only be used with threads started with QThread
+        when exiting
+        """
+        pass
     
     def _onCursorPositionChanged(self):
         """Cursor position changed. Update completion widget position
