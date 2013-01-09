@@ -43,6 +43,8 @@ class HTMLDelegate(QStyledItemDelegate):
         doc = QTextDocument()
         doc.setDocumentMargin(1)
         doc.setHtml(options.text)
+        if options.widget is not None:
+            doc.setDefaultFont(options.widget.font())
         #  bad long (multiline) strings processing doc.setTextWidth(options.rect.width())
 
         options.text = ""

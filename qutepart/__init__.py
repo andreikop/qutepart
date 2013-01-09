@@ -71,6 +71,7 @@ class Qutepart(QPlainTextEdit):
     
     def __init__(self, *args):
         QPlainTextEdit.__init__(self, *args)
+        self.setFont(QFont("Monospace"))
         
         self._highlighter = None
         self._bracketHighlighter = BracketHighlighter()
@@ -79,8 +80,6 @@ class Qutepart(QPlainTextEdit):
         
         self._completer = Completer(self)
         
-        self.setFont(QFont("Monospace"))
-
         self._lineNumberArea = _LineNumberArea(self)
         self._countCache = (-1, -1)
 

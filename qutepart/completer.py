@@ -2,7 +2,7 @@
 """
 
 from PyQt4.QtCore import QAbstractItemModel, QModelIndex, QObject, QSize, Qt
-from PyQt4.QtGui import QListView, QStyle, QStyledItemDelegate
+from PyQt4.QtGui import QListView, QStyle
 
 from qutepart.htmldelegate import HTMLDelegate
 
@@ -12,47 +12,42 @@ class _CompletionModel(QAbstractItemModel):
     """
     def __init__(self):
         QAbstractItemModel.__init__(self)
+        
+        self._typedText = 'veeeeeeeery long test d'
 
-    def flags(self, index):
-        """QAbstractItemModel method implementation
-        """
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
     
     def data(self, index, role):
         """QAbstractItemModel method implementation
         """
         if role == Qt.DisplayRole:
-            text = "test data"
-            typed = text[:6]
-            notTyped = text[6:]
-            return '<html><b>%s</b>%s</html>' % (typed, notTyped)
+            if index.row() == 0:
+                text = "veeeeeeeery long test data"
+            else:
+                text = "llllllllllllllllllllllllll"
+            typed = text[:len(self._typedText)]
+            notTyped = text[len(self._typedText):]
+            return '<html>%s<b>%s</b></html>' % (typed, notTyped)
         else:
             return None
         
-    def headerData(self, index):
-        """QAbstractItemModel method implementation
-        """
-        return "the header"
     
     def rowCount(self, index):
         """QAbstractItemModel method implementation
         """
         return 7
     
-    def columnCount(self, index):
-        """QAbstractItemModel method implementation
+    def typedText(self):
+        """Get current typed text
         """
-        return 1
+        return self._typedText
     
-    def index(self, row, column, parent = QModelIndex()):
-        """QAbstractItemModel method implementation
-        """
-        return self.createIndex(row, column)
-    
-    def parent(self, index):
-        """QAbstractItemModel method implementation
-        """
-        return QModelIndex()
+    """Trivial QAbstractItemModel methods implementation
+    """
+    def flags(self, index):                                 return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+    def headerData(self, index):                            return None
+    def columnCount(self, index):                           return 1
+    def index(self, row, column, parent = QModelIndex()):   return self.createIndex(row, column)
+    def parent(self, index):                                return QModelIndex()
 
 
 class _ListView(QListView):
@@ -61,6 +56,7 @@ class _ListView(QListView):
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
         self.setItemDelegate(HTMLDelegate(self))
+        self.setFont(qpart.font())
         
         qpart.setFocus()
         
@@ -79,7 +75,8 @@ class _ListView(QListView):
     def _onCursorPositionChanged(self):
         """Cursor position changed. Update completion widget position
         """
-        self.move(self._qpart.cursorRect().bottomRight())
+        self.move(self._qpart.cursorRect().right() - self._horizontalShift(),
+                  self._qpart.cursorRect().bottom())
     
     def sizeHint(self):
         """QWidget.sizeHint implementation
@@ -91,6 +88,13 @@ class _ListView(QListView):
         height = self.sizeHintForRow(0) * self.model().rowCount(QModelIndex()) + 2
         
         return QSize(width, height)
+
+    def _horizontalShift(self):
+        """List should be plased such way, that typed text in the list is under
+        typed text in the editor
+        """
+        strangeAdjustment = 2  # I don't know why. Probably, won't work on other systems and versions
+        return self.fontMetrics().width(self.model().typedText()) + strangeAdjustment
 
 
 class Completer(QObject):
