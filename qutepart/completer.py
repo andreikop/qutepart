@@ -69,6 +69,8 @@ class _ListView(QListView):
         QListView.__init__(self, qpart.viewport())
         self.setItemDelegate(_StyledItemDelegate(self))
         
+        qpart.setFocus()
+        
         self._qpart = qpart
         self.setModel(model)
         
