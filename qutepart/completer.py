@@ -2,7 +2,7 @@
 """
 
 from PyQt4.QtCore import QAbstractItemModel, QModelIndex, QObject, QSize, Qt
-from PyQt4.QtGui import QListView
+from PyQt4.QtGui import QListView, QStyle, QStyledItemDelegate
 
 class _CompletionModel(QAbstractItemModel):
     """QAbstractItemModel implementation for a list of completion variants
@@ -49,17 +49,31 @@ class _CompletionModel(QAbstractItemModel):
         return QModelIndex()
 
 
+class _StyledItemDelegate(QStyledItemDelegate):
+    """Draw QListView items without dotted focus frame
+    http://qt-project.org/faq/answer/how_can_i_remove_the_dotted_rectangle_from_the_cell_that_has_focus_in_my_qt
+    """
+    def __init__(self, parent):
+        QStyledItemDelegate.__init__(self, parent)
+        
+    def paint(self, painter, option, index):
+        opt = option
+        opt.state &= ~QStyle.State_HasFocus
+        QStyledItemDelegate.paint(self, painter, opt, index)
+
+
 class _ListView(QListView):
     """Completion list widget
     """
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
+        self.setItemDelegate(_StyledItemDelegate(self))
+        
         self._qpart = qpart
         self.setModel(model)
         
-        qpart.cursorPositionChanged.connect(self._onCursorPositionChanged)
         
-        self.setStyleSheet("QTreeView:focus {border: 7px solid;}")  # remove focus rect from the items
+        qpart.cursorPositionChanged.connect(self._onCursorPositionChanged)
     
     def _onCursorPositionChanged(self):
         """Cursor position changed. Update completion widget position
