@@ -3,7 +3,7 @@
 
 import re
 
-from PyQt4.QtCore import pyqtSignal, QAbstractItemModel, QEvent, QModelIndex, QObject, QSize, Qt
+from PyQt4.QtCore import pyqtSignal, QAbstractItemModel, QEvent, QModelIndex, QObject, QSize, Qt, QTimer
 from PyQt4.QtGui import QListView, QStyle
 
 from qutepart.htmldelegate import HTMLDelegate
@@ -76,11 +76,15 @@ class _CompletionList(QListView):
         self.setItemDelegate(HTMLDelegate(self))
         
         self._qpart = qpart
+        self.setFont(qpart.font())
+        
         self.setModel(model)
         
         self._selectedIndex = -1
         
         qpart.installEventFilter(self)
+        
+        self.clicked.connect(lambda index: self.itemSelected.emit(index.row()))
         
         self.move(self._qpart.cursorRect().right() - self._horizontalShift(),
                   self._qpart.cursorRect().bottom())
@@ -99,9 +103,11 @@ class _CompletionList(QListView):
         """Explicitly called destructor.
         Removes widget from the qpart
         """
+        self._qpart.removeEventFilter(self)
         self.hide()
-        self.setParent(None)
-        # Now gc could collect me
+        
+        # if object is deleted synchronously, Qt crashes after it on events handling
+        QTimer.singleShot(0, lambda: self.setParent(None))
     
     def sizeHint(self):
         """QWidget.sizeHint implementation
@@ -152,6 +158,7 @@ class _CompletionList(QListView):
         """
         self._selectedIndex = index
         self.setCurrentIndex(self.model().createIndex(index, 0))
+
 
 class Completer(QObject):
     """Object listens Qutepart widget events, computes and shows autocompletion lists
