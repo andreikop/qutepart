@@ -41,7 +41,7 @@ class _CompletionModel(QAbstractItemModel):
         else:
             return None
     
-    def rowCount(self, index):
+    def rowCount(self, index = QModelIndex()):
         """QAbstractItemModel method implementation
         """
         return len(self._words)
@@ -50,6 +50,11 @@ class _CompletionModel(QAbstractItemModel):
         """Get current typed text
         """
         return self._typedText
+    
+    def words(self):
+        """Return list of words
+        """
+        return self._words
     
     """Trivial QAbstractItemModel methods implementation
     """
@@ -64,23 +69,24 @@ class _CompletionList(QListView):
     """Completion list widget
     """
     closeMe = pyqtSignal()
+    itemSelected = pyqtSignal(int)
     
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
         self.setItemDelegate(HTMLDelegate(self))
-        self.setFont(qpart.font())
-        
-        qpart.setFocus()
         
         self._qpart = qpart
         self.setModel(model)
+        
+        self._selectedIndex = -1
         
         qpart.installEventFilter(self)
         
         self.move(self._qpart.cursorRect().right() - self._horizontalShift(),
                   self._qpart.cursorRect().bottom())
-        
         self.show()
+        
+        qpart.setFocus()
     
     def __del__(self):
         """Without this empty destructor Qt prints strange trace
@@ -102,12 +108,12 @@ class _CompletionList(QListView):
         Automatically resizes the widget according to rows count
         """
         width = max([self.fontMetrics().width(self.model().plainText(i)) \
-                        for i in range(self.model().rowCount(QModelIndex()))])
+                        for i in range(self.model().rowCount())])
         
         width += 4  # margin
         
         # drawn with scrollbar without +2. I don't know why
-        height = self.sizeHintForRow(0) * self.model().rowCount(QModelIndex()) + 2
+        height = self.sizeHintForRow(0) * self.model().rowCount() + 2
         
         return QSize(width, height)
 
@@ -121,13 +127,31 @@ class _CompletionList(QListView):
     def eventFilter(self, object, event):
         """Catch events from qpart
         """
-        if (event.type() == QEvent.KeyPress or event.type() == QEvent.ShortcutOverride) and \
-           event.key() == Qt.Key_Escape and \
-           event.modifiers() == Qt.NoModifier:
-            self.closeMe.emit()
+        if event.type() == QEvent.KeyPress:
+            if event.key() == Qt.Key_Escape and \
+               event.modifiers() == Qt.NoModifier:
+                self.closeMe.emit()
+            elif event.key() == Qt.Key_Down:
+                if self._selectedIndex + 1 < self.model().rowCount():
+                    self._selectItem(self._selectedIndex + 1)
+                return True
+            elif event.key() == Qt.Key_Up:
+                if self._selectedIndex - 1 >= 0:
+                    self._selectItem(self._selectedIndex - 1)
+                return True
+            elif event.key() in (Qt.Key_Enter, Qt.Key_Return):
+                if self._selectedIndex != -1:
+                    self.itemSelected.emit(self._selectedIndex)
+                    self._selectItem(self._selectedIndex - 1)
+                    return True
+
         return super(QListView, self).eventFilter(object, event)
 
-
+    def _selectItem(self, index):
+        """Select item in the list
+        """
+        self._selectedIndex = index
+        self.setCurrentIndex(self.model().createIndex(index, 0))
 
 class Completer(QObject):
     """Object listens Qutepart widget events, computes and shows autocompletion lists
@@ -180,6 +204,7 @@ class Completer(QObject):
         
         self._widget = _CompletionList(self._qpart, model)
         self._widget.closeMe.connect(self._closeCompletion)
+        self._widget.itemSelected.connect(self._onCompletionListItemSelected)
 
     def _closeCompletion(self):
         """Close completion, if visible.
@@ -231,3 +256,12 @@ class Completer(QObject):
             length = index + 1
         
         return firstWord[:length]
+    
+    def _onCompletionListItemSelected(self, index):
+        """Item selected. Insert completion to editor
+        """
+        model = self._widget.model()
+        selectedWord = model.words()[index]
+        textToInsert = selectedWord[len(model.typedText()):]
+        self._qpart.textCursor().insertText(textToInsert)
+        self._closeCompletion()
