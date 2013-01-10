@@ -15,21 +15,24 @@ class _CompletionModel(QAbstractItemModel):
         
         self._typedText = 'veeeeeeeery long test d'
 
-    
-    def data(self, index, role):
+    def plainText(self, rowIndex):
+        """Get plain text of specified item
+        """
+        if rowIndex == 0:
+            return "veeeeeeeery long test data"
+        else:
+            return "llllllllllllllllllllllllll"
+
+    def data(self, index, role = Qt.DisplayRole):
         """QAbstractItemModel method implementation
         """
         if role == Qt.DisplayRole:
-            if index.row() == 0:
-                text = "veeeeeeeery long test data"
-            else:
-                text = "llllllllllllllllllllllllll"
+            text = self.plainText(index.row())
             typed = text[:len(self._typedText)]
             notTyped = text[len(self._typedText):]
             return '<html>%s<b>%s</b></html>' % (typed, notTyped)
         else:
             return None
-        
     
     def rowCount(self, index):
         """QAbstractItemModel method implementation
@@ -82,7 +85,10 @@ class _ListView(QListView):
         """QWidget.sizeHint implementation
         Automatically resizes the widget according to rows count
         """
-        width = super(_ListView, self).sizeHint().width()
+        width = max([self.fontMetrics().width(self.model().plainText(i)) \
+                        for i in range(self.model().rowCount(QModelIndex()))])
+        
+        width += 4  # margin
         
         # drawn with scrollbar without +2. I don't know why
         height = self.sizeHintForRow(0) * self.model().rowCount(QModelIndex()) + 2
