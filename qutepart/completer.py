@@ -12,13 +12,13 @@ from qutepart.htmldelegate import HTMLDelegate
 class _CompletionModel(QAbstractItemModel):
     """QAbstractItemModel implementation for a list of completion variants
     """
-    def __init__(self, wordBeforeCursor, words):
+    def __init__(self, wordBeforeCursor, words, commonStart):
         QAbstractItemModel.__init__(self)
         
         self._typedText = wordBeforeCursor
         self._words = words
 
-        self._canCompleteText = ''
+        self._canCompleteText = commonStart[len(wordBeforeCursor):]
 
     def plainText(self, rowIndex):
         """Get plain text of specified item
@@ -138,14 +138,15 @@ class Completer(QObject):
         
         wordBeforeCursor = self._wordBeforeCursor()
         if wordBeforeCursor is None:
-            print 'no word'
             return
         
         words = self._makeListOfCompletions(wordBeforeCursor)
         if not words:
             return
         
-        model = _CompletionModel(wordBeforeCursor, words)
+        commonStart = self._commonWordStart(words)
+        
+        model = _CompletionModel(wordBeforeCursor, words, commonStart)
         
         self._widget = _ListView(self._qpart, model)
 
@@ -187,3 +188,20 @@ class Completer(QObject):
                                    word != wordBeforeCursor]
         
         return sorted(onlySuitable)
+    
+    def _commonWordStart(self, words):
+        """Get common start of all words.
+        i.e. for ['blablaxxx', 'blablayyy', 'blazzz'] common start is 'bla'
+        """
+        if not words:
+            return ''
+        
+        length = 0
+        firstWord = words[0]
+        otherWords = words[1:]
+        for index, char in enumerate(firstWord):
+            if not all([word[index] == char for word in otherWords]):
+                break
+            length = index + 1
+        
+        return firstWord[:length]
