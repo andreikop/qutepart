@@ -85,6 +85,7 @@ class _CompletionList(QListView):
         self._selectedIndex = -1
         
         qpart.installEventFilter(self)
+        qpart.cursorPositionChanged.connect(self.closeMe)
         
         self.clicked.connect(lambda index: self.itemSelected.emit(index.row()))
         
@@ -106,7 +107,6 @@ class _CompletionList(QListView):
         Removes widget from the qpart
         """
         self._qpart.removeEventFilter(self)
-        self.hide()
         
         # if object is deleted synchronously, Qt crashes after it on events handling
         QTimer.singleShot(0, lambda: self.setParent(None))
@@ -134,6 +134,7 @@ class _CompletionList(QListView):
     
     def eventFilter(self, object, event):
         """Catch events from qpart
+        Move selection, select item, or close themselves
         """
         if event.type() == QEvent.KeyPress:
             if event.key() == Qt.Key_Escape and \
@@ -153,7 +154,7 @@ class _CompletionList(QListView):
                     self._selectItem(self._selectedIndex - 1)
                     return True
 
-        return super(QListView, self).eventFilter(object, event)
+        return False
 
     def _selectItem(self, index):
         """Select item in the list
@@ -187,12 +188,12 @@ class Completer(QObject):
         """
         if event.type() == QEvent.KeyRelease:
             text = event.text()
-            if text.isalpha() or text.isdigit() or text == '_':  # TODO take word separator characters from the parser
-                ret = super(Completer, self).eventFilter(object, event)
+            textTyped = text.isalpha() or text.isdigit() or text == '_'  # TODO take word separator characters from the parser
+            if textTyped or event.key() == Qt.Key_Backspace:
                 self._invokeCompletionIfAvailable()
-                return ret
+                return False
         
-        return super(Completer, self).eventFilter(object, event)
+        return False
 
     def _invokeCompletionIfAvailable(self):
         """Invoke completion, if available. Called after text has been typed in qpart
@@ -274,3 +275,4 @@ class Completer(QObject):
         textToInsert = selectedWord[len(model.typedText()):]
         self._qpart.textCursor().insertText(textToInsert)
         self._closeCompletion()
+
