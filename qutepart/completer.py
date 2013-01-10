@@ -1,6 +1,8 @@
 """Autocompletion widget and logic
 """
 
+import re
+
 from PyQt4.QtCore import QAbstractItemModel, QModelIndex, QObject, QSize, Qt
 from PyQt4.QtGui import QListView, QStyle
 
@@ -10,17 +12,18 @@ from qutepart.htmldelegate import HTMLDelegate
 class _CompletionModel(QAbstractItemModel):
     """QAbstractItemModel implementation for a list of completion variants
     """
-    def __init__(self):
+    def __init__(self, wordBeforeCursor, words):
         QAbstractItemModel.__init__(self)
         
-        self._typedText = 'veeeeeeeery long test d'
-        self._canCompleteText = 'ata'
-        
+        self._typedText = wordBeforeCursor
+        self._words = words
+
+        self._canCompleteText = ''
 
     def plainText(self, rowIndex):
         """Get plain text of specified item
         """
-        return "veeeeeeeery long test data value"
+        return self._words[rowIndex]
 
     def data(self, index, role = Qt.DisplayRole):
         """QAbstractItemModel method implementation
@@ -41,7 +44,7 @@ class _CompletionModel(QAbstractItemModel):
     def rowCount(self, index):
         """QAbstractItemModel method implementation
         """
-        return 7
+        return len(self._words)
     
     def typedText(self):
         """Get current typed text
@@ -70,7 +73,10 @@ class _ListView(QListView):
         self._qpart = qpart
         self.setModel(model)
         
-        qpart.cursorPositionChanged.connect(self._onCursorPositionChanged)
+        self.move(self._qpart.cursorRect().right() - self._horizontalShift(),
+                  self._qpart.cursorRect().bottom())
+        
+        self.show()
     
     def __del__(self):
         """Without this empty destructor Qt prints strange trace
@@ -79,11 +85,13 @@ class _ListView(QListView):
         """
         pass
     
-    def _onCursorPositionChanged(self):
-        """Cursor position changed. Update completion widget position
+    def del_(self):
+        """Explicitly called destructor.
+        Removes widget from the qpart
         """
-        self.move(self._qpart.cursorRect().right() - self._horizontalShift(),
-                  self._qpart.cursorRect().bottom())
+        self.hide()
+        self.setParent(None)
+        # Now gc could collect me
     
     def sizeHint(self):
         """QWidget.sizeHint implementation
@@ -110,9 +118,72 @@ class _ListView(QListView):
 class Completer(QObject):
     """Object listens Qutepart widget events, computes and shows autocompletion lists
     """
+    _wordPattern = "\w\w+"
+    _wordRegExp = re.compile(_wordPattern)
+    _wordAtEndRegExp = re.compile(_wordPattern + '$')
+    
     def __init__(self, qpart):
         self._qpart = qpart
+        self._widget = None
+    
+    def __del__(self):
+        """Close completion widget, if exists
+        """
+        self.closeCompletion()
+    
+    def invokeCompletionIfAvailable(self):
+        """Invoke completion, if available. Called after text has been typed in qpart
+        """
+        self.closeCompletion()
         
-        self._widget = _ListView(qpart, _CompletionModel())
-        self._widget.show()
+        wordBeforeCursor = self._wordBeforeCursor()
+        if wordBeforeCursor is None:
+            print 'no word'
+            return
+        
+        words = self._makeListOfCompletions(wordBeforeCursor)
+        if not words:
+            return
+        
+        model = _CompletionModel(wordBeforeCursor, words)
+        
+        self._widget = _ListView(self._qpart, model)
 
+    def closeCompletion(self):
+        """Close completion, if visible.
+        Delete widget
+        """
+        if self._widget is not None:
+            self._widget.del_()
+            self._widget = None
+    
+    def isActive(self):
+        """Check if completion list is visible
+        """
+        return self._widget is not None
+    
+    def _wordBeforeCursor(self):
+        """Get word, which is located before cursor
+        """
+        cursor = self._qpart.textCursor()
+        textBeforeCursor = cursor.block().text()[:cursor.position() - cursor.block().position()]
+        match = self._wordAtEndRegExp.search(textBeforeCursor)
+        if match:
+            return match.group(0)
+        else:
+            return None
+    
+    def _makeWordSet(self):
+        """Make a set of words, which shall be completed, from text
+        """
+        return set(self._wordRegExp.findall(self._qpart.toPlainText()))
+
+    def _makeListOfCompletions(self, wordBeforeCursor):
+        """Make list of completions, which shall be shown
+        """
+        allWords = self._makeWordSet()
+        onlySuitable = [word for word in allWords \
+                                if word.startswith(wordBeforeCursor) and \
+                                   word != wordBeforeCursor]
+        
+        return sorted(onlySuitable)
