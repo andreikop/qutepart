@@ -4,7 +4,7 @@
 import re
 
 from PyQt4.QtCore import pyqtSignal, QAbstractItemModel, QEvent, QModelIndex, QObject, QSize, Qt, QTimer
-from PyQt4.QtGui import QListView, QStyle
+from PyQt4.QtGui import QCursor, QListView, QStyle
 
 from qutepart.htmldelegate import HTMLDelegate
 
@@ -77,6 +77,8 @@ class _CompletionList(QListView):
         
         self._qpart = qpart
         self.setFont(qpart.font())
+        
+        self.setCursor(QCursor(Qt.PointingHandCursor))
         
         self.setModel(model)
         
