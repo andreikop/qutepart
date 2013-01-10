@@ -181,19 +181,6 @@ class Qutepart(QPlainTextEdit):
         """
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
-        elif event.key() == Qt.Key_Escape and self._completer.isActive():
-            self._completer.closeCompletion()
-        else:
-            super(Qutepart, self).keyPressEvent(event)
-
-    def keyReleaseEvent(self, event):
-        """QPlainTextEdit.keyPressEvent() implementation.
-        Shows completion is necessary
-        """
-        text = event.text()
-        if text.isalpha() or text.isdigit() or text == '_':  # TODO take word separator characters from 
-            super(Qutepart, self).keyReleaseEvent(event)
-            self._completer.invokeCompletionIfAvailable()
         else:
             super(Qutepart, self).keyPressEvent(event)
 

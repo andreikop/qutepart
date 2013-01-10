@@ -3,7 +3,7 @@
 
 import re
 
-from PyQt4.QtCore import QAbstractItemModel, QModelIndex, QObject, QSize, Qt
+from PyQt4.QtCore import pyqtSignal, QAbstractItemModel, QEvent, QModelIndex, QObject, QSize, Qt
 from PyQt4.QtGui import QListView, QStyle
 
 from qutepart.htmldelegate import HTMLDelegate
@@ -60,9 +60,11 @@ class _CompletionModel(QAbstractItemModel):
     def parent(self, index):                                return QModelIndex()
 
 
-class _ListView(QListView):
+class _CompletionList(QListView):
     """Completion list widget
     """
+    closeMe = pyqtSignal()
+    
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
         self.setItemDelegate(HTMLDelegate(self))
@@ -72,6 +74,8 @@ class _ListView(QListView):
         
         self._qpart = qpart
         self.setModel(model)
+        
+        qpart.installEventFilter(self)
         
         self.move(self._qpart.cursorRect().right() - self._horizontalShift(),
                   self._qpart.cursorRect().bottom())
@@ -113,6 +117,16 @@ class _ListView(QListView):
         """
         strangeAdjustment = 2  # I don't know why. Probably, won't work on other systems and versions
         return self.fontMetrics().width(self.model().typedText()) + strangeAdjustment
+    
+    def eventFilter(self, object, event):
+        """Catch events from qpart
+        """
+        if (event.type() == QEvent.KeyPress or event.type() == QEvent.ShortcutOverride) and \
+           event.key() == Qt.Key_Escape and \
+           event.modifiers() == Qt.NoModifier:
+            self.closeMe.emit()
+        return super(QListView, self).eventFilter(object, event)
+
 
 
 class Completer(QObject):
@@ -123,18 +137,34 @@ class Completer(QObject):
     _wordAtEndRegExp = re.compile(_wordPattern + '$')
     
     def __init__(self, qpart):
+        QObject.__init__(self, qpart)
+        
         self._qpart = qpart
         self._widget = None
+        
+        qpart.installEventFilter(self)
     
     def __del__(self):
         """Close completion widget, if exists
         """
-        self.closeCompletion()
-    
-    def invokeCompletionIfAvailable(self):
+        self._closeCompletion()
+
+    def eventFilter(self, object, event):
+        """Catch events from qpart. Show completion if necessary
+        """
+        if event.type() == QEvent.KeyRelease:
+            text = event.text()
+            if text.isalpha() or text.isdigit() or text == '_':  # TODO take word separator characters from the parser
+                ret = super(Completer, self).eventFilter(object, event)
+                self._invokeCompletionIfAvailable()
+                return ret
+        
+        return super(Completer, self).eventFilter(object, event)
+
+    def _invokeCompletionIfAvailable(self):
         """Invoke completion, if available. Called after text has been typed in qpart
         """
-        self.closeCompletion()
+        self._closeCompletion()
         
         wordBeforeCursor = self._wordBeforeCursor()
         if wordBeforeCursor is None:
@@ -148,20 +178,16 @@ class Completer(QObject):
         
         model = _CompletionModel(wordBeforeCursor, words, commonStart)
         
-        self._widget = _ListView(self._qpart, model)
+        self._widget = _CompletionList(self._qpart, model)
+        self._widget.closeMe.connect(self._closeCompletion)
 
-    def closeCompletion(self):
+    def _closeCompletion(self):
         """Close completion, if visible.
         Delete widget
         """
         if self._widget is not None:
             self._widget.del_()
             self._widget = None
-    
-    def isActive(self):
-        """Check if completion list is visible
-        """
-        return self._widget is not None
     
     def _wordBeforeCursor(self):
         """Get word, which is located before cursor
