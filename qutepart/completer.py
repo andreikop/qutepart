@@ -14,14 +14,13 @@ class _CompletionModel(QAbstractItemModel):
         QAbstractItemModel.__init__(self)
         
         self._typedText = 'veeeeeeeery long test d'
+        self._canCompleteText = 'ata'
+        
 
     def plainText(self, rowIndex):
         """Get plain text of specified item
         """
-        if rowIndex == 0:
-            return "veeeeeeeery long test data"
-        else:
-            return "llllllllllllllllllllllllll"
+        return "veeeeeeeery long test data value"
 
     def data(self, index, role = Qt.DisplayRole):
         """QAbstractItemModel method implementation
@@ -29,8 +28,13 @@ class _CompletionModel(QAbstractItemModel):
         if role == Qt.DisplayRole:
             text = self.plainText(index.row())
             typed = text[:len(self._typedText)]
-            notTyped = text[len(self._typedText):]
-            return '<html>%s<b>%s</b></html>' % (typed, notTyped)
+            canComplete = text[len(self._typedText):len(self._typedText) + len(self._canCompleteText)]
+            rest = text[len(self._typedText) + len(self._canCompleteText):]
+            return '<html>' \
+                           '%s' \
+                        '<b>%s</b>' \
+                           '%s' \
+                    '</html>' % (typed, canComplete, rest)
         else:
             return None
     
