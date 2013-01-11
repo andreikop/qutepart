@@ -15,10 +15,22 @@ class _CompletionModel(QAbstractItemModel):
     def __init__(self, wordBeforeCursor, words, commonStart):
         QAbstractItemModel.__init__(self)
         
+        self._setData(wordBeforeCursor, words, commonStart)
+
+    def _setData(self, wordBeforeCursor, words, commonStart):
+        """Set model information
+        """
         self._typedText = wordBeforeCursor
         self._words = words
-
         self._canCompleteText = commonStart[len(wordBeforeCursor):]
+        
+        self.layoutChanged.emit()
+
+    def updateData(self, wordBeforeCursor, words, commonStart):
+        """Set model information
+        """
+        self._setData(wordBeforeCursor, words, commonStart)
+        self.layoutChanged.emit()
 
     def plainText(self, rowIndex):
         """Get plain text of specified item
@@ -84,13 +96,20 @@ class _CompletionList(QListView):
         
         self._selectedIndex = -1
         
+        # if cursor moved, we shall close widget, if its position (and model) hasn't been updated
+        self._closeIfNotUpdatedTimer = QTimer()
+        self._closeIfNotUpdatedTimer.setInterval(200)
+        self._closeIfNotUpdatedTimer.setSingleShot(True)
+
+        self._closeIfNotUpdatedTimer.timeout.connect(self._afterCursorPositionChanged)
+        
         qpart.installEventFilter(self)
-        qpart.cursorPositionChanged.connect(self.closeMe)
+        
+        qpart.cursorPositionChanged.connect(self._onCursorPositionChanged)
         
         self.clicked.connect(lambda index: self.itemSelected.emit(index.row()))
         
-        self.move(self._qpart.cursorRect().right() - self._horizontalShift(),
-                  self._qpart.cursorRect().bottom())
+        self.updatePosition()
         self.show()
         
         qpart.setFocus()
@@ -110,7 +129,7 @@ class _CompletionList(QListView):
         
         # if object is deleted synchronously, Qt crashes after it on events handling
         QTimer.singleShot(0, lambda: self.setParent(None))
-    
+
     def sizeHint(self):
         """QWidget.sizeHint implementation
         Automatically resizes the widget according to rows count
@@ -131,7 +150,26 @@ class _CompletionList(QListView):
         """
         strangeAdjustment = 2  # I don't know why. Probably, won't work on other systems and versions
         return self.fontMetrics().width(self.model().typedText()) + strangeAdjustment
+
+    def updatePosition(self):
+        """Move widget to point under cursor
+        """
+        self.move(self._qpart.cursorRect().right() - self._horizontalShift(),
+                  self._qpart.cursorRect().bottom())
+        
+        self._closeIfNotUpdatedTimer.stop()
     
+    def _onCursorPositionChanged(self):
+        """Cursor position changed. Schedule closing.
+        Timer will be stopped, if widget position is being updated
+        """
+        self._closeIfNotUpdatedTimer.start()
+
+    def _afterCursorPositionChanged(self):
+        """Widget position hasn't been updated after cursor position change, close widget
+        """
+        self.closeMe.emit()
+
     def eventFilter(self, object, event):
         """Catch events from qpart
         Move selection, select item, or close themselves
@@ -198,23 +236,26 @@ class Completer(QObject):
     def _invokeCompletionIfAvailable(self):
         """Invoke completion, if available. Called after text has been typed in qpart
         """
-        self._closeCompletion()
-        
         wordBeforeCursor = self._wordBeforeCursor()
         if wordBeforeCursor is None:
+            self._closeCompletion()
             return
         
         words = self._makeListOfCompletions(wordBeforeCursor)
         if not words:
+            self._closeCompletion()
             return
         
         commonStart = self._commonWordStart(words)
         
-        model = _CompletionModel(wordBeforeCursor, words, commonStart)
-        
-        self._widget = _CompletionList(self._qpart, model)
-        self._widget.closeMe.connect(self._closeCompletion)
-        self._widget.itemSelected.connect(self._onCompletionListItemSelected)
+        if self._widget is None:
+            model = _CompletionModel(wordBeforeCursor, words, commonStart)
+            self._widget = _CompletionList(self._qpart, model)
+            self._widget.closeMe.connect(self._closeCompletion)
+            self._widget.itemSelected.connect(self._onCompletionListItemSelected)
+        else:
+            self._widget.model().updateData(wordBeforeCursor, words, commonStart)
+            self._widget.updatePosition()
 
     def _closeCompletion(self):
         """Close completion, if visible.
