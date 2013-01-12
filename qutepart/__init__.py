@@ -6,7 +6,8 @@ Use Qutepart class as an API
 import os.path
 
 from PyQt4.QtCore import QRect, Qt
-from PyQt4.QtGui import QColor, QFont, QKeySequence, QPainter, QPlainTextEdit, QTextEdit, QTextFormat, QWidget
+from PyQt4.QtGui import QColor, QFont, QKeySequence, QPainter, QPlainTextEdit, \
+                        QPixmap, QTextEdit, QTextFormat, QWidget
 
 from qutepart.syntax import SyntaxManager
 from qutepart.syntaxhlighter import SyntaxHighlighter
@@ -61,6 +62,46 @@ class _LineNumberArea(QWidget):
         return self._LEFT_MARGIN + self._qpart.fontMetrics().width('9') * digits + self._RIGHT_MARGIN
 
 
+class _MarkArea(QWidget):
+    
+    _MARGIN = 1
+    
+    def __init__(self, qpart):
+        QWidget.__init__(self, qpart)
+        self._qpart = qpart
+        
+        defaultSizePixmap = QPixmap(os.path.join(os.path.dirname(__file__), 'icons', 'bookmark.png'))
+        iconSize = self._qpart.cursorRect().height()
+        self._bookmarkPixmap = defaultSizePixmap.scaled(iconSize, iconSize)
+    
+    def sizeHint(self, ):
+        """QWidget.sizeHint() implementation
+        """
+        return QSize(self.width(), 0)
+
+    def paintEvent(self, event):
+        """QWidget.paintEvent() implementation
+        """
+        painter = QPainter(self)
+        painter.fillRect(event.rect(), Qt.lightGray)
+
+        block = self._qpart.firstVisibleBlock()
+        top = int(self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset()).top())
+        bottom = top + int(self._qpart.blockBoundingRect(block).height())
+
+        while block.isValid() and top <= event.rect().bottom():
+            if block.isVisible() and bottom >= event.rect().top():
+                painter.drawPixmap(0, top, self._bookmarkPixmap)
+            
+            top += int(self._qpart.blockBoundingRect(block).height())
+            block = block.next()
+
+    def width(self):
+        """Desired width. Includes text and margins
+        """
+        return self._MARGIN + self._bookmarkPixmap.width() + self._MARGIN
+
+
 class Qutepart(QPlainTextEdit):
     """Code editor component for PyQt and Pyside
     """
@@ -82,6 +123,7 @@ class Qutepart(QPlainTextEdit):
         
         self._lineNumberArea = _LineNumberArea(self)
         self._countCache = (-1, -1)
+        self._markArea = _MarkArea(self)
 
         self.blockCountChanged.connect(self._updateLineNumberAreaWidth)
         self.updateRequest.connect(self._updateLineNumberArea)
@@ -150,7 +192,7 @@ class Qutepart(QPlainTextEdit):
     def _updateLineNumberAreaWidth(self, newBlockCount):
         """Set line number are width according to current lines count
         """
-        self.setViewportMargins(self._lineNumberArea.width(), 0, 0, 0)
+        self.setViewportMargins(self._lineNumberArea.width() + self._markArea.width(), 0, 0, 0)
 
     def _updateLineNumberArea(self, rect, dy):
         """Repaint line number area if necessary
@@ -174,6 +216,11 @@ class Qutepart(QPlainTextEdit):
 
         cr = self.contentsRect()
         self._lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self._lineNumberArea.width(), cr.height()))
+        
+        self._markArea.setGeometry(QRect(cr.left() + self._lineNumberArea.width(),
+                                         cr.top(),
+                                         self._markArea.width(),
+                                         cr.height()))
 
     def keyPressEvent(self, event):
         """QPlainTextEdit.keyPressEvent() implementation.
