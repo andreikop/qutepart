@@ -6,14 +6,83 @@ Use Qutepart class as an API
 import os.path
 
 from PyQt4.QtCore import QRect, Qt
-from PyQt4.QtGui import QColor, QFont, QKeySequence, QPainter, QPlainTextEdit, \
-                        QPixmap, QTextEdit, QTextFormat, QWidget
+from PyQt4.QtGui import QAction, QColor, QFont, QIcon, QKeySequence, QPainter, QPlainTextEdit, \
+                        QPixmap, QTextCursor, QTextEdit, QTextFormat, QWidget
 
 from qutepart.syntax import SyntaxManager
 from qutepart.syntaxhlighter import SyntaxHighlighter
 from qutepart.brackethlighter import BracketHighlighter
 from qutepart.indenter import getIndenter
 from qutepart.completer import Completer
+
+
+_ICONS_PATH = os.path.join(os.path.dirname(__file__), 'icons')
+
+def _getIconPath(iconFileName):
+    return os.path.join(_ICONS_PATH, iconFileName)
+
+
+class _Bookmarks:
+    """Bookmarks functionality implementation, grouped in one class
+    """
+    def __init__(self, qpart, markArea):
+        self._qpart = qpart
+        self._markArea = markArea
+        qpart.toggleBookmark = self._createAction(qpart, "bookmark.png", "Toogle bookmark", 'Ctrl+B', self._onToggleBookmark)
+        qpart.nextBookmark = self._createAction(qpart, "up.png", "Previous bookmark", 'Alt+PgUp', self._onPrevBookmark)
+        qpart.prevBookmark = self._createAction(qpart, "down.png", "Next bookmark", 'Alt+PgDown', self._onNextBookmark)
+
+    def _createAction(self, widget, iconFileName, text, shortcut, slot):
+        """Create QAction with given parameters and add to the widget
+        """
+        icon = QIcon(_getIconPath(iconFileName))
+        action = QAction(icon, text, widget)
+        action.setShortcut(QKeySequence(shortcut))
+        action.triggered.connect(slot)
+        
+        widget.addAction(action)
+        
+        return action
+
+    @staticmethod
+    def isBlockMarked(block):
+        """Check if block is bookmarked
+        """
+        return block.userState() == 1
+
+    def _setBlockMarked(self, block, marked):
+        """Set block bookmarked
+        """
+        block.setUserState(1 if marked else -1)
+    
+    def _onToggleBookmark(self):
+        """Toogle Bookmark action triggered
+        """
+        block = self._qpart.textCursor().block()
+        self._setBlockMarked(block, not self.isBlockMarked(block))
+        self._markArea.update()
+    
+    def _onPrevBookmark(self):
+        """Previous Bookmark action triggered. Move cursor
+        """
+        block = self._qpart.textCursor().block().previous()
+        
+        while block.isValid():
+            if self.isBlockMarked(block):
+                self._qpart.setTextCursor(QTextCursor(block))
+                return
+            block = block.previous()
+    
+    def _onNextBookmark(self):
+        """Previous Bookmark action triggered. Move cursor
+        """
+        block = self._qpart.textCursor().block().next()
+        
+        while block.isValid():
+            if self.isBlockMarked(block):
+                self._qpart.setTextCursor(QTextCursor(block))
+                return
+            block = block.next()
 
 
 class _LineNumberArea(QWidget):
@@ -70,7 +139,9 @@ class _MarkArea(QWidget):
         QWidget.__init__(self, qpart)
         self._qpart = qpart
         
-        defaultSizePixmap = QPixmap(os.path.join(os.path.dirname(__file__), 'icons', 'bookmark.png'))
+        qpart.blockCountChanged.connect(self.update)
+        
+        defaultSizePixmap = QPixmap(_getIconPath('bookmark.png'))
         iconSize = self._qpart.cursorRect().height()
         self._bookmarkPixmap = defaultSizePixmap.scaled(iconSize, iconSize)
     
@@ -89,8 +160,11 @@ class _MarkArea(QWidget):
         top = int(self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset()).top())
         bottom = top + int(self._qpart.blockBoundingRect(block).height())
 
+        
         while block.isValid() and top <= event.rect().bottom():
-            if block.isVisible() and bottom >= event.rect().top():
+            if block.isVisible() and \
+               bottom >= event.rect().top() and \
+               _Bookmarks.isBlockMarked(block):
                 painter.drawPixmap(0, top, self._bookmarkPixmap)
             
             top += int(self._qpart.blockBoundingRect(block).height())
@@ -104,6 +178,14 @@ class _MarkArea(QWidget):
 
 class Qutepart(QPlainTextEdit):
     """Code editor component for PyQt and Pyside
+    
+    Component contains list of actions (QAction instances).
+    Actions can be insered to some menu, a shortcut and an icon can be configured
+    List of actions, accessible as Qutepart attributes:
+    
+    * toggleBookmark        Set/Clear bookmark on current block
+    * nextBookmark          Jump to next bookmark
+    * prevBookmark          Jump to previous bookmark
     """
     
     _DEFAULT_INDENTATION = '    '
@@ -124,9 +206,11 @@ class Qutepart(QPlainTextEdit):
         self._lineNumberArea = _LineNumberArea(self)
         self._countCache = (-1, -1)
         self._markArea = _MarkArea(self)
+        
+        self._bookmarks = _Bookmarks(self, self._markArea)
 
         self.blockCountChanged.connect(self._updateLineNumberAreaWidth)
-        self.updateRequest.connect(self._updateLineNumberArea)
+        self.updateRequest.connect(self._updateSideAreas)
         self.cursorPositionChanged.connect(self._updatePositionHighlighting)
 
         self._updateLineNumberAreaWidth(0)
@@ -194,15 +278,17 @@ class Qutepart(QPlainTextEdit):
         """
         self.setViewportMargins(self._lineNumberArea.width() + self._markArea.width(), 0, 0, 0)
 
-    def _updateLineNumberArea(self, rect, dy):
+    def _updateSideAreas(self, rect, dy):
         """Repaint line number area if necessary
         """
         # _countCache magic taken from Qt docs Code Editor Example
         if dy:
             self._lineNumberArea.scroll(0, dy)
+            self._markArea.scroll(0, dy)
         elif self._countCache[0] != self.blockCount() or \
              self._countCache[1] != self.textCursor().block().lineCount():
             self._lineNumberArea.update(0, rect.y(), self._lineNumberArea.width(), rect.height())
+            self._lineNumberArea.update(0, rect.y(), self._markArea.width(), rect.height())
         self._countCache = (self.blockCount(), self.textCursor().block().lineCount())
 
         if rect.contains(self.viewport().rect()):
@@ -269,3 +355,4 @@ class Qutepart(QPlainTextEdit):
         bracketSelections = self._bracketHighlighter.extraSelections(self.textCursor().block(),
                                                                      cursorColumnIndex)
         self.setExtraSelections([currentLineSelection] + bracketSelections)
+
