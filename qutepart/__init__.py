@@ -7,7 +7,7 @@ import os.path
 
 from PyQt4.QtCore import QRect, Qt
 from PyQt4.QtGui import QAction, QColor, QFont, QIcon, QKeySequence, QPainter, QPlainTextEdit, \
-                        QPixmap, QTextCursor, QTextEdit, QTextFormat, QWidget
+                        QPixmap, QShortcut, QTextCursor, QTextEdit, QTextFormat, QWidget
 
 from qutepart.syntax import SyntaxManager
 from qutepart.syntaxhlighter import SyntaxHighlighter
@@ -196,6 +196,11 @@ class Qutepart(QPlainTextEdit):
         QPlainTextEdit.__init__(self, *args)
         self.setFont(QFont("Monospace"))
         
+        scrollDownShortcut = QShortcut(QKeySequence('Ctrl+Down'), self)
+        scrollDownShortcut.activated.connect(lambda: self._scroll(down = True))
+        scrollUpShortcut = QShortcut(QKeySequence('Ctrl+Up'), self)
+        scrollUpShortcut.activated.connect(lambda: self._scroll(down = False))
+        
         self._highlighter = None
         self._bracketHighlighter = BracketHighlighter()
         
@@ -355,4 +360,14 @@ class Qutepart(QPlainTextEdit):
         bracketSelections = self._bracketHighlighter.extraSelections(self.textCursor().block(),
                                                                      cursorColumnIndex)
         self.setExtraSelections([currentLineSelection] + bracketSelections)
+
+    def _scroll(self, down):
+        """Ctrl+Up/Down pressed, scroll viewport
+        """
+        value = self.verticalScrollBar().value()
+        if down:
+            value += 1
+        else:
+            value -= 1
+        self.verticalScrollBar().setValue(value)
 
