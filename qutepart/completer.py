@@ -109,7 +109,7 @@ class _CompletionList(QListView):
         
         self.clicked.connect(lambda index: self.itemSelected.emit(index.row()))
         
-        self.updatePosition()
+        self.updateGeometry()
         self.show()
         
         qpart.setFocus()
@@ -125,7 +125,9 @@ class _CompletionList(QListView):
         """Explicitly called destructor.
         Removes widget from the qpart
         """
+        self._closeIfNotUpdatedTimer.stop()
         self._qpart.removeEventFilter(self)
+        self._qpart.cursorPositionChanged.disconnect(self._onCursorPositionChanged)
         
         # if object is deleted synchronously, Qt crashes after it on events handling
         QTimer.singleShot(0, lambda: self.setParent(None))
@@ -137,7 +139,7 @@ class _CompletionList(QListView):
         width = max([self.fontMetrics().width(self.model().plainText(i)) \
                         for i in range(self.model().rowCount())])
         
-        width += 4  # margin
+        width += 8  # margin
         
         # drawn with scrollbar without +2. I don't know why
         height = self.sizeHintForRow(0) * self.model().rowCount() + 2
@@ -151,11 +153,14 @@ class _CompletionList(QListView):
         strangeAdjustment = 2  # I don't know why. Probably, won't work on other systems and versions
         return self.fontMetrics().width(self.model().typedText()) + strangeAdjustment
 
-    def updatePosition(self):
+    def updateGeometry(self):
         """Move widget to point under cursor
         """
         self.move(self._qpart.cursorRect().right() - self._horizontalShift(),
                   self._qpart.cursorRect().bottom())
+        
+        if self.isVisible():  # not just appeared
+            self.resize(self.sizeHint())
         
         self._closeIfNotUpdatedTimer.stop()
     
@@ -255,7 +260,7 @@ class Completer(QObject):
             self._widget.itemSelected.connect(self._onCompletionListItemSelected)
         else:
             self._widget.model().updateData(wordBeforeCursor, words, commonStart)
-            self._widget.updatePosition()
+            self._widget.updateGeometry()
 
     def _closeCompletion(self):
         """Close completion, if visible.
