@@ -196,15 +196,12 @@ class Qutepart(QPlainTextEdit):
         QPlainTextEdit.__init__(self, *args)
         self.setFont(QFont("Monospace"))
         
-        scrollDownShortcut = QShortcut(QKeySequence('Ctrl+Down'), self)
-        scrollDownShortcut.activated.connect(lambda: self._scroll(down = True))
-        scrollUpShortcut = QShortcut(QKeySequence('Ctrl+Up'), self)
-        scrollUpShortcut.activated.connect(lambda: self._scroll(down = False))
-        
         self._highlighter = None
         self._bracketHighlighter = BracketHighlighter()
         
         self._indenter = getIndenter('normal', self._DEFAULT_INDENTATION)
+        
+        self._initShortcuts()
         
         self._completer = Completer(self)
         
@@ -221,6 +218,17 @@ class Qutepart(QPlainTextEdit):
         self._updateLineNumberAreaWidth(0)
         self._updatePositionHighlighting()
     
+    def _initShortcuts(self):
+        """Init shortcuts for text editing
+        """
+        def createShortcut(keySeq, slot):
+            shortcut = QShortcut(QKeySequence(keySeq), self)
+            shortcut.activated.connect(slot)
+        
+        createShortcut('Ctrl+Down', lambda: self._onShortcutScroll(down = True))
+        createShortcut('Ctrl+Up', lambda: self._onShortcutScroll(down = False))
+        createShortcut('Shift+Tab', lambda: self._onShortcutChangeIndentation(increase = False))
+
     def detectSyntax(self, xmlFileName = None, mimeType = None, languageName = None, sourceFilePath = None):
         """Get syntax by one of parameters:
             * xmlFileName
@@ -315,10 +323,12 @@ class Qutepart(QPlainTextEdit):
 
     def keyPressEvent(self, event):
         """QPlainTextEdit.keyPressEvent() implementation.
-        Autoindents text if new line inserted
+        Catch events, which may not be catched with QShortcut and call slots
         """
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
+        elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
+            self._onShortcutChangeIndentation(increase = True)
         else:
             super(Qutepart, self).keyPressEvent(event)
 
@@ -361,7 +371,7 @@ class Qutepart(QPlainTextEdit):
                                                                      cursorColumnIndex)
         self.setExtraSelections([currentLineSelection] + bracketSelections)
 
-    def _scroll(self, down):
+    def _onShortcutScroll(self, down):
         """Ctrl+Up/Down pressed, scroll viewport
         """
         value = self.verticalScrollBar().value()
@@ -371,3 +381,52 @@ class Qutepart(QPlainTextEdit):
             value -= 1
         self.verticalScrollBar().setValue(value)
 
+    def _indentBlock(self, block):
+        """Increase indentation level
+        """
+        QTextCursor(block).insertText(self._DEFAULT_INDENTATION)
+        
+    def _unIndentBlock(self, block):
+        """Increase indentation level
+        """
+        cursor = QTextCursor(block)
+        text = block.text()
+        charsToRemove = 0
+        if text.startswith(self._DEFAULT_INDENTATION):
+            charsToRemove = len(self._DEFAULT_INDENTATION)
+        elif text.startswith('\t'):
+            charsToRemove = 1
+        else:
+            charsToRemove = len(text) - len(text.lstrip())
+        
+        if charsToRemove:
+            cursor.setPosition(cursor.position() + charsToRemove, QTextCursor.KeepAnchor)
+            cursor.removeSelectedText()
+        
+    def _onShortcutChangeIndentation(self, increase):
+        """Tab pressed, indent line or lines
+        """
+        cursor = self.textCursor()
+        startBlock = self.document().findBlock(cursor.selectionStart())
+        endBlock = self.document().findBlock(cursor.selectionEnd())
+        
+        indentFunc = self._indentBlock if increase else self._unIndentBlock
+        
+        if startBlock != endBlock:  # indent multiply lines
+            stopBlock = endBlock.next()
+            
+            block = startBlock
+            
+            cursor.beginEditBlock()
+            try:
+                while block != stopBlock:
+                    indentFunc(block)
+                    block = block.next()
+            finally:
+                cursor.endEditBlock()
+            
+            newCursor = QTextCursor(startBlock)
+            newCursor.setPosition(endBlock.position() + len(endBlock.text()), QTextCursor.KeepAnchor)
+            self.setTextCursor(newCursor)
+        else:  # indent 1 line
+            indentFunc(cursor.block())

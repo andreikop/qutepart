@@ -1,4 +1,3 @@
-tab indents instead of replacing
 home moves cursor to line start/text start
 indentation markers
 move lines up/down
