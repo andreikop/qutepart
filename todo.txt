@@ -1,3 +1,8 @@
-Support DetectComments##Roff
+tab indents instead of replacing
+home moves cursor to line start/text start
+indentation markers
+move lines up/down
+set tab width
+detect syntax by first line
 Replace mode. Match bracke under cursor in replace mode
-Make sure brace matcher won't freeze the editor
+Support DetectComments##Roff

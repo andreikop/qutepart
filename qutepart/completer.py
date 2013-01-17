@@ -47,7 +47,7 @@ class _CompletionModel(QAbstractItemModel):
             rest = text[len(self._typedText) + len(self._canCompleteText):]
             return '<html>' \
                            '%s' \
-                        '<b>%s</b>' \
+                        '<font color="red">%s</font>' \
                            '%s' \
                     '</html>' % (typed, canComplete, rest)
         else:
