@@ -1,5 +1,4 @@
 home moves cursor to line start/text start
-indentation markers
 move lines up/down
 set tab width
 detect syntax by first line

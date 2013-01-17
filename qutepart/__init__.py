@@ -106,6 +106,7 @@ class _LineNumberArea(QWidget):
         """
         painter = QPainter(self)
         painter.fillRect(event.rect(), Qt.lightGray)
+        painter.setPen(Qt.black)
 
         block = self._qpart.firstVisibleBlock()
         blockNumber = block.blockNumber()
@@ -115,7 +116,6 @@ class _LineNumberArea(QWidget):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(blockNumber + 1)
-                painter.setPen(Qt.black)
                 painter.drawText(0, top, self.width() - self._RIGHT_MARGIN, self._qpart.fontMetrics().height(),
                                  Qt.AlignRight, number)
             
@@ -153,14 +153,15 @@ class _MarkArea(QWidget):
 
     def paintEvent(self, event):
         """QWidget.paintEvent() implementation
+        Draw markers
         """
         painter = QPainter(self)
         painter.fillRect(event.rect(), Qt.lightGray)
 
         block = self._qpart.firstVisibleBlock()
-        top = int(self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset()).top())
-        bottom = top + int(self._qpart.blockBoundingRect(block).height())
-
+        blockBoundingGeometry = self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset())
+        top = blockBoundingGeometry.top()
+        bottom = top + blockBoundingGeometry.height()
         
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and \
@@ -168,7 +169,7 @@ class _MarkArea(QWidget):
                _Bookmarks.isBlockMarked(block):
                 painter.drawPixmap(0, top, self._bookmarkPixmap)
             
-            top += int(self._qpart.blockBoundingRect(block).height())
+            top += self._qpart.blockBoundingGeometry(block).height()
             block = block.next()
 
     def width(self):
@@ -324,17 +325,6 @@ class Qutepart(QPlainTextEdit):
                                          self._markArea.width(),
                                          cr.height()))
 
-    def keyPressEvent(self, event):
-        """QPlainTextEdit.keyPressEvent() implementation.
-        Catch events, which may not be catched with QShortcut and call slots
-        """
-        if event.matches(QKeySequence.InsertParagraphSeparator):
-            self._insertNewBlock()
-        elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
-            self._onShortcutChangeIndentation(increase = True)
-        else:
-            super(Qutepart, self).keyPressEvent(event)
-
     def _insertNewBlock(self):
         """Enter pressed.
         Insert properly indented block
@@ -348,6 +338,55 @@ class Qutepart(QPlainTextEdit):
         finally:
             cursor.endEditBlock()
 
+    def keyPressEvent(self, event):
+        """QPlainTextEdit.keyPressEvent() implementation.
+        Catch events, which may not be catched with QShortcut and call slots
+        """
+        if event.matches(QKeySequence.InsertParagraphSeparator):
+            self._insertNewBlock()
+        elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
+            self._onShortcutChangeIndentation(increase = True)
+        else:
+            super(Qutepart, self).keyPressEvent(event)
+    
+    def _drawIndentMarkers(self, paintEventRect):
+        """Draw indentation markers
+        """
+        painter = QPainter(self.viewport())
+        painter.setPen(Qt.blue)
+        
+        indentWidthChars = len(self._DEFAULT_INDENTATION)
+        indentWidthPixels = self.fontMetrics().width(self._DEFAULT_INDENTATION)
+        
+        leftMargin = 6  # FIXME experimental value. Probably won't work on all themes and Qt versions
+        
+        block = self.firstVisibleBlock()
+        blockGeometry = self.blockBoundingGeometry(block).translated(self.contentOffset())
+
+        while block.isValid() and blockGeometry.top() <= paintEventRect.bottom():
+            if block.isVisible() and blockGeometry.toRect().intersects(paintEventRect):
+                text = block.text()
+                x = blockGeometry.left() + indentWidthPixels + leftMargin
+                while text.startswith(self._DEFAULT_INDENTATION) and \
+                      len(text) > indentWidthChars and \
+                      text[indentWidthChars].isspace():
+                    painter.drawLine(x,
+                                     blockGeometry.top(),
+                                     x,
+                                     blockGeometry.bottom())
+                    text = text[indentWidthChars:]
+                    x = x + indentWidthPixels
+            
+            block = block.next()
+            blockGeometry = self.blockBoundingGeometry(block).translated(self.contentOffset())
+    
+    def paintEvent(self, event):
+        """Paint event
+        Draw indentation markers after main contents is drawn
+        """
+        super(Qutepart, self).paintEvent(event)
+        self._drawIndentMarkers(event.rect())
+    
     def _currentLineExtraSelection(self):
         """QTextEdit.ExtraSelection, which highlightes current line
         """
