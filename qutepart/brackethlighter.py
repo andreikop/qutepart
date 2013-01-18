@@ -27,11 +27,13 @@ class BracketHighlighter:
         """Traverse document forward. Yield (block, columnIndex, char)
         Raise UserWarning if time is over
         """
+        # Chars in the start line
         endTime = time.clock() + self._MAX_SEARCH_TIME_SEC
         for columnIndex, char in list(enumerate(block.text()))[startColumnIndex:]:
             yield block, columnIndex, char
         block = block.next()
         
+        # Next lines
         while block.isValid():
             for columnIndex, char in enumerate(block.text()):
                 yield block, columnIndex, char
@@ -45,11 +47,13 @@ class BracketHighlighter:
         """Traverse document forward. Yield (block, columnIndex, char)
         Raise UserWarning if time is over
         """
+        # Chars in the start line
         endTime = time.clock() + self._MAX_SEARCH_TIME_SEC
         for columnIndex, char in reversed(list(enumerate(block.text()[:startColumnIndex]))):
             yield block, columnIndex, char
         block = block.previous()
         
+        # Next lines
         while block.isValid():
             for columnIndex, char in reversed(list(enumerate(block.text()))):
                 yield block, columnIndex, char

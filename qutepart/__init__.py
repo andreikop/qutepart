@@ -23,8 +23,7 @@ def _getIconPath(iconFileName):
     return os.path.join(_ICONS_PATH, iconFileName)
 
 
-"""Define for old Qt versions method, which appeared in 4.7
-"""
+#Define for old Qt versions method, which appeared in 4.7
 if not hasattr(QTextCursor, 'positionInBlock'):
     def positionInBlock(cursor):
         return cursor.position() - cursor.block().position()
@@ -35,6 +34,21 @@ if not hasattr(QTextCursor, 'setPositionInBlock'):
     def setPositionInBlock(cursor, positionInBlock):
         return cursor.setPosition(cursor.block().position() + positionInBlock)
     QTextCursor.setPositionInBlock = setPositionInBlock
+
+
+def iterateBlocksFrom(block):
+    """Generator, which iterates QTextBlocks from block until the End of a document
+    """
+    while block.isValid():
+        yield block
+        block = block.next()
+
+def iterateBlocksBackFrom(block):
+    """Generator, which iterates QTextBlocks from block until the Start of a document
+    """
+    while block.isValid():
+        yield block
+        block = block.previous()
 
 
 class _Bookmarks:
@@ -80,24 +94,18 @@ class _Bookmarks:
     def _onPrevBookmark(self):
         """Previous Bookmark action triggered. Move cursor
         """
-        block = self._qpart.textCursor().block().previous()
-        
-        while block.isValid():
+        for block in iterateBlocksBackFrom(self._qpart.textCursor().block().previous()):
             if self.isBlockMarked(block):
                 self._qpart.setTextCursor(QTextCursor(block))
                 return
-            block = block.previous()
     
     def _onNextBookmark(self):
         """Previous Bookmark action triggered. Move cursor
         """
-        block = self._qpart.textCursor().block().next()
-        
-        while block.isValid():
+        for block in iterateBlocksFrom(self._qpart.textCursor().block().next()):
             if self.isBlockMarked(block):
                 self._qpart.setTextCursor(QTextCursor(block))
                 return
-            block = block.next()
 
 
 class _LineNumberArea(QWidget):
@@ -177,14 +185,15 @@ class _MarkArea(QWidget):
         top = blockBoundingGeometry.top()
         bottom = top + blockBoundingGeometry.height()
         
-        while block.isValid() and top <= event.rect().bottom():
+        for block in iterateBlocksFrom(block):
+            if top > event.rect().bottom():
+                break
             if block.isVisible() and \
                bottom >= event.rect().top() and \
                _Bookmarks.isBlockMarked(block):
                 painter.drawPixmap(0, top, self._bookmarkPixmap)
             
             top += self._qpart.blockBoundingGeometry(block).height()
-            block = block.next()
 
     def width(self):
         """Desired width. Includes text and margins
@@ -304,7 +313,7 @@ class Qutepart(QPlainTextEdit):
             return None
         else:
             return self._highlighter.syntax().name
-    
+        
     def _updateLineNumberAreaWidth(self, newBlockCount):
         """Set line number are width according to current lines count
         """
@@ -377,10 +386,11 @@ class Qutepart(QPlainTextEdit):
         
         leftMargin = 6  # FIXME experimental value. Probably won't work on all themes and Qt versions
         
-        block = self.firstVisibleBlock()
-        blockGeometry = self.blockBoundingGeometry(block).translated(self.contentOffset())
-
-        while block.isValid() and blockGeometry.top() <= paintEventRect.bottom():
+        for block in iterateBlocksFrom(self.firstVisibleBlock()):
+            blockGeometry = self.blockBoundingGeometry(block).translated(self.contentOffset())
+            if blockGeometry.top() > paintEventRect.bottom():
+                break
+            
             if block.isVisible() and blockGeometry.toRect().intersects(paintEventRect):
                 text = block.text()
                 x = blockGeometry.left() + indentWidthPixels + leftMargin
@@ -393,9 +403,6 @@ class Qutepart(QPlainTextEdit):
                                      blockGeometry.bottom())
                     text = text[indentWidthChars:]
                     x = x + indentWidthPixels
-            
-            block = block.next()
-            blockGeometry = self.blockBoundingGeometry(block).translated(self.contentOffset())
     
     def paintEvent(self, event):
         """Paint event
