@@ -33,6 +33,7 @@ def main():
     qpart.detectSyntax(sourceFilePath = filePath)
     
     qpart.setPlainText(text)
+    
     qpart.setWindowTitle(filePath)
     
     qpart.resize(800, 600)

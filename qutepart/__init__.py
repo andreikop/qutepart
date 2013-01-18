@@ -73,6 +73,14 @@ class _Bookmarks:
         
         return action
 
+    def clear(self, startBlock, endBlock):
+        """Clear bookmarks on block range including start and end
+        """
+        for block in iterateBlocksFrom(startBlock):
+            self._setBlockMarked(block, False)
+            if block == endBlock:
+                break
+
     @staticmethod
     def isBlockMarked(block):
         """Check if block is bookmarked
@@ -555,18 +563,17 @@ class Qutepart(QPlainTextEdit):
         
         def _moveBlock(block, newNumber):
             text = block.text()
-            state = block.userState()
-            
             with self:
                 del self.lines[block.blockNumber()]
                 self.lines.insert(newNumber, text)
-            
-            self.document().findBlockByNumber(newNumber).setUserState(state)
         
         if down:  # move next block up
             blockToMove = endBlock.next()
             if not blockToMove.isValid():
                 return
+            
+            # if operaiton is UnDone, marks are located incorrectly
+            self._bookmarks.clear(startBlock, endBlock.next())
             
             _moveBlock(blockToMove, startBlockNumber)
             
@@ -576,7 +583,11 @@ class Qutepart(QPlainTextEdit):
             if not blockToMove.isValid():
                 return
             
+            # if operaiton is UnDone, marks are located incorrectly
+            self._bookmarks.clear(startBlock.previous(), endBlock)
+            
             _moveBlock(blockToMove, endBlockNumber)
             
             self._selectLines(startBlockNumber - 1, endBlockNumber - 1)
-
+        
+        self._markArea.update()

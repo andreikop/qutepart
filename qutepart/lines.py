@@ -168,9 +168,14 @@ class Lines:
         if index < 0 or index > self._doc.blockCount():
             raise IndexError('Invalid block index', index)
         
-        if index != self._doc.blockCount():
-            cursor = QTextCursor(self._doc.findBlockByNumber(index))
+        if index == 0:  # first
+            cursor = QTextCursor(self._doc.firstBlock())
             cursor.insertText(text)
             cursor.insertBlock()
-        else:  # append to the end
+        elif index != self._doc.blockCount():  # not the last
+            cursor = QTextCursor(self._doc.findBlockByNumber(index).previous())
+            cursor.movePosition(QTextCursor.EndOfBlock)
+            cursor.insertBlock()
+            cursor.insertText(text)
+        else:  # last append to the end
             self.append(text)
