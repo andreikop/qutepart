@@ -34,16 +34,24 @@ class Lines:
         """Get lines count
         """
         return self._doc.blockCount()
-        
+    
+    def _checkAndConvertIndex(self, index):
+        """Check integer index, convert from less than zero notation
+        """
+        if index < 0:
+            index = len(self) + index
+        if index < 0 or index >= self._doc.blockCount():
+            raise IndexError('Invalid block index', index)
+        return index
+    
     def __getitem__(self, index):
         """Get item by index
         """
         def _getTextByIndex(blockIndex):
-            if blockIndex < 0 or blockIndex >= self._doc.blockCount():
-                raise IndexError('Invalid block index', blockIndex)
             return self._doc.findBlockByNumber(blockIndex).text()
 
         if isinstance(index, int):
+            index = self._checkAndConvertIndex(index)
             return _getTextByIndex(index)
         elif isinstance(index, slice):
             start, stop, step = index.indices(self._doc.blockCount())
@@ -60,8 +68,7 @@ class Lines:
             cursor.insertText(text)
 
         if isinstance(index, int):
-            if index < 0 or index >= self._doc.blockCount():
-                raise IndexError('Invalid block index', index)
+            index = self._checkAndConvertIndex(index)
             _setBlockText(index, value)
         elif isinstance(index, slice):
             """List of indexes is reversed for make sure 
@@ -99,10 +106,7 @@ class Lines:
             cursor.removeSelectedText()
 
         if isinstance(index, int):
-            if index < 0:  # FIXME make common
-                index = len(self) + index
-            if index < 0 or index >= self._doc.blockCount():
-                raise IndexError('Invalid block index')
+            index = self._checkAndConvertIndex(index)
             _removeBlock(index)
         elif isinstance(index, slice):
             """List of indexes is reversed for make sure 
