@@ -14,6 +14,7 @@ from qutepart.syntaxhlighter import SyntaxHighlighter
 from qutepart.brackethlighter import BracketHighlighter
 from qutepart.indenter import getIndenter
 from qutepart.completer import Completer
+from qutepart.lines import Lines
 
 
 _ICONS_PATH = os.path.join(os.path.dirname(__file__), 'icons')
@@ -200,6 +201,8 @@ class Qutepart(QPlainTextEdit):
         self._bracketHighlighter = BracketHighlighter()
         
         self._indenter = getIndenter('normal', self._DEFAULT_INDENTATION)
+        
+        self.lines = Lines(self.document())
         
         self._initShortcuts()
         
