@@ -274,7 +274,7 @@ class Completer(QObject):
         """Get word, which is located before cursor
         """
         cursor = self._qpart.textCursor()
-        textBeforeCursor = cursor.block().text()[:cursor.position() - cursor.block().position()]
+        textBeforeCursor = cursor.block().text()[:cursor.positionInBlock()]
         match = self._wordAtEndRegExp.search(textBeforeCursor)
         if match:
             return match.group(0)

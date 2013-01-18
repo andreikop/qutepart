@@ -424,7 +424,7 @@ class Qutepart(QPlainTextEdit):
         currentLineSelection = self._currentLineExtraSelection()
 
         # TODO use positionInBlock when Qt 4.6 is not supported
-        cursorColumnIndex = self.textCursor().position() - self.textCursor().block().position()
+        cursorColumnIndex = self.textCursor().positionInBlock()
         
         bracketSelections = self._bracketHighlighter.extraSelections(self.textCursor().block(),
                                                                      cursorColumnIndex)
