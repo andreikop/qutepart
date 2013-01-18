@@ -211,6 +211,12 @@ class Qutepart(QPlainTextEdit):
     * toggleBookmark        Set/Clear bookmark on current block
     * nextBookmark          Jump to next bookmark
     * prevBookmark          Jump to previous bookmark
+    
+    For join few modifications in one Undo action, use Qutepart instance as a context manager:
+        with qpart:
+            qpart.modifySomeText()
+            qpart.modifyOtherText()
+    Nested atomic operations are joined in one operation
     """
     
     _DEFAULT_INDENTATION = '    '
@@ -226,7 +232,7 @@ class Qutepart(QPlainTextEdit):
         
         self._indenter = getIndenter('normal', self._DEFAULT_INDENTATION)
         
-        self.lines = Lines(self.document())
+        self.lines = Lines(self)
         
         self._initShortcuts()
         
@@ -237,6 +243,8 @@ class Qutepart(QPlainTextEdit):
         self._markArea = _MarkArea(self)
         
         self._bookmarks = _Bookmarks(self, self._markArea)
+        
+        self._atomicModificationDepth = 0
 
         self.blockCountChanged.connect(self._updateLineNumberAreaWidth)
         self.updateRequest.connect(self._updateSideAreas)
@@ -257,6 +265,25 @@ class Qutepart(QPlainTextEdit):
         createShortcut('Shift+Tab', lambda: self._onShortcutChangeIndentation(increase = False))
         createShortcut('Alt+Up', lambda: self._onShortcutMoveLine(down = False))
         createShortcut('Alt+Down', lambda: self._onShortcutMoveLine(down = True))
+
+    def __enter__(self):
+        """Context management method.
+        Begin atomic modification
+        """
+        self._atomicModificationDepth = self._atomicModificationDepth + 1
+        if self._atomicModificationDepth == 1:
+            self.textCursor().beginEditBlock()
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Context management method.
+        End atomic modification
+        """
+        self._atomicModificationDepth = self._atomicModificationDepth - 1
+        if self._atomicModificationDepth == 0:
+            self.textCursor().endEditBlock()
+        
+        if exc_type is not None:
+            return False
 
     def detectSyntax(self, xmlFileName = None, mimeType = None, languageName = None, sourceFilePath = None):
         """Get syntax by one of parameters:
@@ -355,13 +382,10 @@ class Qutepart(QPlainTextEdit):
         Insert properly indented block
         """
         cursor = self.textCursor()
-        cursor.beginEditBlock()
-        try:
+        with self:
             cursor.insertBlock()
             indent = self._indenter.computeIndent(self.textCursor().block())
             cursor.insertText(indent)
-        finally:
-            cursor.endEditBlock()
 
     def keyPressEvent(self, event):
         """QPlainTextEdit.keyPressEvent() implementation.
@@ -484,13 +508,10 @@ class Qutepart(QPlainTextEdit):
             
             block = startBlock
             
-            cursor.beginEditBlock()
-            try:
+            with self:
                 while block != stopBlock:
                     indentFunc(block)
                     block = block.next()
-            finally:
-                cursor.endEditBlock()
             
             newCursor = QTextCursor(startBlock)
             newCursor.setPosition(endBlock.position() + len(endBlock.text()), QTextCursor.KeepAnchor)
@@ -536,8 +557,9 @@ class Qutepart(QPlainTextEdit):
             text = block.text()
             state = block.userState()
             
-            del self.lines[block.blockNumber()]
-            self.lines.insert(newNumber, text)
+            with self:
+                del self.lines[block.blockNumber()]
+                self.lines.insert(newNumber, text)
             
             self.document().findBlockByNumber(newNumber).setUserState(state)
         

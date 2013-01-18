@@ -16,8 +16,19 @@ def _iterateBlocksFrom(block):
 class Lines:
     """list-like object for access text document lines
     """
-    def __init__(self, document):
-        self._doc = document
+    def __init__(self, qpart):
+        self._qpart = qpart
+        self._doc = qpart.document()
+    
+    def _atomicModification(func):
+        """Decorator
+        Make document modification atomic
+        """
+        def wrapper(*args, **kwargs):
+            self = args[0]
+            with self._qpart:
+                func(*args, **kwargs)
+        return wrapper
     
     def _toList(self):
         """Convert to Python list
@@ -58,9 +69,9 @@ class Lines:
             return [_getTextByIndex(blockIndex) \
                         for blockIndex in range(start, stop, step)]
 
+    @_atomicModification
     def __setitem__(self, index, value):
         """Set item by index
-        FIXME one undo action
         """
         def _setBlockText(blockIndex, text):
             cursor = QTextCursor(self._doc.findBlockByNumber(blockIndex))
@@ -86,9 +97,9 @@ class Lines:
             for blockIndex, text in zip(blockIndexes, value[::-1]):
                 _setBlockText(blockIndex, text)
 
+    @_atomicModification
     def __delitem__(self, index):
         """Delete item by index
-        FIXME one undo action
         """
         def _removeBlock(blockIndex):
             block = self._doc.findBlockByNumber(blockIndex)
@@ -140,6 +151,7 @@ class Lines:
         """
         return self._Iterator(self._doc.firstBlock())
 
+    @_atomicModification
     def append(self, text):
         """Append line to the end
         """
@@ -148,6 +160,7 @@ class Lines:
         cursor.insertBlock()
         cursor.insertText(text)
 
+    @_atomicModification
     def insert(self, index, text):
         """Insert line to the document
         FIXME one modification
