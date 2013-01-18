@@ -1,5 +1,4 @@
-move lines up/down
-set tab width
+configure indentation. set tab width
 detect syntax by first line
 Replace mode. Match bracke under cursor in replace mode
 Support DetectComments##Roff

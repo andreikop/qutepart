@@ -252,10 +252,11 @@ class Qutepart(QPlainTextEdit):
             shortcut = QShortcut(QKeySequence(keySeq), self)
             shortcut.activated.connect(slot)
         
-        createShortcut('Ctrl+Down', lambda: self._onShortcutScroll(down = True))
         createShortcut('Ctrl+Up', lambda: self._onShortcutScroll(down = False))
+        createShortcut('Ctrl+Down', lambda: self._onShortcutScroll(down = True))
         createShortcut('Shift+Tab', lambda: self._onShortcutChangeIndentation(increase = False))
-        createShortcut('Home', self._onShortcutHome)
+        createShortcut('Alt+Up', lambda: self._onShortcutMoveLine(down = False))
+        createShortcut('Alt+Down', lambda: self._onShortcutMoveLine(down = True))
 
     def detectSyntax(self, xmlFileName = None, mimeType = None, languageName = None, sourceFilePath = None):
         """Get syntax by one of parameters:
@@ -508,3 +509,52 @@ class Qutepart(QPlainTextEdit):
         else:
             cursor.setPositionInBlock(spaceAtStartLen)
         self.setTextCursor(cursor)
+    
+    def _selectLines(self, startBlockNumber, endBlockNumber):
+        """Select whole lines
+        """
+        startBlock = self.document().findBlockByNumber(startBlockNumber)
+        endBlock = self.document().findBlockByNumber(endBlockNumber)
+        cursor = QTextCursor(startBlock)
+        cursor.setPosition(endBlock.position(), QTextCursor.KeepAnchor)
+        cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
+        self.setTextCursor(cursor)
+    
+    def _onShortcutMoveLine(self, down):
+        """Move line up or down
+        Actually, not a selected text, but next or previous block is moved
+        TODO keep bookmarks when moving
+        """
+        cursor = self.textCursor()
+        startBlock = self.document().findBlock(cursor.selectionStart())
+        endBlock = self.document().findBlock(cursor.selectionEnd())
+        
+        startBlockNumber = startBlock.blockNumber()
+        endBlockNumber = endBlock.blockNumber()
+        
+        def _moveBlock(block, newNumber):
+            text = block.text()
+            state = block.userState()
+            
+            del self.lines[block.blockNumber()]
+            self.lines.insert(newNumber, text)
+            
+            self.document().findBlockByNumber(newNumber).setUserState(state)
+        
+        if down:  # move next block up
+            blockToMove = endBlock.next()
+            if not blockToMove.isValid():
+                return
+            
+            _moveBlock(blockToMove, startBlockNumber)
+            
+            self._selectLines(startBlockNumber + 1, endBlockNumber + 1)
+        else:  # move previous block down
+            blockToMove = startBlock.previous()
+            if not blockToMove.isValid():
+                return
+            
+            _moveBlock(blockToMove, endBlockNumber)
+            
+            self._selectLines(startBlockNumber - 1, endBlockNumber - 1)
+

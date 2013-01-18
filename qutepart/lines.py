@@ -23,7 +23,7 @@ class Lines:
         """Convert to Python list
         """
         return [block.text() \
-                    for block in iterateBlocksFrom(self._doc.firstBlock())]
+                    for block in _iterateBlocksFrom(self._doc.firstBlock())]
     
     def __str__(self):
         """Serialize
@@ -84,11 +84,23 @@ class Lines:
         FIXME one undo action
         """
         def _removeBlock(blockIndex):
-            cursor = QTextCursor(self._doc.findBlockByNumber(blockIndex))
-            cursor.movePosition(QTextCursor.NextBlock, QTextCursor.KeepAnchor)
+            block = self._doc.findBlockByNumber(blockIndex)
+            if block.next().isValid():  # not the last
+                cursor = QTextCursor(block)
+                cursor.movePosition(QTextCursor.NextBlock, QTextCursor.KeepAnchor)
+            elif block.previous().isValid():  # the last, not the first
+                cursor = QTextCursor(block.previous())
+                cursor.movePosition(QTextCursor.EndOfBlock)
+                cursor.movePosition(QTextCursor.NextBlock, QTextCursor.KeepAnchor)
+                cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
+            else:  # only one block
+                cursor = QTextCursor(block)
+                cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
             cursor.removeSelectedText()
 
         if isinstance(index, int):
+            if index < 0:  # FIXME make common
+                index = len(self) + index
             if index < 0 or index >= self._doc.blockCount():
                 raise IndexError('Invalid block index')
             _removeBlock(index)
