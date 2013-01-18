@@ -23,6 +23,20 @@ def _getIconPath(iconFileName):
     return os.path.join(_ICONS_PATH, iconFileName)
 
 
+"""Define for old Qt versions method, which appeared in 4.7
+"""
+if not hasattr(QTextCursor, 'positionInBlock'):
+    def positionInBlock(cursor):
+        return cursor.position() - cursor.block().position()
+    QTextCursor.positionInBlock = positionInBlock
+
+# Helper method, not supported by Qt
+if not hasattr(QTextCursor, 'setPositionInBlock'):
+    def setPositionInBlock(cursor, positionInBlock):
+        return cursor.setPosition(cursor.block().position() + positionInBlock)
+    QTextCursor.setPositionInBlock = setPositionInBlock
+
+
 class _Bookmarks:
     """Bookmarks functionality implementation, grouped in one class
     """
@@ -232,6 +246,7 @@ class Qutepart(QPlainTextEdit):
         createShortcut('Ctrl+Down', lambda: self._onShortcutScroll(down = True))
         createShortcut('Ctrl+Up', lambda: self._onShortcutScroll(down = False))
         createShortcut('Shift+Tab', lambda: self._onShortcutChangeIndentation(increase = False))
+        createShortcut('Home', self._onShortcutHome)
 
     def detectSyntax(self, xmlFileName = None, mimeType = None, languageName = None, sourceFilePath = None):
         """Get syntax by one of parameters:
@@ -346,6 +361,8 @@ class Qutepart(QPlainTextEdit):
             self._insertNewBlock()
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
             self._onShortcutChangeIndentation(increase = True)
+        elif event.matches(QKeySequence.MoveToStartOfLine):
+            self._onShortcutHome()
         else:
             super(Qutepart, self).keyPressEvent(event)
     
@@ -472,3 +489,15 @@ class Qutepart(QPlainTextEdit):
             self.setTextCursor(newCursor)
         else:  # indent 1 line
             indentFunc(cursor.block())
+    
+    def _onShortcutHome(self):
+        """Home pressed, move cursor to the line start or to the text start
+        """
+        cursor = self.textCursor()
+        text = cursor.block().text()
+        spaceAtStartLen = len(text) - len(text.lstrip())
+        if cursor.positionInBlock() == spaceAtStartLen:  # if at start of text
+            cursor.setPositionInBlock(0)
+        else:
+            cursor.setPositionInBlock(spaceAtStartLen)
+        self.setTextCursor(cursor)
