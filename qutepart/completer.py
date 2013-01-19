@@ -229,9 +229,13 @@ class Completer(QObject):
     def eventFilter(self, object, event):
         """Catch events from qpart. Show completion if necessary
         """
-        if event.type() == QEvent.KeyRelease:
+        if event.type() == QEvent.KeyRelease and \
+           event.modifiers() == Qt.NoModifier:
             text = event.text()
-            textTyped = text.isalpha() or text.isdigit() or text == '_'  # TODO take word separator characters from the parser
+            
+            # TODO take word separator characters from the parser
+            textTyped = text.isalpha() or text.isdigit() or text == '_'
+            
             if textTyped or event.key() == Qt.Key_Backspace:
                 self._invokeCompletionIfAvailable()
                 return False

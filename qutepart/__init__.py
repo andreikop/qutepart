@@ -6,7 +6,7 @@ Use Qutepart class as an API
 import os.path
 
 from PyQt4.QtCore import QRect, Qt
-from PyQt4.QtGui import QAction, QColor, QFont, QIcon, QKeySequence, QPainter, QPlainTextEdit, \
+from PyQt4.QtGui import QAction, QApplication, QColor, QFont, QIcon, QKeySequence, QPainter, QPlainTextEdit, \
                         QPixmap, QShortcut, QTextCursor, QTextEdit, QTextFormat, QWidget
 
 from qutepart.syntax import SyntaxManager
@@ -229,6 +229,8 @@ class Qutepart(QPlainTextEdit):
     
     _DEFAULT_INDENTATION = '    '
     
+    _EOL = '\n'
+    
     _globalSyntaxManager = SyntaxManager()
     
     def __init__(self, *args):
@@ -273,6 +275,11 @@ class Qutepart(QPlainTextEdit):
         createShortcut('Shift+Tab', lambda: self._onShortcutChangeIndentation(increase = False))
         createShortcut('Alt+Up', lambda: self._onShortcutMoveLine(down = False))
         createShortcut('Alt+Down', lambda: self._onShortcutMoveLine(down = True))
+        createShortcut('Alt+Del', self._onShortcutDeleteLine)
+        createShortcut('Alt+C', self._onShortcutCopyLine)
+        createShortcut('Alt+V', self._onShortcutPasteLine)
+        createShortcut('Alt+X', self._onShortcutCutLine)
+        createShortcut('Alt+D', self._onShortcutDuplicateLine)
 
     def __enter__(self):
         """Context management method.
@@ -315,6 +322,13 @@ class Qutepart(QPlainTextEdit):
         if syntax is not None:
             self._highlighter = SyntaxHighlighter(syntax, self.document())
             self._indenter = self._getIndenter(syntax)
+
+    def cursorPosition(self):
+        """Get cursor position as a tuple (line, column)
+        Lines are numerated from 0
+        """
+        cursor = self.textCursor()
+        return cursor.block().blockNumber(), cursor.positionInBlock()
 
     def _getIndenter(self, syntax):
         """Get indenter for syntax
@@ -549,14 +563,25 @@ class Qutepart(QPlainTextEdit):
         cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
         self.setTextCursor(cursor)
     
+    def _selectedBlocks(self):
+        """Return selected blocks and tuple (startBlock, endBlock)
+        """
+        cursor = self.textCursor()
+        return self.document().findBlock(cursor.selectionStart()), \
+               self.document().findBlock(cursor.selectionEnd())
+    
+    def _selectedBlockNumbers(self):
+        """Return selected block numbers and tuple (startBlockNumber, endBlockNumber)
+        """
+        startBlock, endBlock = self._selectedBlocks()
+        return startBlock.blockNumber(), endBlock.blockNumber()
+    
     def _onShortcutMoveLine(self, down):
         """Move line up or down
         Actually, not a selected text, but next or previous block is moved
         TODO keep bookmarks when moving
         """
-        cursor = self.textCursor()
-        startBlock = self.document().findBlock(cursor.selectionStart())
-        endBlock = self.document().findBlock(cursor.selectionEnd())
+        startBlock, endBlock = self._selectedBlocks()
         
         startBlockNumber = startBlock.blockNumber()
         endBlockNumber = endBlock.blockNumber()
@@ -591,3 +616,65 @@ class Qutepart(QPlainTextEdit):
             self._selectLines(startBlockNumber - 1, endBlockNumber - 1)
         
         self._markArea.update()
+    
+    def _selectedLinesSlice(self):
+        """Get slice of selected lines
+        """
+        startBlockNumber, endBlockNumber = self._selectedBlockNumbers()
+        return slice(startBlockNumber, endBlockNumber + 1, 1)
+    
+    def _onShortcutDeleteLine(self):
+        """Delete line(s) under cursor
+        """
+        del self.lines[self._selectedLinesSlice()]
+    
+    def _onShortcutCopyLine(self):
+        """Copy selected lines to the clipboard
+        """
+        lines = self.lines[self._selectedLinesSlice()]
+        text = self._EOL.join(lines)
+        QApplication.clipboard().setText(text)
+        
+    def _onShortcutPasteLine(self):
+        """Paste lines from the clipboard
+        """
+        lines = self.lines[self._selectedLinesSlice()]
+        text = QApplication.clipboard().text()
+        if text:
+            with self:
+                if self.textCursor().hasSelection():
+                    startBlockNumber, endBlockNumber = self._selectedBlockNumbers()
+                    del self.lines[self._selectedLinesSlice()]
+                    self.lines.insert(startBlockNumber, text)
+                else:
+                    line, col = self.cursorPosition()
+                    if col > 0:
+                        line = line + 1
+                    self.lines.insert(line, text)
+    
+    def _onShortcutCutLine(self):
+        """Cut selected lines to the clipboard
+        """
+        lines = self.lines[self._selectedLinesSlice()]
+
+        self._onShortcutCopyLine()
+        self._onShortcutDeleteLine()
+
+    def _onShortcutDuplicateLine(self):
+        """Duplicate selected text or current line
+        """
+        cursor = self.textCursor()
+        if cursor.hasSelection():
+            text = cursor.selectedText()
+            selectionStart, selectionEnd = cursor.selectionStart(), cursor.selectionEnd()
+            cursor.setPosition(selectionEnd)
+            cursor.insertText(text)
+            # restore selection
+            cursor.setPosition(selectionStart)
+            cursor.setPosition(selectionEnd, QTextCursor.KeepAnchor)
+            self.setTextCursor(cursor)
+        else:
+            line = cursor.blockNumber()
+            self.lines.insert(line + 1, self.lines[line])
+            self.ensureCursorVisible()
+
