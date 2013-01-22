@@ -7,7 +7,8 @@ import distutils.ccompiler
 
 packages=['qutepart', 'qutepart/syntax']
 
-package_data={'qutepart/syntax' : ['data/*.xml',
+package_data={'qutepart' : ['icons/*.png'],
+              'qutepart/syntax' : ['data/*.xml',
                                    'data/syntax_db.json']
              }
 
