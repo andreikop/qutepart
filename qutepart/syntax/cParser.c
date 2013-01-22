@@ -728,7 +728,8 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
         {
             PyObject* unicodeString = PyTuple_GET_ITEM(contextDataTuple, i);
             PyObject* utf8String = PyUnicode_AsUTF8String(unicodeString);
-            int printedSize = sprintf(freeSpaceForString, PyString_AS_STRING(utf8String)) + 1;
+            strcpy(freeSpaceForString, PyString_AS_STRING(utf8String));
+            int printedSize = PyString_GET_SIZE(utf8String) + 1;
             charPointers[i] = freeSpaceForString;
             freeSpaceForString += printedSize;
             Py_XDECREF(utf8String);
