@@ -416,7 +416,6 @@ class RegExpr(AbstractRule):
             return None
 
         wholeMatch, groups = self._matchPattern(regExp, textToMatchObject.text)
-
         if wholeMatch is not None:
             count = len(wholeMatch)
             return RuleTryMatchResult(self, count, groups)
@@ -819,7 +818,6 @@ class Context:
         countOfNotMatchedSymbols = 0
         highlightedSegments = []
         ruleTryMatchResult = None
-        
         while currentColumnIndex < len(text):
             textToMatchObject = TextToMatchObject(currentColumnIndex,
                                                    text,
