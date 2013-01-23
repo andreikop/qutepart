@@ -35,7 +35,7 @@ class ContextStack:
         """Returns new context stack, which doesn't contain few levels
         """
         if len(self._contexts) - 1 < count:
-            print >> sys.stderr, "Error: #pop value is too big"
+            _logger.error("#pop value is too big")
             return self
         
         return ContextStack(self._contexts[:-count], self._data[:-count])
@@ -214,11 +214,11 @@ class DetectChar(AbstractRule):
         if self.dynamic:
             index = self.index - 1
             if index >= len(textToMatchObject.contextData):
-                print >> sys.stderr, 'Invalid DetectChar index', index
+                _logger.error('Invalid DetectChar index %d', index)
                 return None
             
             if len(textToMatchObject.contextData[index]) != 1:
-                    print >> sys.stderr, 'Too long DetectChar string', textToMatchObject.contextData[index]
+                    _logger.error('Too long DetectChar string %s', textToMatchObject.contextData[index])
                     return None
             
             string = textToMatchObject.contextData[index]
@@ -450,7 +450,7 @@ class RegExpr(AbstractRule):
         try:
             return re.compile(string)
         except (re.error, AssertionError) as ex:
-            print >> sys.stderr, "Invalid pattern '%s': %s" % (string, str(ex))
+            _logger.error("Invalid pattern '%s': %s", string, str(ex))
             return None
 
     @staticmethod
