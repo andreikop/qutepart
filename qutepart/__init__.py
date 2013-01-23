@@ -1,6 +1,12 @@
-"""
-qutepart --- Code editor component for PyQt and Pyside
+"""qutepart --- Code editor component for PyQt and Pyside
 ======================================================
+
+Package logs it's debug information to 'qutepart' logger.
+For performance reasons, parser in C
+    * checks, if DEBUG logs are enabled only when created
+    * always prints logs to stderr
+    * always prints logs for errors
+    * always uses 'qutepart: ' prefix
 """
 
 import os.path

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import logging
 
 if not '-p' in sys.argv:
     sys.path.insert(0, 'build/lib.linux-x86_64-2.6/')
@@ -26,6 +27,13 @@ def main():
     with open(filePath) as file:
         text = unicode(file.read(), 'utf8')
 
+    logger = logging.getLogger('qutepart')
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setFormatter(logging.Formatter("qutepart: %(message)s"))
+    logger.addHandler(consoleHandler)
+    if '-d' in sys.argv:
+        logger.setLevel(logging.DEBUG)
+    
     app = QApplication(sys.argv)
     
     qpart = qutepart.Qutepart()

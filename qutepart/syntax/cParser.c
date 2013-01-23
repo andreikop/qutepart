@@ -300,6 +300,7 @@ typedef struct {
     PyObject* contexts;
     Context* defaultContext;
     ContextStack* defaultContextStack;
+    bool debugOutputEnabled;
 } Parser;
 
 
@@ -2516,6 +2517,10 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* context
             
             newContextStack->_size++;
         }
+        else
+        {
+            fprintf(stderr, "qutepart: Max context stack depth %d reached\n", QUTEPART_MAX_CONTEXT_STACK_DEPTH);
+        }
     }
     
     return newContextStack;
@@ -2678,6 +2683,13 @@ Context_parseBlock(Context* self,
 
         if (NULL != result.rule)  // if something matched
         {
+            if (parentParser->debugOutputEnabled)
+            {
+                fprintf(stderr, "qutepart: \t");
+                PyObject_Print(self->name, stderr, 0);
+                fprintf(stderr, ": matched rule %d at %d\n", i, currentColumnIndex);
+            }
+            
             if (countOfNotMatchedSymbols > 0)
             {
                 Context_appendSegment(segmentList, countOfNotMatchedSymbols, self->format);
@@ -2770,9 +2782,10 @@ Parser_init(Parser *self, PyObject *args, PyObject *kwds)
     PyObject* deliminatorSet = NULL;
     PyObject* lists = NULL;
     PyObject* keywordsCaseSensitive = NULL;
+    PyObject* debugOutputEnabled = NULL;
 
-    if (! PyArg_ParseTuple(args, "|OOOO",
-                           &syntax, &deliminatorSet, &lists, &keywordsCaseSensitive))
+    if (! PyArg_ParseTuple(args, "|OOOOO",
+                           &syntax, &deliminatorSet, &lists, &keywordsCaseSensitive, &debugOutputEnabled))
         return -1;
 
     UNICODE_CHECK(deliminatorSet, -1);
@@ -2782,6 +2795,7 @@ Parser_init(Parser *self, PyObject *args, PyObject *kwds)
     ASSIGN_PYOBJECT_FIELD(syntax);
     ASSIGN_PYOBJECT_FIELD(lists);
     ASSIGN_BOOL_FIELD(keywordsCaseSensitive);
+    ASSIGN_BOOL_FIELD(debugOutputEnabled);
     
     self->deliminatorSet = _MakeDeliminatorSet(deliminatorSet);
     
@@ -2869,6 +2883,13 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     int textLen = PyUnicode_GET_SIZE(unicodeText);
     while (currentColumnIndex < textLen)
     {
+        if (self->debugOutputEnabled)
+        {
+            fprintf(stderr, "In context ");
+            PyObject_Print(currentContext->name, stderr, 0);
+            fprintf(stderr, "\n");
+        }
+
         int length = Context_parseBlock( currentContext,
                                          currentColumnIndex,
                                          unicodeText,

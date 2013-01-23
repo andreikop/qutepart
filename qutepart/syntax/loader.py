@@ -5,10 +5,12 @@ import copy
 import sys
 import xml.etree.ElementTree
 import re
+import logging
 
 from qutepart.syntax.colortheme import ColorTheme
 from qutepart.syntax import TextFormat
 
+_logger = logging.getLogger('qutepart')
 
 try:
     import qutepart.syntax.cParser as _parserModule
@@ -522,7 +524,9 @@ def loadSyntax(syntax, filePath, formatConverterFunction = None):
             syntax.indenter = indentationElement.attrib['mode']
 
     deliminatorSetAsString = u''.join(list(deliminatorSet))
-    syntax._setParser(_parserModule.Parser(syntax, deliminatorSetAsString, lists, keywordsCaseSensitive))
+    debugOutputEnabled = _logger.isEnabledFor(logging.DEBUG)  # for cParser
+    parser = _parserModule.Parser(syntax, deliminatorSetAsString, lists, keywordsCaseSensitive, debugOutputEnabled)
+    syntax._setParser(parser)
     attributeToFormatMap = _loadAttributeToFormatMap(highlightingElement)
     
     # parse contexts

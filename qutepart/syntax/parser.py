@@ -16,7 +16,9 @@ contain not a text value, but ContextSwitcher object
 import os.path
 import sys
 import re
+import logging
 
+_logger = logging.getLogger('qutepart')
 
 _numSeqReplacer = re.compile('%\d+')
 
@@ -826,6 +828,8 @@ class Context:
             for rule in self.rules:
                 ruleTryMatchResult = rule.tryMatch(textToMatchObject)
                 if ruleTryMatchResult is not None:
+                    _logger.debug('\tmatched rule %d at %d',
+                                  self.rules.index(rule), currentColumnIndex)
                     if countOfNotMatchedSymbols > 0:
                         highlightedSegments.append((countOfNotMatchedSymbols, self.format))
                         countOfNotMatchedSymbols = 0
@@ -876,11 +880,12 @@ class Parser:
         contexts                Context list as dictionary "context name" : context
         defaultContext          Default context object
     """
-    def __init__(self, syntax, deliminatorSetAsString, lists, keywordsCaseSensitive):
+    def __init__(self, syntax, deliminatorSetAsString, lists, keywordsCaseSensitive, debugOutputEnabled):
         self.syntax = syntax
         self.deliminatorSet = set(deliminatorSetAsString)
         self.lists = lists
         self.keywordsCaseSensitive = keywordsCaseSensitive
+        # debugOutputEnabled is used only by cParser
     
     def setContexts(self, contexts, defaultContext):
         self.contexts = contexts
@@ -921,6 +926,8 @@ class Parser:
         lineContinue = False
         currentColumnIndex = 0
         while currentColumnIndex < len(text):
+            _logger.debug('In context %s', contextStack.currentContext().name)
+
             length, newContextStack, segments, lineContinue = \
                         contextStack.currentContext().parseBlock(contextStack, currentColumnIndex, text)
             
