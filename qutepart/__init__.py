@@ -237,6 +237,8 @@ class Qutepart(QPlainTextEdit):
     
     _EOL = '\n'
     
+    _COMPLETION_THRESHOLD = 3
+    
     _globalSyntaxManager = SyntaxManager()
     
     def __init__(self, *args):

@@ -250,6 +250,10 @@ class Completer(QObject):
             self._closeCompletion()
             return
         
+        if len(wordBeforeCursor) < self._qpart._COMPLETION_THRESHOLD:
+            self._closeCompletion()
+            return
+        
         words = self._makeListOfCompletions(wordBeforeCursor)
         if not words:
             self._closeCompletion()
