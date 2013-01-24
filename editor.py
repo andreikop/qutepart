@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 
 import sys
+import os
 import logging
 
 if not '-p' in sys.argv:
     sys.path.insert(0, 'build/lib.linux-x86_64-2.6/')
+
+executablePath = os.path.abspath(__file__)
+if executablePath.startswith('/home'):  # if executed from the sources - do not import installed modules
+    sys.path.insert(0, os.path.dirname(executablePath))
+
 
 import sip
 sip.setapi('QString', 2)
