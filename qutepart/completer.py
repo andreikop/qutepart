@@ -11,6 +11,8 @@ from qutepart.htmldelegate import HTMLDelegate
 
 class _CompletionModel(QAbstractItemModel):
     """QAbstractItemModel implementation for a list of completion variants
+    
+    words attribute contains all words
     """
     def __init__(self, wordBeforeCursor, words, commonStart):
         QAbstractItemModel.__init__(self)
@@ -21,7 +23,7 @@ class _CompletionModel(QAbstractItemModel):
         """Set model information
         """
         self._typedText = wordBeforeCursor
-        self._words = words
+        self.words = words
         self._canCompleteText = commonStart[len(wordBeforeCursor):]
         
         self.layoutChanged.emit()
@@ -32,16 +34,11 @@ class _CompletionModel(QAbstractItemModel):
         self._setData(wordBeforeCursor, words, commonStart)
         self.layoutChanged.emit()
 
-    def plainText(self, rowIndex):
-        """Get plain text of specified item
-        """
-        return self._words[rowIndex]
-
     def data(self, index, role = Qt.DisplayRole):
         """QAbstractItemModel method implementation
         """
         if role == Qt.DisplayRole:
-            text = self.plainText(index.row())
+            text = self.words[index.row()]
             typed = text[:len(self._typedText)]
             canComplete = text[len(self._typedText):len(self._typedText) + len(self._canCompleteText)]
             rest = text[len(self._typedText) + len(self._canCompleteText):]
@@ -56,7 +53,7 @@ class _CompletionModel(QAbstractItemModel):
     def rowCount(self, index = QModelIndex()):
         """QAbstractItemModel method implementation
         """
-        return len(self._words)
+        return len(self.words)
     
     def typedText(self):
         """Get current typed text
@@ -66,7 +63,7 @@ class _CompletionModel(QAbstractItemModel):
     def words(self):
         """Return list of words
         """
-        return self._words
+        return self.words
     
     """Trivial QAbstractItemModel methods implementation
     """
@@ -136,14 +133,13 @@ class _CompletionList(QListView):
         """QWidget.sizeHint implementation
         Automatically resizes the widget according to rows count
         """
-        width = max([self.fontMetrics().width(self.model().plainText(i)) \
-                        for i in range(self.model().rowCount())])
-        
-        width += 8  # margin
+        width = max([self.fontMetrics().width(word) \
+                        for word in self.model().words])
+        width += 10  # margin
         
         # drawn with scrollbar without +2. I don't know why
         height = self.sizeHintForRow(0) * self.model().rowCount() + 2
-        
+
         return QSize(width, height)
 
     def _horizontalShift(self):
@@ -325,7 +321,7 @@ class Completer(QObject):
         """Item selected. Insert completion to editor
         """
         model = self._widget.model()
-        selectedWord = model.words()[index]
+        selectedWord = model.words[index]
         textToInsert = selectedWord[len(model.typedText()):]
         self._qpart.textCursor().insertText(textToInsert)
         self._closeCompletion()

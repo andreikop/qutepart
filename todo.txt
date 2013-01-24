@@ -1,8 +1,5 @@
-Shift+Home smart selection
 backspace unindents
 autocompletion list out of widget
-Autocompletion threshold
-zero height completion for self->name
 do not autocomplete currently typed word
 
 configure indentation. set tab width
