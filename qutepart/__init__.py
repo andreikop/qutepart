@@ -37,8 +37,8 @@ if not hasattr(QTextCursor, 'positionInBlock'):
 
 # Helper method, not supported by Qt
 if not hasattr(QTextCursor, 'setPositionInBlock'):
-    def _setPositionInBlock(cursor, positionInBlock):
-        return cursor.setPosition(cursor.block().position() + positionInBlock)
+    def _setPositionInBlock(cursor, positionInBlock, anchor=QTextCursor.MoveAnchor):
+        return cursor.setPosition(cursor.block().position() + positionInBlock, anchor)
     QTextCursor.setPositionInBlock = _setPositionInBlock
 
 
@@ -426,7 +426,9 @@ class Qutepart(QPlainTextEdit):
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
             self._onShortcutChangeIndentation(increase = True)
         elif event.matches(QKeySequence.MoveToStartOfLine):
-            self._onShortcutHome()
+            self._onShortcutHome(select=False)
+        elif event.matches(QKeySequence.SelectStartOfLine):
+            self._onShortcutHome(select=True)
         else:
             super(Qutepart, self).keyPressEvent(event)
     
@@ -550,16 +552,17 @@ class Qutepart(QPlainTextEdit):
         else:  # indent 1 line
             indentFunc(cursor.block())
     
-    def _onShortcutHome(self):
+    def _onShortcutHome(self, select):
         """Home pressed, move cursor to the line start or to the text start
         """
         cursor = self.textCursor()
+        anchor = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
         text = cursor.block().text()
         spaceAtStartLen = len(text) - len(text.lstrip())
         if cursor.positionInBlock() == spaceAtStartLen:  # if at start of text
-            cursor.setPositionInBlock(0)
+            cursor.setPositionInBlock(0, anchor)
         else:
-            cursor.setPositionInBlock(spaceAtStartLen)
+            cursor.setPositionInBlock(spaceAtStartLen, anchor)
         self.setTextCursor(cursor)
     
     def _selectLines(self, startBlockNumber, endBlockNumber):
