@@ -42,11 +42,14 @@ class _CompletionModel(QAbstractItemModel):
             typed = text[:len(self._typedText)]
             canComplete = text[len(self._typedText):len(self._typedText) + len(self._canCompleteText)]
             rest = text[len(self._typedText) + len(self._canCompleteText):]
-            return '<html>' \
-                           '%s' \
-                        '<font color="red">%s</font>' \
-                           '%s' \
-                    '</html>' % (typed, canComplete, rest)
+            if canComplete:
+                return '<html>' \
+                               '%s' \
+                            '<font color="red">%s</font>' \
+                               '%s' \
+                        '</html>' % (typed, canComplete, rest)
+            else:
+                return typed + rest
         else:
             return None
     
@@ -79,6 +82,8 @@ class _CompletionList(QListView):
     """
     closeMe = pyqtSignal()
     itemSelected = pyqtSignal(int)
+    
+    _ROW_MARGIN = 2
     
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
@@ -135,12 +140,17 @@ class _CompletionList(QListView):
         """
         width = max([self.fontMetrics().width(word) \
                         for word in self.model().words])
-        width += 10  # margin
+        width += 16  # margin
         
         # drawn with scrollbar without +2. I don't know why
-        height = self.sizeHintForRow(0) * self.model().rowCount() + 2
+        height = self.sizeHintForRow(0) * self.model().rowCount() + self._ROW_MARGIN
 
         return QSize(width, height)
+
+    def minimumHeight(self):
+        """QWidget.minimumSizeHint implementation
+        """
+        return self.sizeHintForRow(0) + self._ROW_MARGIN
 
     def _horizontalShift(self):
         """List should be plased such way, that typed text in the list is under
@@ -152,25 +162,39 @@ class _CompletionList(QListView):
     def updateGeometry(self):
         """Move widget to point under cursor
         """
+        WIDGET_BORDER_MARGIN = 5
+        SCROLLBAR_WIDTH = 30  # just a guess
+        
         sizeHint = self.sizeHint()
-        if self.isVisible():  # not just appeared
-            self.resize(sizeHint)
+        width = sizeHint.width()
+        height = sizeHint.height()
 
         cursorRect = self._qpart.cursorRect()
         parentSize = self.parentWidget().size()
         
-        spaceBelow = parentSize.height() - cursorRect.bottom()
-        spaceAbove = cursorRect.top()
+        spaceBelow = parentSize.height() - cursorRect.bottom() - WIDGET_BORDER_MARGIN
+        spaceAbove = cursorRect.top() - WIDGET_BORDER_MARGIN
         
-        if sizeHint.height() <= spaceBelow or \
+        if height <= spaceBelow or \
            spaceBelow > spaceAbove:
             yPos = cursorRect.bottom()
+            if height > spaceBelow and \
+               spaceBelow > self.minimumHeight():
+                height = spaceBelow
+                width = width + SCROLLBAR_WIDTH
         else:
+            if height > spaceAbove and \
+               spaceAbove > self.minimumHeight():
+                height = spaceAbove
+                width = width + SCROLLBAR_WIDTH
             yPos = cursorRect.top() - sizeHint.height()
-            
-        self.move(cursorRect.right() - self._horizontalShift(),
-                  yPos)
+
+        xPos = cursorRect.right() - self._horizontalShift()
         
+        if xPos + width + WIDGET_BORDER_MARGIN > parentSize.width():
+            xPos = parentSize.width() - WIDGET_BORDER_MARGIN - width
+        
+        self.setGeometry(xPos, yPos, width, height)
         self._closeIfNotUpdatedTimer.stop()
     
     def _onCursorPositionChanged(self):
