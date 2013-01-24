@@ -152,11 +152,24 @@ class _CompletionList(QListView):
     def updateGeometry(self):
         """Move widget to point under cursor
         """
-        self.move(self._qpart.cursorRect().right() - self._horizontalShift(),
-                  self._qpart.cursorRect().bottom())
-        
+        sizeHint = self.sizeHint()
         if self.isVisible():  # not just appeared
-            self.resize(self.sizeHint())
+            self.resize(sizeHint)
+
+        cursorRect = self._qpart.cursorRect()
+        parentSize = self.parentWidget().size()
+        
+        spaceBelow = parentSize.height() - cursorRect.bottom()
+        spaceAbove = cursorRect.top()
+        
+        if sizeHint.height() <= spaceBelow or \
+           spaceBelow > spaceAbove:
+            yPos = cursorRect.bottom()
+        else:
+            yPos = cursorRect.top() - sizeHint.height()
+            
+        self.move(cursorRect.right() - self._horizontalShift(),
+                  yPos)
         
         self._closeIfNotUpdatedTimer.stop()
     
