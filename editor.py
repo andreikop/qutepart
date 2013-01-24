@@ -33,12 +33,8 @@ def main():
     with open(filePath) as file:
         text = unicode(file.read(), 'utf8')
 
-    logger = logging.getLogger('qutepart')
-    consoleHandler = logging.StreamHandler()
-    consoleHandler.setFormatter(logging.Formatter("qutepart: %(message)s"))
-    logger.addHandler(consoleHandler)
     if '-d' in sys.argv:
-        logger.setLevel(logging.DEBUG)
+        logging.getLogger('qutepart').setLevel(logging.DEBUG)
     
     app = QApplication(sys.argv)
     

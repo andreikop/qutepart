@@ -2,14 +2,16 @@
 ======================================================
 
 Package logs it's debug information to 'qutepart' logger.
+By default logger prints messages to stderr with 'qutepart:' prefix
 For performance reasons, parser in C
     * checks, if DEBUG logs are enabled only when created
     * always prints logs to stderr
     * always prints logs for errors
-    * always uses 'qutepart: ' prefix
+    * always uses 'qutepart:' prefix
 """
 
 import os.path
+import logging
 
 from PyQt4.QtCore import QRect, Qt
 from PyQt4.QtGui import QAction, QApplication, QColor, QFont, QIcon, QKeySequence, QPainter, QPlainTextEdit, \
@@ -21,6 +23,12 @@ from qutepart.brackethlighter import BracketHighlighter
 from qutepart.indenter import getIndenter
 from qutepart.completer import Completer
 from qutepart.lines import Lines
+
+
+logger = logging.getLogger('qutepart')
+consoleHandler = logging.StreamHandler()
+consoleHandler.setFormatter(logging.Formatter("qutepart: %(message)s"))
+logger.addHandler(consoleHandler)
 
 
 _ICONS_PATH = os.path.join(os.path.dirname(__file__), 'icons')
