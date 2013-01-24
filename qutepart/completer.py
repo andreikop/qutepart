@@ -230,7 +230,7 @@ class Completer(QObject):
         """Catch events from qpart. Show completion if necessary
         """
         if event.type() == QEvent.KeyRelease and \
-           event.modifiers() == Qt.NoModifier:
+           event.modifiers() in (Qt.NoModifier, Qt.ShiftModifier):
             text = event.text()
             
             # TODO take word separator characters from the parser
