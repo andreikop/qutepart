@@ -431,20 +431,29 @@ class Qutepart(QPlainTextEdit):
         """QPlainTextEdit.keyPressEvent() implementation.
         Catch events, which may not be catched with QShortcut and call slots
         """
-        def _shallChangeIndentation():
+        def _textBeforeCursor():
             cursor = self.textCursor()
-            textBeforeCursor = cursor.block().text()[:cursor.positionInBlock()]
-            if textBeforeCursor.strip() == '':
+            return cursor.block().text()[:cursor.positionInBlock()]
+
+        def _shallChangeIndentation():
+            if _textBeforeCursor().strip() == '':
                 return True
             startBlockNumber, endBlockNumber = self._selectedBlockNumbers()
             if startBlockNumber != endBlockNumber:
                 return True
             return False
+        
+        def _shallUnindentWithBackspace():
+            textBeforeCursor = _textBeforeCursor()
+            return len(textBeforeCursor) % len(self._DEFAULT_INDENTATION) == 0 and \
+                   textBeforeCursor.endswith(self._DEFAULT_INDENTATION)
 
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier and _shallChangeIndentation():
             self._onShortcutChangeIndentation(increase = True)
+        elif event.key() == Qt.Key_Backspace and _shallUnindentWithBackspace():
+            self._onShortcutUnindentWithBackspace()
         elif event.matches(QKeySequence.MoveToStartOfLine):
             self._onShortcutHome(select=False)
         elif event.matches(QKeySequence.SelectStartOfLine):
@@ -571,6 +580,13 @@ class Qutepart(QPlainTextEdit):
             self.setTextCursor(newCursor)
         else:  # indent 1 line
             indentFunc(cursor.block())
+    
+    def _onShortcutUnindentWithBackspace(self):
+        """Backspace pressed, unindent
+        """
+        cursor = self.textCursor()
+        cursor.setPosition(cursor.position() - len(self._DEFAULT_INDENTATION), QTextCursor.KeepAnchor)
+        cursor.removeSelectedText()
     
     def _onShortcutHome(self, select):
         """Home pressed, move cursor to the line start or to the text start

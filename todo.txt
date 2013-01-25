@@ -1,4 +1,3 @@
-backspace unindents
 
 configure indentation. set tab width
 detect syntax by first line
