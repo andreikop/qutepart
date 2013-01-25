@@ -1,6 +1,6 @@
-"""Code editor component for PyQt and Pyside
-
-Use Qutepart class as an API
+"""
+qutepart --- Code editor component for PyQt and Pyside
+======================================================
 """
 
 import os.path
@@ -25,15 +25,15 @@ def _getIconPath(iconFileName):
 
 #Define for old Qt versions method, which appeared in 4.7
 if not hasattr(QTextCursor, 'positionInBlock'):
-    def positionInBlock(cursor):
+    def _positionInBlock(cursor):
         return cursor.position() - cursor.block().position()
-    QTextCursor.positionInBlock = positionInBlock
+    QTextCursor.positionInBlock = _positionInBlock
 
 # Helper method, not supported by Qt
 if not hasattr(QTextCursor, 'setPositionInBlock'):
-    def setPositionInBlock(cursor, positionInBlock):
+    def _setPositionInBlock(cursor, positionInBlock):
         return cursor.setPosition(cursor.block().position() + positionInBlock)
-    QTextCursor.setPositionInBlock = setPositionInBlock
+    QTextCursor.setPositionInBlock = _setPositionInBlock
 
 
 def iterateBlocksFrom(block):
@@ -386,6 +386,7 @@ class Qutepart(QPlainTextEdit):
             self._updateLineNumberAreaWidth(0)
 
     def resizeEvent(self, event):
+        pass # suppress dockstring for non-public method
         """QWidget.resizeEvent() implementation.
         Adjust line number area
         """
@@ -410,6 +411,7 @@ class Qutepart(QPlainTextEdit):
             cursor.insertText(indent)
 
     def keyPressEvent(self, event):
+        pass # suppress dockstring for non-public method
         """QPlainTextEdit.keyPressEvent() implementation.
         Catch events, which may not be catched with QShortcut and call slots
         """
@@ -452,6 +454,7 @@ class Qutepart(QPlainTextEdit):
                     x = x + indentWidthPixels
     
     def paintEvent(self, event):
+        pass # suppress dockstring for non-public method
         """Paint event
         Draw indentation markers after main contents is drawn
         """
