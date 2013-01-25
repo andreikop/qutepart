@@ -1,6 +1,5 @@
 backspace unindents
-autocompletion list out of widget
-do not autocomplete currently typed word
+tab completion
 
 configure indentation. set tab width
 detect syntax by first line

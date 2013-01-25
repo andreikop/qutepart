@@ -245,6 +245,7 @@ class Completer(QObject):
     _wordPattern = "\w\w+"
     _wordRegExp = re.compile(_wordPattern)
     _wordAtEndRegExp = re.compile(_wordPattern + '$')
+    _wordAtStartRegExp = re.compile('^' + _wordPattern)
     
     def __init__(self, qpart):
         QObject.__init__(self, qpart)
@@ -279,7 +280,7 @@ class Completer(QObject):
         """Invoke completion, if available. Called after text has been typed in qpart
         """
         wordBeforeCursor = self._wordBeforeCursor()
-        if wordBeforeCursor is None:
+        if not wordBeforeCursor:
             self._closeCompletion()
             return
         
@@ -320,7 +321,18 @@ class Completer(QObject):
         if match:
             return match.group(0)
         else:
-            return None
+            return ''
+    
+    def _wordAfterCursor(self):
+        """Get word, which is located before cursor
+        """
+        cursor = self._qpart.textCursor()
+        textAfterCursor = cursor.block().text()[cursor.positionInBlock():]
+        match = self._wordAtStartRegExp.search(textAfterCursor)
+        if match:
+            return match.group(0)
+        else:
+            return ''
     
     def _makeWordSet(self):
         """Make a set of words, which shall be completed, from text
@@ -330,10 +342,11 @@ class Completer(QObject):
     def _makeListOfCompletions(self, wordBeforeCursor):
         """Make list of completions, which shall be shown
         """
+        wholeWord = wordBeforeCursor + self._wordAfterCursor()
         allWords = self._makeWordSet()
         onlySuitable = [word for word in allWords \
                                 if word.startswith(wordBeforeCursor) and \
-                                   word != wordBeforeCursor]
+                                   word != wholeWord]
         
         return sorted(onlySuitable)
     
