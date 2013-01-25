@@ -13,6 +13,7 @@ class _CompletionModel(QAbstractItemModel):
     """QAbstractItemModel implementation for a list of completion variants
     
     words attribute contains all words
+    canCompleteText attribute contains text, which may be inserted with tab
     """
     def __init__(self, wordBeforeCursor, words, commonStart):
         QAbstractItemModel.__init__(self)
@@ -24,7 +25,7 @@ class _CompletionModel(QAbstractItemModel):
         """
         self._typedText = wordBeforeCursor
         self.words = words
-        self._canCompleteText = commonStart[len(wordBeforeCursor):]
+        self.canCompleteText = commonStart[len(wordBeforeCursor):]
         
         self.layoutChanged.emit()
 
@@ -40,8 +41,8 @@ class _CompletionModel(QAbstractItemModel):
         if role == Qt.DisplayRole:
             text = self.words[index.row()]
             typed = text[:len(self._typedText)]
-            canComplete = text[len(self._typedText):len(self._typedText) + len(self._canCompleteText)]
-            rest = text[len(self._typedText) + len(self._canCompleteText):]
+            canComplete = text[len(self._typedText):len(self._typedText) + len(self.canCompleteText)]
+            rest = text[len(self._typedText) + len(self.canCompleteText):]
             if canComplete:
                 return '<html>' \
                                '%s' \
@@ -63,11 +64,6 @@ class _CompletionModel(QAbstractItemModel):
         """
         return self._typedText
     
-    def words(self):
-        """Return list of words
-        """
-        return self.words
-    
     """Trivial QAbstractItemModel methods implementation
     """
     def flags(self, index):                                 return Qt.ItemIsEnabled | Qt.ItemIsSelectable
@@ -82,6 +78,7 @@ class _CompletionList(QListView):
     """
     closeMe = pyqtSignal()
     itemSelected = pyqtSignal(int)
+    tabPressed = pyqtSignal()
     
     _ROW_MARGIN = 2
     
@@ -212,9 +209,8 @@ class _CompletionList(QListView):
         """Catch events from qpart
         Move selection, select item, or close themselves
         """
-        if event.type() == QEvent.KeyPress:
-            if event.key() == Qt.Key_Escape and \
-               event.modifiers() == Qt.NoModifier:
+        if event.type() == QEvent.KeyPress and event.modifiers() == Qt.NoModifier:
+            if event.key() == Qt.Key_Escape:
                 self.closeMe.emit()
             elif event.key() == Qt.Key_Down:
                 if self._selectedIndex + 1 < self.model().rowCount():
@@ -227,8 +223,10 @@ class _CompletionList(QListView):
             elif event.key() in (Qt.Key_Enter, Qt.Key_Return):
                 if self._selectedIndex != -1:
                     self.itemSelected.emit(self._selectedIndex)
-                    self._selectItem(self._selectedIndex - 1)
                     return True
+            elif event.key() == Qt.Key_Tab:
+                self.tabPressed.emit()
+                return True
 
         return False
 
@@ -300,6 +298,7 @@ class Completer(QObject):
             self._widget = _CompletionList(self._qpart, model)
             self._widget.closeMe.connect(self._closeCompletion)
             self._widget.itemSelected.connect(self._onCompletionListItemSelected)
+            self._widget.tabPressed.connect(self._onCompletionListTabPressed)
         else:
             self._widget.model().updateData(wordBeforeCursor, words, commonStart)
             self._widget.updateGeometry()
@@ -376,3 +375,11 @@ class Completer(QObject):
         self._qpart.textCursor().insertText(textToInsert)
         self._closeCompletion()
 
+    def _onCompletionListTabPressed(self):
+        """Tab pressed on completion list
+        Insert completable text, if available
+        """
+        canCompleteText = self._widget.model().canCompleteText
+        if canCompleteText:
+            self._qpart.textCursor().insertText(canCompleteText)
+            self._invokeCompletionIfAvailable()
