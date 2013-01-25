@@ -1,5 +1,4 @@
 backspace unindents
-what to do if in he middle of line and Tab pressed?
 
 configure indentation. set tab width
 detect syntax by first line

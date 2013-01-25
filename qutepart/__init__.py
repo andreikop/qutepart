@@ -431,9 +431,19 @@ class Qutepart(QPlainTextEdit):
         """QPlainTextEdit.keyPressEvent() implementation.
         Catch events, which may not be catched with QShortcut and call slots
         """
+        def _shallChangeIndentation():
+            cursor = self.textCursor()
+            textBeforeCursor = cursor.block().text()[:cursor.positionInBlock()]
+            if textBeforeCursor.strip() == '':
+                return True
+            startBlockNumber, endBlockNumber = self._selectedBlockNumbers()
+            if startBlockNumber != endBlockNumber:
+                return True
+            return False
+
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
-        elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
+        elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier and _shallChangeIndentation():
             self._onShortcutChangeIndentation(increase = True)
         elif event.matches(QKeySequence.MoveToStartOfLine):
             self._onShortcutHome(select=False)
