@@ -8,6 +8,7 @@ For performance reasons, parser in C
     * always prints logs to stderr
     * always prints logs for errors
     * always uses 'qutepart:' prefix
+Logging handler is available as 'consoleHandler' attribute of the package
 """
 
 import os.path
