@@ -35,7 +35,7 @@ class _CompletionModel(QAbstractItemModel):
         self._setData(wordBeforeCursor, words, commonStart)
         self.layoutChanged.emit()
 
-    def data(self, index, role = Qt.DisplayRole):
+    def data(self, index, role):
         """QAbstractItemModel method implementation
         """
         if role == Qt.DisplayRole:

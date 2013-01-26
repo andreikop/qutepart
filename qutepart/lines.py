@@ -6,8 +6,6 @@ from PyQt4.QtGui import QTextCursor
 
 
 def _iterateBlocksFrom(block):
-    """FIXME remove
-    """
     while block.isValid():
         yield block
         block = block.next()
@@ -163,7 +161,6 @@ class Lines:
     @_atomicModification
     def insert(self, index, text):
         """Insert line to the document
-        FIXME one modification
         """
         if index < 0 or index > self._doc.blockCount():
             raise IndexError('Invalid block index', index)

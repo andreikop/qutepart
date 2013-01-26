@@ -1,14 +1,5 @@
 """qutepart --- Code editor component for PyQt and Pyside
-======================================================
-
-Package logs it's debug information to 'qutepart' logger.
-By default logger prints messages to stderr with 'qutepart:' prefix
-For performance reasons, parser in C
-    * checks, if DEBUG logs are enabled only when created
-    * always prints logs to stderr
-    * always prints logs for errors
-    * always uses 'qutepart:' prefix
-Logging handler is available as 'consoleHandler' attribute of the package
+=========================================================
 """
 
 import os.path
@@ -46,24 +37,11 @@ if not hasattr(QTextCursor, 'positionInBlock'):
 
 # Helper method, not supported by Qt
 if not hasattr(QTextCursor, 'setPositionInBlock'):
+    if not hasattr(QTextCursor, 'MoveAnchor'):  # using a mock, avoiding crash. See doc/source/conf.py
+        QTextCursor.MoveAnchor = None
     def _setPositionInBlock(cursor, positionInBlock, anchor=QTextCursor.MoveAnchor):
         return cursor.setPosition(cursor.block().position() + positionInBlock, anchor)
     QTextCursor.setPositionInBlock = _setPositionInBlock
-
-
-def iterateBlocksFrom(block):
-    """Generator, which iterates QTextBlocks from block until the End of a document
-    """
-    while block.isValid():
-        yield block
-        block = block.next()
-
-def iterateBlocksBackFrom(block):
-    """Generator, which iterates QTextBlocks from block until the Start of a document
-    """
-    while block.isValid():
-        yield block
-        block = block.previous()
 
 
 class _Bookmarks:
@@ -225,22 +203,57 @@ class _MarkArea(QWidget):
 
 
 class Qutepart(QPlainTextEdit):
-    """Code editor component for PyQt and Pyside
+    '''Qutepart is based on QPlainTextEdit, and you can use QPlainTextEdit methods,
+    if you don't see some functionality here.
+    
+    **Actions**
     
     Component contains list of actions (QAction instances).
-    Actions can be insered to some menu, a shortcut and an icon can be configured
-    List of actions, accessible as Qutepart attributes:
+    Actions can be insered to some menu, a shortcut and an icon can be configured. List of actions:
     
-    * toggleBookmark        Set/Clear bookmark on current block
-    * nextBookmark          Jump to next bookmark
-    * prevBookmark          Jump to previous bookmark
+    * ``toggleBookmark`` - Set/Clear bookmark on current block
+    * ``nextBookmark`` - Jump to next bookmark
+    * ``prevBookmark`` - Jump to previous bookmark
     
-    For join few modifications in one Undo action, use Qutepart instance as a context manager:
+    **Text modification and Undo/Redo**
+    
+    Sometimes, it is required to make few text modifications, which are Undo-Redoble as atomic operation.
+    i.e. you want to indent (insert indentation) few lines of text, but user shall be able to
+    Undo it in one step. In this case, you can use Qutepart as a context manager.::
+    
         with qpart:
             qpart.modifySomeText()
             qpart.modifyOtherText()
+    
     Nested atomic operations are joined in one operation
-    """
+    
+    **Text lines**
+    
+    Qutepart has ``lines`` attribute, which represents text as list-of-strings like object
+    and allows to modify it. Examples::
+    
+        qpart.lines[0]  # get the first line of the text
+        qpart.lines[-1]  # get the last line of the text
+        qpart.lines[2] = 'new text'  # replace 3rd line value with 'new text'
+        qpart.lines[1:4]  # get 3 lines of text starting from the second line as list of strings
+        qpart.lines[1:4] = ['new line 2', 'new line3', 'new line 4']  # replace value of 3 lines
+        del qpart.lines[3]  # delete 4th line
+        del qpart.lines[3:5]  # delete lines 4, 5, 6
+        
+        len(qpart.lines)  # get line count
+        
+        qpart.lines.append('new line')  # append new line to the end
+        qpart.lines.insert(1, 'new line')  # insert new line before line 1
+        
+        print qpart.lines  # print all text as list of strings
+        
+        # iterate over lines.
+        for lineText in qpart.lines:
+            doSomething(lineText)
+        
+        qsci.lines = ['one', 'thow', 'three']  # replace whole text
+    
+    '''
     
     _DEFAULT_INDENTATION = '    '
     
@@ -259,7 +272,7 @@ class Qutepart(QPlainTextEdit):
         
         self._indenter = getIndenter('normal', self._DEFAULT_INDENTATION)
         
-        self.lines = Lines(self)
+        self._lines = Lines(self)
         
         self._initShortcuts()
         
@@ -317,16 +330,28 @@ class Qutepart(QPlainTextEdit):
         if exc_type is not None:
             return False
 
+    @property
+    def lines(self):
+        return self._lines
+    
+    @lines.setter
+    def lines(self, value):
+        if not isinstance(value, (list, tuple)) or \
+           not all([isinstance(item, basestring) for item in value]):
+            raise TypeError('Invalid new value of "lines" attribute')
+        self.setPlainText(self._EOL.join(value))
+    
     def detectSyntax(self, xmlFileName = None, mimeType = None, languageName = None, sourceFilePath = None):
         """Get syntax by one of parameters:
+        
             * xmlFileName
             * mimeType
             * languageName
             * sourceFilePath
-        First parameter in the list has biggest priority.
+        First parameter in the list has the hightest priority.
         Old syntax is always cleared, even if failed to detect new.
         
-        Method returns True, if syntax is detected, and False otherwise
+        Method returns ``True``, if syntax is detected, and ``False`` otherwise
         """
         self.clearSyntax()
         
@@ -340,8 +365,26 @@ class Qutepart(QPlainTextEdit):
             self._highlighter = SyntaxHighlighter(syntax, self.document())
             self._indenter = self._getIndenter(syntax)
 
+    def clearSyntax(self):
+        """Clear syntax. Disables syntax highlighting
+        
+        This method might take long time, if document is big. Don't call it if you don't have to (i.e. in destructor)
+        """
+        if self._highlighter is not None:
+            self._highlighter.del_()
+            self._highlighter = None
+    
+    def languageName(self):
+        """Get current language name.
+        Return ``None`` for plain text
+        """
+        if self._highlighter is None:
+            return None
+        else:
+            return self._highlighter.syntax().name
+        
     def cursorPosition(self):
-        """Get cursor position as a tuple (line, column)
+        """Get cursor position as a tuple ``(line, column)``.
         Lines are numerated from 0
         """
         cursor = self.textCursor()
@@ -363,24 +406,6 @@ class Qutepart(QPlainTextEdit):
         
         return getIndenter('normal', self._DEFAULT_INDENTATION)
 
-    def clearSyntax(self):
-        """Clear syntax. Disables syntax highlighting
-        
-        This method might take long time, if document is big. Don't call it if you don't have to.
-        """
-        if self._highlighter is not None:
-            self._highlighter.del_()
-            self._highlighter = None
-    
-    def languageName(self):
-        """Get current language name
-        Return None for plain text
-        """
-        if self._highlighter is None:
-            return None
-        else:
-            return self._highlighter.syntax().name
-        
     def _updateLineNumberAreaWidth(self, newBlockCount):
         """Set line number are width according to current lines count
         """
@@ -726,4 +751,20 @@ class Qutepart(QPlainTextEdit):
             line = cursor.blockNumber()
             self.lines.insert(line + 1, self.lines[line])
             self.ensureCursorVisible()
+
+
+
+def iterateBlocksFrom(block):
+    """Generator, which iterates QTextBlocks from block until the End of a document
+    """
+    while block.isValid():
+        yield block
+        block = block.next()
+
+def iterateBlocksBackFrom(block):
+    """Generator, which iterates QTextBlocks from block until the Start of a document
+    """
+    while block.isValid():
+        yield block
+        block = block.previous()
 

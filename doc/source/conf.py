@@ -207,7 +207,7 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_domain_indices = True
 
-autodoc_default_flags = ['members', 'show-inheritance']
+autodoc_default_flags = ['show-inheritance']
 autodoc_member_order = 'bysource'
 
 # -- Options for manual page output --------------------------------------------
@@ -242,3 +242,33 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+
+"""
+Fake PyQt4 module, for building docs on system without PyQt (rtfd.org)
+
+http://read-the-docs.readthedocs.org/en/latest/faq.html#my-project-isn-t-building-with-autodoc
+"""
+class Mock(object):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
+    @classmethod
+    def __getattr__(self, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            mockType = type(name, (), {})
+            mockType.__module__ = __name__
+            return mockType
+        else:
+            return Mock()
+
+MOCK_MODULES = ['PyQt4', 'PyQt4.QtCore', 'PyQt4.QtGui', 'PyQt4.QtWebKit']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = Mock()
+
+
