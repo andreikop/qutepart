@@ -42,23 +42,19 @@ class IndenterNormal(IndenterNone):
     This is basic indenter, which knows nothing about programming languages
     """
     @staticmethod
-    def _prevNonEmptyLineText(block):
+    def _prevLineText(block):
         """Return text previous block, which is non empty (contains something, except spaces)
         Return '', if not found
         """
         prevBlock = block.previous()
-        
-        while prevBlock.isValid() and not prevBlock.text().strip():  # try to find non-empty block
-            prevBlock = prevBlock.previous()
-        
-        return prevBlock.text()
+        return block.previous().text()
 
     @staticmethod
     def _lineIndent(text):
         return text[:len(text) - len(text.lstrip())]
     
     def _prevBlockIndent(self, block):
-        prevLineText = self._prevNonEmptyLineText(block)
+        prevLineText = self._prevLineText(block)
         
         if not prevLineText:
             return ''
@@ -98,7 +94,7 @@ class IndenterPython(IndenterNormal):
     """Indenter for Python language.
     """
     def computeIndent(self, block):
-        prevLineText = self._prevNonEmptyLineText(block)
+        prevLineText = self._prevLineText(block)
         
         if not prevLineText:
             return ''
