@@ -472,7 +472,8 @@ class Qutepart(QPlainTextEdit):
         def _shallUnindentWithBackspace():
             textBeforeCursor = _textBeforeCursor()
             return len(textBeforeCursor) % len(self._DEFAULT_INDENTATION) == 0 and \
-                   textBeforeCursor.endswith(self._DEFAULT_INDENTATION)
+                   textBeforeCursor.endswith(self._DEFAULT_INDENTATION) and \
+                   not self.textCursor().hasSelection()
 
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
