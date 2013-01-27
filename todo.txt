@@ -1,3 +1,4 @@
+do not draw indent markers on full height of wrapped lines
 
 configure indentation. set tab width
 detect syntax by first line

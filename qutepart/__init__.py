@@ -5,7 +5,7 @@
 import os.path
 import logging
 
-from PyQt4.QtCore import QRect, Qt
+from PyQt4.QtCore import QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QFont, QIcon, QKeySequence, QPainter, QPlainTextEdit, \
                         QPixmap, QShortcut, QTextCursor, QTextEdit, QTextFormat, QWidget
 
@@ -253,7 +253,12 @@ class Qutepart(QPlainTextEdit):
         
         qsci.lines = ['one', 'thow', 'three']  # replace whole text
     
+    ***Signals***
+    
+    ``languageChanged``` emitted, when current language has changed. See also ``language()``
     '''
+    
+    languageChanged = pyqtSignal(unicode)
     
     _DEFAULT_INDENTATION = '    '
     
@@ -341,29 +346,35 @@ class Qutepart(QPlainTextEdit):
             raise TypeError('Invalid new value of "lines" attribute')
         self.setPlainText(self._EOL.join(value))
     
-    def detectSyntax(self, xmlFileName = None, mimeType = None, languageName = None, sourceFilePath = None):
+    def detectSyntax(self, xmlFileName = None, mimeType = None, language = None, sourceFilePath = None):
         """Get syntax by one of parameters:
         
             * xmlFileName
             * mimeType
-            * languageName
+            * language
             * sourceFilePath
         First parameter in the list has the hightest priority.
         Old syntax is always cleared, even if failed to detect new.
         
         Method returns ``True``, if syntax is detected, and ``False`` otherwise
         """
+        oldLanguage = self.language()
+        
         self.clearSyntax()
         
         syntax = self._globalSyntaxManager.getSyntax(SyntaxHighlighter.formatConverterFunction,
                                                      xmlFileName = xmlFileName,
                                                      mimeType = mimeType,
-                                                     languageName = languageName,
+                                                     languageName = language,
                                                      sourceFilePath = sourceFilePath)
 
         if syntax is not None:
             self._highlighter = SyntaxHighlighter(syntax, self.document())
             self._indenter = self._getIndenter(syntax)
+        
+        newLanguage = self.language()
+        if oldLanguage != newLanguage:
+            self.languageChanged.emit(newLanguage)
 
     def clearSyntax(self):
         """Clear syntax. Disables syntax highlighting
@@ -373,8 +384,9 @@ class Qutepart(QPlainTextEdit):
         if self._highlighter is not None:
             self._highlighter.del_()
             self._highlighter = None
+            self.languageChanged.emit(None)
     
-    def languageName(self):
+    def language(self):
         """Get current language name.
         Return ``None`` for plain text
         """
