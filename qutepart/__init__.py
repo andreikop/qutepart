@@ -776,7 +776,7 @@ class Qutepart(QPlainTextEdit):
         """Duplicate selected text or current line
         """
         cursor = self.textCursor()
-        if cursor.hasSelection():
+        if cursor.hasSelection():  # duplicate selection
             text = cursor.selectedText()
             selectionStart, selectionEnd = cursor.selectionStart(), cursor.selectionEnd()
             cursor.setPosition(selectionEnd)
@@ -789,6 +789,8 @@ class Qutepart(QPlainTextEdit):
             line = cursor.blockNumber()
             self.lines.insert(line + 1, self.lines[line])
             self.ensureCursorVisible()
+        
+        self._updatePositionHighlighting()  # newly inserted text might be highlighted as braces
 
 
 
