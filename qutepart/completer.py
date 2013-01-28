@@ -212,6 +212,7 @@ class _CompletionList(QListView):
         if event.type() == QEvent.KeyPress and event.modifiers() == Qt.NoModifier:
             if event.key() == Qt.Key_Escape:
                 self.closeMe.emit()
+                return True
             elif event.key() == Qt.Key_Down:
                 if self._selectedIndex + 1 < self.model().rowCount():
                     self._selectItem(self._selectedIndex + 1)
