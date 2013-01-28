@@ -463,6 +463,7 @@ class Qutepart(QPlainTextEdit):
             cursor.insertBlock()
             indent = self._indenter.computeIndent(self.textCursor().block())
             cursor.insertText(indent)
+        self.ensureCursorVisible()
 
     def keyPressEvent(self, event):
         pass # suppress dockstring for non-public method
