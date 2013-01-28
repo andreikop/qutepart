@@ -6,7 +6,7 @@ import os.path
 import logging
 
 from PyQt4.QtCore import QRect, Qt, pyqtSignal
-from PyQt4.QtGui import QAction, QApplication, QColor, QFont, QIcon, QKeySequence, QPainter, QPlainTextEdit, \
+from PyQt4.QtGui import QAction, QApplication, QColor, QFont, QIcon, QKeySequence, QPainter, QPalette, QPlainTextEdit, \
                         QPixmap, QShortcut, QTextCursor, QTextEdit, QTextFormat, QWidget
 
 from qutepart.syntax import SyntaxManager
@@ -128,7 +128,7 @@ class _LineNumberArea(QWidget):
         """QWidget.paintEvent() implementation
         """
         painter = QPainter(self)
-        painter.fillRect(event.rect(), Qt.lightGray)
+        painter.fillRect(event.rect(), self.palette().color(QPalette.Window))
         painter.setPen(Qt.black)
 
         block = self._qpart.firstVisibleBlock()
@@ -179,7 +179,7 @@ class _MarkArea(QWidget):
         Draw markers
         """
         painter = QPainter(self)
-        painter.fillRect(event.rect(), Qt.lightGray)
+        painter.fillRect(event.rect(), self.palette().color(QPalette.Window))
 
         block = self._qpart.firstVisibleBlock()
         blockBoundingGeometry = self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset())

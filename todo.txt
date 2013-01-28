@@ -1,6 +1,5 @@
 Qt.KeepAnchor
 do not draw indent markers on full height of wrapped lines
-use standard color for line number area?
 better color of selected completion variant
 scroll and select with Ctrl+Shift+Up/Down
 ctrl+backspace does not close completion
