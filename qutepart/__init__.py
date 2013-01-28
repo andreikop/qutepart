@@ -574,28 +574,52 @@ class Qutepart(QPlainTextEdit):
             value -= 1
         self.verticalScrollBar().setValue(value)
 
+    def _spaceAtStart(self, text):
+        """Get current indentation as string
+        """
+        return text[:len(text) - len(text.lstrip())]
+        
     def _indentBlock(self, block):
         """Increase indentation level
         """
-        QTextCursor(block).insertText(self._DEFAULT_INDENTATION)
+        if all([char == ' ' for char in self._DEFAULT_INDENTATION]):  # if indent mode is spaces
+            # all spaces, make sure new indentation contains integer count if indent strings
+            onlySpacesAtStart = self._spaceAtStart(block.text()).replace('\t', self._DEFAULT_INDENTATION)
+            partialIndentWidth = len(onlySpacesAtStart) % len(self._DEFAULT_INDENTATION)
+            spacesCountToInsert = len(self._DEFAULT_INDENTATION) - partialIndentWidth
+            QTextCursor(block).insertText(' ' * spacesCountToInsert)
+        else:  # just insert indentation symbol
+            QTextCursor(block).insertText(self._DEFAULT_INDENTATION)
         
     def _unIndentBlock(self, block):
         """Increase indentation level
         """
         cursor = QTextCursor(block)
         text = block.text()
-        charsToRemove = 0
-        if text.startswith(self._DEFAULT_INDENTATION):
-            charsToRemove = len(self._DEFAULT_INDENTATION)
-        elif text.startswith('\t'):
+        spaceAtStart = self._spaceAtStart(text)
+        
+        if not spaceAtStart:  # nothing to unindent
+            return
+        
+        if text.endswith('\t'):
             charsToRemove = 1
+        elif all([char == ' ' for char in self._DEFAULT_INDENTATION]):  # if indent mode is spaces
+            # all spaces, make sure new indentation contains integer count if indent strings
+            onlySpacesAtStart = spaceAtStart.replace('\t', self._DEFAULT_INDENTATION)
+            partialIndentWidth = len(onlySpacesAtStart) % len(self._DEFAULT_INDENTATION)
+            if partialIndentWidth:
+                charsToRemove = partialIndentWidth
+            else:
+                charsToRemove = len(self._DEFAULT_INDENTATION)
+        elif spaceAtStart.endswith(self._DEFAULT_INDENTATION):
+            charsToRemove = len(self._DEFAULT_INDENTATION)
         else:
-            charsToRemove = len(text) - len(text.lstrip())
+            charsToRemove = len(spaceAtStart)
         
         if charsToRemove:
             cursor.setPosition(cursor.position() + charsToRemove, QTextCursor.KeepAnchor)
             cursor.removeSelectedText()
-        
+    
     def _onShortcutChangeIndentation(self, increase):
         """Tab pressed, indent line or lines
         """
@@ -634,7 +658,7 @@ class Qutepart(QPlainTextEdit):
         cursor = self.textCursor()
         anchor = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
         text = cursor.block().text()
-        spaceAtStartLen = len(text) - len(text.lstrip())
+        spaceAtStartLen = len(self._spaceAtStart(text))
         if cursor.positionInBlock() == spaceAtStartLen:  # if at start of text
             cursor.setPositionInBlock(0, anchor)
         else:
