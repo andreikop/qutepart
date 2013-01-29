@@ -269,7 +269,8 @@ class Completer(QObject):
             # TODO take word separator characters from the parser
             textTyped = text.isalpha() or text.isdigit() or text == '_'
             
-            if textTyped or event.key() == Qt.Key_Backspace:
+            if textTyped or \
+               (event.key() == Qt.Key_Backspace and self._widget is not None):
                 self._invokeCompletionIfAvailable()
                 return False
         
