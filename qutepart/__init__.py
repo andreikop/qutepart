@@ -336,6 +336,13 @@ class Qutepart(QPlainTextEdit):
         if exc_type is not None:
             return False
 
+    def setFont(self, font):
+        pass # suppress dockstring for non-public method
+        """Set font and update tab stop width
+        """
+        QPlainTextEdit.setFont(self, font)
+        self.setTabStopWidth(self.fontMetrics().width(self._DEFAULT_INDENTATION))
+    
     @property
     def lines(self):
         return self._lines
