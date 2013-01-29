@@ -511,7 +511,10 @@ class Qutepart(QPlainTextEdit):
         indentWidthChars = len(self._DEFAULT_INDENTATION)
         indentWidthPixels = self.fontMetrics().width(self._DEFAULT_INDENTATION)
         
-        leftMargin = 6  # FIXME experimental value. Probably won't work on all themes and Qt versions
+        cursorHeight = self.cursorRect().height()  # block might be wrapped,
+                                                   # but we always draw marker, equal to single line width
+        
+        leftMargin = 7  # FIXME experimental value. Probably won't work on all themes and Qt versions
         
         for block in iterateBlocksFrom(self.firstVisibleBlock()):
             blockGeometry = self.blockBoundingGeometry(block).translated(self.contentOffset())
@@ -527,7 +530,7 @@ class Qutepart(QPlainTextEdit):
                     painter.drawLine(x,
                                      blockGeometry.top(),
                                      x,
-                                     blockGeometry.bottom())
+                                     blockGeometry.top() + cursorHeight)
                     text = text[indentWidthChars:]
                     x = x + indentWidthPixels
     
