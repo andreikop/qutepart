@@ -410,7 +410,7 @@ class Qutepart(QPlainTextEdit):
             try:
                 return getIndenter(syntax.indenter, self._DEFAULT_INDENTATION)
             except KeyError:
-                print >> sys.stderr, "Indenter '%s' not found" % syntax.indenter
+                logger.error("Indenter '%s' not found" % syntax.indenter)
         
         try:
             return getIndenter(syntax.name, self._DEFAULT_INDENTATION)

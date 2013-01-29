@@ -5,7 +5,9 @@ import os.path
 import fnmatch
 import json
 import threading
+import logging
 
+_logger = logging.getLogger('qutepart')
 
 class TextFormat:
     """Text format definition.
@@ -171,25 +173,25 @@ class SyntaxManager:
             try:
                 syntax = self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
             except KeyError:
-                print 'No xml definition', xmlFileName
+                _logger.warning('No xml definition %s' % xmlFileName)
         
         if syntax is None and mimeType is not None:
             try:
                 syntax = self._getSyntaxByMimeType(mimeType, formatConverterFunction)
             except KeyError:
-                print 'No syntax for mime type', mimeType
+                _logger.warning('No syntax for mime type %s' % mimeType)
         
         if syntax is None and languageName is not None:
             try:
                 syntax = self._getSyntaxByLanguageName(languageName, formatConverterFunction)
             except KeyError:
-                print 'No syntax for language', languageName
+                _logger.warning('No syntax for language %s' % languageName)
         
         if syntax is None and sourceFilePath is not None:
             baseName = os.path.basename(sourceFilePath)
             try:
                 syntax = self._getSyntaxBySourceFileName(baseName, formatConverterFunction)
             except KeyError:
-                print 'No syntax for source file', baseName
+                pass
 
         return syntax
