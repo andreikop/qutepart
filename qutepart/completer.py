@@ -230,6 +230,8 @@ class _CompletionList(QListView):
             elif event.key() == Qt.Key_Tab:
                 self.tabPressed.emit()
                 return True
+        elif event.type() == QEvent.FocusOut:
+            self.closeMe.emit()
 
         return False
 
