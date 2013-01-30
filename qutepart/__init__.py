@@ -250,6 +250,8 @@ class Qutepart(QPlainTextEdit):
         
         qpart.lines = ['one', 'thow', 'three']  # replace whole text
 
+    ``cursorPosition`` rw attribute holds cursor position as ``(line, column)``. Lines are numerated from zero. If position is too big - cursor is set to last line and to last column
+
     **Actions**
     
     Component contains list of actions (QAction instances).
@@ -395,6 +397,25 @@ class Qutepart(QPlainTextEdit):
     def selectedText(self, text):
         self.textCursor().insertText(text)
     
+    @property
+    def cursorPosition(self):
+        """Get cursor position as a ``(line, column)``. Lines are numerated from 0
+        """
+        cursor = self.textCursor()
+        return cursor.block().blockNumber(), cursor.positionInBlock()
+    
+    @cursorPosition.setter
+    def cursorPosition(self, pos):
+        line, col = pos
+        
+        line = min(line, len(self.lines))
+        col = min(col, len(self.lines[line]))
+        
+        block = QTextCursor(self.document().findBlockByNumber(line))
+        cursor = QTextCursor(block)
+        cursor.setPositionInBlock(col)
+        self.setTextCursor(cursor)
+    
     def detectSyntax(self, xmlFileName = None, mimeType = None, language = None, sourceFilePath = None):
         """Get syntax by one of parameters:
         
@@ -444,13 +465,6 @@ class Qutepart(QPlainTextEdit):
         else:
             return self._highlighter.syntax().name
         
-    def cursorPosition(self):
-        """Get cursor position as a tuple ``(line, column)``.
-        Lines are numerated from 0
-        """
-        cursor = self.textCursor()
-        return cursor.block().blockNumber(), cursor.positionInBlock()
-
     def setExtraSelections(self, selections):
         """Set list of extra selections.
         Selections are list of tuples ``(startAbsolutePosition, length)``.
