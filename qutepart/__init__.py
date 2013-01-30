@@ -250,7 +250,8 @@ class Qutepart(QPlainTextEdit):
         
         qpart.lines = ['one', 'thow', 'three']  # replace whole text
 
-    ``cursorPosition`` rw attribute holds cursor position as ``(line, column)``. Lines are numerated from zero. If position is too big - cursor is set to last line and to last column
+    ``cursorPosition`` rw holds cursor position as ``(line, column)``. Lines are numerated from zero.
+    ``absCursorPosition`` rw holds cursor position as offset from the start of text.
 
     **Actions**
     
@@ -399,8 +400,6 @@ class Qutepart(QPlainTextEdit):
     
     @property
     def cursorPosition(self):
-        """Get cursor position as a ``(line, column)``. Lines are numerated from 0
-        """
         cursor = self.textCursor()
         return cursor.block().blockNumber(), cursor.positionInBlock()
     
@@ -414,6 +413,16 @@ class Qutepart(QPlainTextEdit):
         block = QTextCursor(self.document().findBlockByNumber(line))
         cursor = QTextCursor(block)
         cursor.setPositionInBlock(col)
+        self.setTextCursor(cursor)
+    
+    @property
+    def absCursorPosition(self):
+        return self.textCursor().position()
+    
+    @absCursorPosition.setter
+    def absCursorPosition(self, pos):
+        cursor = self.textCursor()
+        cursor.setPosition(pos)
         self.setTextCursor(cursor)
     
     def detectSyntax(self, xmlFileName = None, mimeType = None, language = None, sourceFilePath = None):
