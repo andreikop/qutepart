@@ -6,8 +6,8 @@ import os.path
 import logging
 
 from PyQt4.QtCore import QRect, Qt, pyqtSignal
-from PyQt4.QtGui import QAction, QApplication, QColor, QFont, QIcon, QKeySequence, QPainter, QPalette, QPlainTextEdit, \
-                        QPixmap, QShortcut, QTextCursor, QTextEdit, QTextFormat, QWidget
+from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, QFont, QIcon, QKeySequence, QPainter, QPalette, QPlainTextEdit, \
+                        QPixmap, QShortcut, QTextCharFormat, QTextCursor, QTextEdit, QTextFormat, QWidget
 
 from qutepart.syntax import SyntaxManager
 from qutepart.syntaxhlighter import SyntaxHighlighter
@@ -291,13 +291,18 @@ class Qutepart(QPlainTextEdit):
         self._bookmarks = _Bookmarks(self, self._markArea)
         
         self._atomicModificationDepth = 0
+        
+        self._userExtraSelections = []  # we draw bracket highlighting, current line and extra selections by user
+        self._userExtraSelectionFormat = QTextCharFormat()
+        self._userExtraSelectionFormat.setBackground(QBrush(QColor('#ffee00')))
 
         self.blockCountChanged.connect(self._updateLineNumberAreaWidth)
         self.updateRequest.connect(self._updateSideAreas)
-        self.cursorPositionChanged.connect(self._updatePositionHighlighting)
+        self.cursorPositionChanged.connect(self._updateExtraSelections)
+        self.textChanged.connect(lambda: self.setExtraSelections([]))  # drop user extra selections
 
         self._updateLineNumberAreaWidth(0)
-        self._updatePositionHighlighting()
+        self._updateExtraSelections()
     
     def _initShortcuts(self):
         """Init shortcuts for text editing
@@ -412,6 +417,25 @@ class Qutepart(QPlainTextEdit):
         cursor = self.textCursor()
         return cursor.block().blockNumber(), cursor.positionInBlock()
 
+    def setExtraSelections(self, selections):
+        """Set list of extra selections.
+        Selections are list of tuples ``(startAbsolutePosition, length)``.
+        Extra selections are reset on any text modification.
+        
+        This is reimplemented method of QPlainTextEdit, it has different signature. Do not use QPlainTextEdit method
+        """
+        def _makeQtExtraSelection(startAbsolutePosition, length):
+            selection = QTextEdit.ExtraSelection()
+            cursor = QTextCursor(self.document())
+            cursor.setPosition(startAbsolutePosition)
+            cursor.setPosition(startAbsolutePosition + length, QTextCursor.KeepAnchor)
+            selection.cursor = cursor
+            selection.format = self._userExtraSelectionFormat
+            return selection
+        
+        self._userExtraSelections = [_makeQtExtraSelection(*item) for item in selections]
+        self._updateExtraSelections()
+        
     def _getIndenter(self, syntax):
         """Get indenter for syntax
         """
@@ -549,7 +573,7 @@ class Qutepart(QPlainTextEdit):
         """
         selection = QTextEdit.ExtraSelection()
 
-        lineColor = QColor(Qt.yellow).lighter(160)
+        lineColor = QColor('#ffff99')
 
         selection.format.setBackground(lineColor)
         selection.format.setProperty(QTextFormat.FullWidthSelection, True)
@@ -558,7 +582,7 @@ class Qutepart(QPlainTextEdit):
         
         return selection
 
-    def _updatePositionHighlighting(self):
+    def _updateExtraSelections(self):
         """Highlight current line
         """
         currentLineSelection = self._currentLineExtraSelection()
@@ -568,7 +592,8 @@ class Qutepart(QPlainTextEdit):
         
         bracketSelections = self._bracketHighlighter.extraSelections(self.textCursor().block(),
                                                                      cursorColumnIndex)
-        self.setExtraSelections([currentLineSelection] + bracketSelections)
+        allSelections = [currentLineSelection] + bracketSelections + self._userExtraSelections
+        QPlainTextEdit.setExtraSelections(self, allSelections)
 
     def _onShortcutScroll(self, down):
         """Ctrl+Up/Down pressed, scroll viewport
@@ -809,7 +834,7 @@ class Qutepart(QPlainTextEdit):
             self.lines.insert(line + 1, self.lines[line])
             self.ensureCursorVisible()
         
-        self._updatePositionHighlighting()  # newly inserted text might be highlighted as braces
+        self._updateExtraSelections()  # newly inserted text might be highlighted as braces
 
 
 
