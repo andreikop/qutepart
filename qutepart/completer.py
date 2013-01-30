@@ -46,7 +46,7 @@ class _CompletionModel(QAbstractItemModel):
             if canComplete:
                 return '<html>' \
                                '%s' \
-                            '<font color="red">%s</font>' \
+                            '<font color="#e80000">%s</font>' \
                                '%s' \
                         '</html>' % (typed, canComplete, rest)
             else:
