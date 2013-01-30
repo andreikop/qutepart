@@ -44,10 +44,12 @@ class _CompletionModel(QAbstractItemModel):
             canComplete = text[len(self._typedText):len(self._typedText) + len(self.canCompleteText)]
             rest = text[len(self._typedText) + len(self.canCompleteText):]
             if canComplete:
+                # NOTE foreground colors are hardcoded, but I can't set background color of selected item (Qt bug?)
+                # might look bad on some color themes
                 return '<html>' \
-                               '%s' \
+                            '<font color="#000000">%s</font>' \
                             '<font color="#e80000">%s</font>' \
-                               '%s' \
+                            '<font color="#000000">%s</font>' \
                         '</html>' % (typed, canComplete, rest)
             else:
                 return typed + rest

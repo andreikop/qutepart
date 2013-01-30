@@ -1,5 +1,3 @@
-12.10:
-    better color of selected completion variant
     close completion if editor lost focus
 
 extra selections
