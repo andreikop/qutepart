@@ -208,13 +208,21 @@ class Qutepart(QPlainTextEdit):
     
     **Text**
     
-    ``text`` attribute holds current text. It may be read and write.::
+    ``text`` attribute holds current text. It may be read and written.::
     
         qpart.text = readFile()
         saveFile(qpart.text)
     
     It is recommended to use ``lines`` attribute whenever possible,
     because access to ``text`` might require long time on big files
+    
+    **Selected text**
+    
+    ``selectedText`` attribute holds selected text. It may be read and written.
+    Write operation replaces selection with new text. If nothing is selected - just inserts text::
+
+        print qpart.selectedText  # print selection
+        qpart.selectedText = 'new text'  # replace selection
     
     **Text lines**
     
@@ -378,6 +386,14 @@ class Qutepart(QPlainTextEdit):
     @text.setter
     def text(self, text):
         self.setPlainText(text)
+    
+    @property
+    def selectedText(self):
+        return self.textCursor().selectedText()
+    
+    @selectedText.setter
+    def selectedText(self, text):
+        self.textCursor().insertText(text)
     
     def detectSyntax(self, xmlFileName = None, mimeType = None, language = None, sourceFilePath = None):
         """Get syntax by one of parameters:
