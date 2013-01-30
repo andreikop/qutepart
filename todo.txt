@@ -1,8 +1,7 @@
 12.10:
     better color of selected completion variant
     close completion if editor lost focus
-    
-ctrl+backspace does not close completion
+
 extra selections
 
 when found:
