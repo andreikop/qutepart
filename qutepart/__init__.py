@@ -206,30 +206,19 @@ class Qutepart(QPlainTextEdit):
     '''Qutepart is based on QPlainTextEdit, and you can use QPlainTextEdit methods,
     if you don't see some functionality here.
     
-    **Actions**
+    **Text**
     
-    Component contains list of actions (QAction instances).
-    Actions can be insered to some menu, a shortcut and an icon can be configured. List of actions:
+    ``text`` attribute holds current text. It may be read and write.::
     
-    * ``toggleBookmark`` - Set/Clear bookmark on current block
-    * ``nextBookmark`` - Jump to next bookmark
-    * ``prevBookmark`` - Jump to previous bookmark
+        qpart.text = readFile()
+        saveFile(qpart.text)
     
-    **Text modification and Undo/Redo**
-    
-    Sometimes, it is required to make few text modifications, which are Undo-Redoble as atomic operation.
-    i.e. you want to indent (insert indentation) few lines of text, but user shall be able to
-    Undo it in one step. In this case, you can use Qutepart as a context manager.::
-    
-        with qpart:
-            qpart.modifySomeText()
-            qpart.modifyOtherText()
-    
-    Nested atomic operations are joined in one operation
+    It is recommended to use ``lines`` attribute whenever possible,
+    because access to ``text`` might require long time on big files
     
     **Text lines**
     
-    Qutepart has ``lines`` attribute, which represents text as list-of-strings like object
+    ``lines`` attribute, which represents text as list-of-strings like object
     and allows to modify it. Examples::
     
         qpart.lines[0]  # get the first line of the text
@@ -251,7 +240,28 @@ class Qutepart(QPlainTextEdit):
         for lineText in qpart.lines:
             doSomething(lineText)
         
-        qsci.lines = ['one', 'thow', 'three']  # replace whole text
+        qpart.lines = ['one', 'thow', 'three']  # replace whole text
+
+    **Actions**
+    
+    Component contains list of actions (QAction instances).
+    Actions can be insered to some menu, a shortcut and an icon can be configured. List of actions:
+    
+    * ``toggleBookmark`` - Set/Clear bookmark on current block
+    * ``nextBookmark`` - Jump to next bookmark
+    * ``prevBookmark`` - Jump to previous bookmark
+    
+    **Text modification and Undo/Redo**
+    
+    Sometimes, it is required to make few text modifications, which are Undo-Redoble as atomic operation.
+    i.e. you want to indent (insert indentation) few lines of text, but user shall be able to
+    Undo it in one step. In this case, you can use Qutepart as a context manager.::
+    
+        with qpart:
+            qpart.modifySomeText()
+            qpart.modifyOtherText()
+    
+    Nested atomic operations are joined in one operation
     
     ***Signals***
     
@@ -360,6 +370,14 @@ class Qutepart(QPlainTextEdit):
            not all([isinstance(item, basestring) for item in value]):
             raise TypeError('Invalid new value of "lines" attribute')
         self.setPlainText(self._EOL.join(value))
+
+    @property
+    def text(self):
+        return self.toPlainText()
+    
+    @text.setter
+    def text(self, text):
+        self.setPlainText(text)
     
     def detectSyntax(self, xmlFileName = None, mimeType = None, language = None, sourceFilePath = None):
         """Get syntax by one of parameters:

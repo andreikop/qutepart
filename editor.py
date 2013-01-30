@@ -42,7 +42,7 @@ def main():
     
     qpart.detectSyntax(sourceFilePath = filePath)
     
-    qpart.setPlainText(text)
+    qpart.text = text
     
     qpart.setWindowTitle(filePath)
     
