@@ -250,8 +250,10 @@ class Qutepart(QPlainTextEdit):
         
         qpart.lines = ['one', 'thow', 'three']  # replace whole text
 
-    ``cursorPosition`` rw holds cursor position as ``(line, column)``. Lines are numerated from zero.
-    ``absCursorPosition`` rw holds cursor position as offset from the start of text.
+    ``cursorPosition`` rw holds cursor position as ``(line, column)``. Lines are numerated from zero. If column is set to ``None`` - cursor will be placed before first non-whitespace character
+    ``absCursorPosition`` rw holds cursor position as offset from the beginning of text.
+    ``selectedPosition`` rw holds selection coordinates as ``((startLine, startCol), (cursorLine, cursorCol))``
+    ``absSelectedPosition`` rw holds selection coordinates as ``(startPosition, cursorPosition)`` where position is offset from the beginning of text.
 
     **Actions**
     
@@ -407,8 +409,13 @@ class Qutepart(QPlainTextEdit):
     def cursorPosition(self, pos):
         line, col = pos
         
-        line = min(line, len(self.lines))
-        col = min(col, len(self.lines[line]))
+        line = min(line, len(self.lines) - 1)
+        lineText = self.lines[line]
+        
+        if col is not None:
+            col = min(col, len(lineText))
+        else:
+            col = len(lineText) - len(lineText.lstrip())
         
         block = QTextCursor(self.document().findBlockByNumber(line))
         cursor = QTextCursor(block)
@@ -425,6 +432,45 @@ class Qutepart(QPlainTextEdit):
         cursor.setPosition(pos)
         self.setTextCursor(cursor)
     
+    @property
+    def selectedPosition(self):
+        cursor = self.textCursor()
+        cursorLine, cursorPos = cursor.blockNumber(), cursor.positionInBlock()
+    
+        cursor.setPosition(cursor.anchor())
+        startLine, startCol = cursor.blockNumber(), cursor.positionInBlock()
+        
+        return ((startLine, startCol), (cursorLine, cursorCol))
+    
+    @selectedPosition.setter
+    def selectedPosition(self, pos):
+        anchorPos, cursorPos = pos
+        anchorLine, anchorCol = anchorPos
+        cursorLine, cursorCol = cursorPos
+        
+        anchorCursor = self.document().findBlockByNumber(anchorLine)
+        anchorCursor.setPositionInBlock(anchorCol)
+        
+        # just get absolute position
+        cursor = self.document().findBlockByNumber(cursorLine)
+        cursor.setPositionInBlock(cursorCol)
+        
+        anchorCursor.setPosition(cursor.position(), Qt.KeepAnchor)
+        self.setTextCursor(cursor)
+    
+    @property
+    def absSelectedPosition(self):
+        cursor = self.textCursor()
+        return cursor.anchor(), cursor.position()
+    
+    @absSelectedPosition.setter
+    def absSelectedPosition(self, pos):
+        anchorPos, cursorPos = pos
+        cursor = self.textCursor()
+        cursor.setPosition(anchorPos)
+        cursor.setPosition(cursorPos, QTextCursor.KeepAnchor)
+        self.setTextCursor(cursor)
+
     def detectSyntax(self, xmlFileName = None, mimeType = None, language = None, sourceFilePath = None):
         """Get syntax by one of parameters:
         
