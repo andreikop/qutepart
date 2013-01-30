@@ -308,6 +308,8 @@ class Qutepart(QPlainTextEdit):
         
         createShortcut('Ctrl+Up', lambda: self._onShortcutScroll(down = False))
         createShortcut('Ctrl+Down', lambda: self._onShortcutScroll(down = True))
+        createShortcut('Ctrl+Shift+Up', lambda: self._onShortcutSelectAndScroll(down = False))
+        createShortcut('Ctrl+Shift+Down', lambda: self._onShortcutSelectAndScroll(down = True))
         createShortcut('Shift+Tab', lambda: self._onShortcutChangeSelectedBlocksIndentation(increase = False))
         createShortcut('Alt+Up', lambda: self._onShortcutMoveLine(down = False))
         createShortcut('Alt+Down', lambda: self._onShortcutMoveLine(down = True))
@@ -577,6 +579,15 @@ class Qutepart(QPlainTextEdit):
         else:
             value -= 1
         self.verticalScrollBar().setValue(value)
+    
+    def _onShortcutSelectAndScroll(self, down):
+        """Ctrl+Shift+Up/Down pressed.
+        Select line and scroll viewport
+        """
+        cursor = self.textCursor()
+        cursor.movePosition(QTextCursor.Down if down else QTextCursor.Up, QTextCursor.KeepAnchor)
+        self.setTextCursor(cursor)
+        self._onShortcutScroll(down)
 
     def _indentBlock(self, block):
         """Increase indentation level
