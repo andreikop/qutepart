@@ -213,6 +213,8 @@ class Qutepart(QPlainTextEdit):
         qpart.text = readFile()
         saveFile(qpart.text)
     
+    This attribute always returns text, separated with ``\n``. Use textForSaving() for get original text.
+    
     It is recommended to use ``lines`` attribute whenever possible,
     because access to ``text`` might require long time on big files
     
@@ -254,6 +256,7 @@ class Qutepart(QPlainTextEdit):
     ``absCursorPosition`` rw holds cursor position as offset from the beginning of text.
     ``selectedPosition`` rw holds selection coordinates as ``((startLine, startCol), (cursorLine, cursorCol))``
     ``absSelectedPosition`` rw holds selection coordinates as ``(startPosition, cursorPosition)`` where position is offset from the beginning of text.
+    ``eol`` End Of Line character. Supported values are ``\n``, ``\r``, ``\r\n``. See comments for ``textForSaving()``
 
     **Actions**
     
@@ -286,7 +289,7 @@ class Qutepart(QPlainTextEdit):
     _DEFAULT_INDENTATION = '    '  # NOTE only tab and spaces are supported
     _INDENT_WIDTH = 4
     
-    _EOL = '\n'
+    _DEFAULT_EOL = '\n'
     
     _COMPLETION_THRESHOLD = 3
     
@@ -314,6 +317,8 @@ class Qutepart(QPlainTextEdit):
         self._bookmarks = _Bookmarks(self, self._markArea)
         
         self._atomicModificationDepth = 0
+        
+        self._eol = '\n'
         
         self._userExtraSelections = []  # we draw bracket highlighting, current line and extra selections by user
         self._userExtraSelectionFormat = QTextCharFormat()
@@ -382,7 +387,7 @@ class Qutepart(QPlainTextEdit):
         if not isinstance(value, (list, tuple)) or \
            not all([isinstance(item, basestring) for item in value]):
             raise TypeError('Invalid new value of "lines" attribute')
-        self.setPlainText(self._EOL.join(value))
+        self.setPlainText('\n'.join(value))
 
     @property
     def text(self):
@@ -391,6 +396,11 @@ class Qutepart(QPlainTextEdit):
     @text.setter
     def text(self, text):
         self.setPlainText(text)
+    
+    def textForSaving(self):
+        """Get text with correct EOL symbols. Use this method for saving a file to storage
+        """
+        return self.eol.join(self.text.splitlines())
     
     @property
     def selectedText(self):
@@ -470,6 +480,17 @@ class Qutepart(QPlainTextEdit):
         cursor.setPosition(anchorPos)
         cursor.setPosition(cursorPos, QTextCursor.KeepAnchor)
         self.setTextCursor(cursor)
+    
+    @property
+    def eol(self):
+        return self._eol
+    
+    @eol.setter
+    def eol(self, eol):
+        if not eol in ('\r', '\n', '\r\n'):
+            raise ValueError("Invalid EOL value")
+        if eol != self._eol:
+            self._eol = eol
 
     def detectSyntax(self, xmlFileName = None, mimeType = None, language = None, sourceFilePath = None):
         """Get syntax by one of parameters:
