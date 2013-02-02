@@ -257,6 +257,9 @@ class Qutepart(QPlainTextEdit):
     ``selectedPosition`` rw holds selection coordinates as ``((startLine, startCol), (cursorLine, cursorCol))``
     ``absSelectedPosition`` rw holds selection coordinates as ``(startPosition, cursorPosition)`` where position is offset from the beginning of text.
     ``eol`` End Of Line character. Supported values are ``\n``, ``\r``, ``\r\n``. See comments for ``textForSaving()``
+    ``indentWidth`` Width of Tab character, and width of one indentation level
+    ``indentUseTabs`` If True, Tab character inserts Tab, otherwise - spaces
+
 
     **Actions**
     
@@ -281,15 +284,18 @@ class Qutepart(QPlainTextEdit):
     
     ***Signals***
     
-    ``languageChanged``` emitted, when current language has changed. See also ``language()``
+    ``languageChanged``` Language has changed. See also ``language()``
+    ``indentWidthChanged(int)`` Indentation width changed. See also ``indentWidth``
+    ``indentUseTabsChanged(bool)`` Indentation uses tab property changed. See also ``indentUseTabs``
     '''
     
     languageChanged = pyqtSignal(unicode)
-    
-    _DEFAULT_INDENTATION = '    '  # NOTE only tab and spaces are supported
-    _INDENT_WIDTH = 4
+    indentWidthChanged = pyqtSignal(int)
+    indentUseTabsChanged = pyqtSignal(bool)
     
     _DEFAULT_EOL = '\n'
+    _DEFAULT_INDENT_WIDTH = 4
+    _DEFAULT_INDENT_USE_TABS = True
     
     _COMPLETION_THRESHOLD = 3
     
@@ -297,12 +303,18 @@ class Qutepart(QPlainTextEdit):
     
     def __init__(self, *args):
         QPlainTextEdit.__init__(self, *args)
+        
+        self._eol = self._DEFAULT_EOL
+        self._indentWidth = self._DEFAULT_INDENT_WIDTH
+        self._indentUseTabs = self._DEFAULT_INDENT_USE_TABS
+        self._atomicModificationDepth = 0
+
         self.setFont(QFont("Monospace"))
         
         self._highlighter = None
         self._bracketHighlighter = BracketHighlighter()
         
-        self._indenter = getIndenter('normal', self._DEFAULT_INDENTATION)
+        self._indenter = getIndenter('normal', self._indentText)
         
         self._lines = Lines(self)
         
@@ -316,9 +328,7 @@ class Qutepart(QPlainTextEdit):
         
         self._bookmarks = _Bookmarks(self, self._markArea)
         
-        self._atomicModificationDepth = 0
-        
-        self._eol = '\n'
+
         
         self._userExtraSelections = []  # we draw bracket highlighting, current line and extra selections by user
         self._userExtraSelectionFormat = QTextCharFormat()
@@ -376,7 +386,12 @@ class Qutepart(QPlainTextEdit):
         """Set font and update tab stop width
         """
         QPlainTextEdit.setFont(self, font)
-        self.setTabStopWidth(self.fontMetrics().width(self._DEFAULT_INDENTATION))
+        self._updateTabStopWidth()
+    
+    def _updateTabStopWidth(self):
+        """Update tabstop width after font or indentation changed
+        """
+        self.setTabStopWidth(self.fontMetrics().width(' ' * self._indentWidth))
     
     @property
     def lines(self):
@@ -492,6 +507,35 @@ class Qutepart(QPlainTextEdit):
         if eol != self._eol:
             self._eol = eol
 
+    @property
+    def indentWidth(self):
+        return self._indentWidth
+    
+    @indentWidth.setter
+    def indentWidth(self, width):
+        if self._indentWidth != width:
+            self._indentWidth = width
+            self._updateTabStopWidth()
+            self.indentWidthChanged.emit(width)
+    
+    @property
+    def indentUseTabs(self):
+        return self._indentUseTabs
+    
+    @indentUseTabs.setter
+    def indentUseTabs(self, use):
+        if use != self._indentUseTabs:
+            self._indentUseTabs = use
+            self.indentUseTabsChanged.emit(use)
+    
+    def _indentText(self):
+        """Get indent text as \t or string of spaces
+        """
+        if self._indentUseTabs:
+            return '\t'
+        else:
+            return ' ' * self._indentWidth
+    
     def detectSyntax(self, xmlFileName = None, mimeType = None, language = None, sourceFilePath = None):
         """Get syntax by one of parameters:
         
@@ -565,16 +609,16 @@ class Qutepart(QPlainTextEdit):
         """
         if syntax.indenter is not None:
             try:
-                return getIndenter(syntax.indenter, self._DEFAULT_INDENTATION)
+                return getIndenter(syntax.indenter, self._indentText)
             except KeyError:
                 logger.error("Indenter '%s' not found" % syntax.indenter)
         
         try:
-            return getIndenter(syntax.name, self._DEFAULT_INDENTATION)
+            return getIndenter(syntax.name, self._indentText)
         except KeyError:
             pass
         
-        return getIndenter('normal', self._DEFAULT_INDENTATION)
+        return getIndenter('normal', self._indentText)
 
     def _updateLineNumberAreaWidth(self, newBlockCount):
         """Set line number are width according to current lines count
@@ -643,7 +687,7 @@ class Qutepart(QPlainTextEdit):
             else:
                 self._onShortcutIndentAfterCursor()
         elif event.key() == Qt.Key_Backspace and \
-             self._textBeforeCursor().endswith(self._DEFAULT_INDENTATION):
+             self._textBeforeCursor().endswith(self._indentText()):
             self._onShortcutUnindentWithBackspace()
         elif event.matches(QKeySequence.MoveToStartOfLine):
             self._onShortcutHome(select=False)
@@ -658,8 +702,8 @@ class Qutepart(QPlainTextEdit):
         painter = QPainter(self.viewport())
         painter.setPen(Qt.blue)
         
-        indentWidthChars = len(self._DEFAULT_INDENTATION)
-        indentWidthPixels = self.fontMetrics().width(self._DEFAULT_INDENTATION)
+        indentWidthChars = len(self._indentText())
+        indentWidthPixels = self.fontMetrics().width(' ' * self._indentWidth)
         
         cursorHeight = self.cursorRect().height()  # block might be wrapped,
                                                    # but we always draw marker, equal to single line width
@@ -674,7 +718,7 @@ class Qutepart(QPlainTextEdit):
             if block.isVisible() and blockGeometry.toRect().intersects(paintEventRect):
                 text = block.text()
                 x = blockGeometry.left() + indentWidthPixels + leftMargin
-                while text.startswith(self._DEFAULT_INDENTATION) and \
+                while text.startswith(self._indentText()) and \
                       len(text) > indentWidthChars and \
                       text[indentWidthChars].isspace():
                     painter.drawLine(x,
@@ -741,26 +785,26 @@ class Qutepart(QPlainTextEdit):
     def _indentBlock(self, block):
         """Increase indentation level
         """
-        QTextCursor(block).insertText(self._DEFAULT_INDENTATION)
+        QTextCursor(block).insertText(self._indentText())
     
     def _unIndentBlock(self, block):
         """Increase indentation level
         """
         text = block.text()
         
-        if self._DEFAULT_INDENTATION == '\t':
+        if self._indentUseTabs:
             if text.startswith('\t'):
                 charsToRemove = 1
             else:
                 spacesCount = len(spaceAtStart) - len(spaceAtStart.lstrip(' '))
-                charsToRemove = min(spacesCount, self._INDENT_WIDTH)
+                charsToRemove = min(spacesCount, self._indentWidth)
         else:  # spaces
-            if text.startswith(self._DEFAULT_INDENTATION):
-                charsToRemove = len(self._DEFAULT_INDENTATION)
-            elif text.startswith('\t'):
+            if text.startswith(self._indentText()):  # remove indent level
+                charsToRemove = self._indentWidth
+            elif text.startswith('\t'):  # remove 1 Tab
                 charsToRemove = 1
-            else:
-                charsToRemove = len(text) - len(text.lstrip(' '))  # remove all spaces
+            else:  # remove all spaces
+                charsToRemove = len(text) - len(text.lstrip(' '))
         
         if charsToRemove:
             cursor = QTextCursor(block)
@@ -799,22 +843,20 @@ class Qutepart(QPlainTextEdit):
         """Tab pressed and no selection. Insert text after cursor
         """
         cursor = self.textCursor()
-        if self._DEFAULT_INDENTATION == '\t':
+        if self._indentUseTabs:
             cursor.insertText('\t')
         else:  # indent to integer count of indents from line start
-            indentWidth = len(self._DEFAULT_INDENTATION)
-            charsToInsert = indentWidth - (len(self._textBeforeCursor()) % indentWidth)
+            charsToInsert = self._indentWidth - (len(self._textBeforeCursor()) % self._indentWidth)
             cursor.insertText(' ' * charsToInsert)
     
     def _onShortcutUnindentWithBackspace(self):
         """Backspace pressed, unindent
         """
-        assert self._textBeforeCursor().endswith(self._DEFAULT_INDENTATION)
+        assert self._textBeforeCursor().endswith(self._indentText())
         
-        indentWidth = len(self._DEFAULT_INDENTATION)
-        charsToRemove = len(self._textBeforeCursor()) % indentWidth
+        charsToRemove = len(self._textBeforeCursor()) % len(self._indentText())
         if charsToRemove == 0:
-            charsToRemove = indentWidth
+            charsToRemove = len(self._indentText())
         
         cursor = self.textCursor()
         cursor.setPosition(cursor.position() - charsToRemove, QTextCursor.KeepAnchor)

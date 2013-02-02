@@ -3,7 +3,7 @@ It contains implementation of indenters, which are supported by katepart xml fil
 """
 
 
-def getIndenter(indenterName, indentText):
+def getIndenter(indenterName, indentTextGetter):
     """Get indenter by name.
     Available indenters are none, normal, cstyle, haskell, lilypond, lisp, python, ruby, xml
     Indenter name is not case sensitive
@@ -24,14 +24,14 @@ def getIndenter(indenterName, indentText):
     
     indenterClass = indenters[indenterName.lower()]  # KeyError is ok, raise it up
     
-    return indenterClass(indentText)
+    return indenterClass(indentTextGetter)
 
 
 class IndenterNone:
     """No any indentation
     """
-    def __init__(self, indentText):
-        self._indentText = indentText
+    def __init__(self, indentTextGetter):
+        self._indentText = indentTextGetter
     
     def computeIndent(self, block):
         return ''
@@ -109,7 +109,7 @@ class IndenterPython(IndenterNormal):
         """
         # for:
         if lastCharacter == ':':
-            return prevIndent + self._indentText
+            return prevIndent + self._indentText()
         
         """ Generally, when a brace is on its own at the end of a regular line
         (i.e a data structure is being started), indent is wanted.
@@ -119,14 +119,14 @@ class IndenterPython(IndenterNormal):
         }
         """
         if lastCharacter == '{' or lastCharacter == '[':
-            return prevIndent + self._indentText
+            return prevIndent + self._indentText()
 
         # finally, a raise, pass, and continue should unindent
         if prevLineStripped in ('continue', 'pass', 'raise', 'return') or \
            prevLineStripped.startswith('raise ') or \
            prevLineStripped.startswith('return '):
-            if prevIndent.endswith(self._indentText):
-                return prevIndent[:-len(self._indentText)]
+            if prevIndent.endswith(self._indentText()):
+                return prevIndent[:-len(self._indentText())]
             else:  # oops, strange indentation, just return previous indent
                 return prevIndent
 
