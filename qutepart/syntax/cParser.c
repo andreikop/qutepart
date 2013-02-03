@@ -181,7 +181,7 @@
 
 typedef long long int _StringHash;
 
-#define QUTEPART_MAX_CONTEXT_STACK_DEPTH 16
+#define QUTEPART_MAX_CONTEXT_STACK_DEPTH 64
 
 typedef struct {
     int size;

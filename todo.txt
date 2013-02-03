@@ -1,3 +1,8 @@
+no language for Ctrl+N file
+self._EOL
+select and backspace doesn't work
+
+
 when found:
     alt+d doesn't work for duplicating selection
     no line nubmer for last typed line
@@ -7,4 +12,3 @@ configure indentation. set tab width
 detect syntax by first line
 Replace mode. Match bracke under cursor in replace mode
 Support DetectComments##Roff
-
