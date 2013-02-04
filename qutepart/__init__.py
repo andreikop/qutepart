@@ -972,7 +972,7 @@ class Qutepart(QPlainTextEdit):
         """Copy selected lines to the clipboard
         """
         lines = self.lines[self._selectedLinesSlice()]
-        text = self._EOL.join(lines)
+        text = self._eol.join(lines)
         QApplication.clipboard().setText(text)
         
     def _onShortcutPasteLine(self):
