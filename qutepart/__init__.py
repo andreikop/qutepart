@@ -585,23 +585,20 @@ class Qutepart(QPlainTextEdit):
         else:
             return self._highlighter.syntax().name
         
-    def setExtraSelections(self, selections):
+    def setExtraSelections(self, cursors):
         """Set list of extra selections.
         Selections are list of tuples ``(startAbsolutePosition, length)``.
         Extra selections are reset on any text modification.
         
         This is reimplemented method of QPlainTextEdit, it has different signature. Do not use QPlainTextEdit method
         """
-        def _makeQtExtraSelection(startAbsolutePosition, length):
+        def _makeQtExtraSelection(cursor):
             selection = QTextEdit.ExtraSelection()
-            cursor = QTextCursor(self.document())
-            cursor.setPosition(startAbsolutePosition)
-            cursor.setPosition(startAbsolutePosition + length, QTextCursor.KeepAnchor)
             selection.cursor = cursor
             selection.format = self._userExtraSelectionFormat
             return selection
         
-        self._userExtraSelections = [_makeQtExtraSelection(*item) for item in selections]
+        self._userExtraSelections = map(_makeQtExtraSelection, cursors)
         self._updateExtraSelections()
         
     def _getIndenter(self, syntax):
