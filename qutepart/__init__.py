@@ -621,7 +621,27 @@ class Qutepart(QPlainTextEdit):
         
         self._userExtraSelections = [_makeQtExtraSelection(*item) for item in selections]
         self._updateExtraSelections()
+    
+    def mapToAbsPosition(self, line, column):
+        """Convert line and column number to absolute position
+        """
+        block = self.findBlockByNumber(line)
+        if not block.isValid():
+            raise IndexError("Invalid line index %d" % line)
+        if column >= len(block.length()):
+            raise IndexError("Invalid column index %d" % column)
+        return block.position() + column
+    
+    def mapToLineCol(self, absPosition):
+        """Convert absolute position to (line, column)
+        """
+        block = self.document().findBlock(absPosition)
+        if not block.isValid():
+            raise IndexError("Invalid absolute position %d" % absPosition)
         
+        return (block.blockNumber(),
+                absPosition - block.position())
+    
     def _getIndenter(self, syntax):
         """Get indenter for syntax
         """
@@ -705,7 +725,8 @@ class Qutepart(QPlainTextEdit):
             else:
                 self._onShortcutIndentAfterCursor()
         elif event.key() == Qt.Key_Backspace and \
-             self._textBeforeCursor().endswith(self._indentText()):
+             self._textBeforeCursor().endswith(self._indentText()) and \
+             not self.textCursor().hasSelection():
             self._onShortcutUnindentWithBackspace()
         elif event.matches(QKeySequence.MoveToStartOfLine):
             self._onShortcutHome(select=False)
@@ -987,7 +1008,7 @@ class Qutepart(QPlainTextEdit):
                     del self.lines[self._selectedLinesSlice()]
                     self.lines.insert(startBlockNumber, text)
                 else:
-                    line, col = self.cursorPosition()
+                    line, col = self.cursorPosition
                     if col > 0:
                         line = line + 1
                     self.lines.insert(line, text)

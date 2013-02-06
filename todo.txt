@@ -1,8 +1,18 @@
-no language for Ctrl+N file
-self._EOL
-select and backspace doesn't work
-64 extra selections - too little
-highlight indent markers, when cursor is near it
+first release
+	indenters							4
+	highlight indent markers		    1
+	draw line wrap markers				1
+	Support DetectComments##Roff		1
+	detect syntax by first line			1
+	switch hihglighting language		2
+	replace mode						1
+
+next release:
+	assotiations editor
+	VIM mode
+	comment/uncomment
+	color theme editor
+	dark theme
 
 
 when found:
@@ -11,7 +21,4 @@ when found:
     bad completion for MODULE_FILES
     
 
-configure indentation. set tab width
-detect syntax by first line
 Replace mode. Match bracke under cursor in replace mode
-Support DetectComments##Roff
