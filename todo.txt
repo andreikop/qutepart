@@ -1,6 +1,8 @@
 no language for Ctrl+N file
 self._EOL
 select and backspace doesn't work
+64 extra selections - too little
+highlight indent markers, when cursor is near it
 
 
 when found:

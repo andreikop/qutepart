@@ -2,6 +2,7 @@
 It contains implementation of indenters, which are supported by katepart xml files
 """
 
+import re
 
 def getIndenter(indenterName, indentTextGetter):
     """Get indenter by name.
@@ -18,8 +19,7 @@ def getIndenter(indenterName, indentTextGetter):
         'lilypond' : IndenterLilypond,
         'lisp' : IndenterLisp,
         'python' : IndenterPython,
-        'ruby' : IndenterRuby,
-        'xml' : IndenterXml
+        'ruby' : IndenterRuby
     }
     
     indenterClass = indenters[indenterName.lower()]  # KeyError is ok, raise it up
@@ -50,8 +50,32 @@ class IndenterNormal(IndenterNone):
         return block.previous().text()
 
     @staticmethod
+    def _prevNonEmptyLineText(block):
+        """Return text previous block, which is non empty (contains something, except spaces)
+        Return '', if not found
+        """
+        block = block.previous()
+        while prevBlock.isValid() and \
+              len(prevBlock.text().strip() == 0):
+            block = block.previous()
+        
+        if block.isValid():
+            return block.text()
+        else:
+            return ''
+
+    @staticmethod
     def _lineIndent(text):
         return text[:len(text) - len(text.lstrip())]
+    
+    def _removeIndent(self, text):
+        """Remove 1 indentation level
+        """
+        if text.endswith(self._indentText()):
+            return text[:-len(self._indentText())]
+        else:  # oops, strange indentation, just return previous indent
+            return text
+
     
     def _prevBlockIndent(self, block):
         prevLineText = self._prevLineText(block)
@@ -62,7 +86,7 @@ class IndenterNormal(IndenterNone):
         return self._lineIndent(prevLineText)
 
     def computeIndent(self, block):
-        """Compute indent for block
+        """Compute indent for the block
         """
         return self._prevBlockIndent(block)
 
@@ -125,10 +149,7 @@ class IndenterPython(IndenterNormal):
         if prevLineStripped in ('continue', 'pass', 'raise', 'return') or \
            prevLineStripped.startswith('raise ') or \
            prevLineStripped.startswith('return '):
-            if prevIndent.endswith(self._indentText()):
-                return prevIndent[:-len(self._indentText())]
-            else:  # oops, strange indentation, just return previous indent
-                return prevIndent
+            return self._removeIndent(prevIndent)
 
         return prevIndent
 
@@ -137,10 +158,3 @@ class IndenterRuby(IndenterNormal):
     """TODO implement
     """
     pass
-
-
-class IndenterXml(IndenterNormal):
-    """TODO implement
-    """
-    pass
-
