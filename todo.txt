@@ -1,18 +1,21 @@
+fixme:
+    close completion when all is typed
+
 first release
-	indenters							4
-	highlight indent markers		    1
-	draw line wrap markers				1
-	Support DetectComments##Roff		1
-	detect syntax by first line			1
-	switch hihglighting language		2
-	replace mode						1
+  indenters                           4
+  highlight indent markers            1
+  draw line wrap markers              1
+  Support DetectComments##Roff        1
+  detect syntax by first line         1
+  switch hihglighting language        2
+  replace mode                        1
 
 next release:
-	assotiations editor
-	VIM mode
-	comment/uncomment
-	color theme editor
-	dark theme
+  assotiations editor
+  VIM mode
+  comment/uncomment
+  color theme editor
+  dark theme
 
 
 when found:

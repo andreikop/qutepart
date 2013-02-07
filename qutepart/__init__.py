@@ -296,7 +296,7 @@ class Qutepart(QPlainTextEdit):
     
     _DEFAULT_EOL = '\n'
     _DEFAULT_INDENT_WIDTH = 4
-    _DEFAULT_INDENT_USE_TABS = True
+    _DEFAULT_INDENT_USE_TABS = False
     
     _COMPLETION_THRESHOLD = 3
     
@@ -313,7 +313,7 @@ class Qutepart(QPlainTextEdit):
         self._indentUseTabs = self._DEFAULT_INDENT_USE_TABS
         self._atomicModificationDepth = 0
 
-        self.setFont(QFont("Monospace"))
+        self.setFont(QFont("Ubuntu Mono", 13))
         
         self._highlighter = None
         self._bracketHighlighter = BracketHighlighter()
@@ -835,7 +835,7 @@ class Qutepart(QPlainTextEdit):
             if text.startswith('\t'):
                 charsToRemove = 1
             else:
-                spacesCount = len(spaceAtStart) - len(spaceAtStart.lstrip(' '))
+                spacesCount = len(text) - len(text.lstrip(' '))
                 charsToRemove = min(spacesCount, self._indentWidth)
         else:  # spaces
             if text.startswith(self._indentText()):  # remove indent level
