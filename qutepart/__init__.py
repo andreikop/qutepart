@@ -253,10 +253,10 @@ class Qutepart(QPlainTextEdit):
         
         qpart.lines = ['one', 'thow', 'three']  # replace whole text
 
-    ``cursorPosition`` rw holds cursor position as ``(line, column)``. Lines are numerated from zero. If column is set to ``None`` - cursor will be placed before first non-whitespace character
-    ``absCursorPosition`` rw holds cursor position as offset from the beginning of text.
-    ``selectedPosition`` rw holds selection coordinates as ``((startLine, startCol), (cursorLine, cursorCol))``
-    ``absSelectedPosition`` rw holds selection coordinates as ``(startPosition, cursorPosition)`` where position is offset from the beginning of text.
+    ``cursorPosition`` cursor position as ``(line, column)``. Lines are numerated from zero. If column is set to ``None`` - cursor will be placed before first non-whitespace character
+    ``absCursorPosition`` cursor position as offset from the beginning of text.
+    ``selectedPosition`` selection coordinates as ``((startLine, startCol), (cursorLine, cursorCol))``.
+    ``absSelectedPosition`` selection coordinates as ``(startPosition, cursorPosition)`` where position is offset from the beginning of text.
     ``eol`` End Of Line character. Supported values are ``\n``, ``\r``, ``\r\n``. See comments for ``textForSaving()``
     ``indentWidth`` Width of Tab character, and width of one indentation level
     ``indentUseTabs`` If True, Tab character inserts Tab, otherwise - spaces
@@ -477,7 +477,7 @@ class Qutepart(QPlainTextEdit):
         startLine, startCol = cursor.blockNumber(), cursor.positionInBlock()
         
         return ((startLine, startCol), (cursorLine, cursorCol))
-    
+
     @selectedPosition.setter
     def selectedPosition(self, pos):
         anchorPos, cursorPos = pos
@@ -507,6 +507,13 @@ class Qutepart(QPlainTextEdit):
         cursor.setPosition(cursorPos, QTextCursor.KeepAnchor)
         self.setTextCursor(cursor)
     
+    def resetSelection(self):
+        """Reset selection. Nothing will be selected.
+        """
+        cursor = self.textCursor()
+        cursor.setPosition(cursor.position())
+        self.setTextCursor(cursor)
+
     @property
     def eol(self):
         return self._eol
