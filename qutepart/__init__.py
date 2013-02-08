@@ -313,7 +313,7 @@ class Qutepart(QPlainTextEdit):
         self._indentUseTabs = self._DEFAULT_INDENT_USE_TABS
         self._atomicModificationDepth = 0
 
-        self.setFont(QFont("Ubuntu Mono", 13))
+        self.setFont(QFont("Monospace"))
         
         self._highlighter = None
         self._bracketHighlighter = BracketHighlighter()
@@ -554,6 +554,28 @@ class Qutepart(QPlainTextEdit):
         else:
             return ' ' * self._indentWidth
     
+    def replaceText(self, pos, length, text):
+        """Replace length symbols from (line, col) with new text.
+        
+        If ``pos`` is an integer, it is interpreted as absolute position, if a tuple - as ``(line, column)``
+        """
+        if isinstance(pos, tuple):
+            pos = self.mapToAbsPosition(*pos)
+        
+        endPos = pos + length
+        
+        if not self.document().findBlock(pos).isValid():
+            raise IndexError('Invalid start position %d' % pos)
+        
+        if not self.document().findBlock(endPos).isValid():
+            raise IndexError('Invalid end position %d' % endPos)
+        
+        cursor = QTextCursor(self.document())
+        cursor.setPosition(pos)
+        cursor.setPosition(endPos, QTextCursor.KeepAnchor)
+        
+        cursor.insertText(text)
+    
     def detectSyntax(self, xmlFileName = None, mimeType = None, language = None, sourceFilePath = None):
         """Get syntax by one of parameters:
         
@@ -625,10 +647,10 @@ class Qutepart(QPlainTextEdit):
     def mapToAbsPosition(self, line, column):
         """Convert line and column number to absolute position
         """
-        block = self.findBlockByNumber(line)
+        block = self.document().findBlockByNumber(line)
         if not block.isValid():
             raise IndexError("Invalid line index %d" % line)
-        if column >= len(block.length()):
+        if column >= block.length():
             raise IndexError("Invalid column index %d" % column)
         return block.position() + column
     

@@ -9,6 +9,7 @@ first release
   detect syntax by first line         1
   switch hihglighting language        2
   replace mode                        1
+  support printing                    1
 
 next release:
   assotiations editor

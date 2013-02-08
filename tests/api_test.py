@@ -16,13 +16,60 @@ class Test(unittest.TestCase):
     def setUp(self):
         self.app = QApplication(sys.argv)
         self.qpart = Qutepart()
-
+    
     def test_resetSelection(self):
+        # Reset selection
         self.qpart.text = 'asdf fdsa'
         self.qpart.absSelectedPosition = 1, 3
         self.assertTrue(self.qpart.textCursor().hasSelection())
         self.qpart.resetSelection()
         self.assertFalse(self.qpart.textCursor().hasSelection())
+    
+    def test_replaceText1(self):
+        # Basic case
+        self.qpart.text = '123456789'
+        self.qpart.replaceText(3, 4, 'xyz')
+        self.assertEquals(self.qpart.text, '123xyz89')
+
+    def test_replaceText2(self):
+        # Replace uses (line, col) position
+        self.qpart.text = '12345\n67890\nabcde'
+        self.qpart.replaceText((1, 4), 3, 'Z')
+        self.assertEquals(self.qpart.text, '12345\n6789Zbcde')
+
+    def test_replaceText3(self):
+        # Edge cases
+        self.qpart.text = '12345\n67890\nabcde'
+        self.qpart.replaceText((0, 0), 3, 'Z')
+        self.assertEquals(self.qpart.text, 'Z45\n67890\nabcde')
+
+        self.qpart.text = '12345\n67890\nabcde'
+        self.qpart.replaceText((2, 4), 1, 'Z')
+        self.assertEquals(self.qpart.text, '12345\n67890\nabcdZ')
+
+        self.qpart.text = '12345\n67890\nabcde'
+        self.qpart.replaceText((0, 0), 0, 'Z')
+        self.assertEquals(self.qpart.text, 'Z12345\n67890\nabcde')
+
+        self.qpart.text = '12345\n67890\nabcde'
+        self.qpart.replaceText((2, 5), 0, 'Z')
+        self.assertEquals(self.qpart.text, '12345\n67890\nabcdeZ')
+
+    def test_replaceText4(self):
+        # Replace nothing with something
+        self.qpart.text = '12345\n67890\nabcde'
+        self.qpart.replaceText(2, 0, 'XYZ')
+        self.assertEquals(self.qpart.text, '12XYZ345\n67890\nabcde')
+
+    def test_replaceText5(self):
+        # Make sure exceptions are raised for invalid params
+        self.qpart.text = '12345\n67890\nabcde'
+        self.assertRaises(IndexError, self.qpart.replaceText, -1, 1, 'Z')
+        self.assertRaises(IndexError, self.qpart.replaceText, len(self.qpart.text) + 1, 0, 'Z')
+        self.assertRaises(IndexError, self.qpart.replaceText, len(self.qpart.text), 1, 'Z')
+        self.assertRaises(IndexError, self.qpart.replaceText, (0, 7), 1, 'Z')
+        self.assertRaises(IndexError, self.qpart.replaceText, (7, 0), 1, 'Z')
+
 
 if __name__ == '__main__':
     unittest.main()
