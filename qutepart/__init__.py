@@ -216,7 +216,8 @@ class Qutepart(QPlainTextEdit):
     This attribute always returns text, separated with ``\n``. Use textForSaving() for get original text.
     
     It is recommended to use ``lines`` attribute whenever possible,
-    because access to ``text`` might require long time on big files
+    because access to ``text`` might require long time on big files.
+    Attribute is cached, only first read access after text has been changed in slow.
     
     **Selected text**
     
@@ -304,6 +305,9 @@ class Qutepart(QPlainTextEdit):
     def __init__(self, *args):
         QPlainTextEdit.__init__(self, *args)
         
+        # toPlainText() takes a lot of time on long texts, therefore it is cached
+        self._cachedText = None
+        
         self._eol = self._DEFAULT_EOL
         self._indentWidth = self._DEFAULT_INDENT_WIDTH
         self._indentUseTabs = self._DEFAULT_INDENT_USE_TABS
@@ -328,8 +332,6 @@ class Qutepart(QPlainTextEdit):
         
         self._bookmarks = _Bookmarks(self, self._markArea)
         
-
-        
         self._userExtraSelections = []  # we draw bracket highlighting, current line and extra selections by user
         self._userExtraSelectionFormat = QTextCharFormat()
         self._userExtraSelectionFormat.setBackground(QBrush(QColor('#ffee00')))
@@ -338,6 +340,7 @@ class Qutepart(QPlainTextEdit):
         self.updateRequest.connect(self._updateSideAreas)
         self.cursorPositionChanged.connect(self._updateExtraSelections)
         self.textChanged.connect(lambda: self.setExtraSelections([]))  # drop user extra selections
+        self.textChanged.connect(self._resetCachedText)
 
         self._updateLineNumberAreaWidth(0)
         self._updateExtraSelections()
@@ -404,9 +407,17 @@ class Qutepart(QPlainTextEdit):
             raise TypeError('Invalid new value of "lines" attribute')
         self.setPlainText('\n'.join(value))
 
+    def _resetCachedText(self):
+        """Reset toPlainText() result cache
+        """
+        self._cachedText = None
+    
     @property
     def text(self):
-        return self.toPlainText()
+        if self._cachedText is None:
+            self._cachedText = self.toPlainText()
+        
+        return self._cachedText
     
     @text.setter
     def text(self, text):
@@ -1017,4 +1028,3 @@ def iterateBlocksBackFrom(block):
     while block.isValid():
         yield block
         block = block.previous()
-
