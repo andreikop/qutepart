@@ -1,5 +1,8 @@
 fixme:
     close completion when all is typed
+    sometimes last line number is not drawn
+    incorrect list position, if scroll bar is visible
+    do not unindent if not at end of indentation
 
 first release
   indenters                           4

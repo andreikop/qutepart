@@ -60,6 +60,7 @@ class _Bookmarks:
         icon = QIcon(_getIconPath(iconFileName))
         action = QAction(icon, text, widget)
         action.setShortcut(QKeySequence(shortcut))
+        action.setShortcutContext(Qt.WidgetShortcut)
         action.triggered.connect(slot)
         
         widget.addAction(action)
@@ -350,6 +351,7 @@ class Qutepart(QPlainTextEdit):
         """
         def createShortcut(keySeq, slot):
             shortcut = QShortcut(QKeySequence(keySeq), self)
+            shortcut.setContext(Qt.WidgetShortcut)
             shortcut.activated.connect(slot)
         
         createShortcut('Ctrl+Up', lambda: self._onShortcutScroll(down = False))
