@@ -741,6 +741,15 @@ class Qutepart(QPlainTextEdit):
         """QPlainTextEdit.keyPressEvent() implementation.
         Catch events, which may not be catched with QShortcut and call slots
         """
+        def _shouldUnindentWithBackspace():
+            cursor = self.textCursor()
+            text = cursor.block().text()
+            spaceAtStartLen = len(text) - len(text.lstrip())
+            
+            return self._textBeforeCursor().endswith(self._indentText()) and \
+                   not self.textCursor().hasSelection() and \
+                   cursor.positionInBlock() == spaceAtStartLen
+        
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
@@ -749,8 +758,7 @@ class Qutepart(QPlainTextEdit):
             else:
                 self._onShortcutIndentAfterCursor()
         elif event.key() == Qt.Key_Backspace and \
-             self._textBeforeCursor().endswith(self._indentText()) and \
-             not self.textCursor().hasSelection():
+             _shouldUnindentWithBackspace():
             self._onShortcutUnindentWithBackspace()
         elif event.matches(QKeySequence.MoveToStartOfLine):
             self._onShortcutHome(select=False)
