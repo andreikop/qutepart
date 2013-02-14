@@ -1372,8 +1372,10 @@ _WordTree_contains(_WordTree* self, const char* utf8Word, int wordLength)
     for(wordPointer = self->words[wordLength]; wordPointer != outOfStringPointer; wordPointer += step)
     {
         if (*(_StringHash*)wordPointer == *(_StringHash*)utf8Word &&
-            0 == strcmp(wordPointer, utf8Word))
+            0 == strncmp(wordPointer, utf8Word, wordLength))
+        {
             return true;
+        }
     }
     
     return false;
