@@ -16,9 +16,9 @@ triggerCharacters = "{})/:;#"
 
 DEBUG_MODE = False
 
-def dbg(*args) {
+def dbg(*args):
     if (DEBUG_MODE):
-        print *args
+        print args
 
 #global variables and functions
 
@@ -59,7 +59,7 @@ class CStyleIndenter:
         """
         if column is not None:
             index = block.text()[:column].rfind(needle)
-        else
+        else:
             index = block.text().rfind(needle)
         
         if index != -1:
@@ -72,18 +72,15 @@ class CStyleIndenter:
     
         raise ValueError('Not found')
     
-    def _findLeftBrace(self, block, column)
+    def _findLeftBrace(self, block, column):
         """Search for a corresponding '{' and return its indentation
         If not found return None
         """
-        try:
-            block, column = self._findTextBackward(block, column, '{')
-        except ValueError:
-            return None
+        block, column = self._findTextBackward(block, column, '{')  # raise ValueError if not found
         
         try:
             block, column = _tryParenthesisBeforeBrace(block, column)
-        except:
+        except ValueError:
             pass # leave previous values
         
         return self._lineIndent(block.text())
@@ -92,7 +89,7 @@ class CStyleIndenter:
         """ Character at (line, column) has to be a '{'.
         Now try to find the right line for indentation for constructs like:
           if (a == b
-              && c == d) { <- check for ')', and find '(', then return its indentation
+              and c == d) { <- check for ')', and find '(', then return its indentation
         Returns input params, if no success, otherwise block and column of '('
         """
         text = block.text().rstrip()
@@ -102,7 +99,7 @@ class CStyleIndenter:
         
         return self._findTextBackward(block, column, '(')
     
-    def _trySwitchStatement(self, block)
+    def _trySwitchStatement(self, block):
         """Check for default and case keywords and assume we are in a switch statement.
         Try to find a previous default, case or switch and return its indentation or
         None if not found.
@@ -115,7 +112,7 @@ class CStyleIndenter:
             if re.match("^\s*(default\s*|case\b.*):", text) or \
                re.match("^\s*switch\b", text):
                 indentation = self._lineIndent(text)
-                if (CFG_INDENT_CASE)
+                if CFG_INDENT_CASE:
                     indentation = self._increaseIndent(indentation)
                 dbg("_trySwitchStatement: success in line %d" + block.blockNumber())
                 return indentation
@@ -146,7 +143,7 @@ class CStyleIndenter:
         dbg("_tryAccessModifiers: success in line %d" % block.blockNumber())
         return indentation
     
-    def _tryCComment(self, block)
+    def _tryCComment(self, block):
         """C comment checking. If the previous line begins with a "/*" or a "* ", then
         return its leading white spaces + ' *' + the white spaces after the *
         return: filler string or null, if not in a C comment
@@ -185,7 +182,7 @@ class CStyleIndenter:
                     indentation += '*'
                 secondCharIsSpace = len(blockTextStripped) > 1 and blockTextStripped[1].isspace()
                 if not secondCharIsSpace and \
-                   not blockTextStripped.endswith("*/")
+                   not blockTextStripped.endswith("*/"):
                     indentation += ' '
             dbg("_tryCComment: success (2) in line %d" + block.blockNumber())
             return indentation
@@ -224,11 +221,11 @@ class CStyleIndenter:
     
         # allowed are: #, #/, #! #/<, #!< and ##...
         if comment:
-            var firstPos = document.firstColumn(currentLine)
-            var prevLineText = document.line(currentLine)
-    
-            var char3 = prevLineText.charAt(firstPos + 2)
-            var char4 = prevLineText.charAt(firstPos + 3)
+            prevLineText = block.previous().text()
+            lstrippedText = block.previous().text().lstrip()
+            if len(lstrippedText) >= 4:
+                char3 = lstrippedText[2]
+                char4 = lstrippedText[3]
             
             indentation = self._lineIndent(prevLineText)
     
@@ -236,11 +233,11 @@ class CStyleIndenter:
                 if prevLineText[2:4] == '//':
                     # match ##... and replace by only two: #
                     match = re.match('^\s*(\/\/)', prevLineText)
-                else if (char3 == '/' or char3 == '!'):
+                elif (char3 == '/' or char3 == '!'):
                     # match #/, #!, #/< and #!
                     match = re.match('^\s*(\/\/[\/!][<]?\s*)', prevLineText)
                 else:
-                    # only #, nothing else
+                    # only #, nothing else:
                     match = re.match('^\s*(\/\/\s*)', prevLineText)
                 
                 if match is not None:
@@ -274,7 +271,7 @@ class CStyleIndenter:
                 indentation = self._increaseIndent(self._lineIndent(block.text()))
             else:
                 indentation = self._lineIndent(block.text())
-                if CFG_INDENT_NAMESPACE or not _isNamespace(block))
+                if CFG_INDENT_NAMESPACE or not _isNamespace(block):
                     # take its indentation and add one indentation level
                     indentation = self._increaseIndent(indentation)
     
@@ -294,8 +291,6 @@ class CStyleIndenter:
             return None
             
         # if line ends with ')', find the '(' and check this line then.
-        var lastPos = document.lastColumn(currentLine)
-        var cursor = new Cursor().invalid()
         
         if currentBlock.text().rstrip().endswith(')'):
             try:
@@ -336,9 +331,9 @@ class CStyleIndenter:
             except ValueError:
                 pass
             else:
-                return _makeIndentWidth(foundColumn + 1)
+                return _makeIndentFromWidth(foundColumn + 1)
 
-    def _tryCondition(self, block)
+    def _tryCondition(self, block):
         """ Search for if, do, while, for, ... as we want to indent then.
         Return null, if nothing useful found.
         Note: The code is written to be called *after* _tryCComment and tryCppComment!
@@ -365,317 +360,266 @@ class CStyleIndenter:
                 if block.strip(): # not empty
                     blockIndent = self._blockIndent(block)
                         
-                    if len(blockIndent) < len(currentIndentation)
+                    if len(blockIndent) < len(currentIndentation):
                         if re.search('^\s*(if\b|[}]?\s*else|do\b|while\b|for)[^{]*$', block.text()) is not None:
                             return blockIndent
         
         return None
     
-    /**
-     * If the non-empty line ends with ); or ',', then search for '(' and return its
-     * indentation; also try to ignore trailing comments.
-     */
-    def tryStatement(line)
-    {
-        var currentLine = self._prevNonEmptyBlock(line - 1).text()
-        if (currentLine < 0)
-            return -1
-    
-        var indentation = -1
-        var currentString = document.line(currentLine)
-        if (currentString.endswith('(')) {
+    def tryStatement(self, block):
+        """ If the non-empty line ends with ); or ',', then search for '(' and return its
+        indentation; also try to ignore trailing comments.
+        """
+        currentBlock = self._prevNonEmptyBlock(block)
+        
+        if not currentBlock.isValid():
+            return None
+        
+        indentation = None
+        
+        currentBlockText = currentBlock.text()
+        if currentBlockText.endswith('('):
             # increase indent level
-            indentation = document.firstVirtualColumn(currentLine) + INDENT_WIDTH
-            dbg("tryStatement: success in line " + currentLine)
-            return indentation
-        }
-        var alignOnSingleQuote = MODE == "PHP/PHP" or MODE == "JavaScript"
+            return self._increaseIndent(indentation)
+        
+        alignOnSingleQuote = self._qpart.language() in ('PHP/PHP', 'JavaScript')
         # align on strings "..."\n => below the opening quote
         # multi-language support: [\.+] for javascript or php
-        var result = /^(.*)(,|"|'|\))(;?)\s*[\.+]?\s*(\/\/.*|\/\*.*\*\/\s*)?$/.exec(currentString)
-        if (result != null && result.index == 0) {
-            var alignOnAnchor = result[3].length == 0 && result[2] != ')'
+        match = re.match('^(.*)(,|"|\'|\))(;?)\s*[\.+]?\s*(\/\/.*|\/\*.*\*\/\s*)?$', currentBlockText)
+        if match is not None:
+            alignOnAnchor = len(match.group(3)) == 0 and match.group(2) != ')'
             # search for opening ", ' or (
-            var cursor = new Cursor().invalid()
-            if (result[2] == '"' or (alignOnSingleQuote && result[2] == "'")) {
-                whileTrue {
-                    var i = result[1].length - 1; # start from matched closing ' or "
+            if match.group(2) == '"' or alignOnSingleQuote and match.group(2) == "'":
+                while True:
+                    # start from matched closing ' or "
                     # find string opener
-                    for ( ; i >= 0; --i ) {
+                    for i in range(len(match.group(1)) - 1, 0, -1):
                         # make sure it's not commented out
-                        if (currentString[i] == result[2] && (i == 0 or currentString[i - 1] != '\\')) {
+                        if currentBlockText[i] == match.group(2) and (i == 0 or currentBlockText[i - 1] != '\\'):
                             # also make sure that this is not a line like '#include "..."' <-- we don't want to indent here
-                            if (currentString.match(/^#include/)) {
+                            if re.match('^#include', currentBlockText):
                                 return indentation
-                            }
-                            cursor = new Cursor(currentLine, i)
+                            
                             break
-                        }
-                    }
-                    if (!alignOnAnchor && currentLine) {
+
+                    if not alignOnAnchor and currentBlock.previous().isValid():
                         # when we finished the statement (;) we need to get the first line and use it's indentation
                         # i.e.: $foo = "asdf"; -> align on $
-                        --i; # skip " or '
+                        i -= 1 # skip " or '
                         # skip whitespaces and stuff like + or . (for PHP, JavaScript, ...)
-                        for ( ; i >= 0; --i ) {
-                            if (currentString[i] == ' ' or currentString[i] == "\t"
-                                or currentString[i] == '.' or currentString[i] == '+')
-                            {
+                        for i in range(i, 0, -1):
+                            if currentBlockText[i] in (' ', '\t', '.', '+'):
                                 continue
-                            } else {
+                            else:
                                 break
-                            }
-                        }
-                        if ( i > 0 ) {
+                        
+                        if i > 0:
                             # there's something in this line, use it's indentation
                             break
-                        } else {
+                        else:
                             # go to previous line
-                            --currentLine
-                            currentString = document.line(currentLine)
-                        }
-                    } else {
+                            currentBlock = currentBlock.previous()
+                            currentBlockText = currentBlock.text()
+                    else:
                         break
-                    }
-                }
-            } else if (result[2] == ',' && !currentString.match(/\(/)) {
+            
+            elif match.group(2) == ',' and not '(' in currentBlockText:
                 # assume a function call: check for '(' brace
                 # - if not found, use previous indentation
                 # - if found, compare the indentation depth of current line and open brace line
                 #   - if current indentation depth is smaller, use that
                 #   - otherwise, use the '(' indentation + following white spaces
-                var currentIndentation = document.firstVirtualColumn(currentLine)
-                var braceCursor = document.anchor(currentLine, result[1].length, '(')
-    
-                if (!braceCursor.isValid() or currentIndentation < braceCursor.column)
+                currentIndentation = self._blockIndent(currentBlock)
+                try:
+                    foundBlock, foundColumn = self._findTextBackward(currentBlock, len(match.group(1)), '(')
+                except ValueError:
                     indentation = currentIndentation
-                else {
-                    indentation = braceCursor.column + 1
-                    while (document.isSpace(braceCursor.line, indentation))
-                        ++indentation
-                }
-            } else {
-                cursor = document.anchor(currentLine, result[1].length, '(')
-            }
-            if (cursor.isValid()) {
-                if (alignOnAnchor) {
-                    currentLine = cursor.line
-                    var column = cursor.column
-                    if (result[2] != '"' && result[2] != "'") {
-                        # place one column after the opening parens
-                        column++
-                    }
-                    var lastColumn = document.lastColumn(currentLine)
-                    while (column < lastColumn && document.isSpace(currentLine, column))
-                        ++column
-                    indentation = document.toVirtualColumn(currentLine, column)
-                } else {
-                    currentLine = cursor.line
-                    indentation = document.firstVirtualColumn(currentLine)
-                }
-            }
-        } else if ( currentString.rtrim().endswith(';') ) {
-            indentation = document.firstVirtualColumn(currentLine)
-        }
+                else:
+                    indentWidth = foundColumn + 1
+                    while foundBlock().text()[indentWidth].isspace():
+                        indentWidth += 1
+                    indentation = self._makeIndentFromWidth(indentWidth)
+                
+            else:
+                try:
+                    foundBlock, foundColumn = self._findTextBackward(currentBlock, len(match.group(1)), '(')
+                except ValueError:
+                    pass
+                else:
+                    if alignOnAnchor:
+                        if not matgh.group(2) in ('"', "'"):
+                            foundColumn += 1
+                        while foundColumn < foundBlock.length() and \
+                              foundBlock.text()[foundColumn].isspace():
+                            foundColumn += 1
+                        indentation = self._makeIndentFromWidth(foundColumn)
+                    
+                    else:
+                        currentBlock = foundBlock
+                        indentation = self._blockIndent(currentBlock)
+        elif currentBlockText.rstrip().endswith(';'):
+            indentation = self._blockIndent(currentBlock)
     
-        if (indentation != -1) dbg("tryStatement: success in line " + currentLine)
+        if indentation is not None:
+            dbg("tryStatement: success in line %d" + currentBlock.number())
         return indentation
-    }
     
-    /**
-     * find out whether we pressed return in something like {} or () or [] and indent properly:
-     * {}
-     * becomes:
-     * {
-     *   |
-     * }
-     */
-    def tryMatchedAnchor(line, alignOnly)
-    {
-        var char = document.firstChar(line)
-        if ( char != '}' && char != ')' && char != ']' ) {
-            return -1
-        }
+    def tryMatchedAnchor(block, alignOnly):
+        """
+        find out whether we pressed return in something like {} or () or [] and indent properly:
+         {}
+         becomes:
+         {
+           |
+         }
+        """
+        char = self._firstNonSpaceChar(block)
+        if not char in ('}', ')', ']'):
+            return None
+
         # we pressed enter in e.g. ()
-        var closingAnchor = document.anchor(line, 0, document.firstChar(line))
-        if (!closingAnchor.isValid()) {
-            # nothing found, continue with other cases
-            return -1
-        }
-        if (alignOnly) {
+        try:
+            foundBlock, foundColumn = self._findTextBackward(block, 0, firstChar)
+        except ValueError:
+            return None
+        
+        if alignOnly:
             # when aligning only, don't be too smart and just take the indent level of the open anchor
-            return document.firstVirtualColumn(closingAnchor.line)
-        }
-        var lastChar = document.lastChar(line - 1)
-        var charsMatch = ( lastChar == '(' && char == ')' ) or
-                         ( lastChar == '{' && char == '}' ) or
-                         ( lastChar == '[' && char == ']' )
-        var indentLine = -1
-        var indentation = -1
-        if ( !charsMatch && char != '}' ) {
+            return self._blockIndent(foundBlock)
+        
+        lastChar = self._lastNonSpaceChar(block.previous())
+        charsMatch = ( lastChar == '(' and char == ')' ) or \
+                     ( lastChar == '{' and char == '}' ) or \
+                     ( lastChar == '[' and char == ']' )
+
+        indentation = None
+        if (not charsMatch) and char != '}':
             # otherwise check whether the last line has the expected
             # indentation, if not use it instead and place the closing
             # anchor on the level of the openeing anchor
-            var expectedIndentation = document.firstVirtualColumn(closingAnchor.line) + INDENT_WIDTH
-            var actualIndentation = document.firstVirtualColumn(line - 1)
-            var indentation = -1
-            if ( expectedIndentation <= actualIndentation ) {
-                if ( lastChar == ',' ) {
+            expectedIndentation = self._increaseIndent(self._blockIndent(foundBlock))
+            actualIndentation = self._increaseIndent(self._blockIndent(block.previous()))
+            indentation = None
+            if len(expectedIndentation) <= len(actualIndentation):
+                if lastChar == ',':
                     # use indentation of last line instead and place closing anchor
                     # in same column of the openeing anchor
-                    document.insertText(line, document.firstColumn(line), "\n")
-                    view.setCursorPosition(line, actualIndentation)
+                    self._qpart.insertText((block.blockNumber(), _firstNonSpaceColumn(block.text())), '\n')
+                    self._qpart.cursorPosition = (block.blockNumber(), len(actualIndentation))
                     # indent closing anchor
-                    document.indent(new Range(line + 1, 0, line + 1, 1), document.toVirtualColumn(closingAnchor) / INDENT_WIDTH)
-                    # make sure we add spaces to align perfectly on closing anchor
-                    var padding = document.toVirtualColumn(closingAnchor) % INDENT_WIDTH
-                    if ( padding > 0 ) {
-                        document.insertText(line + 1, document.column - padding, String().fill(' ', padding))
-                    }
+                    self._setBlockIndent(block.next(), self._makeIndentFromWidth(foundColumn))
                     indentation = actualIndentation
-                } else if ( expectedIndentation == actualIndentation ) {
+                elif expectedIndentation == self._blockIndent(block.previous()):
                     # otherwise don't add a new line, just use indentation of closing anchor line
-                    indentation = document.firstVirtualColumn(closingAnchor.line)
-                } else {
+                    indentation = self._blockIndent(foundBlock)
+                else:
                     # otherwise don't add a new line, just align on closing anchor
-                    indentation = document.toVirtualColumn(closingAnchor)
-                }
-                dbg("tryMatchedAnchor: success in line " + closingAnchor.line)
+                    indentation = self._makeIndentFromWidth(foundColumn)
+                
+                dbg("tryMatchedAnchor: success in line %d" + foundBlock.blockNumber())
                 return indentation
-            }
-        }
+        
         # otherwise we i.e. pressed enter between (), [] or when we enter before curly brace
         # increase indentation and place closing anchor on the next line
-        indentation = document.firstVirtualColumn(closingAnchor.line)
-        document.insertText(line, document.firstColumn(line), "\n")
-        view.setCursorPosition(line, indentation)
+        indentation = self._blockIndent(foundBlock)
+        self._qpart.insertText(block.blockNumber()), len(self._blockIndent(block), "\n")
+        self._qpart.cursorPosition = (block.blockNumber(), len(indentation))
         # indent closing brace
-        document.indent(new Range(line + 1, 0, line + 1, 1), indentation / INDENT_WIDTH)
-        dbg("tryMatchedAnchor: success in line " + closingAnchor.line)
-        return indentation + INDENT_WIDTH
-    }
+        self._setBlockIndent(block.next(), indentation)
+        dbg("tryMatchedAnchor: success in line %d" % foundBlock.blockNumber())
+        return self._increaseIndent(indentation)
     
-    /**
-     * Indent line.
-     * Return filler or null.
-     */
-    def indentLine(line, alignOnly)
-    {
-        var firstChar = document.firstChar(line)
-        var lastChar = document.lastChar(line)
+    def indentLine(self, block, alignOnly):
+        """ Indent line.
+        Return filler or null.
+        """
+        indent = None
     
-        var filler = -1
+        if indent is None:
+            indent =tryMatchedAnchor(line, alignOnly)
+        if indent is None:
+            indent =_tryCComment(line)
+        if indent is None and not alignOnly:
+            indent =tryCppComment(line)
+        if indent is None:
+            indent =_trySwitchStatement(line)
+        if indent is None:
+            indent =_tryAccessModifiers(line)
+        if indent is None:
+            indent =tryBrace(line)
+        if indent is None:
+            indent =tryCKeywords(line, block.text().startswith('{'))
+        if indent is None:
+            indent =tryCondition(line)
+        if indent is None:
+            indent =tryStatement(line)
     
-        if (filler == -1)
-            filler = tryMatchedAnchor(line, alignOnly)
-        if (filler == -1)
-            filler = _tryCComment(line)
-        if (filler == -1 && !alignOnly)
-            filler = tryCppComment(line)
-        if (filler == -1)
-            filler = _trySwitchStatement(line)
-        if (filler == -1)
-            filler = _tryAccessModifiers(line)
-        if (filler == -1)
-            filler = tryBrace(line)
-        if (filler == -1)
-            filler = tryCKeywords(line, firstChar == '{')
-        if (filler == -1)
-            filler = tryCondition(line)
-        if (filler == -1)
-            filler = tryStatement(line)
+        if indent is not None:
+            return indent
+        else:
+            return self._prevBlockIndent(block)
     
-        return filler
-    }
-    
-    def processChar(line, c)
-    {
-        if (c == ';' or !triggerCharacters.contains(c))
-            return -2
-    
-        var cursor = view.cursorPosition()
-        if (!cursor)
-            return -2
-    
-        var column = cursor.column
-        var firstPos = document.firstColumn(line)
-        var lastPos = document.lastColumn(line)
-    
-         dbg("firstPos: " + firstPos)
-         dbg("column..: " + column)
-    
-        if (firstPos == column - 1 && c == '{') {
+    def processChar(self, block, c):
+        if c == ';' or (not (c in triggerCharacters)):
+            return None
+        
+        column = self._qpart.cursorPosition[1]
+        blockIndent = self._blockIndent(block)
+        firstCharAfterIndent = column == (len(blockIndent) + 1)
+        
+        if firstCharAfterIndent and c == '{':
             # todo: maybe look for if etc.
-            var filler = tryBrace(line)
-            if (filler == -1)
-                filler = tryCKeywords(line, True)
-            if (filler == -1)
-                filler = _tryCComment(line); # checks, whether we had a "*/"
-            if (filler == -1)
-                filler = tryStatement(line)
-            if (filler == -1)
-                filler = -2
+            indent = tryBrace(block)
+            if indent is None:
+                indent = tryCKeywords(block, True)
+            if indent is None:
+                indent =_tryCComment(block); # checks, whether we had a "*/"
+            if indent is None:
+                indent =tryStatement(line)
     
-            return filler
-        } else if (firstPos == column - 1 && c == '}') {
-            var indentation = _findLeftBrace(line, firstPos)
-            if (indentation == -1)
-                indentation = -2
-            return indentation
-        } else if (CFG_SNAP_SLASH && c == '/' && lastPos == column - 1) {
+            return indent  # probably None
+        elif firstCharAfterIndent and c == '}':
+            try:
+                indentation = _findLeftBrace(line, firstPos)
+            except ValueError:
+                return None
+            else:
+                return indentation
+        elif CFG_SNAP_SLASH and c == '/' and block.text().endswith(' /'):
             # try to snap the string "* /" to "*/"
-            var currentString = document.line(line)
-            if (currentString.search(/^(\s*)\*\s+\/\s*$/) != -1) {
-                currentString = RegExp.$1 + "*/"
-                document.editBegin()
-                document.removeLine(line)
-                document.insertLine(line, currentString)
-                view.setCursorPosition(line, currentString.length)
-                document.editEnd()
-            }
-            return -2
-        } else if (c == ':') {
+            currentString = document.line(line)
+            match = re.match('^(\s*)\*\s+\/\s*$')
+            if match is not None:
+                self.qpart.lines[block.blockNumber()] = match.group(1) + '*/'
+            return self._prevBlockIndent(block)
+        elif c == ':':
             # todo: handle case, default, signals, private, public, protected, Q_SIGNALS
-            var filler = _trySwitchStatement(line)
-            if (filler == -1)
-                filler = _tryAccessModifiers(line)
-            if (filler == -1)
-                filler = -2
-            return filler
-        } else if (c == ')' && firstPos == column - 1) {
+            indent = self._trySwitchStatement(block)
+            if indent is None:
+                indent = self._tryAccessModifiers(block)
+            if indent is None:
+                indent = self._prevBlockIndent(block)
+            return indent
+        elif c == ')' and firstCharAfterIndent:
             # align on start of identifier of function call
-            var openParen = document.anchor(line, column - 1, '(')
-            if (openParen.isValid()) {
-                # get identifier
-                var callLine = document.line(openParen.line)
-                # strip starting from opening paren
-                callLine = callLine.substring(0, openParen.column - 1)
-                indentation = callLine.search(/\b(\w+)\s*$/)
-                if (indentation != -1) {
-                    return document.toVirtualColumn(openParen.line, indentation)
-                }
-            }
-        } else if (firstPos == column - 1 && c == '#' && ( MODE == 'C' or MODE == 'C++' ) ) {
+            try:
+                foundBlock, foundColumn = self._findTextBackward(block, column - 1, '(')
+            except ValueError:
+                pass
+            else:
+                text = foundBlock.text()[:foundColumn]
+                match  = re.search('\b(\w+)\s*$', text)
+                if match is not None:
+                    return self._makeIndentFromWidth(match.start())
+        elif firstCharAfterIndent and c == '#' and self._qpart.language() in ('C', 'C++'):
             # always put preprocessor stuff upfront
-            return 0
-        }
-        return -2
-    }
+            return ''
+        return self._prevBlockIndent(block)
     
-    /**
-     * Process a newline character.
-     * This function is called whenever the user hits <return/enter>.
-     */
-    def indent(line, indentWidth, ch)
-    {
-        INDENT_WIDTH = indentWidth
-        MODE = document.highlightinMODEAt(new Cursor(line, document.lineLength(line)))
-        var alignOnly = (ch == "")
+    def indent(self, block, ch):
+        alignOnly = ch == ""
     
-        if (ch != '\n' && !alignOnly)
-            return processChar(line, ch)
+        if ch != '\n' and not alignOnly:
+            return self.processChar(block, ch)
     
-        return indentLine(line, alignOnly)
-    }
-    
-    # kate: space-indent on; indent-width 4; replace-tabs on
+        return self.indentLine(block, alignOnly)

@@ -5,6 +5,11 @@ class IndenterBase(IndenterNone):
     def __init__(self, qpart):
         self._qpart = qpart
     
+    def indentBlock(block):
+        """Indent the block
+        """
+        raise NotImplemented()
+    
     def computeIndent(self, block, char):
         """Compute indent.
         Block is current block.
@@ -31,7 +36,7 @@ class IndenterBase(IndenterNone):
         else:  # oops, strange indentation, just return previous indent
             return indent
 
-    def _makeIndentWidth(self, width):
+    def _makeIndentFromWidth(self, width):
         """Make indent text with specified with.
         Contains width count of spaces, or tabs and spaces
         """
@@ -40,6 +45,28 @@ class IndenterBase(IndenterNone):
             return ('\t' * tabCount) + (' ' * spaceCount)
         else:
             return ' ' * width
+    
+    def _setBlockIndent(block, indent):
+        """Set blocks indent. Modify text in qpart
+        """
+        raise NotImplemented()
+        
+    
+    @staticmethod
+    def _lastNonShaceChar(block):
+        textStripped = block.text().rstrip()
+        if textStripped:
+            return textStripped[-1]
+        else:
+            return ''
+    
+    @staticmethod
+    def _firstNonSpaceChar(self):
+        textStripped = block.text().lstrip()
+        if textStripped:
+            return textStripped[0]
+        else:
+            return ''
     
     @staticmethod
     def _firstNonSpaceColumn(text):
