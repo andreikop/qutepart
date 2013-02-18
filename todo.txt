@@ -1,8 +1,10 @@
 fixme:
     sometimes last line number is not drawn
     incorrect list position, if scroll bar is visible
-    do not unindent if not at end of indentation
-    continue, template are not hihglighted
+    empty lines disappear
+    indent to detected for model xml
+    when drawing indent markers - support spaces and tabs
+    doesn't disappear completion, if finishing current word
 
 first release
   indenters                           4

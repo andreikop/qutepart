@@ -12,10 +12,14 @@ from PyQt4.QtGui import QApplication
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from qutepart import Qutepart
 
-class Test(unittest.TestCase):
+class _BaseTest(unittest.TestCase):
+    """Base class for tests
+    """
     def setUp(self):
         self.app = QApplication(sys.argv)
         self.qpart = Qutepart()
+
+class Selection(_BaseTest):
     
     def test_resetSelection(self):
         # Reset selection
@@ -24,7 +28,8 @@ class Test(unittest.TestCase):
         self.assertTrue(self.qpart.textCursor().hasSelection())
         self.qpart.resetSelection()
         self.assertFalse(self.qpart.textCursor().hasSelection())
-    
+
+class ReplaceText(_BaseTest):
     def test_replaceText1(self):
         # Basic case
         self.qpart.text = '123456789'
@@ -70,6 +75,10 @@ class Test(unittest.TestCase):
         self.assertRaises(IndexError, self.qpart.replaceText, (0, 7), 1, 'Z')
         self.assertRaises(IndexError, self.qpart.replaceText, (7, 0), 1, 'Z')
 
+
+class UnindentWithBackspace(_BaseTest):
+    def test_printhi(self):
+        print 'hi'
 
 if __name__ == '__main__':
     unittest.main()
