@@ -1,3 +1,12 @@
+class IndenterNone:
+    """No any indentation
+    """
+    def __init__(self, indentTextGetter):
+        self._indentText = indentTextGetter
+    
+    def computeIndent(self, block):
+        return ''
+
 
 class IndenterBase(IndenterNone):
     """Base class for indenters
@@ -70,30 +79,47 @@ class IndenterBase(IndenterNone):
     
     @staticmethod
     def _firstNonSpaceColumn(text):
-        len(text) - len(text.lstrip())
+        return len(text) - len(text.lstrip())
 
     @staticmethod
     def _lastNonSpaceColumn(text):
-        len(text.rstrip())
+        return len(text.rstrip())
 
     @classmethod
     def _lineIndent(cls, text):
         return text[:cls._firstNonSpaceColumn(text)]
     
-    @staticmethod
-    def _prevBlockIndent(self, block):
+    @classmethod
+    def _blockIndent(cls, block):
+        if block.isValid():
+            return cls._lineIndent(block.text())
+        else:
+            return ''
+    
+    @classmethod
+    def _prevBlockIndent(cls, block):
         prevBlock = block.previous()
         
         if not block.isValid():
             return ''
-        
-        return IndenterBase._lineIndent(prevBlock.text())
+
+        return cls._lineIndent(prevBlock.text())
     
     @staticmethod
     def _prevNonEmptyBlock(block):
         block = block.previous()
-        while prevBlock.isValid() and \
-              len(prevBlock.text().strip() == 0):
+        while block.isValid() and \
+              len(block.text().strip()) == 0:
             block = block.previous()
         
         return block
+
+
+class IndenterNormal(IndenterBase):
+    """Class automatically computes indentation for lines
+    This is basic indenter, which knows nothing about programming languages
+    """
+    def computeIndent(self, block):
+        """Compute indent for the block
+        """
+        return self._blockIndent(self._prevNonEmptyBlock(block))

@@ -11,12 +11,12 @@ from PyQt4.QtTest import QTest
 
 import sys
 sys.path.insert(0, '../..')
-sys.path.insert(0, '../../build/lib.linux-x86_64-2.6/')
 from qutepart import Qutepart
+import qutepart
+print qutepart.__file__
 
-
-class Test(unittest.TestCase):
-    LANGUAGE = None
+class IndentTest(unittest.TestCase):
+    app = QApplication(sys.argv)
     
     def setOrigin(self, text):
         self.qpart.text = '\n'.join(text)
@@ -34,11 +34,13 @@ class Test(unittest.TestCase):
         QTest.keyClicks(self.qpart, text)
 
     def setUp(self):
-        self.app = QApplication(sys.argv)
         self.qpart = Qutepart()
         if self.LANGUAGE is not None:
             self.qpart.detectSyntax(language = self.LANGUAGE)
 
+class Test(IndentTest):
+    LANGUAGE = None
+    
     def test_normal2(self):
         origin = [
             "    bla bla",
@@ -55,6 +57,7 @@ class Test(unittest.TestCase):
         self.type("ok");
         self.verifyExpected(expected)
 
+    """ now not removing trailing whitespaces
     def test_emptyline3(self):
         origin = [
             "    totally empty line",
@@ -74,7 +77,8 @@ class Test(unittest.TestCase):
         self.enter();
         self.type("ok");
         self.verifyExpected(expected)
-
+    """
+    
     def test_emptyline1(self):
         origin = [
             "    totally empty line",

@@ -319,7 +319,7 @@ class Qutepart(QPlainTextEdit):
         self._highlighter = None
         self._bracketHighlighter = BracketHighlighter()
         
-        self._indenter = getIndenter('normal', self._indentText)
+        self._indenter = getIndenter('normal', self)
         
         self._lines = Lines(self)
         
@@ -671,16 +671,16 @@ class Qutepart(QPlainTextEdit):
         """
         if syntax.indenter is not None:
             try:
-                return getIndenter(syntax.indenter, self._indentText)
+                return getIndenter(syntax.indenter, self)
             except KeyError:
                 logger.error("Indenter '%s' not found" % syntax.indenter)
         
         try:
-            return getIndenter(syntax.name, self._indentText)
+            return getIndenter(syntax.name, self)
         except KeyError:
             pass
         
-        return getIndenter('normal', self._indentText)
+        return getIndenter('normal', self)
 
     def _updateLineNumberAreaWidth(self, newBlockCount):
         """Set line number are width according to current lines count
@@ -725,8 +725,13 @@ class Qutepart(QPlainTextEdit):
         cursor = self.textCursor()
         with self:
             cursor.insertBlock()
+            currentText = cursor.block().text()
+            spaceAtStartLen = len(currentText) - len(currentText.lstrip())
             indent = self._indenter.computeIndent(self.textCursor().block())
             cursor.insertText(indent)
+            if spaceAtStartLen:
+                cursor.setPosition(cursor.position() + spaceAtStartLen, QTextCursor.KeepAnchor)
+                cursor.removeSelectedText()
         self.ensureCursorVisible()
 
     def _textBeforeCursor(self):
