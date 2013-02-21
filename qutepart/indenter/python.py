@@ -30,6 +30,6 @@ class IndenterPython(IndenterBase):
         if prevLineStripped in ('continue', 'pass', 'raise', 'return') or \
            prevLineStripped.startswith('raise ') or \
            prevLineStripped.startswith('return '):
-           	return self._decreaseIndent(prevIndent)
+            return self._decreaseIndent(prevIndent)
 
         return prevIndent

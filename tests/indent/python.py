@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+
+import unittest
+
+from indenttest import IndentTest
+
+
+class Test(IndentTest):
+    LANGUAGE = 'Python'
+    INDENT_WIDTH = 2
+    
     def test_dedentReturn(self):
         origin = [
             "def some_function():",
@@ -34,12 +45,12 @@
         origin = [
             "class my_class():",
             "  def my_fun():",
-            "    print "Foo"",
+            '    print "Foo"',
             "    print 3"]
         expected = [
             "class my_class():",
             "  def my_fun():",
-            "    print "Foo"",
+            '    print "Foo"',
             "    print 3",
             "    pass"]
 
@@ -167,3 +178,6 @@
         self.type("pass");
         self.verifyExpected(expected)
 
+
+if __name__ == '__main__':
+    unittest.main()
