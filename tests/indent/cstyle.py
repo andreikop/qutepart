@@ -1,3 +1,370 @@
+#!/usr/bin/env python
+
+import unittest
+
+from indenttest import IndentTest
+
+
+class Test(IndentTest):
+    LANGUAGE = 'C++'
+    INDENT_WIDTH = 2
+    
+    def test_top1(self):
+        origin = [
+            "int {",
+            ""]
+        expected = [
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(0,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top2(self):
+        origin = [
+            "",
+            "int {",
+            ""]
+        expected = [
+            "",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top3(self):
+        origin = [
+            "// should always indent after opening brace",
+            "int {",
+            ""]
+        expected = [
+            "// should always indent after opening brace",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top4(self):
+        origin = [
+            "// should always indent after opening brace",
+            "",
+            "int {",
+            ""]
+        expected = [
+            "// should always indent after opening brace",
+            "",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top5(self):
+        origin = [
+            ";",
+            "int {",
+            ""]
+        expected = [
+            ";",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top6(self):
+        origin = [
+            ":",
+            "int {",
+            ""]
+        expected = [
+            ":",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top7(self):
+        origin = [
+            "}",
+            "int {",
+            ""]
+        expected = [
+            "}",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top8(self):
+        origin = [
+            "{",
+            "int {",
+            ""]
+        expected = [
+            "{",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top9(self):
+        origin = [
+            ")",
+            "int {",
+            ""]
+        expected = [
+            ")",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top10(self):
+        origin = [
+            "(",
+            "int {",
+            ""]
+        expected = [
+            "(",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top11(self):
+        origin = [
+            "n",
+            "int {",
+            ""]
+        expected = [
+            "n",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top12(self):
+        origin = [
+            ";",
+            "",
+            "int {",
+            ""]
+        expected = [
+            ";",
+            "",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+    
+    def test_top13(self):
+        origin = [
+            ":",
+            "",
+            "int {",
+            ""]
+        expected = [
+            ":",
+            "",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top14(self):
+        origin = [
+            "}",
+            "",
+            "int {",
+            ""]
+        expected = [
+            "}",
+            "",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top15(self):
+        origin = [
+            "{",
+            "",
+            "int {",
+            ""]
+        expected = [
+            "{",
+            "",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top16(self):
+        origin = [
+            ")",
+            "",
+            "int {",
+            ""]
+        expected = [
+            ")",
+            "",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top17(self):
+        origin = [
+            "(",
+            "",
+            "int {",
+            ""]
+        expected = [
+            "(",
+            "",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top18(self):
+        origin = [
+            "n",
+            "",
+            "int {",
+            ""]
+        expected = [
+            "n",
+            "",
+            "int {",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,5);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_top19(self):
+        origin = [
+            "// leading comment should not cause second line to be indented",
+            ""]
+        expected = [
+            "// leading comment should not cause second line to be indented",
+            "ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(0,62);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+
     def test_aplist13(self):
         origin = [
             "int main(int argc, char **argv) {",
@@ -54,24 +421,6 @@
         
         self.verifyExpected(expected)
 
-    def test_top6(self):
-        origin = [
-            ":",
-            "int {",
-            ""]
-        expected = [
-            ":",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,5);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
     def test_openpar4(self):
         origin = [
             "int main() {    bla",
@@ -86,26 +435,6 @@
         self.setCursorPosition(0,12);
         self.enter();
         
-        self.verifyExpected(expected)
-
-    def test_top12(self):
-        origin = [
-            ";",
-            "",
-            "int {",
-            ""]
-        expected = [
-            ";",
-            "",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,5);
-        self.enter();
-        self.type("ok");
         self.verifyExpected(expected)
 
     def test_openpar10(self):
@@ -179,7 +508,7 @@
             ""]
         expected = [
             "class A {",
-            "             public: x(":");",
+            '             public: x(":");',
             ""]
 
         self.setOrigin(origin)
@@ -215,24 +544,6 @@
         self.enter();
         self.type(";");
         
-        self.verifyExpected(expected)
-
-    def test_top3(self):
-        origin = [
-            "// should always indent after opening brace",
-            "int {",
-            ""]
-        expected = [
-            "// should always indent after opening brace",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,5);
-        self.enter();
-        self.type("ok");
         self.verifyExpected(expected)
 
     def test_aplist8(self):
@@ -437,7 +748,7 @@
 
         self.setOrigin(origin)
 
-        // bug:87415
+        # bug:87415
         self.setCursorPosition(1,25);
         self.enter();
         
@@ -461,42 +772,6 @@
         self.type("ok");
         self.verifyExpected(expected)
 
-    def test_top11(self):
-        origin = [
-            "n",
-            "int {",
-            ""]
-        expected = [
-            "n",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,5);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
-    def test_top5(self):
-        origin = [
-            ";",
-            "int {",
-            ""]
-        expected = [
-            ";",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,5);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
     def test_plist1(self):
         origin = [
             "int fla(int x,",
@@ -512,24 +787,6 @@
         self.enter();
         self.type("short u");
         
-        self.verifyExpected(expected)
-
-    def test_top10(self):
-        origin = [
-            "(",
-            "int {",
-            ""]
-        expected = [
-            "(",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,5);
-        self.enter();
-        self.type("ok");
         self.verifyExpected(expected)
 
     def test_plist15(self):
@@ -722,7 +979,7 @@
 
         self.setOrigin(origin)
 
-        // bug:87415
+        # bug:87415
         self.setCursorPosition(0,25);
         self.enter();
         
@@ -803,26 +1060,6 @@
         
         self.verifyExpected(expected)
 
-    def test_top16(self):
-        origin = [
-            ")",
-            "",
-            "int {",
-            ""]
-        expected = [
-            ")",
-            "",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,5);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
     def test_normal3(self):
         origin = [
             "int main() {",
@@ -901,26 +1138,6 @@
         self.enter();
         self.type("char c)");
         
-        self.verifyExpected(expected)
-
-    def test_top17(self):
-        origin = [
-            "(",
-            "",
-            "int {",
-            ""]
-        expected = [
-            "(",
-            "",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,5);
-        self.enter();
-        self.type("ok");
         self.verifyExpected(expected)
 
     def test_if5(self):
@@ -1031,10 +1248,10 @@
 
     def test_comment2(self):
         origin = [
-            "foo(); // "comment"",
+            'foo(); // "comment"',
             ""]
         expected = [
-            "foo(); // "comment"",
+            'foo(); // "comment"',
             "ok",
             ""]
 
@@ -1345,24 +1562,6 @@
         
         self.verifyExpected(expected)
 
-    def test_top7(self):
-        origin = [
-            "}",
-            "int {",
-            ""]
-        expected = [
-            "}",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,5);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
     def test_comma1(self):
         origin = [
             "int fla() {",
@@ -1377,40 +1576,6 @@
         self.setOrigin(origin)
 
         self.setCursorPosition(1,11);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
-    def test_top1(self):
-        origin = [
-            "int {",
-            ""]
-        expected = [
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(0,5);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
-    def test_top8(self):
-        origin = [
-            "{",
-            "int {",
-            ""]
-        expected = [
-            "{",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,5);
         self.enter();
         self.type("ok");
         self.verifyExpected(expected)
@@ -1628,42 +1793,6 @@
         
         self.verifyExpected(expected)
 
-    def test_top2(self):
-        origin = [
-            "",
-            "int {",
-            ""]
-        expected = [
-            "",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,5);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
-    def test_top9(self):
-        origin = [
-            ")",
-            "int {",
-            ""]
-        expected = [
-            ")",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,5);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
     def test_openpar2(self):
         origin = [
             "int main()",
@@ -1878,26 +2007,6 @@
         self.setCursorPosition(3,14);
         self.enter();
         
-        self.verifyExpected(expected)
-
-    def test_top13(self):
-        origin = [
-            ":",
-            "",
-            "int {",
-            ""]
-        expected = [
-            ":",
-            "",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,5);
-        self.enter();
-        self.type("ok");
         self.verifyExpected(expected)
 
     def test_switch2(self):
@@ -2138,26 +2247,6 @@
         self.setCursorPosition(1,11);
         self.enter();
         
-        self.verifyExpected(expected)
-
-    def test_top18(self):
-        origin = [
-            "n",
-            "",
-            "int {",
-            ""]
-        expected = [
-            "n",
-            "",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,5);
-        self.enter();
-        self.type("ok");
         self.verifyExpected(expected)
 
     def test_plist9(self):
@@ -2675,23 +2764,6 @@
         
         self.verifyExpected(expected)
 
-    def test_top19(self):
-        origin = [
-            "// leading comment should not cause second line to be indented",
-            ""]
-        expected = [
-            "// leading comment should not cause second line to be indented",
-            "ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(0,62);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
     def test_aplist15(self):
         origin = [
             "int main(int argc, char **argv) {",
@@ -2833,26 +2905,6 @@
         
         self.verifyExpected(expected)
 
-    def test_top4(self):
-        origin = [
-            "// should always indent after opening brace",
-            "",
-            "int {",
-            ""]
-        expected = [
-            "// should always indent after opening brace",
-            "",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,5);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
     def test_plist11(self):
         origin = [
             "int fla(",
@@ -2886,7 +2938,7 @@
         self.setOrigin(origin)
 
         self.setCursorPosition(2,0);
-        d.align(new Range(new Cursor(2, 0), new Cursor(2, 0)));
+        self.alignLine(2)
         self.verifyExpected(expected)
 
     def test_aplist10(self):
@@ -2945,26 +2997,6 @@
         self.type("  bla();");
         self.verifyExpected(expected)
 
-    def test_top15(self):
-        origin = [
-            "{",
-            "",
-            "int {",
-            ""]
-        expected = [
-            "{",
-            "",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,5);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
     def test_aplist3(self):
         origin = [
             "int main(int argc, char **argv) {",
@@ -2989,26 +3021,6 @@
         
         self.verifyExpected(expected)
 
-    def test_top14(self):
-        origin = [
-            "}",
-            "",
-            "int {",
-            ""]
-        expected = [
-            "}",
-            "",
-            "int {",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,5);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
     def test_if1(self):
         origin = [
             "int fla() {",
@@ -3028,3 +3040,7 @@
         
         self.verifyExpected(expected)
 
+
+
+if __name__ == '__main__':
+    unittest.main()

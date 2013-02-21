@@ -1,3 +1,5 @@
+import re
+
 from qutepart.indenter.base import IndenterBase
 
 # User configuration
@@ -51,9 +53,9 @@ def iterateBlocksBackFrom(block):
         count += 1
 
 
-class CStyleIndenter:
+class IndenterCStyle(IndenterBase):
     
-    def _findTextBackward(self, block, column, needle):
+    def findTextBackward(self, block, column, needle):
         """Search for a needle and return (block, column)
         Raise ValueError, if not found
         """
@@ -72,20 +74,20 @@ class CStyleIndenter:
     
         raise ValueError('Not found')
     
-    def _findLeftBrace(self, block, column):
+    def findLeftBrace(self, block, column):
         """Search for a corresponding '{' and return its indentation
         If not found return None
         """
-        block, column = self._findTextBackward(block, column, '{')  # raise ValueError if not found
+        block, column = self.findTextBackward(block, column, '{')  # raise ValueError if not found
         
         try:
-            block, column = _tryParenthesisBeforeBrace(block, column)
+            block, column = tryParenthesisBeforeBrace(block, column)
         except ValueError:
             pass # leave previous values
         
         return self._lineIndent(block.text())
     
-    def _tryParenthesisBeforeBrace(block, column):
+    def tryParenthesisBeforeBrace(self, block, column):
         """ Character at (line, column) has to be a '{'.
         Now try to find the right line for indentation for constructs like:
           if (a == b
@@ -97,9 +99,9 @@ class CStyleIndenter:
         if not text.endswith(')'):
             raise ValueError()
         
-        return self._findTextBackward(block, column, '(')
+        return self.findTextBackward(block, column, '(')
     
-    def _trySwitchStatement(self, block):
+    def trySwitchStatement(self, block):
         """Check for default and case keywords and assume we are in a switch statement.
         Try to find a previous default, case or switch and return its indentation or
         None if not found.
@@ -114,12 +116,12 @@ class CStyleIndenter:
                 indentation = self._lineIndent(text)
                 if CFG_INDENT_CASE:
                     indentation = self._increaseIndent(indentation)
-                dbg("_trySwitchStatement: success in line %d" + block.blockNumber())
+                dbg("trySwitchStatement: success in line %d" + block.blockNumber())
                 return indentation
         
         return None
     
-    def _tryAccessModifiers(self, block):
+    def tryAccessModifiers(self, block):
         """Check for private, protected, public, signals etc... and assume we are in a
         class definition. Try to find a previous private/protected/private... or
         class and return its indentation or null if not found.
@@ -132,7 +134,7 @@ class CStyleIndenter:
             return None
     
         try:
-            block, column = self._findTextBackward(block, 0, '{')
+            block, column = self.findTextBackward(block, 0, '{')
         except ValueError:
             return None
     
@@ -140,10 +142,10 @@ class CStyleIndenter:
         for i in range(CFG_ACCESS_MODIFIERS):
             indentation = self._increaseIndent(indentation)
     
-        dbg("_tryAccessModifiers: success in line %d" % block.blockNumber())
+        dbg("tryAccessModifiers: success in line %d" % block.blockNumber())
         return indentation
     
-    def _tryCComment(self, block):
+    def tryCComment(self, block):
         """C comment checking. If the previous line begins with a "/*" or a "* ", then
         return its leading white spaces + ' *' + the white spaces after the *
         return: filler string or null, if not in a C comment
@@ -158,12 +160,12 @@ class CStyleIndenter:
         
         if prevNonEmptyBlockText.endswith('*/'):
             try:
-                foundBlock, notUsedColumn = self._findTextBackward(prevNonEmptyBlock, prevNonEmptyBlock.length(), '/*')
+                foundBlock, notUsedColumn = self.findTextBackward(prevNonEmptyBlock, prevNonEmptyBlock.length(), '/*')
             except ValueError:
                 foundBlock = None
             
             if foundBlock is not None:
-                dbg("_tryCComment: success (1) in line %d" + foundBlock.blockNumber())
+                dbg("tryCComment: success (1) in line %d" + foundBlock.blockNumber())
                 return self._lineIndent(foundBlock.text())
     
         if prevNonEmptyBlock != block.previous():
@@ -184,7 +186,7 @@ class CStyleIndenter:
                 if not secondCharIsSpace and \
                    not blockTextStripped.endswith("*/"):
                     indentation += ' '
-            dbg("_tryCComment: success (2) in line %d" + block.blockNumber())
+            dbg("tryCComment: success (2) in line %d" + block.blockNumber())
             return indentation
             
         elif prevBlockTextStripped.startswith('*') and \
@@ -199,12 +201,12 @@ class CStyleIndenter:
                 if len(blockTextStripped) < 2 or not blockTextStripped[1].isspace():
                     indentation += ' '
             
-            dbg("_tryCComment: success (2) in line %d" + block.blockNumber())
+            dbg("tryCComment: success (2) in line %d" + block.blockNumber())
             return indentation
     
         return None
     
-    def _tryCppComment(self, block):
+    def tryCppComment(self, block):
         """C++ comment checking. when we want to insert slashes:
         #, #/, #! #/<, #!< and ##...
         return: filler string or null, if not in a star comment
@@ -248,7 +250,7 @@ class CStyleIndenter:
         
         return indentation
     
-    def _tryBrace(self, block):
+    def tryBrace(self, block):
         def _isNamespace(block):
             if not block.text().strip():
                 block = block.previous()
@@ -263,7 +265,7 @@ class CStyleIndenter:
     
         if currentBlock.text().endswith('{'):
             try:
-                foundBlock, foundColumn = self._tryParenthesisBeforeBrace(currentBlock, len(currentBlock.text().rstrip()))
+                foundBlock, foundColumn = self.tryParenthesisBeforeBrace(currentBlock, len(currentBlock.text().rstrip()))
             except ValueError:
                 foundBlock = None
             
@@ -284,7 +286,7 @@ class CStyleIndenter:
         Check for if, else, while, do, switch, private, public, protected, signals,
         default, case etc... keywords, as we want to indent then. If   is
         non-null/True, then indentation is not increased.
-        Note: The code is written to be called *after* _tryCComment and tryCppComment!
+        Note: The code is written to be called *after* tryCComment and tryCppComment!
         """
         currentBlock = self._prevNonEmptyBlock(block)
         if not currentBlock.isValid():
@@ -294,7 +296,7 @@ class CStyleIndenter:
         
         if currentBlock.text().rstrip().endswith(')'):
             try:
-                foundBlock, foundColumn = self._findTextBackward(block, currentBlock, len(currentBlock.text()), '(')
+                foundBlock, foundColumn = self.findTextBackward(block, currentBlock, len(currentBlock.text()), '(')
             except ValueError:
                 pass
             else:
@@ -327,7 +329,7 @@ class CStyleIndenter:
             #     b < 10
             #     --b)
             try:
-                foundBlock, foundColumn = self._findTextBackward(currentBlock, None, '(')
+                foundBlock, foundColumn = self.findTextBackward(currentBlock, None, '(')
             except ValueError:
                 pass
             else:
@@ -336,7 +338,7 @@ class CStyleIndenter:
     def _tryCondition(self, block):
         """ Search for if, do, while, for, ... as we want to indent then.
         Return null, if nothing useful found.
-        Note: The code is written to be called *after* _tryCComment and tryCppComment!
+        Note: The code is written to be called *after* tryCComment and tryCppComment!
         """
         currentBlock = self._prevNonEmptyBlock(block)
         if not currentBlock.isValid():
@@ -431,7 +433,7 @@ class CStyleIndenter:
                 #   - otherwise, use the '(' indentation + following white spaces
                 currentIndentation = self._blockIndent(currentBlock)
                 try:
-                    foundBlock, foundColumn = self._findTextBackward(currentBlock, len(match.group(1)), '(')
+                    foundBlock, foundColumn = self.findTextBackward(currentBlock, len(match.group(1)), '(')
                 except ValueError:
                     indentation = currentIndentation
                 else:
@@ -442,7 +444,7 @@ class CStyleIndenter:
                 
             else:
                 try:
-                    foundBlock, foundColumn = self._findTextBackward(currentBlock, len(match.group(1)), '(')
+                    foundBlock, foundColumn = self.findTextBackward(currentBlock, len(match.group(1)), '(')
                 except ValueError:
                     pass
                 else:
@@ -464,7 +466,7 @@ class CStyleIndenter:
             dbg("tryStatement: success in line %d" + currentBlock.number())
         return indentation
     
-    def tryMatchedAnchor(block, alignOnly):
+    def tryMatchedAnchor(self, block, alignOnly):
         """
         find out whether we pressed return in something like {} or () or [] and indent properly:
          {}
@@ -479,7 +481,7 @@ class CStyleIndenter:
 
         # we pressed enter in e.g. ()
         try:
-            foundBlock, foundColumn = self._findTextBackward(block, 0, firstChar)
+            foundBlock, foundColumn = self.findTextBackward(block, 0, firstChar)
         except ValueError:
             return None
         
@@ -536,23 +538,23 @@ class CStyleIndenter:
         indent = None
     
         if indent is None:
-            indent =tryMatchedAnchor(line, alignOnly)
+            indent = self.tryMatchedAnchor(block, alignOnly)
         if indent is None:
-            indent =_tryCComment(line)
+            indent = self.tryCComment(block)
         if indent is None and not alignOnly:
-            indent =tryCppComment(line)
+            indent = self.tryCppComment(block)
         if indent is None:
-            indent =_trySwitchStatement(line)
+            indent = self.trySwitchStatement(block)
         if indent is None:
-            indent =_tryAccessModifiers(line)
+            indent = self.tryAccessModifiers(block)
         if indent is None:
-            indent =tryBrace(line)
+            indent = self.tryBrace(block)
         if indent is None:
-            indent =tryCKeywords(line, block.text().startswith('{'))
+            indent = self.tryCKeywords(block, block.text().startswith('{'))
         if indent is None:
-            indent =tryCondition(line)
+            indent = self.tryCondition(block)
         if indent is None:
-            indent =tryStatement(line)
+            indent = self.tryStatement(block)
     
         if indent is not None:
             return indent
@@ -573,14 +575,14 @@ class CStyleIndenter:
             if indent is None:
                 indent = tryCKeywords(block, True)
             if indent is None:
-                indent =_tryCComment(block); # checks, whether we had a "*/"
+                indent =tryCComment(block); # checks, whether we had a "*/"
             if indent is None:
                 indent =tryStatement(line)
     
             return indent  # probably None
         elif firstCharAfterIndent and c == '}':
             try:
-                indentation = _findLeftBrace(line, firstPos)
+                indentation = findLeftBrace(line, firstPos)
             except ValueError:
                 return None
             else:
@@ -594,16 +596,16 @@ class CStyleIndenter:
             return self._prevBlockIndent(block)
         elif c == ':':
             # todo: handle case, default, signals, private, public, protected, Q_SIGNALS
-            indent = self._trySwitchStatement(block)
+            indent = self.trySwitchStatement(block)
             if indent is None:
-                indent = self._tryAccessModifiers(block)
+                indent = self.tryAccessModifiers(block)
             if indent is None:
                 indent = self._prevBlockIndent(block)
             return indent
         elif c == ')' and firstCharAfterIndent:
             # align on start of identifier of function call
             try:
-                foundBlock, foundColumn = self._findTextBackward(block, column - 1, '(')
+                foundBlock, foundColumn = self.findTextBackward(block, column - 1, '(')
             except ValueError:
                 pass
             else:
@@ -616,10 +618,10 @@ class CStyleIndenter:
             return ''
         return self._prevBlockIndent(block)
     
-    def indent(self, block, ch):
-        alignOnly = ch == ""
+    def computeIndent(self, block, char=''):
+        alignOnly = char == ""
     
-        if ch != '\n' and not alignOnly:
-            return self.processChar(block, ch)
+        if char != '\n' and not alignOnly:
+            return self.processChar(block, char)
     
         return self.indentLine(block, alignOnly)

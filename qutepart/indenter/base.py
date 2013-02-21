@@ -70,7 +70,7 @@ class IndenterBase(IndenterNone):
             return ''
     
     @staticmethod
-    def _firstNonSpaceChar(self):
+    def _firstNonSpaceChar(block):
         textStripped = block.text().lstrip()
         if textStripped:
             return textStripped[0]

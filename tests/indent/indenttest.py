@@ -30,6 +30,9 @@ class IndentTest(unittest.TestCase):
     def type(self, text):
         QTest.keyClicks(self.qpart, text)
 
+    def alignLine(self, index):
+        raise NotImplemented()
+    
     def setUp(self):
         self.qpart = Qutepart()
         if self.LANGUAGE is not None:
