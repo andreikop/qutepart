@@ -4,10 +4,11 @@ import unittest
 
 from indenttest import IndentTest
 
-
-class Test(IndentTest):
+class BaseTestClass(IndentTest):
     LANGUAGE = 'C++'
     INDENT_WIDTH = 2
+
+class Top(BaseTestClass):
     
     def test_top1(self):
         origin = [
@@ -364,6 +365,309 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
+class If(BaseTestClass):
+    def test_if1(self):
+        origin = [
+            "int fla() {",
+            "  if (0<x)",
+            ""]
+        expected = [
+            "int fla() {",
+            "  if (0<x)",
+            "    ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,10);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_if2(self):
+        origin = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            ""]
+        expected = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,10);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_if3(self):
+        origin = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else",
+            ""]
+        expected = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else",
+            "    ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(3,6);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_if4(self):
+        origin = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else",
+            "    x = -x;",
+            ""]
+        expected = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else",
+            "    x = -x;",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(4,11);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_if5(self):
+        origin = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else if (y<x)",
+            ""]
+        expected = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else if (y<x)",
+            "    ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(3,15);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_if6(self):
+        origin = [
+            "int fla() {",
+            "  if (0<x) x(0);",
+            ""]
+        expected = [
+            "int fla() {",
+            "  if (0<x) x(0);",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,16);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_if7(self):
+        origin = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else x(-1);",
+            ""]
+        expected = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else x(-1);",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(3,13);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_if8(self):
+        origin = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else if (y<x)",
+            "    y = x;",
+            ""]
+        expected = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else if (y<x)",
+            "    y = x;",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(4,10);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_if9(self):
+        origin = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else if (y<x) y = x;",
+            ""]
+        expected = [
+            "int fla() {",
+            "  if (0<x)",
+            "    x = 0;",
+            "  else if (y<x) y = x;",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(3,22);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_if10(self):
+        origin = [
+            "if () {}"]
+        expected = [
+            "if ()",
+            "{}"]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(0,5);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+    def test_if11(self):
+        origin = [
+            "  if (0<x) {",
+            "    x = 0;",
+            "  }",
+            "",
+            "text;",
+            ""]
+        expected = [
+            "  if (0<x) {",
+            "    x = 0;",
+            "  }",
+            "",
+            "",
+            "  text;",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(4,0);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+
+class While(BaseTestClass):
+    def test_while1(self):
+        origin = [
+            "int fla() {",
+            "  while (0<x)",
+            ""]
+        expected = [
+            "int fla() {",
+            "  while (0<x)",
+            "    ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,13);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_while2(self):
+        origin = [
+            "int fla() {",
+            "  while (0<x)",
+            "    x--;",
+            ""]
+        expected = [
+            "int fla() {",
+            "  while (0<x)",
+            "    x--;",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,8);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_while3(self):
+        origin = [
+            "int fla() {",
+            "  while (0<x) x();",
+            ""]
+        expected = [
+            "int fla() {",
+            "  while (0<x) x();",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,18);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+
+class Aplist(BaseTestClass):
     def test_aplist1(self):
         origin = [
             "int main(int argc, char **argv) {",
@@ -766,6 +1070,7 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
+class OpenPar(BaseTestClass):
     def test_openpar1(self):
         origin = [
             "int main() {",
@@ -951,6 +1256,7 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
+class ClosPar(BaseTestClass):
     def test_clospar1(self):
         origin = [
             "int main() {",
@@ -1031,6 +1337,7 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
+class Do(BaseTestClass):
     def test_do1(self):
         origin = [
             "int fla() {",
@@ -1090,6 +1397,7 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
+class Visib(BaseTestClass):
     def test_visib1(self):
         origin = [
             "class A {",
@@ -1234,6 +1542,7 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
+class Switch(BaseTestClass):
     def test_switch1(self):
         origin = [
             "  int foo() {",
@@ -1536,6 +1845,8 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
+
+class For(BaseTestClass):
     def test_for1(self):
         origin = [
             "int main() {",
@@ -1638,130 +1949,7 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
-
-    def test_if4(self):
-        origin = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else",
-            "    x = -x;",
-            ""]
-        expected = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else",
-            "    x = -x;",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(4,11);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_while2(self):
-        origin = [
-            "int fla() {",
-            "  while (0<x)",
-            "    x--;",
-            ""]
-        expected = [
-            "int fla() {",
-            "  while (0<x)",
-            "    x--;",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,8);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_plist20(self):
-        origin = [
-            "void x() {",
-            "}",
-            "int fla(",
-            "        int x,",
-            "        short u,",
-            "        char c)",
-            ""]
-        expected = [
-            "void x() {",
-            "}",
-            "int fla(",
-            "        int x,",
-            "        short u,",
-            "        char c",
-            "       )",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(5,14);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_normal2(self):
-        origin = [
-            "int main() {",
-            "    bla;blu;"]
-        expected = [
-            "int main() {",
-            "    bla;",
-            "    blu;"]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,8);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_plist10(self):
-        origin = [
-            "int fla(int x,short u,char c)",
-            ""]
-        expected = [
-            "int fla(",
-            "        int x,short u,char c)",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(0,8);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_plist7(self):
-        origin = [
-            "",
-            "uint8_t func( uint8_t p1, uint8_t p2)",
-            ""]
-        expected = [
-            "",
-            "uint8_t func( uint8_t p1,",
-            "              uint8_t p2)",
-            ""]
-
-        self.setOrigin(origin)
-
-        # bug:87415
-        self.setCursorPosition(1,25);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
+class PList(BaseTestClass):
     def test_plist1(self):
         origin = [
             "int fla(int x,",
@@ -1779,198 +1967,20 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
-    def test_plist15(self):
+    def test_plist2(self):
         origin = [
-            "int fla(",
-            "        int x,short u,char c",
-            "       )",
+            "int fla(int x,",
+            "        short u",
             ""]
         expected = [
-            "int fla(",
-            "        int x,",
-            "        short u,char c",
-            "       )",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,14);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_prep6(self):
-        origin = [
-            "  int foo() {",
-            "    x;",
-            "#endregion",
-            ""]
-        expected = [
-            "  int foo() {",
-            "    x;",
-            "#endregion daten",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,10);
-        self.type(" daten");
-        
-        self.verifyExpected(expected)
-
-    def test_plist12(self):
-        origin = [
-            "int fla(",
-            "        int x,",
-            "        short u,char c)",
-            ""]
-        expected = [
-            "int fla(",
-            "        int x,",
+            "int fla(int x,",
             "        short u,",
-            "        char c)",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(2,16);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_if11(self):
-        origin = [
-            "  if (0<x) {",
-            "    x = 0;",
-            "  }",
-            "",
-            "text;",
-            ""]
-        expected = [
-            "  if (0<x) {",
-            "    x = 0;",
-            "  }",
-            "",
-            "",
-            "  text;",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(4,0);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_foreign3(self):
-        origin = [
-            "int main() {",
-            "// indent-width is 2 but we want to maintain an indentation of 4",
-            ""]
-        expected = [
-            "int main() {",
-            "    ok",
-            "// indent-width is 2 but we want to maintain an indentation of 4",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(0,12);
-        self.enter();
-        self.type("  ok");
-        self.verifyExpected(expected)
-
-    def test_plist6(self):
-        origin = [
-            "uint8_t func( uint8_t p1, uint8_t p2)",
-            ""]
-        expected = [
-            "uint8_t func( uint8_t p1,",
-            "              uint8_t p2)",
-            ""]
-
-        self.setOrigin(origin)
-
-        # bug:87415
-        self.setCursorPosition(0,25);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_comma3(self):
-        origin = [
-            "int fla() {",
-            "  b = 1,",
-            ""]
-        expected = [
-            "int fla() {",
-            "  b = 1,",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,8);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
-    def test_if2(self):
-        origin = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            ""]
-        expected = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,10);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_normal3(self):
-        origin = [
-            "int main() {",
-            "    bla;  blu;",
-            ""]
-        expected = [
-            "int main() {",
-            "    bla;",
-            "    blu;",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,8);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_plist17(self):
-        origin = [
-            "int fla(",
-            "        int x,short long_var_name,",
-            "        char c)",
-            ""]
-        expected = [
-            "int fla(",
-            "        int x,",
-            "        short long_var_name,",
-            "        char c)",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,14);
-        self.enter();
+        self.setCursorPosition(1,15);
+        self.type(",");
         
         self.verifyExpected(expected)
 
@@ -1993,64 +2003,6 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
-    def test_if5(self):
-        origin = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else if (y<x)",
-            ""]
-        expected = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else if (y<x)",
-            "    ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(3,15);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_prep4(self):
-        origin = [
-            "  int foo() {",
-            "    x;",
-            ""]
-        expected = [
-            "  int foo() {",
-            "    x;",
-            "    #endregion FLA",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,6);
-        self.enter();
-        self.type("#endregion FLA");
-        
-        self.verifyExpected(expected)
-
-    def test_comment2(self):
-        origin = [
-            'foo(); // "comment"',
-            ""]
-        expected = [
-            'foo(); // "comment"',
-            "ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(0,19);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
     def test_plist4(self):
         origin = [
             "int fla(int x,",
@@ -2069,67 +2021,6 @@ class Test(IndentTest):
         self.setCursorPosition(2,15);
         self.enter();
         self.type("{");
-        
-        self.verifyExpected(expected)
-
-    def test_plist2(self):
-        origin = [
-            "int fla(int x,",
-            "        short u",
-            ""]
-        expected = [
-            "int fla(int x,",
-            "        short u,",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,15);
-        self.type(",");
-        
-        self.verifyExpected(expected)
-
-    def test_if8(self):
-        origin = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else if (y<x)",
-            "    y = x;",
-            ""]
-        expected = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else if (y<x)",
-            "    y = x;",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(4,10);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_using2(self):
-        origin = [
-            "using",
-            "  std::vector;",
-            ""]
-        expected = [
-            "using",
-            "  std::vector;",
-            "ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,14);
-        self.enter();
-        self.type("ok");
         
         self.verifyExpected(expected)
 
@@ -2154,6 +2045,42 @@ class Test(IndentTest):
         self.type("ok");
         self.verifyExpected(expected)
 
+    def test_plist6(self):
+        origin = [
+            "uint8_t func( uint8_t p1, uint8_t p2)",
+            ""]
+        expected = [
+            "uint8_t func( uint8_t p1,",
+            "              uint8_t p2)",
+            ""]
+
+        self.setOrigin(origin)
+
+        # bug:87415
+        self.setCursorPosition(0,25);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+    def test_plist7(self):
+        origin = [
+            "",
+            "uint8_t func( uint8_t p1, uint8_t p2)",
+            ""]
+        expected = [
+            "",
+            "uint8_t func( uint8_t p1,",
+            "              uint8_t p2)",
+            ""]
+
+        self.setOrigin(origin)
+
+        # bug:87415
+        self.setCursorPosition(1,25);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
     def test_plist8(self):
         origin = [
             "int fla(int x,short u,char c)",
@@ -2166,365 +2093,6 @@ class Test(IndentTest):
         self.setOrigin(origin)
 
         self.setCursorPosition(0,14);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_comma4(self):
-        origin = [
-            "int fla() {",
-            "  b = 1,c = 2;",
-            ""]
-        expected = [
-            "int fla() {",
-            "  b = 1,",
-            "  c = 2;",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,8);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_plist24(self):
-        origin = [
-            "int b() {",
-            "}",
-            "int flablabberwabber(",
-            "                     int lonng,short lonngearr,char shrt)",
-            ""]
-        expected = [
-            "int b() {",
-            "}",
-            "int flablabberwabber(",
-            "                     int lonng,",
-            "                     short lonngearr,char shrt)",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(3,31);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_if7(self):
-        origin = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else x(-1);",
-            ""]
-        expected = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else x(-1);",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(3,13);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_comma1(self):
-        origin = [
-            "int fla() {",
-            "  double x,",
-            ""]
-        expected = [
-            "int fla() {",
-            "  double x,",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,11);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
-    def test_using3(self):
-        origin = [
-            "using std::vector;",
-            ""]
-        expected = [
-            "using std::vector;",
-            "ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(0,18);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_137157(self):
-        origin = [
-            "# 1",
-            "do {",
-            "}",
-            " while (0);",
-            " "]
-        expected = [
-            "# 1",
-            "do {",
-            "}",
-            " while (0);",
-            " ",
-            " ok"]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(4,1);
-        self.enter();
-        self.type("ok");
-        self.verifyExpected(expected)
-
-    def test_doxygen3(self):
-        origin = [
-            "class A {",
-            "  /**",
-            "   * constructor",
-            "   * @param x foo",
-            ""]
-        expected = [
-            "class A {",
-            "  /**",
-            "   * constructor",
-            "   * @param x foo",
-            "   */",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(3,17);
-        self.enter();
-        self.type("/");
-        
-        self.verifyExpected(expected)
-
-    def test_doxygen1(self):
-        origin = [
-            "class A {",
-            "  /**",
-            ""]
-        expected = [
-            "class A {",
-            "  /**",
-            "   * constructor",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,5);
-        self.enter();
-        self.type("constructor");
-        
-        self.verifyExpected(expected)
-
-    def test_prep1(self):
-        origin = [
-            "  int foo() {",
-            "    x;",
-            ""]
-        expected = [
-            "  int foo() {",
-            "    x;",
-            "#ifdef FLA",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,6);
-        self.enter();
-        self.type("#");
-        self.type("ifdef FLA");
-        
-        self.verifyExpected(expected)
-
-    def test_while1(self):
-        origin = [
-            "int fla() {",
-            "  while (0<x)",
-            ""]
-        expected = [
-            "int fla() {",
-            "  while (0<x)",
-            "    ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,13);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_comma6(self):
-        origin = [
-            "double x,y;",
-            ""]
-        expected = [
-            "double x,",
-            "y;",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(0,9);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_comment1(self):
-        origin = [
-            "  int foo() {",
-            "    x;",
-            "//     y;",
-            ""]
-        expected = [
-            "  int foo() {",
-            "    x;",
-            "//     y;",
-            "    ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,9);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_plist16(self):
-        origin = [
-            "int fla(",
-            "        int x,short long_var_name,char c)",
-            ""]
-        expected = [
-            "int fla(",
-            "        int x,",
-            "        short long_var_name,char c)",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,14);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_plist19(self):
-        origin = [
-            "int x() {",
-            "}",
-            "int fla(",
-            "        int x,short u,char c",
-            "       )",
-            ""]
-        expected = [
-            "int x() {",
-            "}",
-            "int fla(",
-            "        int x,",
-            "        short u,char c",
-            "       )",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(3,14);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-
-    def test_plist22(self):
-        origin = [
-            "int b() {",
-            "}",
-            "int fla(",
-            "        int x,short u,char c)",
-            ""]
-        expected = [
-            "int b() {",
-            "}",
-            "int fla(",
-            "        int x,",
-            "        short u,char c)",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(3,14);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
-    def test_doxygen7(self):
-        origin = [
-            "class A {",
-            "  int foo(); /** unorthodox doxygen comment */",
-            ""]
-        expected = [
-            "class A {",
-            "  int foo(); /** unorthodox doxygen comment */",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,46);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_prep5(self):
-        origin = [
-            "  int foo() {",
-            "    x;",
-            "#endregion FLA",
-            ""]
-        expected = [
-            "  int foo() {",
-            "    x;",
-            "#endregion FLA // n",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,14);
-        self.type(" // n");
-        
-        self.verifyExpected(expected)
-
-    def test_comma2(self):
-        origin = [
-            "int fla() {",
-            "  double x,y;",
-            ""]
-        expected = [
-            "int fla() {",
-            "  double x,",
-            "  y;",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,11);
         self.enter();
         
         self.verifyExpected(expected)
@@ -2547,36 +2115,47 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
-    def test_doxygen6(self):
+    def test_plist10(self):
         origin = [
-            "class A {",
-            "  /** constructor */",
+            "int fla(int x,short u,char c)",
             ""]
         expected = [
-            "class A {",
-            "  /** constructor */",
-            "  ok",
+            "int fla(",
+            "        int x,short u,char c)",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(1,20);
+        self.setCursorPosition(0,8);
         self.enter();
-        self.type("ok");
         
         self.verifyExpected(expected)
 
-    def test_plist21(self):
+    def test_plist11(self):
         origin = [
-            "int x() {",
-            "}",
+            "int fla(",
+            "        int x,short u,char c)",
+            ""]
+        expected = [
+            "int fla(",
+            "        int x,",
+            "        short u,char c)",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,14);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+    def test_plist12(self):
+        origin = [
             "int fla(",
             "        int x,",
             "        short u,char c)",
             ""]
         expected = [
-            "int x() {",
-            "}",
             "int fla(",
             "        int x,",
             "        short u,",
@@ -2585,65 +2164,108 @@ class Test(IndentTest):
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(4,16);
+        self.setCursorPosition(2,16);
         self.enter();
         
         self.verifyExpected(expected)
 
-    def test_while3(self):
+    def test_plist13(self):
         origin = [
-            "int fla() {",
-            "  while (0<x) x();",
+            "int fla(",
+            "        int x,",
+            "        short u,",
+            "        char c)",
             ""]
         expected = [
-            "int fla() {",
-            "  while (0<x) x();",
-            "  ok",
+            "int fla(",
+            "        int x,",
+            "        short u,",
+            "        char c",
+            "       )",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(1,18);
+        self.setCursorPosition(3,14);
         self.enter();
-        self.type("ok");
         
         self.verifyExpected(expected)
 
-    def test_if6(self):
+    def test_plist14(self):
         origin = [
-            "int fla() {",
-            "  if (0<x) x(0);",
+            "int b() {",
+            "}",
+            "int fla(int x,short u,char c)",
             ""]
         expected = [
-            "int fla() {",
-            "  if (0<x) x(0);",
-            "  ok",
+            "int b() {",
+            "}",
+            "int fla(",
+            "        int x,short u,char c)",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(1,16);
+        self.setCursorPosition(2,8);
         self.enter();
-        self.type("ok");
         
         self.verifyExpected(expected)
 
-    def test_prep3(self):
+    def test_plist15(self):
         origin = [
-            "  int foo() {",
-            "    x;",
+            "int fla(",
+            "        int x,short u,char c",
+            "       )",
             ""]
         expected = [
-            "  int foo() {",
-            "    x;",
-            "    #region FLA",
+            "int fla(",
+            "        int x,",
+            "        short u,char c",
+            "       )",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(1,6);
+        self.setCursorPosition(1,14);
         self.enter();
-        self.type("#region FLA");
+        
+        self.verifyExpected(expected)
+
+    def test_plist16(self):
+        origin = [
+            "int fla(",
+            "        int x,short long_var_name,char c)",
+            ""]
+        expected = [
+            "int fla(",
+            "        int x,",
+            "        short long_var_name,char c)",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,14);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+    def test_plist17(self):
+        origin = [
+            "int fla(",
+            "        int x,short long_var_name,",
+            "        char c)",
+            ""]
+        expected = [
+            "int fla(",
+            "        int x,",
+            "        short long_var_name,",
+            "        char c)",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,14);
+        self.enter();
         
         self.verifyExpected(expected)
 
@@ -2673,20 +2295,249 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
-    def test_normal1(self):
+    def test_plist19(self):
         origin = [
-            "int main() {",
-            "    bla;"]
+            "int x() {",
+            "}",
+            "int fla(",
+            "        int x,short u,char c",
+            "       )",
+            ""]
         expected = [
-            "int main() {",
-            "    bla;",
-            "    ok;"]
+            "int x() {",
+            "}",
+            "int fla(",
+            "        int x,",
+            "        short u,char c",
+            "       )",
+            ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(1,8);
+        self.setCursorPosition(3,14);
         self.enter();
-        self.type("ok;");
+        
+        self.verifyExpected(expected)
+
+    def test_plist20(self):
+        origin = [
+            "void x() {",
+            "}",
+            "int fla(",
+            "        int x,",
+            "        short u,",
+            "        char c)",
+            ""]
+        expected = [
+            "void x() {",
+            "}",
+            "int fla(",
+            "        int x,",
+            "        short u,",
+            "        char c",
+            "       )",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(5,14);
+        self.enter();
+        
+        self.verifyExpected(expected)
+    
+    def test_plist21(self):
+        origin = [
+            "int x() {",
+            "}",
+            "int fla(",
+            "        int x,",
+            "        short u,char c)",
+            ""]
+        expected = [
+            "int x() {",
+            "}",
+            "int fla(",
+            "        int x,",
+            "        short u,",
+            "        char c)",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(4,16);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+    def test_plist22(self):
+        origin = [
+            "int b() {",
+            "}",
+            "int fla(",
+            "        int x,short u,char c)",
+            ""]
+        expected = [
+            "int b() {",
+            "}",
+            "int fla(",
+            "        int x,",
+            "        short u,char c)",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(3,14);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+    def test_plist24(self):
+        origin = [
+            "int b() {",
+            "}",
+            "int flablabberwabber(",
+            "                     int lonng,short lonngearr,char shrt)",
+            ""]
+        expected = [
+            "int b() {",
+            "}",
+            "int flablabberwabber(",
+            "                     int lonng,",
+            "                     short lonngearr,char shrt)",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(3,31);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+    def test_plist25(self):
+        origin = [
+            "int fla(",
+            "  int x,",
+            "  short u,",
+            "  char c)",
+            ""]
+        expected = [
+            "int fla(",
+            "  int x,",
+            "  short u,",
+            "  char c",
+            ")",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(3,8);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+
+class Comment(BaseTestClass):
+    def test_comment1(self):
+        origin = [
+            "  int foo() {",
+            "    x;",
+            "//     y;",
+            ""]
+        expected = [
+            "  int foo() {",
+            "    x;",
+            "//     y;",
+            "    ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,9);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_comment2(self):
+        origin = [
+            'foo(); // "comment"',
+            ""]
+        expected = [
+            'foo(); // "comment"',
+            "ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(0,19);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+
+
+class Doxygen(BaseTestClass):
+    def test_doxygen1(self):
+        origin = [
+            "class A {",
+            "  /**",
+            ""]
+        expected = [
+            "class A {",
+            "  /**",
+            "   * constructor",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,5);
+        self.enter();
+        self.type("constructor");
+        
+        self.verifyExpected(expected)
+
+    def test_doxygen2(self):
+        origin = [
+            "class A {",
+            "  /**",
+            "   * constructor",
+            ""]
+        expected = [
+            "class A {",
+            "  /**",
+            "   * constructor",
+            "   * @param x foo",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,16);
+        self.enter();
+        self.type("@param x foo");
+        
+        self.verifyExpected(expected)
+
+    def test_doxygen3(self):
+        origin = [
+            "class A {",
+            "  /**",
+            "   * constructor",
+            "   * @param x foo",
+            ""]
+        expected = [
+            "class A {",
+            "  /**",
+            "   * constructor",
+            "   * @param x foo",
+            "   */",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(3,17);
+        self.enter();
+        self.type("/");
+        
         self.verifyExpected(expected)
 
     def test_doxygen4(self):
@@ -2714,45 +2565,6 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
-    def test_using1(self):
-        origin = [
-            "using",
-            ""]
-        expected = [
-            "using",
-            "  ok;",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(0,5);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_plist13(self):
-        origin = [
-            "int fla(",
-            "        int x,",
-            "        short u,",
-            "        char c)",
-            ""]
-        expected = [
-            "int fla(",
-            "        int x,",
-            "        short u,",
-            "        char c",
-            "       )",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(3,14);
-        self.enter();
-        
-        self.verifyExpected(expected)
-
     def test_doxygen5(self):
         origin = [
             "class A {",
@@ -2767,6 +2579,82 @@ class Test(IndentTest):
 
         self.setCursorPosition(1,5);
         self.type(" constructor */");
+        
+        self.verifyExpected(expected)
+
+    def test_doxygen6(self):
+        origin = [
+            "class A {",
+            "  /** constructor */",
+            ""]
+        expected = [
+            "class A {",
+            "  /** constructor */",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,20);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_doxygen7(self):
+        origin = [
+            "class A {",
+            "  int foo(); /** unorthodox doxygen comment */",
+            ""]
+        expected = [
+            "class A {",
+            "  int foo(); /** unorthodox doxygen comment */",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,46);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_doxygen8(self):
+        origin = [
+            "/** unorthodox doxygen comment */ a;",
+            ""]
+        expected = [
+            "/** unorthodox doxygen comment */ a;",
+            "ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(0, 36);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+class Prep(BaseTestClass):
+    def test_prep1(self):
+        origin = [
+            "  int foo() {",
+            "    x;",
+            ""]
+        expected = [
+            "  int foo() {",
+            "    x;",
+            "#ifdef FLA",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,6);
+        self.enter();
+        self.type("#");
+        self.type("ifdef FLA");
         
         self.verifyExpected(expected)
 
@@ -2791,121 +2679,152 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
-    def test_plist14(self):
+    def test_prep3(self):
         origin = [
-            "int b() {",
-            "}",
-            "int fla(int x,short u,char c)",
+            "  int foo() {",
+            "    x;",
             ""]
         expected = [
-            "int b() {",
-            "}",
-            "int fla(",
-            "        int x,short u,char c)",
+            "  int foo() {",
+            "    x;",
+            "    #region FLA",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(2,8);
+        self.setCursorPosition(1,6);
         self.enter();
+        self.type("#region FLA");
         
         self.verifyExpected(expected)
 
-    def test_doxygen2(self):
+    def test_prep4(self):
         origin = [
-            "class A {",
-            "  /**",
-            "   * constructor",
+            "  int foo() {",
+            "    x;",
             ""]
         expected = [
-            "class A {",
-            "  /**",
-            "   * constructor",
-            "   * @param x foo",
+            "  int foo() {",
+            "    x;",
+            "    #endregion FLA",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(2,16);
+        self.setCursorPosition(1,6);
         self.enter();
-        self.type("@param x foo");
+        self.type("#endregion FLA");
         
         self.verifyExpected(expected)
 
-    def test_if10(self):
+    def test_prep5(self):
         origin = [
-            "if () {}"]
+            "  int foo() {",
+            "    x;",
+            "#endregion FLA",
+            ""]
         expected = [
-            "if ()",
-            "{}"]
+            "  int foo() {",
+            "    x;",
+            "#endregion FLA // n",
+            ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(0,5);
-        self.enter();
+        self.setCursorPosition(2,14);
+        self.type(" // n");
         
         self.verifyExpected(expected)
 
-    def test_if3(self):
+    def test_prep6(self):
+        origin = [
+            "  int foo() {",
+            "    x;",
+            "#endregion",
+            ""]
+        expected = [
+            "  int foo() {",
+            "    x;",
+            "#endregion daten",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,10);
+        self.type(" daten");
+        
+        self.verifyExpected(expected)
+
+class Comma(BaseTestClass):
+    def test_comma1(self):
         origin = [
             "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else",
-            ""]
-        expected = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else",
-            "    ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(3,6);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_doxygen8(self):
-        origin = [
-            "/** unorthodox doxygen comment */ a;",
-            ""]
-        expected = [
-            "/** unorthodox doxygen comment */ a;",
-            "ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(0, 36);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_if9(self):
-        origin = [
-            "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else if (y<x) y = x;",
+            "  double x,",
             ""]
         expected = [
             "int fla() {",
-            "  if (0<x)",
-            "    x = 0;",
-            "  else if (y<x) y = x;",
+            "  double x,",
             "  ok",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(3,22);
+        self.setCursorPosition(1,11);
         self.enter();
         self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_comma2(self):
+        origin = [
+            "int fla() {",
+            "  double x,y;",
+            ""]
+        expected = [
+            "int fla() {",
+            "  double x,",
+            "  y;",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,11);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+    def test_comma3(self):
+        origin = [
+            "int fla() {",
+            "  b = 1,",
+            ""]
+        expected = [
+            "int fla() {",
+            "  b = 1,",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,8);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+    def test_comma4(self):
+        origin = [
+            "int fla() {",
+            "  b = 1,c = 2;",
+            ""]
+        expected = [
+            "int fla() {",
+            "  b = 1,",
+            "  c = 2;",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,8);
+        self.enter();
         
         self.verifyExpected(expected)
 
@@ -2926,62 +2845,145 @@ class Test(IndentTest):
         
         self.verifyExpected(expected)
 
-    def test_plist25(self):
+    def test_comma6(self):
         origin = [
-            "int fla(",
-            "  int x,",
-            "  short u,",
-            "  char c)",
+            "double x,y;",
             ""]
         expected = [
-            "int fla(",
-            "  int x,",
-            "  short u,",
-            "  char c",
-            ")",
+            "double x,",
+            "y;",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(3,8);
+        self.setCursorPosition(0,9);
         self.enter();
         
         self.verifyExpected(expected)
 
-    def test_plist11(self):
+class Normal(BaseTestClass):
+    def test_normal1(self):
         origin = [
-            "int fla(",
-            "        int x,short u,char c)",
+            "int main() {",
+            "    bla;"]
+        expected = [
+            "int main() {",
+            "    bla;",
+            "    ok;"]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,8);
+        self.enter();
+        self.type("ok;");
+        self.verifyExpected(expected)
+
+    def test_normal2(self):
+        origin = [
+            "int main() {",
+            "    bla;blu;"]
+        expected = [
+            "int main() {",
+            "    bla;",
+            "    blu;"]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,8);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+    def test_normal3(self):
+        origin = [
+            "int main() {",
+            "    bla;  blu;",
             ""]
         expected = [
-            "int fla(",
-            "        int x,",
-            "        short u,char c)",
+            "int main() {",
+            "    bla;",
+            "    blu;",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,8);
+        self.enter();
+        
+        self.verifyExpected(expected)
+
+class Using(BaseTestClass):
+    def test_using1(self):
+        origin = [
+            "using",
+            ""]
+        expected = [
+            "using",
+            "  ok;",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(0,5);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_using2(self):
+        origin = [
+            "using",
+            "  std::vector;",
+            ""]
+        expected = [
+            "using",
+            "  std::vector;",
+            "ok",
             ""]
 
         self.setOrigin(origin)
 
         self.setCursorPosition(1,14);
         self.enter();
+        self.type("ok");
         
         self.verifyExpected(expected)
 
-    def test_alignbrace(self):
+    def test_using3(self):
         origin = [
-            "  if ( true ) {",
-            "    ",
-            "}",
+            "using std::vector;",
             ""]
         expected = [
-            "  if ( true ) {",
-            "    ",
-            "  }",
+            "using std::vector;",
+            "ok",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(2,0);
-        self.alignLine(2)
+        self.setCursorPosition(0,18);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+
+class Forein(BaseTestClass):
+    def test_foreign1(self):
+        origin = [
+            "// indent-width is 2 but we want to maintain an indentation of 4",
+            "int main() {",
+            ""]
+        expected = [
+            "// indent-width is 2 but we want to maintain an indentation of 4",
+            "int main() {",
+            "    bla();",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,12);
+        self.enter();
+        self.type("  bla();");
         self.verifyExpected(expected)
 
     def test_foreign2(self):
@@ -3004,43 +3006,65 @@ class Test(IndentTest):
         self.type("bli();");
         self.verifyExpected(expected)
 
-    def test_foreign1(self):
+    def test_foreign3(self):
         origin = [
-            "// indent-width is 2 but we want to maintain an indentation of 4",
             "int main() {",
+            "// indent-width is 2 but we want to maintain an indentation of 4",
             ""]
         expected = [
-            "// indent-width is 2 but we want to maintain an indentation of 4",
             "int main() {",
-            "    bla();",
+            "    ok",
+            "// indent-width is 2 but we want to maintain an indentation of 4",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(1,12);
+        self.setCursorPosition(0,12);
         self.enter();
-        self.type("  bla();");
+        self.type("  ok");
         self.verifyExpected(expected)
 
-    def test_if1(self):
+
+class Other(BaseTestClass):
+    def test_alignbrace(self):
         origin = [
-            "int fla() {",
-            "  if (0<x)",
+            "  if ( true ) {",
+            "    ",
+            "}",
             ""]
         expected = [
-            "int fla() {",
-            "  if (0<x)",
-            "    ok",
+            "  if ( true ) {",
+            "    ",
+            "  }",
             ""]
 
         self.setOrigin(origin)
 
-        self.setCursorPosition(1,10);
+        self.setCursorPosition(2,0);
+        self.alignLine(2)
+        self.verifyExpected(expected)
+
+    def test_137157(self):
+        origin = [
+            "# 1",
+            "do {",
+            "}",
+            " while (0);",
+            " "]
+        expected = [
+            "# 1",
+            "do {",
+            "}",
+            " while (0);",
+            " ",
+            " ok"]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(4,1);
         self.enter();
         self.type("ok");
-        
         self.verifyExpected(expected)
-
 
 
 if __name__ == '__main__':

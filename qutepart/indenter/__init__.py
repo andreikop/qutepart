@@ -24,7 +24,6 @@ def getIndenter(indenterName, qpart):
     elif 'lisp' == indenterName:
         from qutepart.indenter.lisp import IndenterLisp as indenterClass
     elif 'python' == indenterName:
-        print 'py'
         from qutepart.indenter.python import IndenterPython as indenterClass
     elif 'lilypond' == indenterName:
         from qutepart.indenter.ruby import IndenterRuby as indenterClass
