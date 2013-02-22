@@ -17,7 +17,7 @@ class IndenterBase(IndenterNone):
     def indentBlock(block):
         """Indent the block
         """
-        raise NotImplemented()
+        self._setBlockIndent(block, self.computeIndent(block, ''))
     
     def computeIndent(self, block, char):
         """Compute indent.
@@ -55,14 +55,15 @@ class IndenterBase(IndenterNone):
         else:
             return ' ' * width
     
+    @staticmethod
     def _setBlockIndent(block, indent):
         """Set blocks indent. Modify text in qpart
         """
-        raise NotImplemented()
-        
+        currentIndent = self._blockIndent(block)
+        self._qpart.replaceText((block.blockNumber(), 0), len(currentIndent), indent)
     
     @staticmethod
-    def _lastNonShaceChar(block):
+    def _lastNonSpaceChar(block):
         textStripped = block.text().rstrip()
         if textStripped:
             return textStripped[-1]

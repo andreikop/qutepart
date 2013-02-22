@@ -81,7 +81,7 @@ class IndenterCStyle(IndenterBase):
         block, column = self.findTextBackward(block, column, '{')  # raise ValueError if not found
         
         try:
-            block, column = tryParenthesisBeforeBrace(block, column)
+            block, column = self.tryParenthesisBeforeBrace(block, column)
         except ValueError:
             pass # leave previous values
         
@@ -134,7 +134,7 @@ class IndenterCStyle(IndenterBase):
             return None
     
         try:
-            block, column = self.findTextBackward(block, 0, '{')
+            block, notUsedColumn = self.findTextBackward(block, 0, '{')
         except ValueError:
             return None
     
@@ -243,7 +243,7 @@ class IndenterCStyle(IndenterBase):
                     match = re.match('^\s*(\/\/\s*)', prevLineText)
                 
                 if match is not None:
-                    self._insertText(block.blockNumber(), 0, match.group(1))
+                    self._qpart.insertText((block.blockNumber(), 0), match.group(1))
     
         if indentation is not None:
             dbg("tryCppComment: success in line %d" % block.previous().blockNumber())
@@ -265,7 +265,7 @@ class IndenterCStyle(IndenterBase):
     
         if currentBlock.text().endswith('{'):
             try:
-                foundBlock, foundColumn = self.tryParenthesisBeforeBrace(currentBlock, len(currentBlock.text().rstrip()))
+                foundBlock, notUsedColumn = self.tryParenthesisBeforeBrace(currentBlock, len(currentBlock.text().rstrip()))
             except ValueError:
                 foundBlock = None
             
@@ -507,7 +507,7 @@ class IndenterCStyle(IndenterBase):
                 if lastChar == ',':
                     # use indentation of last line instead and place closing anchor
                     # in same column of the openeing anchor
-                    self._qpart.insertText((block.blockNumber(), _firstNonSpaceColumn(block.text())), '\n')
+                    self._qpart.insertText((block.blockNumber(), self._firstNonSpaceColumn(block.text())), '\n')
                     self._qpart.cursorPosition = (block.blockNumber(), len(actualIndentation))
                     # indent closing anchor
                     self._setBlockIndent(block.next(), self._makeIndentFromWidth(foundColumn))
@@ -572,28 +572,27 @@ class IndenterCStyle(IndenterBase):
         
         if firstCharAfterIndent and c == '{':
             # todo: maybe look for if etc.
-            indent = tryBrace(block)
+            indent = self.tryBrace(block)
             if indent is None:
-                indent = tryCKeywords(block, True)
+                indent = self.tryCKeywords(block, True)
             if indent is None:
-                indent =tryCComment(block); # checks, whether we had a "*/"
+                indent = self.tryCComment(block); # checks, whether we had a "*/"
             if indent is None:
-                indent =tryStatement(line)
+                indent = self.tryStatement(block)
     
             return indent  # probably None
         elif firstCharAfterIndent and c == '}':
             try:
-                indentation = findLeftBrace(line, firstPos)
+                indentation = self.findLeftBrace(block, self._firstNonSpaceColumn(block.text()))
             except ValueError:
                 return None
             else:
                 return indentation
         elif CFG_SNAP_SLASH and c == '/' and block.text().endswith(' /'):
             # try to snap the string "* /" to "*/"
-            currentString = document.line(line)
-            match = re.match('^(\s*)\*\s+\/\s*$')
+            match = re.match('^(\s*)\*\s+\/\s*$', block.text())
             if match is not None:
-                self.qpart.lines[block.blockNumber()] = match.group(1) + '*/'
+                self._qpart.lines[block.blockNumber()] = match.group(1) + '*/'
             return self._prevBlockIndent(block)
         elif c == ':':
             # todo: handle case, default, signals, private, public, protected, Q_SIGNALS
