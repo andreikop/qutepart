@@ -578,6 +578,13 @@ class Qutepart(QPlainTextEdit):
         
         cursor.insertText(text)
     
+    def insertText(self, pos, text):
+        """Insert text at position
+        
+        If ``pos`` is an integer, it is interpreted as absolute position, if a tuple - as ``(line, column)``
+        """
+        return self.replaceText(pos, 0, text)
+    
     def detectSyntax(self, xmlFileName = None, mimeType = None, language = None, sourceFilePath = None):
         """Get syntax by one of parameters:
         

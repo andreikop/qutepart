@@ -76,9 +76,29 @@ class ReplaceText(_BaseTest):
         self.assertRaises(IndexError, self.qpart.replaceText, (7, 0), 1, 'Z')
 
 
-class UnindentWithBackspace(_BaseTest):
-    def test_printhi(self):
-        print 'hi'
+class InsertText(_BaseTest):
+    def test_1(self):
+        # Basic case
+        self.qpart.text = '123456789'
+        self.qpart.insertText(3, 'xyz')
+        self.assertEquals(self.qpart.text, '123xyz456789')
+
+    def test_2(self):
+        # (line, col) position
+        self.qpart.text = '12345\n67890\nabcde'
+        self.qpart.insertText((1, 4), 'Z')
+        self.assertEquals(self.qpart.text, '12345\n6789Z0\nabcde')
+
+    def test_3(self):
+        # Edge cases
+        self.qpart.text = '12345\n67890\nabcde'
+        self.qpart.insertText((0, 0), 'Z')
+        self.assertEquals(self.qpart.text, 'Z12345\n67890\nabcde')
+
+        self.qpart.text = '12345\n67890\nabcde'
+        self.qpart.insertText((2, 5), 'Z')
+        self.assertEquals(self.qpart.text, '12345\n67890\nabcdeZ')
+
 
 if __name__ == '__main__':
     unittest.main()
