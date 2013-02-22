@@ -116,7 +116,7 @@ class IndenterCStyle(IndenterBase):
                 indentation = self._lineIndent(text)
                 if CFG_INDENT_CASE:
                     indentation = self._increaseIndent(indentation)
-                dbg("trySwitchStatement: success in line %d" + block.blockNumber())
+                dbg("trySwitchStatement: success in line %d" % block.blockNumber())
                 return indentation
         
         return None
@@ -165,7 +165,7 @@ class IndenterCStyle(IndenterBase):
                 foundBlock = None
             
             if foundBlock is not None:
-                dbg("tryCComment: success (1) in line %d" + foundBlock.blockNumber())
+                dbg("tryCComment: success (1) in line %d" % foundBlock.blockNumber())
                 return self._lineIndent(foundBlock.text())
     
         if prevNonEmptyBlock != block.previous():
@@ -179,14 +179,14 @@ class IndenterCStyle(IndenterBase):
             indentation = self._blockIndent(prevNonEmptyBlock)
             if CFG_AUTO_INSERT_STAR:
                 # only add '*', if there is none yet.
-                indentation += self._indentText()
+                indentation = self._increaseIndent(indentation)
                 if not blockTextStripped.endswith('*'):
                     indentation += '*'
                 secondCharIsSpace = len(blockTextStripped) > 1 and blockTextStripped[1].isspace()
                 if not secondCharIsSpace and \
                    not blockTextStripped.endswith("*/"):
                     indentation += ' '
-            dbg("tryCComment: success (2) in line %d" + block.blockNumber())
+            dbg("tryCComment: success (2) in line %d" % block.blockNumber())
             return indentation
             
         elif prevBlockTextStripped.startswith('*') and \
@@ -201,7 +201,7 @@ class IndenterCStyle(IndenterBase):
                 if len(blockTextStripped) < 2 or not blockTextStripped[1].isspace():
                     indentation += ' '
             
-            dbg("tryCComment: success (2) in line %d" + block.blockNumber())
+            dbg("tryCComment: success (2) in line %d" % block.blockNumber())
             return indentation
     
         return None
@@ -281,7 +281,7 @@ class IndenterCStyle(IndenterBase):
             dbg("tryBrace: success in line %d" % block.blockNumber())
         return indentation
     
-    def _tryCKeywords(block, isBrace):
+    def tryCKeywords(self, block, isBrace):
         """
         Check for if, else, while, do, switch, private, public, protected, signals,
         default, case etc... keywords, as we want to indent then. If   is
@@ -296,7 +296,7 @@ class IndenterCStyle(IndenterBase):
         
         if currentBlock.text().rstrip().endswith(')'):
             try:
-                foundBlock, foundColumn = self.findTextBackward(block, currentBlock, len(currentBlock.text()), '(')
+                foundBlock, foundColumn = self.findTextBackward(currentBlock, len(currentBlock.text()), '(')
             except ValueError:
                 pass
             else:
@@ -333,9 +333,9 @@ class IndenterCStyle(IndenterBase):
             except ValueError:
                 pass
             else:
-                return _makeIndentFromWidth(foundColumn + 1)
+                return self._makeIndentFromWidth(foundColumn + 1)
 
-    def _tryCondition(self, block):
+    def tryCondition(self, block):
         """ Search for if, do, while, for, ... as we want to indent then.
         Return null, if nothing useful found.
         Note: The code is written to be called *after* tryCComment and tryCppComment!
@@ -348,7 +348,7 @@ class IndenterCStyle(IndenterBase):
         currentText = block.text()
     
         if currentText.rstrip().endswith(';') and \
-           re.match('^\s*(if\b|[}]?\s*else|do\b|while\b|for)', None):
+           re.search('^\s*(if\b|[}]?\s*else|do\b|while\b|for)', currentText):
             # idea: we had something like:
             #   if/while/for (expression)
             #       statement();  <-- we catch this trailing ';'
@@ -382,7 +382,7 @@ class IndenterCStyle(IndenterBase):
         currentBlockText = currentBlock.text()
         if currentBlockText.endswith('('):
             # increase indent level
-            return self._increaseIndent(indentation)
+            return self._increaseIndent(self._lineIndent(currentBlockText))
         
         alignOnSingleQuote = self._qpart.language() in ('PHP/PHP', 'JavaScript')
         # align on strings "..."\n => below the opening quote
@@ -438,7 +438,8 @@ class IndenterCStyle(IndenterBase):
                     indentation = currentIndentation
                 else:
                     indentWidth = foundColumn + 1
-                    while foundBlock().text()[indentWidth].isspace():
+                    text = foundBlock.text()
+                    while indentWidth < len(text) and text[indentWidth].isspace():
                         indentWidth += 1
                     indentation = self._makeIndentFromWidth(indentWidth)
                 
@@ -449,7 +450,7 @@ class IndenterCStyle(IndenterBase):
                     pass
                 else:
                     if alignOnAnchor:
-                        if not matgh.group(2) in ('"', "'"):
+                        if not match.group(2) in ('"', "'"):
                             foundColumn += 1
                         while foundColumn < foundBlock.length() and \
                               foundBlock.text()[foundColumn].isspace():
@@ -463,7 +464,7 @@ class IndenterCStyle(IndenterBase):
             indentation = self._blockIndent(currentBlock)
     
         if indentation is not None:
-            dbg("tryStatement: success in line %d" + currentBlock.number())
+            dbg("tryStatement: success in line %d" % currentBlock.blockNumber())
         return indentation
     
     def tryMatchedAnchor(self, block, alignOnly):
@@ -481,7 +482,7 @@ class IndenterCStyle(IndenterBase):
 
         # we pressed enter in e.g. ()
         try:
-            foundBlock, foundColumn = self.findTextBackward(block, 0, firstChar)
+            foundBlock, foundColumn = self.findTextBackward(block, 0, block.text().lstrip()[0])
         except ValueError:
             return None
         
@@ -518,7 +519,7 @@ class IndenterCStyle(IndenterBase):
                     # otherwise don't add a new line, just align on closing anchor
                     indentation = self._makeIndentFromWidth(foundColumn)
                 
-                dbg("tryMatchedAnchor: success in line %d" + foundBlock.blockNumber())
+                dbg("tryMatchedAnchor: success in line %d" % foundBlock.blockNumber())
                 return indentation
         
         # otherwise we i.e. pressed enter between (), [] or when we enter before curly brace
