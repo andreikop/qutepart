@@ -16,7 +16,7 @@ CFG_ACCESS_MODIFIERS = 0
 # specifies the characters which should trigger indent, beside the default '\n'
 triggerCharacters = "{})/:;#"
 
-DEBUG_MODE = False
+DEBUG_MODE = True
 
 def dbg(*args):
     if (DEBUG_MODE):
@@ -88,7 +88,7 @@ class IndenterCStyle(IndenterBase):
         return self._lineIndent(block.text())
     
     def tryParenthesisBeforeBrace(self, block, column):
-        """ Character at (line, column) has to be a '{'.
+        """ Character at (block, column) has to be a '{'.
         Now try to find the right line for indentation for constructs like:
           if (a == b
               and c == d) { <- check for ')', and find '(', then return its indentation
@@ -347,9 +347,8 @@ class IndenterCStyle(IndenterBase):
     
         # found non-empty line
         currentText = currentBlock.text()
-    
         if currentText.rstrip().endswith(';') and \
-           re.search(r'^\s*(if\b|[}]?\s*else|do\b|while\b|for)', currentText):
+           re.search(r'^\s*(if\b|[}]?\s*else|do\b|while\b|for)', currentText) is None:
             # idea: we had something like:
             #   if/while/for (expression)
             #       statement();  <-- we catch this trailing ';'
@@ -360,7 +359,7 @@ class IndenterCStyle(IndenterBase):
                 return None
             
             for block in iterateBlocksBackFrom(currentBlock.previous()):
-                if block.strip(): # not empty
+                if block.text().strip(): # not empty
                     blockIndent = self._blockIndent(block)
                         
                     if len(blockIndent) < len(currentIndentation):
