@@ -560,7 +560,7 @@ class IndenterCStyle(IndenterBase):
         if indent is None:
             indent = self.tryBrace(block)
         if indent is None:
-            indent = self.tryCKeywords(block, block.text().startswith('{'))
+            indent = self.tryCKeywords(block, block.text().lstrip().startswith('{'))
         if indent is None:
             indent = self.tryCondition(block)
         if indent is None:
