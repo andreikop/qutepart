@@ -26,11 +26,11 @@ class IndenterXml(IndenterBase):
                     if index < len(tokens) - 1:
                         newLine = newLine + '>'
     
-                    re.match('^\s*</', newLine):
+                    if re.match('^\s*</', newLine):
                         char = '/'
                     elif re.match('\>[^<>]*$', newLine):
                         char = '>'
-                    else
+                    else:
                         char = '\n'
                     
                     indentation = self.processChar(newLine, prevLineText, char)

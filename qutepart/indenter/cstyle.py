@@ -106,13 +106,13 @@ class IndenterCStyle(IndenterBase):
         Try to find a previous default, case or switch and return its indentation or
         None if not found.
         """
-        if not re.match('^\s*(default\s*|case\b.*):', block.text()):
+        if not re.match(r'^\s*(default\s*|case\b.*):', block.text()):
             return None
     
         for block in iterateBlocksBackFrom(block.previous()):
             text = block.text()
-            if re.match("^\s*(default\s*|case\b.*):", text) or \
-               re.match("^\s*switch\b", text):
+            if re.match(r"^\s*(default\s*|case\b.*):", text) or \
+               re.match(r"^\s*switch\b", text):
                 indentation = self._lineIndent(text)
                 if CFG_INDENT_CASE:
                     indentation = self._increaseIndent(indentation)
@@ -130,7 +130,7 @@ class IndenterCStyle(IndenterBase):
         if CFG_ACCESS_MODIFIERS < 0:
             return None
     
-        if not re.match('^\s*((public|protected|private)\s*(slots|Q_SLOTS)?|(signals|Q_SIGNALS)\s*):\s*$', block.text()):
+        if not re.match(r'^\s*((public|protected|private)\s*(slots|Q_SLOTS)?|(signals|Q_SIGNALS)\s*):\s*$', block.text()):
             return None
     
         try:
@@ -234,13 +234,13 @@ class IndenterCStyle(IndenterBase):
             if CFG_AUTO_INSERT_SLACHES:
                 if prevLineText[2:4] == '//':
                     # match ##... and replace by only two: #
-                    match = re.match('^\s*(\/\/)', prevLineText)
+                    match = re.match(r'^\s*(\/\/)', prevLineText)
                 elif (char3 == '/' or char3 == '!'):
                     # match #/, #!, #/< and #!
-                    match = re.match('^\s*(\/\/[\/!][<]?\s*)', prevLineText)
+                    match = re.match(r'^\s*(\/\/[\/!][<]?\s*)', prevLineText)
                 else:
                     # only #, nothing else:
-                    match = re.match('^\s*(\/\/\s*)', prevLineText)
+                    match = re.match(r'^\s*(\/\/\s*)', prevLineText)
                 
                 if match is not None:
                     self._qpart.insertText((block.blockNumber(), 0), match.group(1))
@@ -255,7 +255,7 @@ class IndenterCStyle(IndenterBase):
             if not block.text().strip():
                 block = block.previous()
 
-            return re.match('^\s*namespace\b', block.text()) is not None
+            return re.match(r'^\s*namespace\b', block.text()) is not None
     
         currentBlock = self._prevNonEmptyBlock(block)
         if not currentBlock.isValid():
@@ -304,7 +304,7 @@ class IndenterCStyle(IndenterBase):
         
         # found non-empty line
         currentBlockText = currentBlock.text()
-        if re.search('^\s*(if\b|for|do\b|while|switch|[}]?\s*else|((private|public|protected|case|default|signals|Q_SIGNALS).*:))', currentBlockText) is None:
+        if re.match(r'^\s*(if\b|for|do\b|while|switch|[}]?\s*else|((private|public|protected|case|default|signals|Q_SIGNALS).*:))', currentBlockText) is None:
             return None
         
         indentation = None
@@ -334,6 +334,7 @@ class IndenterCStyle(IndenterBase):
                 pass
             else:
                 return self._makeIndentFromWidth(foundColumn + 1)
+        return indentation
 
     def tryCondition(self, block):
         """ Search for if, do, while, for, ... as we want to indent then.
@@ -345,10 +346,10 @@ class IndenterCStyle(IndenterBase):
             return None
     
         # found non-empty line
-        currentText = block.text()
+        currentText = currentBlock.text()
     
         if currentText.rstrip().endswith(';') and \
-           re.search('^\s*(if\b|[}]?\s*else|do\b|while\b|for)', currentText):
+           re.search(r'^\s*(if\b|[}]?\s*else|do\b|while\b|for)', currentText):
             # idea: we had something like:
             #   if/while/for (expression)
             #       statement();  <-- we catch this trailing ';'
@@ -363,7 +364,7 @@ class IndenterCStyle(IndenterBase):
                     blockIndent = self._blockIndent(block)
                         
                     if len(blockIndent) < len(currentIndentation):
-                        if re.search('^\s*(if\b|[}]?\s*else|do\b|while\b|for)[^{]*$', block.text()) is not None:
+                        if re.search(r'^\s*(if\b|[}]?\s*else|do\b|while\b|for)[^{]*$', block.text()) is not None:
                             return blockIndent
         
         return None
@@ -387,7 +388,7 @@ class IndenterCStyle(IndenterBase):
         alignOnSingleQuote = self._qpart.language() in ('PHP/PHP', 'JavaScript')
         # align on strings "..."\n => below the opening quote
         # multi-language support: [\.+] for javascript or php
-        match = re.match('^(.*)(,|"|\'|\))(;?)\s*[\.+]?\s*(\/\/.*|\/\*.*\*\/\s*)?$', currentBlockText)
+        match = re.match(r'^(.*)(,|"|\'|\))(;?)\s*[\.+]?\s*(\/\/.*|\/\*.*\*\/\s*)?$', currentBlockText)
         if match is not None:
             alignOnAnchor = len(match.group(3)) == 0 and match.group(2) != ')'
             # search for opening ", ' or (
@@ -399,7 +400,7 @@ class IndenterCStyle(IndenterBase):
                         # make sure it's not commented out
                         if currentBlockText[i] == match.group(2) and (i == 0 or currentBlockText[i - 1] != '\\'):
                             # also make sure that this is not a line like '#include "..."' <-- we don't want to indent here
-                            if re.match('^#include', currentBlockText):
+                            if re.match(r'^#include', currentBlockText):
                                 return indentation
                             
                             break
@@ -590,7 +591,7 @@ class IndenterCStyle(IndenterBase):
                 return indentation
         elif CFG_SNAP_SLASH and c == '/' and block.text().endswith(' /'):
             # try to snap the string "* /" to "*/"
-            match = re.match('^(\s*)\*\s+\/\s*$', block.text())
+            match = re.match(r'^(\s*)\*\s+\/\s*$', block.text())
             if match is not None:
                 self._qpart.lines[block.blockNumber()] = match.group(1) + '*/'
             return self._prevBlockIndent(block)
@@ -610,7 +611,7 @@ class IndenterCStyle(IndenterBase):
                 pass
             else:
                 text = foundBlock.text()[:foundColumn]
-                match  = re.search('\b(\w+)\s*$', text)
+                match  = re.search(r'\b(\w+)\s*$', text)
                 if match is not None:
                     return self._makeIndentFromWidth(match.start())
         elif firstCharAfterIndent and c == '#' and self._qpart.language() in ('C', 'C++'):
@@ -618,7 +619,7 @@ class IndenterCStyle(IndenterBase):
             return ''
         return self._prevBlockIndent(block)
     
-    def computeIndent(self, block, char=''):
+    def computeIndent(self, block, char='\n'):
         alignOnly = char == ""
     
         if char != '\n' and not alignOnly:

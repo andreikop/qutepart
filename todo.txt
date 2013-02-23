@@ -5,6 +5,7 @@ fixme:
     indent to detected for model xml
     when drawing indent markers - support spaces and tabs
     doesn't disappear completion, if finishing current word
+    when positioning cursor - show few lines lower/higher additionally
 
 first release
   indenters                           4
