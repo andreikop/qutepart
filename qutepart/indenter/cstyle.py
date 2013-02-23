@@ -320,6 +320,7 @@ class IndenterCStyle(IndenterBase):
         # try to ignore lines like: if (a) b; or if (a) { b; }
         if not currentBlockText.endswith(';') and \
            not currentBlockText.endswith('}'):
+            # take its indentation and add one indentation level
             indentation = self._blockIndent(currentBlock)
             if not isBrace:
                 indentation = self._increaseIndent(indentation)
@@ -328,12 +329,18 @@ class IndenterCStyle(IndenterBase):
             # for(int b
             #     b < 10
             #     --b)
+            """FIXME hlamer: commented, because I don't understand it. If.test_if6 fails
             try:
                 foundBlock, foundColumn = self.findTextBackward(currentBlock, None, '(')
             except ValueError:
                 pass
             else:
+                dbg("tryCKeywords: success 1 in line %d" % block.blockNumber())
                 return self._makeIndentFromWidth(foundColumn + 1)
+            """
+        if indentation is not None:
+            dbg("tryCKeywords: success in line %d" % block.blockNumber())
+        
         return indentation
 
     def tryCondition(self, block):
@@ -360,11 +367,12 @@ class IndenterCStyle(IndenterBase):
             
             for block in iterateBlocksBackFrom(currentBlock.previous()):
                 if block.text().strip(): # not empty
-                    blockIndent = self._blockIndent(block)
+                    indentation = self._blockIndent(block)
                         
-                    if len(blockIndent) < len(currentIndentation):
+                    if len(indentation) < len(currentIndentation):
                         if re.search(r'^\s*(if\b|[}]?\s*else|do\b|while\b|for)[^{]*$', block.text()) is not None:
-                            return blockIndent
+                            dbg("tryCondition: success in line %d" % block.blockNumber())
+                            return indentation
         
         return None
     
@@ -382,6 +390,7 @@ class IndenterCStyle(IndenterBase):
         currentBlockText = currentBlock.text()
         if currentBlockText.endswith('('):
             # increase indent level
+            dbg("tryStatement: success 1 in line %d" % block.blockNumber())
             return self._increaseIndent(self._lineIndent(currentBlockText))
         
         alignOnSingleQuote = self._qpart.language() in ('PHP/PHP', 'JavaScript')
@@ -400,6 +409,7 @@ class IndenterCStyle(IndenterBase):
                         if currentBlockText[i] == match.group(2) and (i == 0 or currentBlockText[i - 1] != '\\'):
                             # also make sure that this is not a line like '#include "..."' <-- we don't want to indent here
                             if re.match(r'^#include', currentBlockText):
+                                dbg("tryStatement: success 2 in line %d" % block.blockNumber())
                                 return indentation
                             
                             break
@@ -537,7 +547,6 @@ class IndenterCStyle(IndenterBase):
         Return filler or null.
         """
         indent = None
-    
         if indent is None:
             indent = self.tryMatchedAnchor(block, alignOnly)
         if indent is None:
@@ -560,6 +569,7 @@ class IndenterCStyle(IndenterBase):
         if indent is not None:
             return indent
         else:
+            dbg("Nothing matched")
             return self._prevBlockIndent(block)
     
     def processChar(self, block, c):
