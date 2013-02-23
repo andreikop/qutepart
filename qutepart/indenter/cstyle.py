@@ -570,7 +570,7 @@ class IndenterCStyle(IndenterBase):
             return indent
         else:
             dbg("Nothing matched")
-            return self._prevBlockIndent(block)
+            return self._blockIndent(self._prevNonEmptyBlock(block))
     
     def processChar(self, block, c):
         if c == ';' or (not (c in triggerCharacters)):

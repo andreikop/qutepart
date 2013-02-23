@@ -667,6 +667,110 @@ class While(BaseTestClass):
         self.verifyExpected(expected)
 
 
+class For(BaseTestClass):
+    def test_for1(self):
+        origin = [
+            "int main() {",
+            "  for (int a = 0;",
+            ""]
+        expected = [
+            "int main() {",
+            "  for (int a = 0;",
+            "       b",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,17);
+        self.enter();
+        self.type("b");
+        
+        self.verifyExpected(expected)
+
+    def test_for2(self):
+        origin = [
+            "int main() {",
+            "  for (int a = 0;",
+            "       b;",
+            "       c)",
+            ""]
+        expected = [
+            "int main() {",
+            "  for (int a = 0;",
+            "       b;",
+            "       c) {",
+            "    ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(3,9);
+        self.type(" {");
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_for3(self):
+        origin = [
+            "int fla() {",
+            "  for (;0<x;)",
+            ""]
+        expected = [
+            "int fla() {",
+            "  for (;0<x;)",
+            "    ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,13);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_for4(self):
+        origin = [
+            "int fla() {",
+            "  for (;0<x;)",
+            "    x--;",
+            ""]
+        expected = [
+            "int fla() {",
+            "  for (;0<x;)",
+            "    x--;",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2,8);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+    def test_for5(self):
+        origin = [
+            "int fla() {",
+            "  for (;0<x;) x();",
+            ""]
+        expected = [
+            "int fla() {",
+            "  for (;0<x;) x();",
+            "  ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,18);
+        self.enter();
+        self.type("ok");
+        
+        self.verifyExpected(expected)
+
+
 class Aplist(BaseTestClass):
     def test_aplist1(self):
         origin = [
@@ -1845,109 +1949,6 @@ class Switch(BaseTestClass):
         
         self.verifyExpected(expected)
 
-
-class For(BaseTestClass):
-    def test_for1(self):
-        origin = [
-            "int main() {",
-            "  for (int a = 0;",
-            ""]
-        expected = [
-            "int main() {",
-            "  for (int a = 0;",
-            "       b",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,17);
-        self.enter();
-        self.type("b");
-        
-        self.verifyExpected(expected)
-
-    def test_for2(self):
-        origin = [
-            "int main() {",
-            "  for (int a = 0;",
-            "       b;",
-            "       c)",
-            ""]
-        expected = [
-            "int main() {",
-            "  for (int a = 0;",
-            "       b;",
-            "       c) {",
-            "    ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(3,9);
-        self.type(" {");
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_for3(self):
-        origin = [
-            "int fla() {",
-            "  for (;0<x;)",
-            ""]
-        expected = [
-            "int fla() {",
-            "  for (;0<x;)",
-            "    ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,13);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_for4(self):
-        origin = [
-            "int fla() {",
-            "  for (;0<x;)",
-            "    x--;",
-            ""]
-        expected = [
-            "int fla() {",
-            "  for (;0<x;)",
-            "    x--;",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(2,8);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
-
-    def test_for5(self):
-        origin = [
-            "int fla() {",
-            "  for (;0<x;) x();",
-            ""]
-        expected = [
-            "int fla() {",
-            "  for (;0<x;) x();",
-            "  ok",
-            ""]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1,18);
-        self.enter();
-        self.type("ok");
-        
-        self.verifyExpected(expected)
 
 class PList(BaseTestClass):
     def test_plist1(self):
