@@ -109,13 +109,14 @@ class IndenterCStyle(IndenterBase):
     
         for block in iterateBlocksBackFrom(block.previous()):
             text = block.text()
-            if re.match(r"^\s*(default\s*|case\b.*):", text) or \
-               re.match(r"^\s*switch\b", text):
-                indentation = self._lineIndent(text)
-                if CFG_INDENT_CASE:
-                    indentation = self._increaseIndent(indentation)
+            if re.match(r"^\s*(default\s*|case\b.*):", text):
                 dbg("trySwitchStatement: success in line %d" % block.blockNumber())
-                return indentation
+                return self._lineIndent(text)
+            elif re.match(r"^\s*switch\b", text):
+                if CFG_INDENT_CASE:
+                    indentation = self._increaseIndent(self._lineIndent(text))
+                else:
+                    return self._lineIndent(text)
         
         return None
     

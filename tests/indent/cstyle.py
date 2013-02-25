@@ -365,6 +365,7 @@ class Top(BaseTestClass):
         
         self.verifyExpected(expected)
 
+
 class If(BaseTestClass):
     def test_if1(self):
         origin = [
