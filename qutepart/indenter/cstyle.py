@@ -94,11 +94,9 @@ class IndenterCStyle(IndenterBase):
               and c == d) { <- check for ')', and find '(', then return its indentation
         Returns input params, if no success, otherwise block and column of '('
         """
-        text = block.text().rstrip()
-        
+        text = block.text()[:column - 1].rstrip()
         if not text.endswith(')'):
             raise ValueError()
-        
         return self.findTextBackward(block, column, '(')
     
     def trySwitchStatement(self, block):
@@ -270,7 +268,7 @@ class IndenterCStyle(IndenterBase):
                 foundBlock = None
             
             if foundBlock is not None:
-                indentation = self._increaseIndent(self._lineIndent(block.text()))
+                indentation = self._increaseIndent(self._blockIndent(foundBlock))
             else:
                 indentation = self._lineIndent(block.text())
                 if CFG_INDENT_NAMESPACE or not _isNamespace(block):
@@ -329,7 +327,7 @@ class IndenterCStyle(IndenterBase):
             # for(int b
             #     b < 10
             #     --b)
-            """FIXME hlamer: commented, because I don't understand it. If.test_if6 fails
+            """ FIXME uncomment
             try:
                 foundBlock, foundColumn = self.findTextBackward(currentBlock, None, '(')
             except ValueError:
