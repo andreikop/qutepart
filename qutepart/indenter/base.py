@@ -11,6 +11,7 @@ class IndenterNone:
 class IndenterBase(IndenterNone):
     """Base class for indenters
     """
+    TRIGGER_CHARACTERS = ""  # indenter is called, when user types Enter of one of trigger chars
     def __init__(self, qpart):
         self._qpart = qpart
     

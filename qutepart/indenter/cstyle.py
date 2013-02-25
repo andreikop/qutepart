@@ -14,7 +14,6 @@ CFG_ACCESS_MODIFIERS = 0
 # indent
 
 # specifies the characters which should trigger indent, beside the default '\n'
-triggerCharacters = "{})/:;#"
 
 DEBUG_MODE = True
 
@@ -54,6 +53,7 @@ def iterateBlocksBackFrom(block):
 
 
 class IndenterCStyle(IndenterBase):
+    TRIGGER_CHARACTERS = "{})/:;#"
     
     def findTextBackward(self, block, column, needle):
         """Search for a needle and return (block, column)
@@ -571,7 +571,7 @@ class IndenterCStyle(IndenterBase):
             return self._blockIndent(self._prevNonEmptyBlock(block))
     
     def processChar(self, block, c):
-        if c == ';' or (not (c in triggerCharacters)):
+        if c == ';' or (not (c in self.TRIGGER_CHARACTERS)):
             return None
         
         column = self._qpart.cursorPosition[1]

@@ -725,6 +725,17 @@ class Qutepart(QPlainTextEdit):
                                          self._markArea.width(),
                                          cr.height()))
 
+    def _autoIndentBlock(self, block, char = '\n'):
+        """Indent block after Enter pressed or trigger character typed
+        """
+        cursor = QTextCursor(block)
+        currentText = block.text()
+        spaceAtStartLen = len(currentText) - len(currentText.lstrip())
+        currentIndent = currentText[:spaceAtStartLen]
+        indent = self._indenter.computeIndent(block, char)
+        if indent != currentIndent:
+            self.replaceText(block.position(), spaceAtStartLen, indent)
+
     def _insertNewBlock(self):
         """Enter pressed.
         Insert properly indented block
@@ -732,13 +743,7 @@ class Qutepart(QPlainTextEdit):
         cursor = self.textCursor()
         with self:
             cursor.insertBlock()
-            currentText = cursor.block().text()
-            spaceAtStartLen = len(currentText) - len(currentText.lstrip())
-            indent = self._indenter.computeIndent(self.textCursor().block())
-            cursor.insertText(indent)
-            if spaceAtStartLen:
-                cursor.setPosition(cursor.position() + spaceAtStartLen, QTextCursor.KeepAnchor)
-                cursor.removeSelectedText()
+            self._autoIndentBlock(cursor.block())
         self.ensureCursorVisible()
 
     def _textBeforeCursor(self):
@@ -746,7 +751,6 @@ class Qutepart(QPlainTextEdit):
         """
         cursor = self.textCursor()
         return cursor.block().text()[:cursor.positionInBlock()]
-
 
     def keyPressEvent(self, event):
         pass # suppress dockstring for non-public method
@@ -777,7 +781,12 @@ class Qutepart(QPlainTextEdit):
         elif event.matches(QKeySequence.SelectStartOfLine):
             self._onShortcutHome(select=True)
         else:
-            super(Qutepart, self).keyPressEvent(event)
+            if event.text() in self._indenter.TRIGGER_CHARACTERS:
+                with self:
+                    super(Qutepart, self).keyPressEvent(event)
+                    self._autoIndentBlock(self.textCursor().block(), event.text())
+            else:
+                super(Qutepart, self).keyPressEvent(event)
     
     def _drawIndentMarkers(self, paintEventRect):
         """Draw indentation markers
