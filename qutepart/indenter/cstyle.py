@@ -84,8 +84,7 @@ class IndenterCStyle(IndenterBase):
             block, column = self.tryParenthesisBeforeBrace(block, column)
         except ValueError:
             pass # leave previous values
-        
-        return self._lineIndent(block.text())
+        return self._blockIndent(block)
     
     def tryParenthesisBeforeBrace(self, block, column):
         """ Character at (block, column) has to be a '{'.
@@ -137,7 +136,7 @@ class IndenterCStyle(IndenterBase):
         except ValueError:
             return None
     
-        indentation = self._lineIndent(block.text())
+        indentation = self._blockIndent(block)
         for i in range(CFG_ACCESS_MODIFIERS):
             indentation = self._increaseIndent(indentation)
     
@@ -193,7 +192,7 @@ class IndenterCStyle(IndenterBase):
             
             # in theory, we could search for opening /*, and use its indentation
             # and then one alignment character. Let's not do this for now, though.
-            indentation = self._lineIndent(block.text())
+            indentation = self._blockIndent(block)
             # only add '*', if there is none yet.
             if CFG_AUTO_INSERT_STAR and not blockTextStripped.startswith('*'):
                 indentation += '*'
@@ -271,7 +270,7 @@ class IndenterCStyle(IndenterBase):
             if foundBlock is not None:
                 indentation = self._increaseIndent(self._blockIndent(foundBlock))
             else:
-                indentation = self._lineIndent(block.text())
+                indentation = self._blockIndent(block)
                 if CFG_INDENT_NAMESPACE or not _isNamespace(block):
                     # take its indentation and add one indentation level
                     indentation = self._increaseIndent(indentation)
@@ -573,7 +572,7 @@ class IndenterCStyle(IndenterBase):
     
     def processChar(self, block, c):
         if c == ';' or (not (c in self.TRIGGER_CHARACTERS)):
-            return None
+            return self._blockIndent(block)
         
         column = self._qpart.cursorPosition[1]
         blockIndent = self._blockIndent(block)
