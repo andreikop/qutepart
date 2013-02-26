@@ -114,7 +114,7 @@ class IndenterCStyle(IndenterBase):
                 return self._lineIndent(text)
             elif re.match(r"^\s*switch\b", text):
                 if CFG_INDENT_CASE:
-                    indentation = self._increaseIndent(self._lineIndent(text))
+                    return self._increaseIndent(self._lineIndent(text))
                 else:
                     return self._lineIndent(text)
         
