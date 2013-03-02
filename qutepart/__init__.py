@@ -781,7 +781,7 @@ class Qutepart(QPlainTextEdit):
         elif event.matches(QKeySequence.SelectStartOfLine):
             self._onShortcutHome(select=True)
         else:
-            if event.text() in self._indenter.TRIGGER_CHARACTERS:
+            if event.text() and event.text() in self._indenter.TRIGGER_CHARACTERS:
                 with self:
                     super(Qutepart, self).keyPressEvent(event)
                     self._autoIndentBlock(self.textCursor().block(), event.text())

@@ -15,7 +15,7 @@ class IndenterBase(IndenterNone):
     def __init__(self, qpart):
         self._qpart = qpart
     
-    def indentBlock(block):
+    def indentBlock(self, block):
         """Indent the block
         """
         self._setBlockIndent(block, self.computeIndent(block, ''))
@@ -56,8 +56,7 @@ class IndenterBase(IndenterNone):
         else:
             return ' ' * width
     
-    @staticmethod
-    def _setBlockIndent(block, indent):
+    def _setBlockIndent(self, block, indent):
         """Set blocks indent. Modify text in qpart
         """
         currentIndent = self._blockIndent(block)

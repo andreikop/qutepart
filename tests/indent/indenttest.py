@@ -31,7 +31,7 @@ class IndentTest(unittest.TestCase):
         QTest.keyClicks(self.qpart, text)
 
     def alignLine(self, index):
-        raise NotImplemented()
+        self.qpart._autoIndentBlock(self.qpart.document().findBlockByNumber(index), '')
     
     def setUp(self):
         self.qpart = Qutepart()
