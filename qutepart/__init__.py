@@ -366,6 +366,7 @@ class Qutepart(QPlainTextEdit):
         createShortcut('Alt+V', self._onShortcutPasteLine)
         createShortcut('Alt+X', self._onShortcutCutLine)
         createShortcut('Alt+D', self._onShortcutDuplicateLine)
+        createShortcut('Ctrl+I', self._onShortcutAutoIndentSelection)
 
     def __enter__(self):
         """Context management method.
@@ -1093,7 +1094,26 @@ class Qutepart(QPlainTextEdit):
             self.ensureCursorVisible()
         
         self._updateExtraSelections()  # newly inserted text might be highlighted as braces
+    
+    def _onShortcutAutoIndentSelection(self):
+        """Indent current line or selected lines
+        """
+        cursor = self.textCursor()
+        
+        startBlock = self.document().findBlock(cursor.selectionStart())
+        endBlock = self.document().findBlock(cursor.selectionEnd())
 
+        if startBlock != endBlock:  # indent multiply lines
+            stopBlock = endBlock.next()
+            
+            block = startBlock
+            
+            with self:
+                while block != stopBlock:
+                    self._autoIndentBlock(block, '')
+                    block = block.next()
+        else:  # indent 1 line
+            self._autoIndentBlock(startBlock, '')
 
 
 def iterateBlocksFrom(block):
