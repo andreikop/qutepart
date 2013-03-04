@@ -3,7 +3,7 @@ from qutepart.indenter.base import IndenterBase
 class IndenterPython(IndenterBase):
     """Indenter for Python language.
     """
-    def computeIndent(self, block, char = '\n'):
+    def computeIndent(self, block, char):
         prevIndent = self._prevBlockIndent(block)
         
         prevLineStripped = block.previous().text().strip()  # empty text from invalid block is ok

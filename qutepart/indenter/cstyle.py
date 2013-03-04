@@ -687,7 +687,7 @@ class IndenterCStyle(IndenterBase):
             return ''
         return blockIndent
     
-    def computeIndent(self, block, char='\n'):
+    def computeIndent(self, block, char):
         alignOnly = char == ""
     
         if char != '\n' and not alignOnly:

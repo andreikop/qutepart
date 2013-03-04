@@ -4,7 +4,7 @@ class IndenterNone:
     def __init__(self, indentTextGetter):
         self._indentText = indentTextGetter
     
-    def computeIndent(self, block):
+    def computeIndent(self, block, char):
         return ''
 
 
@@ -120,7 +120,7 @@ class IndenterNormal(IndenterBase):
     """Class automatically computes indentation for lines
     This is basic indenter, which knows nothing about programming languages
     """
-    def computeIndent(self, block):
+    def computeIndent(self, block, char):
         """Compute indent for the block
         """
         return self._blockIndent(self._prevNonEmptyBlock(block))
