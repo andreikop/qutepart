@@ -1,4 +1,6 @@
 fixme:
+    bad completion for ANALYTICS_MODULE_NAMESPACE
+
     sometimes last line number is not drawn
     incorrect list position, if scroll bar is visible
     empty lines disappear

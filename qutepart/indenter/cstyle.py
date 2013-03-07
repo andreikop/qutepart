@@ -420,6 +420,7 @@ class IndenterCStyle(IndenterBase):
                         if re.search(r'^\s*(if\b|[}]?\s*else|do\b|while\b|for)[^{]*$', block.text()) is not None:
                             dbg("tryCondition: success in line %d" % block.blockNumber())
                             return indentation
+                        break
         
         return None
     

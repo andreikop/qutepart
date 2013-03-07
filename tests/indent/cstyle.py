@@ -605,6 +605,24 @@ class If(BaseTestClass):
         self.enter();
         
         self.verifyExpected(expected)
+    
+    def test_if_qutepart1(self):
+        origin = [
+            "  if (1)",
+            "  {",
+            "     a = 7;"]
+        expected = [
+            "  if (1)",
+            "  {",
+            "     a = 7;",
+            "     x"]
+        
+        self.setOrigin(origin)
+        self.setCursorPosition(3, 11)
+        self.enter()
+        self.type('x')
+        
+        self.verifyExpected(expected)
 
 
 class While(BaseTestClass):
