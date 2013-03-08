@@ -12,6 +12,7 @@ sys.path.insert(0, '../..')
 from qutepart import Qutepart
 import qutepart
 
+
 class IndentTest(unittest.TestCase):
     app = QApplication(sys.argv)
     

@@ -30,6 +30,8 @@ def getIndenter(indenterName, qpart):
         from qutepart.indenter.lisp import IndenterLisp as indenterClass
     elif 'ruby' == indenterName:
         from qutepart.indenter.ruby import IndenterRuby as indenterClass
+    elif 'xml' == indenterName:
+        from qutepart.indenter.xmlindenter import IndenterXml as indenterClass
     else:
         raise KeyError("Indenter %s not found" % indenterName)
     

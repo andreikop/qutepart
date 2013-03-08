@@ -1,8 +1,12 @@
+import re
+
 from qutepart.indenter.base import IndenterBase
 
 class IndenterXml(IndenterBase):
-    """TODO implement
+    """Indenter for XML files
     """
+    TRIGGER_CHARACTERS = "/>"
+    
     def computeIndent(self, block, char):
         """Compute indent for the block
         """
@@ -13,8 +17,8 @@ class IndenterXml(IndenterBase):
         
         if alignOnly:
             # XML might be all in one line, in which case we want to break that up.
-            tokens = re.split('>\s*<', lineText)
-
+            tokens = re.split(r'>\s*<', lineText)
+            
             if len(tokens) > 1:
                 
                 prevIndent = self._lineIndent(prevLineText)
@@ -25,10 +29,9 @@ class IndenterXml(IndenterBase):
                     
                     if index < len(tokens) - 1:
                         newLine = newLine + '>'
-    
-                    if re.match('^\s*</', newLine):
+                    if re.match(r'^\s*</', newLine):
                         char = '/'
-                    elif re.match('\>[^<>]*$', newLine):
+                    elif re.match(r'\\>[^<>]*$', newLine):
                         char = '>'
                     else:
                         char = '\n'
@@ -38,54 +41,53 @@ class IndenterXml(IndenterBase):
                     
                     tokens[index] = newLine
                     prevLineText = newLine;
-                
-                print '\n'.join(tokens)
-                print oldLine
             
-                qpart.lines[block.blockNumber()] =  '\n'.join(tokens)
+                self._qpart.lines[block.blockNumber()] =  '\n'.join(tokens)
                 return prevIndent
             else:  # no tokens, do not split line, just compute indent
-                if re.match('^\s*<\/', lineText):
+                if re.search(r'^\s*</', lineText):
                     char = '/'
-                elif re.match('\>[^<>]*', lineText):
+                elif re.search(r'>[^<>]*', lineText):
                     char = '>'
                 else:
                     char = '\n'
     
-        return processChar(lineText, prevLineText, char)
+        return self.processChar(lineText, prevLineText, char)
     
     def processChar(self, lineText, prevLineText, char):
         prevIndent = self._lineIndent(prevLineText)
         if char == '/':
-            if not re.match('^\s*<\/', lineText):
+            if not re.match(r'^\s*</', lineText):
                 # might happen when we have something like <foo bar="asdf/ycxv">
                 # don't change indentation then
                 return prevIndent
 
-            if not re.match('<[^\/][^>]*[^\/]>[^<>]*$', prevLineText):
+            if not re.match(r'\s*<[^/][^>]*[^/]>[^<>]*$', prevLineText):
                 # decrease indent when we write </ and prior line did not start a tag
                 return self._decreaseIndent(prevIndent)
         elif char == '>':
             # increase indent width when we write <...> or <.../> but not </...>
             # and the prior line didn't close a tag
-            if re.match('^<(\?xml|!DOCTYPE)', prevLineText):
+            if re.match(r'^<(\?xml|!DOCTYPE).*', prevLineText):
                 return ''
-            elif re.match('^\s*<\/', lineText):
+            elif re.match(r'^<(\?xml|!DOCTYPE).*', lineText):
+                return ''
+            elif re.match('^\s*</', lineText):
                 #closing tag, decrease indentation when previous didn't open a tag
-                if re.match('<[^\/][^>]*[^\/]>[^<>]*$', prevLineText):
+                if re.match(r'\s*<[^/][^>]*[^/]>[^<>]*$', prevLineText):
                     # keep indent when prev line opened a tag
                     return prevIndent;
                 else:
                     return self._decreaseIndent(prevIndent)
-            elif re.match('<([\/!][^>]+|[^>]+\/)>\s*$', prevLineText):
+            elif re.search(r'<([/!][^>]+|[^>]+/)>\s*$', prevLineText):
                 # keep indent when prev line closed a tag or was empty or a comment
                 return prevIndent
-            
+
             return self._increaseIndent(prevIndent)
         elif char == '\n':
-            if re.match('^<(\?xml|!DOCTYPE)', prevLineText):
+            if re.match(r'^<(\?xml|!DOCTYPE)', prevLineText):
                 return ''
-            elif re.match('<[^\/!][^>]*[^\/]>[^<>]*$', prevLineText):
+            elif re.search(r'<[^/!][^>]*[^/]>[^<>]*$', prevLineText):
                 # increase indent when prev line opened a tag (but not for comments)
                 return self._increaseIndent(prevIndent)
     

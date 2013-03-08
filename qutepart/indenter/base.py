@@ -1,8 +1,8 @@
 class IndenterNone:
     """No any indentation
     """
-    def __init__(self, indentTextGetter):
-        self._indentText = indentTextGetter
+    def __init__(self, qpart):
+        pass
     
     def computeIndent(self, block, char):
         return ''
