@@ -1,4 +1,5 @@
 fixme:
+    bad completion on kde4
     bad completion for ANALYTICS_MODULE_NAMESPACE
 
     sometimes last line number is not drawn

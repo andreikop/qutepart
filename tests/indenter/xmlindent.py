@@ -178,6 +178,23 @@ class Slash(BaseTestClass):
         self.type('/')
         self.verifyExpected(expected)
 
+    def test_slash4(self):
+        origin = [
+            '    text',
+            '    <blabla',
+            '']
+        expected = [
+            '    text',
+            '    </blabla',
+            '']
+
+        self.setOrigin(origin)
+        
+        self.setCursorPosition(1,5);
+        self.type('/')
+        self.verifyExpected(expected)
+
+
 
 class Greater(BaseTestClass):
     def test_greater1(self):

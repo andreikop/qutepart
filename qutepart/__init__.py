@@ -767,6 +767,13 @@ class Qutepart(QPlainTextEdit):
                    not self.textCursor().hasSelection() and \
                    cursor.positionInBlock() == spaceAtStartLen
         
+        def _shouldAutoIndent(event):
+            cursor = self.textCursor()
+            atEnd = cursor.positionInBlock() == cursor.block().length() - 1
+            return atEnd and \
+                   event.text() and \
+                   event.text() in self._indenter.TRIGGER_CHARACTERS
+        
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
@@ -782,7 +789,7 @@ class Qutepart(QPlainTextEdit):
         elif event.matches(QKeySequence.SelectStartOfLine):
             self._onShortcutHome(select=True)
         else:
-            if event.text() and event.text() in self._indenter.TRIGGER_CHARACTERS:
+            if _shouldAutoIndent(event):
                 with self:
                     super(Qutepart, self).keyPressEvent(event)
                     self._autoIndentBlock(self.textCursor().block(), event.text())
