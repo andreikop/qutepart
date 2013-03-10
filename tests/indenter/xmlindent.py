@@ -39,6 +39,31 @@ class Split(BaseTestClass):
 
         self.alignLine(0)
         self.verifyExpected(expected)
+    
+    def test_split3(self):
+        origin = [
+            '<property name="geometry">',
+            '<rect>',
+            '<x>0</x><y>0</y><width>421</width><height>300</height>',
+            '</rect>',
+            '</property>'
+        ]
+        expected = [
+            '<property name="geometry">',
+            '  <rect>',
+            '    <x>0</x>',
+            '    <y>0</y>',
+            '    <width>421</width>',
+            '    <height>300</height>',
+            '  </rect>',
+            '</property>'
+        ]
+        
+        self.setOrigin(origin)
+        for i in range(8):
+            self.alignLine(i)
+        self.verifyExpected(expected)
+
 
 class Align(BaseTestClass):
     def test_align1(self):

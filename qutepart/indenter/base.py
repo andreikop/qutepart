@@ -24,6 +24,7 @@ class IndenterBase(IndenterNone):
         """Compute indent.
         Block is current block.
         Char is typed character. \n or one of trigger chars
+        Return indentation text, or None, if indentation shall not be modified
         """
         raise NotImplemented()
 

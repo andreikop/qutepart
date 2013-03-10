@@ -734,7 +734,7 @@ class Qutepart(QPlainTextEdit):
         spaceAtStartLen = len(currentText) - len(currentText.lstrip())
         currentIndent = currentText[:spaceAtStartLen]
         indent = self._indenter.computeIndent(block, char)
-        if indent != currentIndent:
+        if indent is not None and indent != currentIndent:
             self.replaceText(block.position(), spaceAtStartLen, indent)
 
     def _insertNewBlock(self):

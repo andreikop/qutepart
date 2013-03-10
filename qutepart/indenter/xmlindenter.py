@@ -41,9 +41,9 @@ class IndenterXml(IndenterBase):
                     
                     tokens[index] = newLine
                     prevLineText = newLine;
-            
+
                 self._qpart.lines[block.blockNumber()] =  '\n'.join(tokens)
-                return prevIndent
+                return None
             else:  # no tokens, do not split line, just compute indent
                 if re.search(r'^\s*</', lineText):
                     char = '/'
@@ -68,6 +68,8 @@ class IndenterXml(IndenterBase):
         elif char == '>':
             # increase indent width when we write <...> or <.../> but not </...>
             # and the prior line didn't close a tag
+            if not prevLineText:  # first line, zero indent
+                return ''
             if re.match(r'^<(\?xml|!DOCTYPE).*', prevLineText):
                 return ''
             elif re.match(r'^<(\?xml|!DOCTYPE).*', lineText):
