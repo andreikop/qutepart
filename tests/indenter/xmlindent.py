@@ -22,8 +22,6 @@ class Split(BaseTestClass):
 
         self.alignLine(0)
         self.verifyExpected(expected)
-    
-    # FIXME single char tags
 
     def test_split2(self):
         origin = [
@@ -64,6 +62,19 @@ class Split(BaseTestClass):
             self.alignLine(i)
         self.verifyExpected(expected)
 
+    def test_split4(self):
+        origin = [
+            '<a><b>8</b></a>'
+        ]
+        expected = [
+            '<a>',
+            '  <b>8</b>',
+            '</a>']
+
+        self.setOrigin(origin)
+
+        self.alignLine(0)
+        self.verifyExpected(expected)
 
 class Align(BaseTestClass):
     def test_align1(self):
@@ -81,8 +92,6 @@ class Align(BaseTestClass):
         self.alignLine(1)
         self.verifyExpected(expected)
     
-    # FIXME single char tags
-
     def test_align2(self):
         origin = [
             '    text',
@@ -122,6 +131,21 @@ class Align(BaseTestClass):
         self.setOrigin(origin)
 
         self.alignLine(0)
+        self.verifyExpected(expected)
+
+    def test_align5(self):
+        origin = [
+            '<a>',
+            '<b>'
+        ]
+        expected = [
+            '<a>',
+            '  <b>'
+        ]
+
+        self.setOrigin(origin)
+
+        self.alignLine(1)
         self.verifyExpected(expected)
 
 

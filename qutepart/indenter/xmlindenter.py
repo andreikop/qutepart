@@ -89,7 +89,7 @@ class IndenterXml(IndenterBase):
         elif char == '\n':
             if re.match(r'^<(\?xml|!DOCTYPE)', prevLineText):
                 return ''
-            elif re.search(r'<[^/!][^>]*[^/]>[^<>]*$', prevLineText):
+            elif re.search(r'<([^/!]|[^/!][^>]*[^/])>[^<>]*$', prevLineText):
                 # increase indent when prev line opened a tag (but not for comments)
                 return self._increaseIndent(prevIndent)
     
