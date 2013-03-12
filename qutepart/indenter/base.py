@@ -1,3 +1,8 @@
+# maximum number of lines we look backwards/forward to find out the indentation
+# level (the bigger the number, the longer might be the delay)
+MAX_SEARCH_OFFSET_LINES = 128
+
+
 class IndenterNone:
     """No any indentation
     """
@@ -64,6 +69,68 @@ class IndenterBase(IndenterNone):
         self._qpart.replaceText((block.blockNumber(), 0), len(currentIndent), indent)
     
     @staticmethod
+    def iterateBlocksFrom(block):
+        """Generator, which iterates QTextBlocks from block until the End of a document
+        But, yields not more than MAX_SEARCH_OFFSET_LINES
+        """
+        count = 0
+        while block.isValid() and count < MAX_SEARCH_OFFSET_LINES:
+            yield block
+            block = block.next()
+            count += 1
+    
+    @staticmethod
+    def iterateBlocksBackFrom(block):
+        """Generator, which iterates QTextBlocks from block until the Start of a document
+        But, yields not more than MAX_SEARCH_OFFSET_LINES
+        """
+        count = 0
+        while block.isValid() and count < MAX_SEARCH_OFFSET_LINES:
+            yield block
+            block = block.previous()
+            count += 1
+    
+    @classmethod
+    def iterateCharsBackwardFrom(cls, block, column):
+        if column is not None:
+            text = block.text()[:column]
+            for index, char in enumerate(reversed(text)):
+                yield block, len(text) - index - 1, char
+            block = block.previous()
+        
+        for block in cls.iterateBlocksBackFrom(block):
+            for index, char in enumerate(reversed(block.text())):
+                yield block, len(block.text()) - index - 1, char
+    
+    def findBracketBackward(self, block, column, bracket):
+        """Search for a needle and return (block, column)
+        Raise ValueError, if not found
+        """
+        if bracket in ('(', ')'):
+            opening = '('
+            closing = ')'
+        elif bracket in ('[', ']'):
+            opening = '['
+            closing = ']'
+        elif bracket in ('{', '}'):
+            opening = '{'
+            closing = '}'
+        else:
+            raise AssertionError('Invalid bracket "%s"' % bracket)
+        
+        depth = 1
+        for foundBlock, foundColumn, char in self.iterateCharsBackwardFrom(block, column):
+            if char == opening:
+                depth = depth - 1
+            elif char == closing:
+                depth = depth + 1
+            
+            if depth == 0:
+                return foundBlock, foundColumn
+        else:
+            raise ValueError('Not found')
+
+    @staticmethod
     def _lastNonSpaceChar(block):
         textStripped = block.text().rstrip()
         if textStripped:
@@ -115,6 +182,27 @@ class IndenterBase(IndenterNone):
             block = block.previous()
         
         return block
+    
+    @staticmethod
+    def _lastColumn(block):
+        """Returns the last non-whitespace column in the given line.
+        If there are only whitespaces in the line, the return value is -1.
+        TODO ignore comments
+        """
+        text = block.text().rstrip()
+        return len(text) + 1
+    
+    @staticmethod
+    def _nextNonSpaceColumn(block, column):
+        """Returns the column with a non-whitespace characters 
+        starting at the given cursor position and searching forwards.
+        """
+        textAfter = block.text()[:column]
+        if textAfter.strip():
+            spaceLen = len(textAfter) - len(textAfter.lstrip())
+            return column + spaceLen
+        else:
+            return -1
 
 
 class IndenterNormal(IndenterBase):

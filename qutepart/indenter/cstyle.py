@@ -24,44 +24,8 @@ def dbg(*args):
 
 #global variables and functions
 
-# maximum number of lines we look backwards/forward to find out the indentation
-# level (the bigger the number, the longer might be the delay)
-MAX_SEARCH_OFFSET_LINES = 128
-
 INDENT_WIDTH = 4
 MODE = "C"
-
-
-def iterateBlocksFrom(block):
-    """Generator, which iterates QTextBlocks from block until the End of a document
-    But, yields not more than MAX_SEARCH_OFFSET_LINES
-    """
-    count = 0
-    while block.isValid() and count < MAX_SEARCH_OFFSET_LINES:
-        yield block
-        block = block.next()
-        count += 1
-
-def iterateBlocksBackFrom(block):
-    """Generator, which iterates QTextBlocks from block until the Start of a document
-    But, yields not more than MAX_SEARCH_OFFSET_LINES
-    """
-    count = 0
-    while block.isValid() and count < MAX_SEARCH_OFFSET_LINES:
-        yield block
-        block = block.previous()
-        count += 1
-
-def iterateCharsBackwardFrom(block, column):
-    if column is not None:
-        text = block.text()[:column]
-        for index, char in enumerate(reversed(text)):
-            yield block, len(text) - index - 1, char
-        block = block.previous()
-    
-    for block in iterateBlocksBackFrom(block):
-        for index, char in enumerate(reversed(block.text())):
-            yield block, len(block.text()) - index - 1, char
 
 
 class IndenterCStyle(IndenterBase):
@@ -80,34 +44,6 @@ class IndenterCStyle(IndenterBase):
         
         return block
 
-    def findBracketBackward(self, block, column, bracket):
-        """Search for a needle and return (block, column)
-        Raise ValueError, if not found
-        """
-        if bracket in ('(', ')'):
-            opening = '('
-            closing = ')'
-        elif bracket in ('[', ']'):
-            opening = '['
-            closing = ']'
-        elif bracket in ('{', '}'):
-            opening = '{'
-            closing = '}'
-        else:
-            raise AssertionError('Invalid bracket "%s"' % bracket)
-        
-        depth = 1
-        for foundBlock, foundColumn, char in iterateCharsBackwardFrom(block, column):
-            if char == opening:
-                depth = depth - 1
-            elif char == closing:
-                depth = depth + 1
-            
-            if depth == 0:
-                return foundBlock, foundColumn
-        else:
-            raise ValueError('Not found')
-
     def findTextBackward(self, block, column, needle):
         """Search for a needle and return (block, column)
         Raise ValueError, if not found
@@ -120,7 +56,7 @@ class IndenterCStyle(IndenterBase):
         if index != -1:
             return block, index
         
-        for block in iterateBlocksBackFrom(block.previous()):
+        for block in self.iterateBlocksBackFrom(block.previous()):
             column = block.text().rfind(needle)
             if column != -1:
                 return block, column
@@ -159,7 +95,7 @@ class IndenterCStyle(IndenterBase):
         if not re.match(r'^\s*(default\s*|case\b.*):', block.text()):
             return None
     
-        for block in iterateBlocksBackFrom(block.previous()):
+        for block in self.iterateBlocksBackFrom(block.previous()):
             text = block.text()
             if re.match(r"^\s*(default\s*|case\b.*):", text):
                 dbg("trySwitchStatement: success in line %d" % block.blockNumber())
@@ -412,7 +348,7 @@ class IndenterCStyle(IndenterBase):
             if not currentIndentation:
                 return None
             
-            for block in iterateBlocksBackFrom(currentBlock.previous()):
+            for block in self.iterateBlocksBackFrom(currentBlock.previous()):
                 if block.text().strip(): # not empty
                     indentation = self._blockIndent(block)
                         
