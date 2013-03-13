@@ -12,7 +12,7 @@ def getIndenter(indenterName, qpart):
     """
     indenterName = indenterName.lower()
     
-    if indenterName in ('haskell', 'lilypond', 'lisp', 'ruby'):  # not supported yet
+    if indenterName in ('haskell', 'lilypond', 'lisp'):  # not supported yet
         from qutepart.indenter.base import IndenterNormal as indenterClass
     elif 'none' == indenterName:
         from qutepart.indenter.base import IndenterBase as indenterClass
@@ -22,17 +22,17 @@ def getIndenter(indenterName, qpart):
         from qutepart.indenter.cstyle import IndenterCStyle as indenterClass
     elif 'python' == indenterName:
         from qutepart.indenter.python import IndenterPython as indenterClass
+    elif 'ruby' == indenterName:
+        from qutepart.indenter.ruby import IndenterRuby as indenterClass
+    elif 'xml' == indenterName:
+        from qutepart.indenter.xmlindenter import IndenterXml as indenterClass
     elif 'haskell' == indenterName:
         from qutepart.indenter.haskell import IndenterHaskell as indenterClass
     elif 'lilypond' == indenterName:
         from qutepart.indenter.lilypond import IndenterLilypond as indenterClass
     elif 'lisp' == indenterName:
         from qutepart.indenter.lisp import IndenterLisp as indenterClass
-    elif 'ruby' == indenterName:
-        from qutepart.indenter.ruby import IndenterRuby as indenterClass
-    elif 'xml' == indenterName:
-        from qutepart.indenter.xmlindenter import IndenterXml as indenterClass
     else:
         raise KeyError("Indenter %s not found" % indenterName)
-    
+
     return indenterClass(qpart)

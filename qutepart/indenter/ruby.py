@@ -15,14 +15,14 @@ class Statement:
         self.endBlock = endBlock
     
     # Convert to string for debugging
-    def toString(self):
+    def __str__(self):
         return "{ %d, %d}" % (self.startBlock.blockNumber(), self.endBlock.blockNumber())
     
     def offsetToCursor(self, offset):
-        # Return an object having 'line' and 'column' set to the given offset in a statement
+        # Return (block, column)
         # TODO Provide helper function for this when API is converted to using cursors:
         block = self.startBlock
-        while block != self.endBlock and \
+        while block != self.endBlock.next() and \
               len(block.text()) < offset:
             offset -= len(block.text()) + 1
             block = block.next()
@@ -32,12 +32,14 @@ class Statement:
     def isCode(self, offset):
         # Return document.isCode at the given offset in a statement
         block, column = self.offsetToCursor(offset)
-        return document.isCode(block, column)
+        # FIXME return document.isCode(block, column)
+        return True
   
     def isComment(self, offset):
         # Return document.isComment at the given offset in a statement
         block, column = self.offsetToCursor(offset)
-        return document.isComment(block, column)
+        # FIXME return document.isComment(block, column)
+        return True
   
     def indent(self):
         # Return the indent at the beginning of the statement
@@ -47,13 +49,14 @@ class Statement:
         # Return the content of the statement from the document
         cnt = ""
         block = self.startBlock
-        while block.blockNumber() <= self.endBlock.blockNumber():
+        while block != self.endBlock.next():
             text = block.text()
             if text.endswith('\\'):
                 cnt += text[:-1]
                 cnt += ' '
             else:
                 cnt += text
+            block = block.next()
         return cnt
 
 
@@ -65,7 +68,7 @@ class IndenterRuby(IndenterBase):
     @staticmethod
     def _isCommentBlock(block):
         # FIXME use parser markup
-        return block.text.startswith('#')
+        return block.text().startswith('#')
     
     @staticmethod
     def _isComment(block, column):
@@ -73,25 +76,28 @@ class IndenterRuby(IndenterBase):
         textBefore = block.text()[:column + 1]
         return '#' in textBefore
     
-    def _prevNonCommentBlock(block):
+    def _prevNonCommentBlock(self, block):
         """Return the closest non-empty line, ignoring comments
         (result <= line). Return -1 if the document
         """
         block = self._prevNonEmptyBlock(block)
         while block.isValid() and self._isCommentBlock(block):
             block = self._prevNonEmptyBlock(block)
+        return block
     
+    @staticmethod
     def _isBlockContinuing(block):
         return block.text().endswith('\\')
     
-    def _isLastCodeColumn(block, column):
+    def _isLastCodeColumn(self, block, column):
         """Return true if the given column is at least equal to the column that
         contains the last non-whitespace character at the given line, or if
         the rest of the line is a comment.
         """
         return column >= self._lastColumn(block) or \
-               self._isComment(block, self._nextNonSpaceColumn(block, column + 1))
-      
+               self._isComment(block, self._nextNonSpaceColumn(block, column))
+    
+    @staticmethod
     def testAtEnd(stmt, rx):
         """Look for a pattern at the end of the statement.
         
@@ -103,7 +109,7 @@ class IndenterRuby(IndenterBase):
         The regexp must be global, and the search is continued until
         a match is found, or the end of the string is reached.
         """
-        for match in rx.findIter(stmt.content()):
+        for match in rx.finditer(stmt.content()):
             if stmt.isCode(match.start()):
                 if match.end() == len(stmt.content()):
                     return True
@@ -112,10 +118,9 @@ class IndenterRuby(IndenterBase):
         else:
             return False
 
-    def lastAnchor(block, column):
+    def lastAnchor(self, block, column):
         """Find the last open bracket before the current line.
         Return (block, column, char) or (None, None, None)
-        containing the type of bracket.
         """
         currentPos = -1
         currentBlock = None
@@ -139,8 +144,8 @@ class IndenterRuby(IndenterBase):
     def isStmtContinuing(self, block):
         #Is there an open parenthesis?
         
-        block, column, char = self.lastAnchor(block.next(), 0)
-        if block is not None:
+        foundBlock, foundColumn, foundChar = self.lastAnchor(block, block.length())
+        if foundBlock is not None:
             return True
     
         stmt = Statement(block, block)
@@ -157,11 +162,12 @@ class IndenterRuby(IndenterBase):
               (((prevBlock == block.previous()) and self._isBlockContinuing(prevBlock)) or \
                self.isStmtContinuing(prevBlock)):
             block = prevBlock
-            prevBlock = self._prevNonCommentBlock()
+            prevBlock = self._prevNonCommentBlock(block)
         
         return block
 
-    def _isValidTrigger(self, block, ch):
+    @staticmethod
+    def _isValidTrigger(block, ch):
         """check if the trigger characters are in the right context,
         otherwise running the indenter might be annoying to the user
         """
@@ -169,44 +175,38 @@ class IndenterRuby(IndenterBase):
             return True # Explicit align or new line
     
         match = rxUnindent.match(block.text())
-        if match and match.group(3) == "":
-            return True
-        else:
-            return False    
-      
+        return match is not None and \
+               match.group(3) == ""
+    
     def findPrevStmt(self, block):
         """Returns a tuple that contains the first and last line of the
         previous statement before line.
         """
-        stmtEnd = self._prevNonCommentBlock(line)
+        stmtEnd = self._prevNonCommentBlock(block)
         stmtStart = self.findStmtStart(stmtEnd)
     
         return Statement(stmtStart, stmtEnd)
     
     def isBlockStart(self, stmt):
-        cnt = stmt.content()
-        len = cnt.length
-    
-        if rxIndent.test(cnt):
+        if rxIndent.match(stmt.content()):
             return True
     
         rx = re.compile('((\bdo\b|\{)(\s*\|.*\|)?\s*)')
     
         return self.testAtEnd(stmt, rx)
     
-    def isBlockEnd(self, stmt):
-        cnt = stmt.content()
+    @staticmethod
+    def isBlockEnd(stmt):
+        return rxUnindent.match(stmt.content())
     
-        return rxUnindent.test(cnt)
-    
-    def findBlockStart(self, line):
+    def findBlockStart(self, block):
         nested = 0
-        stmt = Statement(line, line)
+        stmt = Statement(block, block)
         while True:
-            if stmt.start < 0:
+            if not stmt.startBlock.isValid():
                 return stmt
-            stmt = self.findPrevStmt(stmt.start - 1)
-            if isBlockEnd(stmt):
+            stmt = self.findPrevStmt(stmt.startBlock.previous())
+            if self.isBlockEnd(stmt):
                 nested += 1
           
             if self.isBlockStart(stmt):
@@ -219,14 +219,14 @@ class IndenterRuby(IndenterBase):
         """indent gets three arguments: line, indentWidth in spaces,
         typed character indent
         """
-        if not self._isValidTrigger(line, ch):
+        if not self._isValidTrigger(block, ch):
             return None
       
-        prevStmt = findPrevStmt(block)
-        if prevStmt.end < 0:
+        prevStmt = self.findPrevStmt(block)
+        if not prevStmt.endBlock.isValid():
             return None  # Can't indent the first line
       
-        prev = document.prevNonEmptyLine(line)
+        prevBlock = self._prevNonEmptyBlock(block)
       
         """ FIXME
         # HACK Detect here documents
@@ -243,45 +243,46 @@ class IndenterRuby(IndenterBase):
         prevStmtInd = prevStmt.indent()
       
         # Are we inside a parameter list, array or hash?
-        anch = self.lastAnchor(block, 0)
-        if (anch.line >= 0):
-            shouldIndent = (anch.line == prevStmt.end) or \
+        foundBlock, foundColumn, foundChar = self.lastAnchor(block, 0)
+        if foundBlock is not None:
+            shouldIndent = foundBlock == prevStmt.endBlock or \
                            self.testAtEnd(prevStmt, re.compile(',\s*'))
-            if (not self._isLastCodeColumn(anch.line, anch.column)) or \
-                self.lastAnchor(anch.line, anch.column).line >= 0:
+            if (not self._isLastCodeColumn(foundBlock, foundColumn)) or \
+                self.lastAnchor(foundBlock, foundColumn)[0] is not None:
                 # TODO This is alignment, should force using spaces instead of tabs:
                 if shouldIndent:
-                    anch.column += 1
-                    nextCol = self._nextNonSpaceColumn(anch.line, anch.column)
+                    foundColumn += 1
+                    nextCol = self._nextNonSpaceColumn(foundBlock, foundColumn)
                     if nextCol > 0 and \
-                       (not self._isComment(anch.line, nextCol)):
-                        anch.column = nextCol
+                       (not self._isComment(foundBlock, nextCol)):
+                        foundColumn = nextCol
   
                 # Keep indent of previous statement, while aligning to the anchor column
-                if len(prevStmtInd) > anch.column:
+                if len(prevStmtInd) > foundColumn:
                     return prevStmtInd
                 else:
-                    return self._makeIndentFromWidth(anch.column)
+                    return self._makeIndentFromWidth(foundColumn)
             else:
-                indent = self._blockIndent(anch.line)
+                indent = self._blockIndent(foundBlock)
                 if shouldIndent:
                     indent = self._increaseIndent(indent)
                 return indent
       
         # Handle indenting of multiline statements.
-        if (prevStmt.end == line - 1 and _isBlockContinuing(prevStmt.end)) or \
-           isStmtContinuing(prevStmt.end):
-            if prevStmt.start == prevStmt.end:
+        if (prevStmt.endBlock == block.previous() and \
+             self._isBlockContinuing(prevStmt.endBlock)) or \
+           self.isStmtContinuing(prevStmt.endBlock):
+            if prevStmt.startBlock == prevStmt.endBlock:
                 if ch == '' and \
-                   len(self._blockIndent(block)) > len(self._blockIndent(prevStmt.end)):
+                   len(self._blockIndent(block)) > len(self._blockIndent(prevStmt.endBlock)):
                     return None  # Don't force a specific indent level when aligning manually
                 return self._increaseIndent(self._increaseIndent(prevStmtInd))
             else:
-                return self._blockIndent(prevStmt.end)
+                return self._blockIndent(prevStmt.endBlock)
       
         if rxUnindent.match(block.text()):
             startStmt = self.findBlockStart(block)
-            if startStmt.start >= 0:
+            if startStmt.startBlock.isValid():
                 return startStmt.indent()
             else:
                 return None
@@ -293,4 +294,3 @@ class IndenterRuby(IndenterBase):
       
         # Keep current
         return prevStmtInd
-  
