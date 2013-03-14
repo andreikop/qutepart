@@ -31,6 +31,14 @@ class IndentTest(unittest.TestCase):
     def type(self, text):
         QTest.keyClicks(self.qpart, text)
 
+    def writeCursorPosition(self):
+        line, col = self.qpart.cursorPosition
+        text = '(%d, %d)' % (line, col)
+        self.type(text)
+    
+    def writeln(self):
+        self.qpart.textCursor().insertText('\n')
+
     def alignLine(self, index):
         self.qpart._autoIndentBlock(self.qpart.document().findBlockByNumber(index), '')
     
