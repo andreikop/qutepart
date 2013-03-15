@@ -3,10 +3,10 @@ from qutepart.indenter.base import IndenterBase
 import re
 
 # Indent after lines that match this regexp
-rxIndent = re.compile('^\s*(def|if|unless|for|while|until|class|module|else|elsif|case|when|begin|rescue|ensure|catch)\b')
+rxIndent = re.compile(r'^\s*(def|if|unless|for|while|until|class|module|else|elsif|case|when|begin|rescue|ensure|catch)\b')
 
 # Unindent lines that match this regexp
-rxUnindent = re.compile('^\s*((end|when|else|elsif|rescue|ensure)\b|[\]\}])(.*)$')
+rxUnindent = re.compile(r'^\s*((end|when|else|elsif|rescue|ensure)\b|[\]\}])(.*)$')
 
 
 class Statement:
@@ -149,7 +149,7 @@ class IndenterRuby(IndenterBase):
             return True
     
         stmt = Statement(block, block)
-        rx = re.compile('((\+|\-|\*|\/|\=|&&|\|\||\band\b|\bor\b|,)\s*)')
+        rx = re.compile('r((\+|\-|\*|\/|\=|&&|\|\||\band\b|\bor\b|,)\s*)')
     
         return self.testAtEnd(stmt, rx)
     
@@ -163,7 +163,6 @@ class IndenterRuby(IndenterBase):
                self.isStmtContinuing(prevBlock)):
             block = prevBlock
             prevBlock = self._prevNonCommentBlock(block)
-        
         return block
 
     @staticmethod
@@ -184,14 +183,13 @@ class IndenterRuby(IndenterBase):
         """
         stmtEnd = self._prevNonCommentBlock(block)
         stmtStart = self.findStmtStart(stmtEnd)
-    
         return Statement(stmtStart, stmtEnd)
     
     def isBlockStart(self, stmt):
-        if rxIndent.match(stmt.content()):
+        if rxIndent.search(stmt.content()):
             return True
     
-        rx = re.compile('((\bdo\b|\{)(\s*\|.*\|)?\s*)')
+        rx = re.compile(r'((\bdo\b|\{)(\s*\|.*\|)?\s*)')
     
         return self.testAtEnd(stmt, rx)
     
@@ -289,7 +287,7 @@ class IndenterRuby(IndenterBase):
       
         if self.isBlockStart(prevStmt):
             return self._increaseIndent(prevStmtInd)
-        elif re.search('[\[\{]\s*$', prevStmtCnt) is not None:
+        elif re.search(r'[\[\{]\s*$', prevStmtCnt) is not None:
             return self._increaseIndent(prevStmtInd)
       
         # Keep current

@@ -1,4 +1,5 @@
 fixme:
+    make syntax data more visible
     bad completion on kde4
     bad completion for ANALYTICS_MODULE_NAMESPACE
 

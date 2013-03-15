@@ -176,11 +176,13 @@ class IndenterBase(IndenterNone):
     
     @staticmethod
     def _prevNonEmptyBlock(block):
+        if not block.isValid():
+            return block
+        
         block = block.previous()
         while block.isValid() and \
               len(block.text().strip()) == 0:
             block = block.previous()
-        
         return block
     
     @staticmethod
