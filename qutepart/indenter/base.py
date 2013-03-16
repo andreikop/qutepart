@@ -192,14 +192,14 @@ class IndenterBase(IndenterNone):
         TODO ignore comments
         """
         text = block.text().rstrip()
-        return len(text) + 1
+        return len(text) - 1
     
     @staticmethod
     def _nextNonSpaceColumn(block, column):
         """Returns the column with a non-whitespace characters 
         starting at the given cursor position and searching forwards.
         """
-        textAfter = block.text()[:column]
+        textAfter = block.text()[column:]
         if textAfter.strip():
             spaceLen = len(textAfter) - len(textAfter.lstrip())
             return column + spaceLen

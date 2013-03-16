@@ -20,7 +20,8 @@ class IndentTest(unittest.TestCase):
         self.qpart.text = '\n'.join(text)
     
     def verifyExpected(self, text):
-        self.assertEquals(self.qpart.text.split('\n'), text)
+        lines = self.qpart.text.split('\n')
+        self.assertEquals(map(str, lines), text)
     
     def setCursorPosition(self, line, col):
         self.qpart.cursorPosition = line, col
@@ -33,7 +34,7 @@ class IndentTest(unittest.TestCase):
 
     def writeCursorPosition(self):
         line, col = self.qpart.cursorPosition
-        text = '(%d, %d)' % (line, col)
+        text = '(%d,%d)' % (line, col)
         self.type(text)
     
     def writeln(self):

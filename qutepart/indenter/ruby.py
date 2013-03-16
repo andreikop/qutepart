@@ -39,7 +39,7 @@ class Statement:
         # Return document.isComment at the given offset in a statement
         block, column = self.offsetToCursor(offset)
         # FIXME return document.isComment(block, column)
-        return True
+        return False
   
     def indent(self):
         # Return the indent at the beginning of the statement
@@ -149,8 +149,8 @@ class IndenterRuby(IndenterBase):
             return True
     
         stmt = Statement(block, block)
-        rx = re.compile('r((\+|\-|\*|\/|\=|&&|\|\||\band\b|\bor\b|,)\s*)')
-    
+        rx = re.compile(r'(\+|\-|\*|\/|\=|&&|\|\||\band\b|\bor\b|,)\s*')
+
         return self.testAtEnd(stmt, rx)
     
     def findStmtStart(self, block):
@@ -203,7 +203,7 @@ class IndenterRuby(IndenterBase):
         while True:
             if not stmt.startBlock.isValid():
                 return stmt
-            stmt = self.findPrevStmt(stmt.startBlock.previous())
+            stmt = self.findPrevStmt(stmt.startBlock)
             if self.isBlockEnd(stmt):
                 nested += 1
           
