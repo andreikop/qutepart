@@ -1,4 +1,13 @@
 fixme:
+    bad highlight
+    #define SERVER_DEC() do { \
+        SERVER_COUNT_LOCK(); \
+        assert(*servers_waiting > 0); \
+        --(*servers_waiting); \
+        DEBUG2("DEC: servers_waiting: %d", *servers_waiting); \
+        SERVER_COUNT_UNLOCK(); \
+    } while (0)
+
     make syntax data more visible
     bad completion on kde4
     bad completion for ANALYTICS_MODULE_NAMESPACE

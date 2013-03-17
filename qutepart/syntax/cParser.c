@@ -2521,7 +2521,12 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* context
         }
         else
         {
-            fprintf(stderr, "qutepart: Max context stack depth %d reached\n", QUTEPART_MAX_CONTEXT_STACK_DEPTH);
+            static bool messageShown = false;
+            if ( ! messageShown)
+            {
+                fprintf(stderr, "qutepart: Max context stack depth %d reached\n", QUTEPART_MAX_CONTEXT_STACK_DEPTH);
+                messageShown = true;
+            }
         }
     }
     
