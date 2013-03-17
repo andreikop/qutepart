@@ -2912,6 +2912,13 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
                                                                NULL);
             ASSIGN_VALUE(ContextStack, contextStack, newContextStack);
             
+            if (currentContext == ContextStack_currentContext(contextStack))
+            {
+                // current context not changed.
+                // probably, ContextSwitcher_getNextContextStack failed to switch context because max context stack depth reached
+                // break for avoid infinite loop
+                break;
+            }
             currentContext = ContextStack_currentContext(contextStack);
         }
         
