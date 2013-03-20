@@ -1,7 +1,7 @@
 """Module computes indentation for block
 It contains implementation of indenters, which are supported by katepart xml files
 """
-
+import logging
 
 def getIndenter(indenterName, qpart):
     """Get indenter by name.
@@ -12,7 +12,9 @@ def getIndenter(indenterName, qpart):
     """
     indenterName = indenterName.lower()
     
-    if indenterName in ('haskell', 'lilypond', 'lisp'):  # not supported yet
+    if indenterName in ('haskell', 'lilypond'):  # not supported yet
+        logger = logging.getLogger('qutepart')
+        logger.warning('Smart indentation for %s not supported yet. But you could be a hero who implemented it' % indenterName)
         from qutepart.indenter.base import IndenterNormal as indenterClass
     elif 'none' == indenterName:
         from qutepart.indenter.base import IndenterBase as indenterClass

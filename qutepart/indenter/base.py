@@ -186,6 +186,17 @@ class IndenterBase(IndenterNone):
         return block
     
     @staticmethod
+    def _nextNonEmptyBlock(block):
+        if not block.isValid():
+            return block
+        
+        block = block.next()
+        while block.isValid() and \
+              len(block.text().strip()) == 0:
+            block = block.next()
+        return block
+    
+    @staticmethod
     def _lastColumn(block):
         """Returns the last non-whitespace column in the given line.
         If there are only whitespaces in the line, the return value is -1.
