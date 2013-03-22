@@ -274,6 +274,7 @@ typedef struct {
     AbstractRule** rulesC;
     int rulesSize;
     bool dynamic;
+    char textType;
 } Context;
 
 typedef struct {
@@ -2592,11 +2593,12 @@ Context_setValues(Context *self, PyObject *args)
     PyObject* lineBeginContext = NULL;
     PyObject* fallthroughContext = NULL;
     PyObject* dynamic = NULL;
+    PyObject* textType = NULL;
 
-    if (! PyArg_ParseTuple(args, "|OOOOOO",
+    if (! PyArg_ParseTuple(args, "|OOOOOOO",
                            &attribute, &format, &lineEndContext,
                            &lineBeginContext, &fallthroughContext,
-                           &dynamic))
+                           &dynamic, &textType))
         Py_RETURN_NONE;
 
     if (Py_None != lineEndContext)
@@ -2613,6 +2615,7 @@ Context_setValues(Context *self, PyObject *args)
     ASSIGN_PYOBJECT_FIELD(lineBeginContext);
     ASSIGN_FIELD(ContextSwitcher, fallthroughContext);
     ASSIGN_BOOL_FIELD(dynamic);
+    self->textType = PyString_AsString(textType)[0];
 
     Py_RETURN_NONE;
 }
@@ -2888,6 +2891,10 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     bool lineContinue = false;
     int currentColumnIndex = 0;
     int textLen = PyUnicode_GET_SIZE(unicodeText);
+    PyObject* textTypeMap = PyString_FromStringAndSize("", textLen);
+    char* textTypeMapData = PyString_AS_STRING(textTypeMap);
+    textTypeMapData[textLen + 1] = 0;
+    
     while (currentColumnIndex < textLen)
     {
         if (self->debugOutputEnabled)
@@ -2903,6 +2910,15 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
                                          segmentList,
                                         &contextStack,
                                         &lineContinue);
+        
+        if (length > 0)
+        {
+            int i;
+            for (i = currentColumnIndex; i < currentColumnIndex + length - 1; i++)
+                textTypeMapData[i] = currentContext->textType;
+            textTypeMapData[currentColumnIndex + length - 1] = ContextStack_currentContext(contextStack)->textType;
+        }
+        
         currentColumnIndex += length;
         currentContext = ContextStack_currentContext(contextStack);
     }
@@ -2943,26 +2959,29 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     if (PyErr_Occurred())
     {
         Py_DECREF(contextStack);
+        Py_DECREF(textTypeMap);
         return NULL;
     }
     else
     {
-        PyObject* retData = NULL;
+        PyObject* retStack = NULL;
         if ( ! Parser_contextStackEqualToDefault(self->defaultContext, contextStack))
         {
-            retData = (PyObject*)contextStack;
+            retStack = (PyObject*)contextStack;
         }
         else
         {
-            retData = Py_None;
-            Py_INCREF(retData);
+            retStack = Py_None;
+            Py_INCREF(retStack);
             Py_DECREF(contextStack);
         }
         
+        PyObject* retContextData = Py_BuildValue("OO", retStack, textTypeMap);
+        
         if (Py_None != segmentList)
-            return Py_BuildValue("OO", retData, segmentList);
+            return Py_BuildValue("OO", retContextData, segmentList);
         else
-            return retData;
+            return retContextData;
     }
 }
 

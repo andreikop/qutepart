@@ -776,19 +776,21 @@ class Context:
         fallthroughContext
         dynamic
         rules
+        textType     ' ' : code, 'c' : comment
     """
     def __init__(self, parser, name):
         # Will be initialized later, after all context has been created
         self.parser = parser
         self.name = name
     
-    def setValues(self, attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic):
+    def setValues(self, attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic, textType):
         self.attribute = attribute
         self.format = format
         self.lineEndContext = lineEndContext
         self.lineBeginContext = lineBeginContext
         self.fallthroughContext = fallthroughContext
         self.dynamic = dynamic
+        self.textType = textType
     
     def setRules(self, rules):
         self.rules = rules
@@ -914,23 +916,32 @@ class Parser:
 
     def highlightBlock(self, text, prevLineData):
         """Parse block and return ParseBlockFullResult
+        
+        return (lineData, highlightedSegments)
+          where lineData is (contextStack, textTypeMap)
+            where textTypeMap is a string of textType characters
         """
         if prevLineData is not None:
-            contextStack = prevLineData
+            contextStack, prevTextTypeMap = prevLineData
         else:
             contextStack = self._defaultContextStack
         
         highlightedSegments = []
         lineContinue = False
         currentColumnIndex = 0
+        textTypeMap = ''
         while currentColumnIndex < len(text):
             _logger.debug('In context %s', contextStack.currentContext().name)
 
+            textType = contextStack.currentContext().textType
             length, newContextStack, segments, lineContinue = \
                         contextStack.currentContext().parseBlock(contextStack, currentColumnIndex, text)
-            
+
             highlightedSegments += segments
             contextStack = newContextStack
+            if length > 0:
+                textTypeMap += textType * (length - 1)
+                textTypeMap += contextStack.currentContext().textType
             currentColumnIndex += length
 
         if not lineContinue:
@@ -944,7 +955,8 @@ class Parser:
             if contextStack.currentContext().lineBeginContext is not None:
                 contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
         
-        return contextStack, highlightedSegments
+        lineData = (contextStack, textTypeMap)
+        return lineData, highlightedSegments
 
     def parseBlock(self, text, prevLineData):
         return self.highlightBlock(text, prevLineData)[0]

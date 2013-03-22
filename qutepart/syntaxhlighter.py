@@ -19,6 +19,20 @@ class SyntaxHighlighter(QObject):
     
     _MAX_PARSING_TIME_SEC = 0.02
 
+    def isCode(self, block, column):
+        """Check if character at column is code
+        """
+        dataObject = block.userData()
+        data = dataObject.data if dataObject is not None else None
+        return self._syntax.isCode(data, column)
+
+    def isComment(self, block, column):
+        """Check if character at column is code
+        """
+        dataObject = block.userData()
+        data = dataObject.data if dataObject is not None else None
+        return self._syntax.isComment(data, column)
+
     @staticmethod
     def formatConverterFunction(format):
         qtFormat = QTextCharFormat()

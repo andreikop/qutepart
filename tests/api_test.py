@@ -10,6 +10,7 @@ sip.setapi('QString', 2)
 from PyQt4.QtGui import QApplication
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath('.'))
 from qutepart import Qutepart
 
 class _BaseTest(unittest.TestCase):
@@ -98,6 +99,25 @@ class InsertText(_BaseTest):
         self.qpart.text = '12345\n67890\nabcde'
         self.qpart.insertText((2, 5), 'Z')
         self.assertEquals(self.qpart.text, '12345\n67890\nabcdeZ')
+
+
+class IsCodeOrComment(_BaseTest):
+    def test_1(self):
+        # Basic case
+        self.qpart.text = 'a + b # comment'
+        self.qpart.detectSyntax(language = 'Python')
+        self.assertEquals([self.qpart.isCode(0, i) for i in range(len(self.qpart.text))],
+                          [True, True, True, True, True, True, False, False, False, False, \
+                           False, False, False, False, False])
+        self.assertEquals([self.qpart.isComment(0, i) for i in range(len(self.qpart.text))],
+                          [False, False, False, False, False, False, True, True, True, True, \
+                          True, True, True, True, True])
+
+    def test_2(self):
+        self.qpart.text = '#'
+        self.qpart.detectSyntax(language = 'Python')
+        self.assertFalse(self.qpart.isCode(0, 0))
+        self.assertTrue(self.qpart.isComment(0, 0))
 
 
 if __name__ == '__main__':

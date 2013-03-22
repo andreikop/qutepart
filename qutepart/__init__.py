@@ -634,7 +634,21 @@ class Qutepart(QPlainTextEdit):
             return None
         else:
             return self._highlighter.syntax().name
-        
+    
+    def isCode(self, line, column):
+        """Check if text at given position is a code
+        If language is not known, or text is not parsed yet, True is returned
+        """
+        return self._highlighter is None or \
+               self._highlighter.isCode(self.document().findBlockByNumber(line), column)
+
+    def isComment(self, line, column):
+        """Check if text at given position is a comment
+        If language is not known, or text is not parsed yet, False is returned
+        """
+        return self._highlighter is not None and \
+               self._highlighter.isComment(self.document().findBlockByNumber(line), column)
+
     def setExtraSelections(self, selections):
         """Set list of extra selections.
         Selections are list of tuples ``(startAbsolutePosition, length)``.

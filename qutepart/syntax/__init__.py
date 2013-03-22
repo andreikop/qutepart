@@ -20,7 +20,8 @@ class TextFormat:
         bold           : Bold font, bool
         underline      : Underlined font, bool
         strikeOut      : Striked out font
-        spellChecking  : Striked out font
+        spellChecking  : Text will be spell checked
+        textType       : 'c' for comments, ' ' for other
     """
     def __init__(self, color = '#000000',
                        background = '#ffffff',
@@ -107,7 +108,18 @@ class Syntax:
         Use it for invisible lines
         """
         return self.parser.parseBlock(text, prevLineData)
+    
+    def isCode(self, lineData, column):
+        """Check if text at given position is a code
+        """
+        return lineData is None or \
+               lineData[1][column] == ' '
 
+    def isComment(self, lineData, column):
+        """Check if text at given position is a comment
+        """
+        return lineData is not None and \
+               lineData[1][column] == 'c'
 
 class SyntaxManager:
     """SyntaxManager holds references to loaded Syntax'es and allows to find or
