@@ -447,7 +447,6 @@ class Do(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_do5(self):
         origin = [
             "def foo(f)",
@@ -467,7 +466,6 @@ class Do(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_do6(self):
         origin = [
             "def foo(f)",
@@ -514,7 +512,6 @@ class Do(BaseTestClass):
 
 
 class NoDo(BaseTestClass):
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_no_do1(self):
         origin = [
             "# no-do1.txt",
@@ -536,7 +533,6 @@ class NoDo(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_no_do2(self):
         origin = [
             "# no-do2.txt",
@@ -561,7 +557,6 @@ class NoDo(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_no_do3(self):
         origin = [
             "# no-do3.txt",
@@ -583,7 +578,6 @@ class NoDo(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_no_do4(self):
         origin = [
             "# no-do4.txt",
@@ -1075,7 +1069,6 @@ class Array(BaseTestClass):
 
 
 class ArrayComment(BaseTestClass):
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_array_comment1(self):
         origin = [
             "  array = [ :a, :b, :c ] # comment",
@@ -1095,7 +1088,6 @@ class ArrayComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_array_comment2(self):
         origin = [
             "  array = [ # comment",
@@ -1113,7 +1105,6 @@ class ArrayComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_array_comment3(self):
         origin = [
             "  array = [ # comment",
@@ -1133,7 +1124,6 @@ class ArrayComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_array_comment4(self):
         origin = [
             "  array = [",
@@ -1588,7 +1578,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops2(self):
         origin = [
             "t = foo() + # Comment",
@@ -1623,7 +1612,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops4(self):
         origin = [
             "t = foo() - # Comment",
@@ -1658,7 +1646,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops6(self):
         origin = [
             "t = foo() * # Comment",
@@ -1693,7 +1680,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops8(self):
         origin = [
             "t = foo() / # Comment",
@@ -1730,7 +1716,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops12(self):
         origin = [
             "t = foo() + # Comment",
@@ -1769,7 +1754,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops14(self):
         origin = [
             "t = foo() - # Comment",
@@ -1808,7 +1792,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops16(self):
         origin = [
             "t = foo() * # Comment",
@@ -1847,7 +1830,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops18(self):
         origin = [
             "t = foo() / # Comment",
@@ -1886,7 +1868,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops22(self):
         origin = [
             "t = foo() + # Comment",
@@ -1925,7 +1906,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops24(self):
         origin = [
             "t = foo() - # Comment",
@@ -1964,7 +1944,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops26(self):
         origin = [
             "t = foo() * # Comment",
@@ -2003,7 +1982,6 @@ class Ops(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_ops28(self):
         origin = [
             "t = foo() / # Comment",
@@ -2079,6 +2057,7 @@ class WordList(BaseTestClass):
         
         self.verifyExpected(expected)
 
+    @unittest.expectedFailure  # failed by kate
     def test_wordlist12(self):
         origin = [
             "  for elem in %w< foo, bar,",
@@ -2116,6 +2095,7 @@ class WordList(BaseTestClass):
         
         self.verifyExpected(expected)
 
+    @unittest.expectedFailure  # failed by kate
     def test_wordlist22(self):
         origin = [
             "  for elem in %w| foo, bar,",
@@ -2204,7 +2184,6 @@ class Multiline(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_multiline4(self):
         origin = [
             "# multiline4.txt",
@@ -2277,10 +2256,10 @@ class Multiline(BaseTestClass):
 
     def test_multiline7(self):
         origin = [
-            '"foo "hello",',
+            'foo "hello",',
             ""]
         expected = [
-            '"foo "hello",',
+            'foo "hello",',
             '    "world"',
             ""]
 
@@ -2797,7 +2776,6 @@ class PlistComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_plist_comment4(self):
         origin = [
             "  foobar(foo,",
@@ -2819,7 +2797,6 @@ class PlistComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_plist_comment5(self):
         origin = [
             "  foobar(foo,",
@@ -2841,7 +2818,6 @@ class PlistComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_plist_comment6(self):
         origin = [
             "  foobar(foo,",
@@ -2863,7 +2839,6 @@ class PlistComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_plist_comment7(self):
         origin = [
             "  foobar(foo(bar, # comment",
@@ -2883,7 +2858,6 @@ class PlistComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_plist_comment8(self):
         origin = [
             "  foobar(foo(bar,",
@@ -2905,7 +2879,6 @@ class PlistComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_plist_comment9(self):
         origin = [
             "  foobar(foo(bar,",
@@ -2929,7 +2902,6 @@ class PlistComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_plist_comment10(self):
         origin = [
             "  foobar(foo(bar,",
@@ -3053,7 +3025,6 @@ class Comment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_comment5(self):
         origin = [
             "# comment5.txt",
@@ -3260,7 +3231,6 @@ class BlockComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_block_comment3(self):
         origin = [
             "=begin",
@@ -3280,7 +3250,6 @@ class BlockComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_block_comment4(self):
         origin = [
             "=begin",
@@ -3342,7 +3311,6 @@ class BlockComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_block_comment7(self):
         origin = [
             "if foo",
@@ -3364,7 +3332,6 @@ class BlockComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME recognize comments
     def test_block_comment8(self):
         origin = [
             "if foo",

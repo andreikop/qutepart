@@ -415,9 +415,14 @@ def _loadContext(context, xmlElement, attributeToFormatMap, formatConverterFunct
 def _textTypeForDefStyleName(defStyleName):
     """ ' ' for code
         'c' for comments
+        's' for strings
     """
-    isComment = defStyleName in ('dsComment', 'dsString', 'dsRegionMarker', 'dsChar', 'dsOthers')
-    return 'c' if isComment else ' '
+    if defStyleName in ('dsString', 'dsRegionMarker', 'dsChar', 'dsOthers'):
+        return 's'
+    elif defStyleName == 'dsComment':
+        return 'c'
+    else:
+        return ' '
 
 def _loadAttributeToFormatMap(highlightingElement):
     defaultTheme = ColorTheme(TextFormat)

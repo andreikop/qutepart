@@ -10,7 +10,8 @@ rxUnindent = re.compile(r'^\s*((end|when|else|elsif|rescue|ensure)\b|[\]\}])(.*)
 
 
 class Statement:
-    def __init__(self, startBlock, endBlock):
+    def __init__(self, qpart, startBlock, endBlock):
+        self._qpart = qpart
         self.startBlock = startBlock
         self.endBlock = endBlock
     
@@ -24,7 +25,7 @@ class Statement:
         block = self.startBlock
         while block != self.endBlock.next() and \
               len(block.text()) < offset:
-            offset -= len(block.text()) + 1
+            offset -= len(block.text())
             block = block.next()
         
         return block, offset
@@ -32,14 +33,12 @@ class Statement:
     def isCode(self, offset):
         # Return document.isCode at the given offset in a statement
         block, column = self.offsetToCursor(offset)
-        # FIXME return document.isCode(block, column)
-        return True
+        return self._qpart.isCode(block.blockNumber(), column)
   
     def isComment(self, offset):
         # Return document.isComment at the given offset in a statement
         block, column = self.offsetToCursor(offset)
-        # FIXME return document.isComment(block, column)
-        return False
+        return self._qpart.isComment(block.blockNumber(), column)
   
     def indent(self):
         # Return the indent at the beginning of the statement
@@ -65,16 +64,13 @@ class IndenterRuby(IndenterBase):
     """
     TRIGGER_CHARACTERS = "cdefhilnrsuw}]"
     
-    @staticmethod
-    def _isCommentBlock(block):
-        # FIXME use parser markup
-        return block.text().startswith('#')
+    def _isCommentBlock(self, block):
+        text = block.text()
+        firstColumn = self._firstNonSpaceColumn(text)
+        return firstColumn == len(text) or self._isComment(block, firstColumn)
     
-    @staticmethod
-    def _isComment(block, column):
-        # FIXME use parser markup
-        textBefore = block.text()[:column + 1]
-        return '#' in textBefore
+    def _isComment(self, block, column):
+        return self._qpart.isComment(block.blockNumber(), column)
     
     def _prevNonCommentBlock(self, block):
         """Return the closest non-empty line, ignoring comments
@@ -95,7 +91,7 @@ class IndenterRuby(IndenterBase):
         the rest of the line is a comment.
         """
         return column >= self._lastColumn(block) or \
-               self._isComment(block, self._nextNonSpaceColumn(block, column))
+               self._isComment(block, self._nextNonSpaceColumn(block, column + 1))
     
     @staticmethod
     def testAtEnd(stmt, rx):
@@ -148,9 +144,8 @@ class IndenterRuby(IndenterBase):
         if foundBlock is not None:
             return True
     
-        stmt = Statement(block, block)
+        stmt = Statement(self._qpart, block, block)
         rx = re.compile(r'(\+|\-|\*|\/|\=|&&|\|\||\band\b|\bor\b|,)\s*')
-
         return self.testAtEnd(stmt, rx)
     
     def findStmtStart(self, block):
@@ -183,7 +178,7 @@ class IndenterRuby(IndenterBase):
         """
         stmtEnd = self._prevNonCommentBlock(block)
         stmtStart = self.findStmtStart(stmtEnd)
-        return Statement(stmtStart, stmtEnd)
+        return Statement(self._qpart, stmtStart, stmtEnd)
     
     def isBlockStart(self, stmt):
         if rxIndent.search(stmt.content()):
@@ -199,7 +194,7 @@ class IndenterRuby(IndenterBase):
     
     def findBlockStart(self, block):
         nested = 0
-        stmt = Statement(block, block)
+        stmt = Statement(self._qpart, block, block)
         while True:
             if not stmt.startBlock.isValid():
                 return stmt
