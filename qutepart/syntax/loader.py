@@ -175,13 +175,16 @@ def _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, for
         attribute = attribute.lower()  # not case sensitive
         try:
             format = attributeToFormatMap[attribute]
+            textType = format.textType if format is not None else ' '
             if formatConverterFunction is not None and format is not None:
                 format = formatConverterFunction(format)
         except KeyError:
             _logger.error('Unknown rule attribute %s', attribute)
             format = parentContext.format
+            textType = parentContext.textType
     else:
         format = parentContext.format
+        textType = parentContext.textType
     
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
@@ -200,7 +203,7 @@ def _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, for
     else:
         column = -1
     
-    return _parserModule.AbstractRuleParams(parentContext, format, attribute, context, lookAhead, firstNonSpace, dynamic, column)
+    return _parserModule.AbstractRuleParams(parentContext, format, textType, attribute, context, lookAhead, firstNonSpace, dynamic, column)
 
 def _loadDetectChar(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)

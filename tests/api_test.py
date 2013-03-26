@@ -16,9 +16,13 @@ from qutepart import Qutepart
 class _BaseTest(unittest.TestCase):
     """Base class for tests
     """
+    app = QApplication(sys.argv)  # app crashes, if created more than once
+    
     def setUp(self):
-        self.app = QApplication(sys.argv)
         self.qpart = Qutepart()
+    
+    def tearDown(self):
+        del self.qpart
 
 class Selection(_BaseTest):
     

@@ -29,7 +29,7 @@ def tryMatchWithData(rule, contextData, column, text):
 class Test(unittest.TestCase):
     def _getRule(self, syntaxName, contextName, ruleIndex):
         global _currentSyntax
-        _currentSyntax = SyntaxManager().getSyntaxByXmlName(syntaxName)
+        _currentSyntax = SyntaxManager().getSyntax(xmlFileName=syntaxName)
         context = _currentSyntax.parser.contexts[contextName]
         return context.rules[ruleIndex]
     

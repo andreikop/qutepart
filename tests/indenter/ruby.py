@@ -342,7 +342,6 @@ class EmptyFile(BaseTestClass):
 
 
 class RegExp(BaseTestClass):
-    @unittest.expectedFailure  # FIXME recognize code    
     def test_regexp1(self):
         origin = [
             "  rx =~ /^hello/",
