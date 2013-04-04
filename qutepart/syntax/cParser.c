@@ -2969,7 +2969,7 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
             currentContext = ContextStack_currentContext(contextStack);
         }
     }
-    
+
     if (PyErr_Occurred())
     {
         Py_DECREF(contextStack);

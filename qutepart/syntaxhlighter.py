@@ -139,7 +139,8 @@ class SyntaxHighlighter(QObject):
                 self._continueTimer.start()
                 return
             
-            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), lineData)
+            contextStack = lineData[0] if lineData is not None else None
+            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), contextStack)
             if lineData is not None:
                 block.setUserData(_TextBlockUserData(lineData))
             else:
@@ -157,7 +158,8 @@ class SyntaxHighlighter(QObject):
                 self._continueTimer.start()
                 return
 
-            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), lineData)
+            contextStack = lineData[0] if lineData is not None else None
+            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), contextStack)
             if lineData is not None:
                 block.setUserData(_TextBlockUserData(lineData))
             else:

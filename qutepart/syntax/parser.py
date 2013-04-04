@@ -921,15 +921,15 @@ class Parser:
         
         return res
 
-    def highlightBlock(self, text, prevLineData):
+    def highlightBlock(self, text, prevContextStack):
         """Parse block and return ParseBlockFullResult
         
         return (lineData, highlightedSegments)
           where lineData is (contextStack, textTypeMap)
             where textTypeMap is a string of textType characters
         """
-        if prevLineData is not None:
-            contextStack, prevTextTypeMap = prevLineData
+        if prevContextStack is not None:
+            contextStack = prevContextStack
         else:
             contextStack = self._defaultContextStack
         
@@ -963,5 +963,5 @@ class Parser:
         lineData = (contextStack, textTypeMap)
         return lineData, highlightedSegments
 
-    def parseBlock(self, text, prevLineData):
-        return self.highlightBlock(text, prevLineData)[0]
+    def parseBlock(self, text, prevContextStack):
+        return self.highlightBlock(text, prevContextStack)[0]
