@@ -155,7 +155,7 @@ class SyntaxManager:
         
         with self._loadedSyntaxesLock:
             if not xmlFileName in self._loadedSyntaxes:
-                xmlFilePath = os.path.join(os.path.dirname(__file__), "data", xmlFileName)
+                xmlFilePath = os.path.join(os.path.dirname(__file__), "data", "xml", xmlFileName)
                 syntax = Syntax(self)
                 self._loadedSyntaxes[xmlFileName] = syntax
                 qutepart.syntax.loader.loadSyntax(syntax, xmlFilePath, formatConverterFunction)

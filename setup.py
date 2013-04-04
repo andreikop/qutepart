@@ -8,7 +8,7 @@ import distutils.ccompiler
 packages=['qutepart', 'qutepart/syntax', 'qutepart/indenter']
 
 package_data={'qutepart' : ['icons/*.png'],
-              'qutepart/syntax' : ['data/*.xml',
+              'qutepart/syntax' : ['data/xml/*.xml',
                                    'data/syntax_db.json']
              }
 
