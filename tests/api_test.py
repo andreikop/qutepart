@@ -122,6 +122,21 @@ class IsCodeOrComment(_BaseTest):
         self.qpart.detectSyntax(language = 'Python')
         self.assertFalse(self.qpart.isCode(0, 0))
         self.assertTrue(self.qpart.isComment(0, 0))
+        self.assertFalse(self.qpart.isBlockComment(0, 0))
+
+    def test_block_comment(self):
+        self.qpart.text = 'if foo\n=begin xxx'
+        self.qpart.detectSyntax(language = 'Ruby')
+        self.assertFalse(self.qpart.isBlockComment(0, 3))
+        self.assertTrue(self.qpart.isBlockComment(1, 8))
+        self.assertTrue(self.qpart.isComment(1, 8))
+
+    def test_here_doc(self):
+        self.qpart.text = "doc = <<EOF\nkoko"
+        self.qpart.detectSyntax(language = 'Ruby')
+        self.assertFalse(self.qpart.isHereDoc(0, 3))
+        self.assertTrue(self.qpart.isHereDoc(1, 2))
+        self.assertTrue(self.qpart.isComment(1, 2))
 
 
 if __name__ == '__main__':

@@ -3110,7 +3110,6 @@ class Heredoc(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME detect heredoc
     def test_heredoc3(self):
         origin = [
             "doc = <<EOF",
@@ -3130,7 +3129,6 @@ class Heredoc(BaseTestClass):
         
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure  # FIXME detect heredoc
     def test_heredoc4(self):
         origin = [
             "doc = <<EOF",
@@ -3331,6 +3329,7 @@ class BlockComment(BaseTestClass):
         
         self.verifyExpected(expected)
 
+    @unittest.expectedFailure
     def test_block_comment8(self):
         origin = [
             "if foo",

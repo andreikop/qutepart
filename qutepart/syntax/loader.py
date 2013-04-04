@@ -415,12 +415,17 @@ def _loadContext(context, xmlElement, attributeToFormatMap, formatConverterFunct
 ################################################################################
 ##                               Syntax
 ################################################################################
-def _textTypeForDefStyleName(defStyleName):
+def _textTypeForDefStyleName(attribute, defStyleName):
     """ ' ' for code
         'c' for comments
-        's' for strings
+        'b' for block comments
+        'h' for here documents
     """
-    if defStyleName in ('dsString', 'dsRegionMarker', 'dsChar', 'dsOthers'):
+    if 'here' in attribute.lower() and defStyleName == 'dsOthers':
+        return 'h'  # ruby
+    elif 'block' in attribute.lower() and defStyleName == 'dsComment':
+        return 'b'
+    elif defStyleName in ('dsString', 'dsRegionMarker', 'dsChar', 'dsOthers'):
         return 's'
     elif defStyleName == 'dsComment':
         return 'c'
@@ -441,7 +446,7 @@ def _loadAttributeToFormatMap(highlightingElement):
             
         format = copy.copy(defaultTheme.format[defaultStyleName])
 
-        format.textType = _textTypeForDefStyleName(defaultStyleName)
+        format.textType = _textTypeForDefStyleName(attribute, defaultStyleName)
         
         caseInsensitiveAttributes = {}
         for key, value in item.attrib.iteritems():

@@ -20,18 +20,32 @@ class SyntaxHighlighter(QObject):
     _MAX_PARSING_TIME_SEC = 0.02
 
     def isCode(self, block, column):
-        """Check if character at column is code
+        """Check if character at column is a a code
         """
         dataObject = block.userData()
         data = dataObject.data if dataObject is not None else None
         return self._syntax.isCode(data, column)
 
     def isComment(self, block, column):
-        """Check if character at column is code
+        """Check if character at column is a comment
         """
         dataObject = block.userData()
         data = dataObject.data if dataObject is not None else None
         return self._syntax.isComment(data, column)
+
+    def isBlockComment(self, block, column):
+        """Check if character at column is a block comment
+        """
+        dataObject = block.userData()
+        data = dataObject.data if dataObject is not None else None
+        return self._syntax.isBlockComment(data, column)
+
+    def isHereDoc(self, block, column):
+        """Check if character at column is a here document
+        """
+        dataObject = block.userData()
+        data = dataObject.data if dataObject is not None else None
+        return self._syntax.isHereDoc(data, column)
 
     @staticmethod
     def formatConverterFunction(format):

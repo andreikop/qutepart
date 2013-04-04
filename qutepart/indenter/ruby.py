@@ -220,17 +220,14 @@ class IndenterRuby(IndenterBase):
             return None  # Can't indent the first line
       
         prevBlock = self._prevNonEmptyBlock(block)
-      
-        """ FIXME
+        
         # HACK Detect here documents
-        if (document.isAttributeName(prev, document.lineLength(prev)-1, "Ruby:Here Document")) {
-          return -1; // HERE-DOCUMENT
-        }
+        if self._qpart.isHereDoc(prevBlock.blockNumber(), prevBlock.length() - 2):
+          return None
+        
         # HACK Detect embedded comments
-        if (document.isAttributeName(prev, document.lineLength(prev)-1, "Ruby:Blockcomment")) {
-          return -1
-        }
-        """
+        if self._qpart.isBlockComment(prevBlock.blockNumber(), prevBlock.length() - 2):
+            return None
       
         prevStmtCnt = prevStmt.content()
         prevStmtInd = prevStmt.indent()

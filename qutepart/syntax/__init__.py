@@ -117,10 +117,22 @@ class Syntax:
                lineData[1][column] == ' '
 
     def isComment(self, lineData, column):
-        """Check if text at given position is a comment
+        """Check if text at given position is a comment. Including block comments and here documents
         """
         return lineData is not None and \
-               lineData[1][column] == 'c'
+               lineData[1][column] in 'cbh'
+
+    def isBlockComment(self, lineData, column):
+        """Check if text at given position is a block comment
+        """
+        return lineData is not None and \
+               lineData[1][column] in 'b'
+
+    def isHereDoc(self, lineData, column):
+        """Check if text at given position is a here document
+        """
+        return lineData is not None and \
+               lineData[1][column] in 'h'
 
 class SyntaxManager:
     """SyntaxManager holds references to loaded Syntax'es and allows to find or
