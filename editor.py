@@ -4,11 +4,14 @@ import sys
 import os
 import logging
 
+
 executablePath = os.path.abspath(__file__)
 if executablePath.startswith('/home'):  # if executed from the sources
     sys.path.insert(0, os.path.dirname(executablePath)) # do not import installed modules
     if not '-p' in sys.argv:
         sys.path.insert(0, '/home/a/code/qutepart/build/lib.linux-i686-2.7/')  # use built modules
+        sys.path.insert(0, '/home/a/code/qutepart/build/lib.linux-x86_64-2.7/')  # use built modules
+
 
 
 import sip
