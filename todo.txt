@@ -8,10 +8,6 @@ fixme:
         SERVER_COUNT_UNLOCK(); \
     } while (0)
 
-    make syntax data more visible
-    bad completion on kde4
-    bad completion for ANALYTICS_MODULE_NAMESPACE
-
     sometimes last line number is not drawn
     incorrect list position, if scroll bar is visible
     empty lines disappear
@@ -19,9 +15,10 @@ fixme:
     when drawing indent markers - support spaces and tabs
     doesn't disappear completion, if finishing current word
     when positioning cursor - show few lines lower/higher additionally
+    delayied highlighting when opening
 
 first release
-  indenters                           4
+  indenters                           4     done 06.04.13
   highlight indent markers            1
   draw line wrap markers              1
   Support DetectComments##Roff        1
@@ -29,6 +26,7 @@ first release
   switch hihglighting language        2
   replace mode                        1
   support printing                    1
+  scheme indenter                     1
 
 next release:
   assotiations editor

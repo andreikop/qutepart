@@ -82,7 +82,7 @@ class _CompletionList(QListView):
     itemSelected = pyqtSignal(int)
     tabPressed = pyqtSignal()
     
-    _ROW_MARGIN = 2
+    _ROW_MARGIN = 6
     
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
@@ -136,9 +136,12 @@ class _CompletionList(QListView):
     def sizeHint(self):
         """QWidget.sizeHint implementation
         Automatically resizes the widget according to rows count
+        
+        FIXME very bad algorithm. Remove all this margins, if you can
         """
         width = max([self.fontMetrics().width(word) \
                         for word in self.model().words])
+        width = width * 1.1  # FIXME bad hack. invent better formula
         width += 16  # margin
         
         # drawn with scrollbar without +2. I don't know why
