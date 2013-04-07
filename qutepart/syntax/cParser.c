@@ -230,6 +230,7 @@ typedef struct {
     AbstractRule* rule;
     int length;
     _RegExpMatchGroups* data;
+    bool lineContinue;
 } RuleTryMatchResult_internal;
 
 typedef struct {
@@ -772,6 +773,7 @@ MakeEmptyTryMatchResult(void)
     result.rule = NULL;
     result.length = 0;
     result.data = NULL;
+    result.lineContinue = false;
     
     return result;
 }
@@ -783,6 +785,22 @@ MakeTryMatchResult(void* rule, int length, _RegExpMatchGroups* data)
     result.rule = rule;
     result.length = length;
     result.data = _RegExpMatchGroups_duplicate(data);
+    result.lineContinue = false;
+    
+    if (((AbstractRule*)rule)->abstractRuleParams->lookAhead)
+        result.length = 0;
+    
+    return result;
+}
+
+static RuleTryMatchResult_internal
+MakeLineContinueTryMatchResult(void* rule)
+{
+    RuleTryMatchResult_internal result;
+    result.rule = rule;
+    result.length = 1;
+    result.data = NULL;
+    result.lineContinue = true;
     
     if (((AbstractRule*)rule)->abstractRuleParams->lookAhead)
         result.length = 0;
@@ -2243,7 +2261,7 @@ LineContinue_tryMatch(LineContinue* self, TextToMatchObject_internal* textToMatc
     if (textToMatchObject->textLen == 1 &&
         textToMatchObject->unicodeText[0] == '\\')
     {
-        return MakeTryMatchResult(self, 1, NULL);
+        return MakeLineContinueTryMatchResult(self);
     }
     
     return MakeEmptyTryMatchResult();
@@ -2690,6 +2708,8 @@ Context_parseBlock(Context* self,
 
     int countOfNotMatchedSymbols = 0;
     
+    *pLineContinue = false;
+    
     while (currentColumnIndex < wholeLineLen)
     {
         Parser* parentParser = (Parser*)self->parser;
@@ -2709,6 +2729,8 @@ Context_parseBlock(Context* self,
 
         if (NULL != result.rule)  // if something matched
         {
+            *pLineContinue = result.lineContinue;
+            
             if (parentParser->debugOutputEnabled)
             {
                 fprintf(stderr, "qutepart: \t");
@@ -2747,6 +2769,7 @@ Context_parseBlock(Context* self,
         }
         else // no match
         {
+            *pLineContinue = false;
             if ((PyObject*)self->fallthroughContext != Py_None)
             {
                 ContextStack* newContextStack = 

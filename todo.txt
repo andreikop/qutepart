@@ -1,13 +1,4 @@
 fixme:
-    bad highlight
-    #define SERVER_DEC() do { \
-        SERVER_COUNT_LOCK(); \
-        assert(*servers_waiting > 0); \
-        --(*servers_waiting); \
-        DEBUG2("DEC: servers_waiting: %d", *servers_waiting); \
-        SERVER_COUNT_UNLOCK(); \
-    } while (0)
-
     sometimes last line number is not drawn
     incorrect list position, if scroll bar is visible
     empty lines disappear
@@ -19,6 +10,7 @@ fixme:
 
 first release
   indenters                           4     done 06.04.13
+  add keyboard actions to main menu   1
   highlight indent markers            1
   draw line wrap markers              1
   Support DetectComments##Roff        1
@@ -39,6 +31,3 @@ next release:
 
 when found:
     alt+d doesn't work for duplicating selection
-    no line nubmer for last typed line
-    bad completion for MODULE_FILES
-    
