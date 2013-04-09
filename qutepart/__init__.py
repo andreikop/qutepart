@@ -732,8 +732,12 @@ class Qutepart(QPlainTextEdit):
             self._markArea.scroll(0, dy)
         elif self._countCache[0] != self.blockCount() or \
              self._countCache[1] != self.textCursor().block().lineCount():
-            self._lineNumberArea.update(0, rect.y(), self._lineNumberArea.width(), rect.height())
-            self._lineNumberArea.update(0, rect.y(), self._markArea.width(), rect.height())
+            
+            # if block height not added to rect, last line number sometimes is not drawn
+            blockHeight = self.blockBoundingRect(self.firstVisibleBlock()).height()
+            
+            self._lineNumberArea.update(0, rect.y(), self._lineNumberArea.width(), rect.height() + blockHeight)
+            self._lineNumberArea.update(0, rect.y(), self._markArea.width(), rect.height() + blockHeight)
         self._countCache = (self.blockCount(), self.textCursor().block().lineCount())
 
         if rect.contains(self.viewport().rect()):

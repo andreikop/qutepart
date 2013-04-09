@@ -1,5 +1,4 @@
 fixme:
-    sometimes last line number is not drawn
     incorrect list position, if scroll bar is visible
     empty lines disappear
     indent to detected for model xml
