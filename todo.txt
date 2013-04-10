@@ -1,6 +1,4 @@
 fixme:
-    indent to detected for model xml
-    delayied highlighting when opening
 
 first release
   indenters                           4     done 06.04.13

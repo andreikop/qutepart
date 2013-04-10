@@ -17,7 +17,10 @@ class _TextBlockUserData(QTextBlockUserData):
 
 class SyntaxHighlighter(QObject):
     
-    _MAX_PARSING_TIME_SEC = 0.02
+    # when initially parsing text, it is better, if highlighted text is drawn without flickering
+    _MAX_PARSING_TIME_BIG_CHANGE_SEC = 0.4
+    # when user is typing text - response shall be quick
+    _MAX_PARSING_TIME_SMALL_CHANGE_SEC = 0.02
 
     def __init__(self, syntax, object):
         if isinstance(object, QTextDocument):
@@ -40,7 +43,8 @@ class SyntaxHighlighter(QObject):
         self._continueTimer.timeout.connect(self._onContinueHighlighting)
         
         document.contentsChange.connect(self._onContentsChange)
-        self._highlighBlocks(self._document.firstBlock(), self._document.lastBlock())
+        self._highlighBlocks(self._document.firstBlock(), self._document.lastBlock(),
+                             self._MAX_PARSING_TIME_BIG_CHANGE_SEC)
     
     def del_(self):
         self._document.contentsChange.disconnect(self._onContentsChange)
@@ -120,14 +124,17 @@ class SyntaxHighlighter(QObject):
             
             self._continueTimer.stop()
         
-        self._highlighBlocks(firstBlock,
-                             untilBlock)
+        timeout = self._MAX_PARSING_TIME_BIG_CHANGE_SEC if charsAdded > 20 else \
+                  self._MAX_PARSING_TIME_SMALL_CHANGE_SEC
+        
+        self._highlighBlocks(firstBlock, untilBlock, timeout)
 
     def _onContinueHighlighting(self):
-        self._highlighBlocks(self._pendingBlock, self._pendingAtLeastUntilBlock)
+        self._highlighBlocks(self._pendingBlock, self._pendingAtLeastUntilBlock,
+                             self._MAX_PARSING_TIME_SMALL_CHANGE_SEC)
 
-    def _highlighBlocks(self, fromBlock, atLeastUntilBlock):
-        endTime = time.clock() + self._MAX_PARSING_TIME_SEC
+    def _highlighBlocks(self, fromBlock, atLeastUntilBlock, timeout):
+        endTime = time.clock() + timeout
 
         block = fromBlock
         lineData = self._lineData(block.previous())
