@@ -82,6 +82,8 @@ class _CompletionList(QListView):
     itemSelected = pyqtSignal(int)
     tabPressed = pyqtSignal()
     
+    _MAX_VISIBLE_ROWS = 20  # no any technical reason, just for better UI
+    
     _ROW_MARGIN = 6
     
     def __init__(self, qpart, model):
@@ -145,7 +147,8 @@ class _CompletionList(QListView):
         width += 16  # margin
         
         # drawn with scrollbar without +2. I don't know why
-        height = self.sizeHintForRow(0) * self.model().rowCount() + self._ROW_MARGIN
+        rowCount = min(self.model().rowCount(), self._MAX_VISIBLE_ROWS)
+        height = (self.sizeHintForRow(0) * rowCount) + self._ROW_MARGIN
 
         return QSize(width, height)
 
