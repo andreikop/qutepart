@@ -189,7 +189,7 @@ class _CompletionList(QListView):
                spaceAbove > self.minimumHeight():
                 height = spaceAbove
                 width = width + SCROLLBAR_WIDTH
-            yPos = cursorRect.top() - sizeHint.height()
+            yPos = cursorRect.top() - height
 
         xPos = cursorRect.right() - self._horizontalShift()
         
