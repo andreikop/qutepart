@@ -19,6 +19,44 @@ class SyntaxHighlighter(QObject):
     
     _MAX_PARSING_TIME_SEC = 0.02
 
+    def __init__(self, syntax, object):
+        if isinstance(object, QTextDocument):
+            document = object
+        elif isinstance(object, QTextEdit):
+            document = object.document()
+            assert document is not None
+        else:
+            raise TypeError("object must be QTextDocument or QTextEdit")
+        
+        QObject.__init__(self, document)
+        self._syntax = syntax
+        self._document = document
+        
+        self._pendingBlock = None
+        self._pendingAtLeastUntilBlock = None
+        
+        self._continueTimer = QTimer()
+        self._continueTimer.setSingleShot(True)
+        self._continueTimer.timeout.connect(self._onContinueHighlighting)
+        
+        document.contentsChange.connect(self._onContentsChange)
+        self._highlighBlocks(self._document.firstBlock(), self._document.lastBlock())
+    
+    def del_(self):
+        self._document.contentsChange.disconnect(self._onContentsChange)
+        self._continueTimer.stop()
+        block = self._document.firstBlock()
+        while block.isValid():
+            block.layout().setAdditionalFormats([])
+            block.setUserData(None)
+            self._document.markContentsDirty(block.position(), block.length())
+            block = block.next()
+
+    def syntax(self):
+        """Return own syntax
+        """
+        return self._syntax
+
     def isCode(self, block, column):
         """Check if character at column is a a code
         """
@@ -58,44 +96,6 @@ class SyntaxHighlighter(QObject):
         qtFormat.setFontStrikeOut(format.strikeOut)
 
         return qtFormat
-
-    def __init__(self, syntax, object):
-        if isinstance(object, QTextDocument):
-            document = object
-        elif isinstance(object, QTextEdit):
-            document = object.document()
-            assert document is not None
-        else:
-            raise TypeError("object must be QTextDocument or QTextEdit")
-        
-        QObject.__init__(self, document)
-        self._syntax = syntax
-        self._document = document
-        
-        self._pendingBlock = None
-        self._pendingAtLeastUntilBlock = None
-        
-        self._continueTimer = QTimer()
-        self._continueTimer.setSingleShot(True)
-        self._continueTimer.timeout.connect(self._onContinueHighlighting)
-        
-        document.contentsChange.connect(self._onContentsChange)
-        self._highlighBlocks(self._document.firstBlock(), self._document.lastBlock())
-    
-    def del_(self):
-        self._document.contentsChange.disconnect(self._onContentsChange)
-        self._continueTimer.stop()
-        block = self._document.firstBlock()
-        while block.isValid():
-            block.layout().setAdditionalFormats([])
-            block.setUserData(None)
-            self._document.markContentsDirty(block.position(), block.length())
-            block = block.next()
-
-    def syntax(self):
-        """Return own syntax
-        """
-        return self._syntax
 
     @staticmethod
     def _lineData(block):

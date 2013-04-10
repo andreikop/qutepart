@@ -1,9 +1,5 @@
 fixme:
-    empty lines disappear
     indent to detected for model xml
-    when drawing indent markers - support spaces and tabs
-    doesn't disappear completion, if finishing current word
-    when positioning cursor - show few lines lower/higher additionally
     delayied highlighting when opening
 
 first release
@@ -17,6 +13,8 @@ first release
   replace mode                        1
   support printing                    1
   scheme indenter                     1
+  when positioning cursor - \
+    show few lines lower/higher       1
 
 next release:
   assotiations editor
