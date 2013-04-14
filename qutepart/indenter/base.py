@@ -120,13 +120,14 @@ class IndenterBase(IndenterNone):
         
         depth = 1
         for foundBlock, foundColumn, char in self.iterateCharsBackwardFrom(block, column):
-            if char == opening:
-                depth = depth - 1
-            elif char == closing:
-                depth = depth + 1
-            
-            if depth == 0:
-                return foundBlock, foundColumn
+            if not self._qpart.isComment(foundBlock.blockNumber(), foundColumn):
+                if char == opening:
+                    depth = depth - 1
+                elif char == closing:
+                    depth = depth + 1
+                
+                if depth == 0:
+                    return foundBlock, foundColumn
         else:
             raise ValueError('Not found')
 
