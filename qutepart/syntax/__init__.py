@@ -110,29 +110,37 @@ class Syntax:
         """
         return self.parser.parseBlock(text, prevLineData)
     
+    def _getTextType(self, lineData, column):
+        """Get text type (letter)
+        """
+        if lineData is None:
+            return ' '  # default is code
+        
+        textTypeMap = lineData[1]
+        if column >= len(textTypeMap):  # probably, not actual data, not updated yet
+            return ' '
+        
+        return textTypeMap[column]
+        
     def isCode(self, lineData, column):
         """Check if text at given position is a code
         """
-        return lineData is None or \
-               lineData[1][column] == ' '
+        return self._getTextType(lineData, column) ==  ' '
 
     def isComment(self, lineData, column):
         """Check if text at given position is a comment. Including block comments and here documents
         """
-        return lineData is not None and \
-               lineData[1][column] in 'cbh'
+        return self._getTextType(lineData, column) in 'cbh'
 
     def isBlockComment(self, lineData, column):
         """Check if text at given position is a block comment
         """
-        return lineData is not None and \
-               lineData[1][column] in 'b'
+        return self._getTextType(lineData, column) ==  'b'
 
     def isHereDoc(self, lineData, column):
         """Check if text at given position is a here document
         """
-        return lineData is not None and \
-               lineData[1][column] in 'h'
+        return self._getTextType(lineData, column) ==  'h'
 
 class SyntaxManager:
     """SyntaxManager holds references to loaded Syntax'es and allows to find or
