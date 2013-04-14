@@ -34,6 +34,8 @@ def getIndenter(indenterName, qpart):
         from qutepart.indenter.lilypond import IndenterLilypond as indenterClass
     elif 'lisp' == indenterName:
         from qutepart.indenter.lisp import IndenterLisp as indenterClass
+    elif 'scheme' == indenterName:
+        from qutepart.indenter.scheme import IndenterScheme as indenterClass
     else:
         raise KeyError("Indenter %s not found" % indenterName)
 

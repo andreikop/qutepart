@@ -2,6 +2,7 @@ fixme:
 
 first release
   indenters                           4     done 06.04.13
+  scheme indenter                     1     done 14.04.13
   add keyboard actions to main menu   1
   highlight indent markers            1
   draw line wrap markers              1
@@ -10,9 +11,9 @@ first release
   switch hihglighting language        2
   replace mode                        1
   support printing                    1
-  scheme indenter                     1
   when positioning cursor - \
     show few lines lower/higher       1
+  brace matching supports isCode      1
 
 next release:
   assotiations editor

@@ -196,14 +196,18 @@ class IndenterBase(IndenterNone):
             block = block.next()
         return block
     
-    @staticmethod
-    def _lastColumn(block):
+    def _lastColumn(self, block):
         """Returns the last non-whitespace column in the given line.
         If there are only whitespaces in the line, the return value is -1.
-        TODO ignore comments
         """
-        text = block.text().rstrip()
-        return len(text) - 1
+        text = block.text()
+        index = len(block.text()) - 1
+        while index >= 0 and \
+              (text[index].isspace() or \
+               self._qpart.isComment(block.blockNumber(), index)):
+            index -= 1
+        
+        return index
     
     @staticmethod
     def _nextNonSpaceColumn(block, column):

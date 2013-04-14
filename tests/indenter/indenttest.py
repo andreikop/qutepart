@@ -43,6 +43,10 @@ class IndentTest(unittest.TestCase):
     def alignLine(self, index):
         self.qpart._autoIndentBlock(self.qpart.document().findBlockByNumber(index), '')
     
+    def alignAll(self):
+        QTest.keyClick(self.qpart, Qt.Key_A, Qt.ControlModifier)
+        self.qpart._onShortcutAutoIndentSelection()
+    
     def setUp(self):
         self.qpart = Qutepart()
         if self.LANGUAGE is not None:
