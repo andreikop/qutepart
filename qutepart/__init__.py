@@ -50,9 +50,12 @@ class _Bookmarks:
     def __init__(self, qpart, markArea):
         self._qpart = qpart
         self._markArea = markArea
-        qpart.toggleBookmark = self._createAction(qpart, "bookmark.png", "Toogle bookmark", 'Ctrl+B', self._onToggleBookmark)
-        qpart.nextBookmark = self._createAction(qpart, "up.png", "Previous bookmark", 'Alt+PgUp', self._onPrevBookmark)
-        qpart.prevBookmark = self._createAction(qpart, "down.png", "Next bookmark", 'Alt+PgDown', self._onNextBookmark)
+        qpart.toggleBookmarkAction = self._createAction(qpart, "bookmark.png", "Toogle bookmark", 'Ctrl+B',
+                                                        self._onToggleBookmark)
+        qpart.nextBookmarkAction = self._createAction(qpart, "up.png", "Previous bookmark", 'Alt+PgUp',
+                                                      self._onPrevBookmark)
+        qpart.prevBookmarkAction = self._createAction(qpart, "down.png", "Next bookmark", 'Alt+PgDown',
+                                                      self._onNextBookmark)
 
     def _createAction(self, widget, iconFileName, text, shortcut, slot):
         """Create QAction with given parameters and add to the widget
@@ -268,9 +271,22 @@ class Qutepart(QPlainTextEdit):
     Component contains list of actions (QAction instances).
     Actions can be insered to some menu, a shortcut and an icon can be configured. List of actions:
     
-    * ``toggleBookmark`` - Set/Clear bookmark on current block
-    * ``nextBookmark`` - Jump to next bookmark
-    * ``prevBookmark`` - Jump to previous bookmark
+    * ``toggleBookmarkAction`` - Set/Clear bookmark on current block
+    * ``nextBookmarkAction`` - Jump to next bookmark
+    * ``prevBookmarkAction`` - Jump to previous bookmark
+    * ``scrollUpAction`` - Scroll viewport Up
+    * ``scrollDownAction`` - Scroll viewport Down
+    * ``selectAndScrollUpAction`` - Select 1 line Up and scroll
+    * ``selectAndScrollDownAction`` - Select 1 line Down and scroll
+    * ``decreaseIndentAction`` - Decrease indentation
+    * ``autoIndentLineAction`` - Autoindent line
+    * ``moveLineUpAction`` - Move line Up
+    * ``moveLineDownAction`` - Move line Down
+    * ``deleteLineAction`` - Delete line
+    * ``copyLineAction`` - Copy line
+    * ``pasteLineAction`` - Paste line
+    * ``cutLineAction`` - Cut line
+    * ``duplicateLineAction`` - Duplicate line
     
     **Text modification and Undo/Redo**
     
@@ -323,7 +339,7 @@ class Qutepart(QPlainTextEdit):
         
         self._lines = Lines(self)
         
-        self._initShortcuts()
+        self._initActions()
         
         self._completer = Completer(self)
         
@@ -346,28 +362,44 @@ class Qutepart(QPlainTextEdit):
         self._updateLineNumberAreaWidth(0)
         self._updateExtraSelections()
     
-    def _initShortcuts(self):
+    def _initActions(self):
         """Init shortcuts for text editing
         """
-        def createShortcut(keySeq, slot):
-            shortcut = QShortcut(QKeySequence(keySeq), self)
-            shortcut.setContext(Qt.WidgetShortcut)
-            shortcut.activated.connect(slot)
         
-        createShortcut('Ctrl+Up', lambda: self._onShortcutScroll(down = False))
-        createShortcut('Ctrl+Down', lambda: self._onShortcutScroll(down = True))
-        createShortcut('Ctrl+Shift+Up', lambda: self._onShortcutSelectAndScroll(down = False))
-        createShortcut('Ctrl+Shift+Down', lambda: self._onShortcutSelectAndScroll(down = True))
-        createShortcut('Shift+Tab', lambda: self._onShortcutChangeSelectedBlocksIndentation(increase = False))
-        createShortcut('Alt+Up', lambda: self._onShortcutMoveLine(down = False))
-        createShortcut('Alt+Down', lambda: self._onShortcutMoveLine(down = True))
-        createShortcut('Alt+Del', self._onShortcutDeleteLine)
-        createShortcut('Alt+C', self._onShortcutCopyLine)
-        createShortcut('Alt+V', self._onShortcutPasteLine)
-        createShortcut('Alt+X', self._onShortcutCutLine)
-        createShortcut('Alt+D', self._onShortcutDuplicateLine)
-        createShortcut('Ctrl+I', self._onShortcutAutoIndentSelection)
-
+        def createAction(text, shortcut, slot):
+            """Create QAction with given parameters and add to the widget
+            """
+            action = QAction(text, self)
+            action.setShortcut(QKeySequence(shortcut))
+            action.setShortcutContext(Qt.WidgetShortcut)
+            action.triggered.connect(slot)
+            
+            self.addAction(action)
+            
+            return action
+        
+        self.scrollUpAction = createAction('Scroll up', 'Ctrl+Up',
+                                           lambda: self._onShortcutScroll(down = False))
+        self.scrollDownAction = createAction('Scroll down', 'Ctrl+Down',
+                                             lambda: self._onShortcutScroll(down = True))
+        self.selectAndScrollUpAction = createAction('Select and scroll Up', 'Ctrl+Shift+Up',
+                                                    lambda: self._onShortcutSelectAndScroll(down = False))
+        self.selectAndScrollDownAction = createAction('Select and scroll Down', 'Ctrl+Shift+Down',
+                                                      lambda: self._onShortcutSelectAndScroll(down = True))
+        self.decreaseIndentAction = createAction('Decrease indentation', 'Shift+Tab',
+                                                 lambda: self._onChangeSelectedBlocksIndent(increase = False))
+        self.autoIndentLineAction = createAction('Autoindent line', 'Ctrl+I',
+                                                  self._onShortcutAutoIndentSelection)
+        self.moveLineUpAction = createAction('Move line up', 'Alt+Up',
+                                             lambda: self._onShortcutMoveLine(down = False))
+        self.moveLineDownAction = createAction('Move line down', 'Alt+Down',
+                                               lambda: self._onShortcutMoveLine(down = True))
+        self.deleteLineAction = createAction('Delete line', 'Alt+Del', self._onShortcutDeleteLine)
+        self.copyLineAction = createAction('Copy line', 'Alt+C', self._onShortcutCopyLine)
+        self.pasteLineAction = createAction('Paste line', 'Alt+V', self._onShortcutPasteLine)
+        self.cutLineAction = createAction('Cut line', 'Alt+X', self._onShortcutCutLine)
+        self.duplicateLineAction = createAction('Duplicate line', 'Alt+D', self._onShortcutDuplicateLine)
+    
     def __enter__(self):
         """Context management method.
         Begin atomic modification
@@ -810,7 +842,7 @@ class Qutepart(QPlainTextEdit):
             self._insertNewBlock()
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
             if self.textCursor().hasSelection():
-                self._onShortcutChangeSelectedBlocksIndentation(increase = True)
+                self._onChangeSelectedBlocksIndent(increase = True)
             else:
                 self._onShortcutIndentAfterCursor()
         elif event.key() == Qt.Key_Backspace and \
@@ -943,7 +975,7 @@ class Qutepart(QPlainTextEdit):
             cursor.setPosition(cursor.position() + charsToRemove, QTextCursor.KeepAnchor)
             cursor.removeSelectedText()
     
-    def _onShortcutChangeSelectedBlocksIndentation(self, increase):
+    def _onChangeSelectedBlocksIndent(self, increase):
         """Tab pressed and few blocks are selected, or Shift+Tab pressed
         Insert or remove text from the beginning of blocks
         """

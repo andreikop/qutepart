@@ -17,7 +17,7 @@ if executablePath.startswith('/home'):  # if executed from the sources
 import sip
 sip.setapi('QString', 2)
 
-from PyQt4.QtGui import QApplication
+from PyQt4.QtGui import QApplication, QMainWindow
 
 
 import qutepart
@@ -40,7 +40,10 @@ def main():
     
     app = QApplication(sys.argv)
     
+    window = QMainWindow()
+
     qpart = qutepart.Qutepart()
+    window.setCentralWidget(qpart)
     
     qpart.detectSyntax(sourceFilePath = filePath)
     
@@ -48,8 +51,32 @@ def main():
     
     qpart.setWindowTitle(filePath)
     
-    qpart.resize(800, 600)
-    qpart.show()
+    menu = {'Bookmarks': ('toggleBookmarkAction',
+                          'nextBookmarkAction',
+                          'prevBookmarkAction'),
+            'Navigation':('scrollUpAction',
+                          'scrollDownAction',
+                          'selectAndScrollUpAction',
+                          'selectAndScrollDownAction',
+                          ),
+            'Edit'      : ('decreaseIndentAction',
+                           'autoIndentLineAction',
+                           'moveLineUpAction',
+                           'moveLineDownAction',
+                           'deleteLineAction',
+                           'copyLineAction',
+                           'pasteLineAction',
+                           'cutLineAction',
+                           'duplicateLineAction',
+                           )
+    }
+    for k, v in menu.items():
+        menuObject = window.menuBar().addMenu(k)
+        for actionName in v:
+            menuObject.addAction(getattr(qpart, actionName))
+    
+    window.resize(800, 600)
+    window.show()
     
     from PyQt4.QtCore import QTimer
     if '-q' in sys.argv:

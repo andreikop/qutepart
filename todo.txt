@@ -3,7 +3,7 @@ fixme:
 first release
   indenters                           4     done 06.04.13
   scheme indenter                     1     done 14.04.13
-  add keyboard actions to main menu   1
+  add keyboard actions to main menu   1     done 18.04.13
   highlight indent markers            1
   draw line wrap markers              1
   Support DetectComments##Roff        1
