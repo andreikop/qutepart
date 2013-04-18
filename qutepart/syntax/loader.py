@@ -96,7 +96,30 @@ def _safeGetRequiredAttribute(xmlElement, name, default):
         _logger.error("Required attribute '%s' is not set for element '%s'", name, xmlElement.tag)
         return default
 
-def _makeContextSwitcher(contextOperation, contexts):
+
+def _getContext(contextName, parser, formatConverterFunction, defaultValue):
+    if not contextName:
+        return defaultValue
+    if contextName in parser.contexts:
+        return parser.contexts[contextName]
+    elif contextName.startswith('##') and \
+         parser.syntax.manager is not None:  # might be None, if loader is used by regenerate-definitions-db.py
+        syntaxName = contextName[2:]
+        parser = parser.syntax.manager.getSyntax(formatConverterFunction, languageName = syntaxName).parser
+        return parser.defaultContext
+    elif (not contextName.startswith('##')) and \
+         '##' in contextName and \
+         contextName.count('##') == 1 and \
+         parser.syntax.manager is not None:  # might be None, if loader is used by regenerate-definitions-db.py
+        name, syntaxName = contextName.split('##')
+        parser = parser.syntax.manager.getSyntax(formatConverterFunction, languageName = syntaxName).parser
+        return parser.contexts[name]
+    else:
+        _logger.error('Invalid context name %s', repr(contextName))
+        return parser.defaultContext
+
+
+def _makeContextSwitcher(contextOperation, parser, formatConverterFunction):
     popsCount = 0
     contextToSwitch = None
     
@@ -108,12 +131,8 @@ def _makeContextSwitcher(contextOperation, contexts):
     if rest == '#stay':
         if popsCount:
             _logger.error("Invalid context operation '%s'", contextOperation)
-    elif rest in contexts:
-        contextToSwitch = contexts[rest]
-    elif rest.startswith('##'):
-        pass  # TODO implement IncludeRules
-    elif rest:
-        _logger.error("Unknown context '%s'", rest)
+    else:
+        contextToSwitch = _getContext(rest, parser, formatConverterFunction, None)
 
     if popsCount > 0 or contextToSwitch != None:
         return _parserModule.ContextSwitcher(popsCount, contextToSwitch, contextOperation)
@@ -128,19 +147,7 @@ def _makeContextSwitcher(contextOperation, contexts):
 def _loadIncludeRules(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     contextName = _safeGetRequiredAttribute(xmlElement, "context", None)
     
-    if contextName is not None:
-        if contextName in parentContext.parser.contexts:
-            context = parentContext.parser.contexts[contextName]
-        elif contextName.startswith('##') and \
-             parentContext.parser.syntax.manager is not None:  # might be None, if loader is used by regenerate-definitions-db.py
-            syntaxName = contextName[2:]
-            parser = parentContext.parser.syntax.manager.getSyntax(formatConverterFunction, languageName = syntaxName).parser
-            context = parser.defaultContext
-        else:
-            _logger.error('Invalid context name %s', contextName)
-            context = parentContext.parser.defaultContext
-    else:
-        context = parentContext.parser.defaultContext
+    context = _getContext(contextName, parentContext.parser, formatConverterFunction, parentContext.parser.defaultContext)
 
     abstractRuleParams = _loadAbstractRuleParams(parentContext,
                                                  xmlElement,
@@ -188,7 +195,7 @@ def _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, for
     
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
-    context = _makeContextSwitcher(contextText, parentContext.parser.contexts)
+    context = _makeContextSwitcher(contextText, parentContext.parser, formatConverterFunction)
 
     lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
     firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
@@ -394,13 +401,13 @@ def _loadContext(context, xmlElement, attributeToFormatMap, formatConverterFunct
         format = formatConverterFunction(format)
     
     lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    lineEndContext = _makeContextSwitcher(lineEndContextText,  context.parser.contexts)
+    lineEndContext = _makeContextSwitcher(lineEndContextText,  context.parser, formatConverterFunction)
     lineBeginContextText = xmlElement.attrib.get('lineEndContext', '#stay')
-    lineBeginContext = _makeContextSwitcher(lineBeginContextText, context.parser.contexts)
+    lineBeginContext = _makeContextSwitcher(lineBeginContextText, context.parser, formatConverterFunction)
     
     if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
         fallthroughContextText = _safeGetRequiredAttribute(xmlElement, 'fallthroughContext', '#stay')
-        fallthroughContext = _makeContextSwitcher(fallthroughContextText, context.parser.contexts)
+        fallthroughContext = _makeContextSwitcher(fallthroughContextText, context.parser, formatConverterFunction)
     else:
         fallthroughContext = None
     

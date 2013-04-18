@@ -1,21 +1,22 @@
 fixme:
+  why devicemgmt.wsdl uses 4 spaces as indent??
 
 first release
   indenters                           4     done 06.04.13
   scheme indenter                     1     done 14.04.13
   add keyboard actions to main menu   1     done 18.04.13
+  Support DetectComments##Roff        1     done 18.04.13
   highlight indent markers            1
   draw line wrap markers              1
-  Support DetectComments##Roff        1
   detect syntax by first line         1
   switch hihglighting language        2
   replace mode                        1
   support printing                    1
-  when positioning cursor - \
-    show few lines lower/higher       1
   brace matching supports isCode      1
 
 next release:
+  when positioning cursor - \
+    show few lines lower/higher       1
   assotiations editor
   VIM mode
   comment/uncomment
