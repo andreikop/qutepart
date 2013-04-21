@@ -1,13 +1,11 @@
 fixme:
-  why devicemgmt.wsdl uses 4 spaces as indent??
 
 first release
   indenters                           4     done 06.04.13
   scheme indenter                     1     done 14.04.13
   add keyboard actions to main menu   1     done 18.04.13
   Support DetectComments##Roff        1     done 18.04.13
-  highlight indent markers            1
-  draw line wrap markers              1
+  draw line wrap markers              1     done 21.04.13
   detect syntax by first line         1
   switch hihglighting language        2
   replace mode                        1
@@ -24,6 +22,9 @@ next release:
   dark theme
   autoindenter settings
   Replace mode. Match bracke under cursor in replace mode
+
+sometimes
+  highlight indent markers            1   # doesn't work. Done in a branch
 
 when found:
     alt+d doesn't work for duplicating selection

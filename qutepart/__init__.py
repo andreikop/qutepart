@@ -139,16 +139,29 @@ class _LineNumberArea(QWidget):
         blockNumber = block.blockNumber()
         top = int(self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset()).top())
         bottom = top + int(self._qpart.blockBoundingRect(block).height())
-
+        singleBlockHeight = self._qpart.cursorRect().height()
+        
+        width = None
+        wrapMarkerColor = None
+        
+        boundingRect = self._qpart.blockBoundingRect(block)
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(blockNumber + 1)
                 painter.drawText(0, top, self.width() - self._RIGHT_MARGIN, self._qpart.fontMetrics().height(),
                                  Qt.AlignRight, number)
+                if boundingRect.height() >= singleBlockHeight * 2:  # wrapped block
+                    if width is None:
+                        width = self.width()  # laizy calculation
+                        wrapMarkerColor = self._wrapMarkerColor()
+                    painter.fillRect(1, top + singleBlockHeight,
+                                     width - 2, boundingRect.height() - singleBlockHeight - 2,
+                                     Qt.darkGreen)
             
             block = block.next()
+            boundingRect = self._qpart.blockBoundingRect(block)
             top = bottom
-            bottom = top + int(self._qpart.blockBoundingRect(block).height())
+            bottom = top + int(boundingRect.height())
             blockNumber += 1
 
     def width(self):
