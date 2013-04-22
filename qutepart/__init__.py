@@ -153,7 +153,6 @@ class _LineNumberArea(QWidget):
                 if boundingRect.height() >= singleBlockHeight * 2:  # wrapped block
                     if width is None:
                         width = self.width()  # laizy calculation
-                        wrapMarkerColor = self._wrapMarkerColor()
                     painter.fillRect(1, top + singleBlockHeight,
                                      width - 2, boundingRect.height() - singleBlockHeight - 2,
                                      Qt.darkGreen)
