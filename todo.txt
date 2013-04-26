@@ -6,13 +6,13 @@ first release
   add keyboard actions to main menu   1     done 18.04.13
   Support DetectComments##Roff        1     done 18.04.13
   draw line wrap markers              1     done 21.04.13
-  detect syntax by first line         1
-  switch hihglighting language        2
+  detect syntax by first line         1     done 27.04.13
   replace mode                        1
   support printing                    1
   brace matching supports isCode      1
 
 next release:
+  switch hihglighting language        2
   when positioning cursor - \
     show few lines lower/higher       1
   assotiations editor

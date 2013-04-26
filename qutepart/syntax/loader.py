@@ -500,8 +500,9 @@ def _makeKeywordsLowerCase(listDict):
 def _loadSyntaxDescription(root, syntax):
     syntax.name = _safeGetRequiredAttribute(root, 'name', 'Error: .parser name is not set!!!')
     syntax.section = _safeGetRequiredAttribute(root, 'section', 'Error: Section is not set!!!')
-    syntax.extensions = _safeGetRequiredAttribute(root, 'extensions', '').split(';')
-    syntax.mimetype = root.attrib.get('mimetype', '').split(';')
+    syntax.extensions = filter(None, _safeGetRequiredAttribute(root, 'extensions', '').split(';'))
+    syntax.firstLineGlobs = filter(None, root.attrib.get('firstLineGlobs', '').split(';'))
+    syntax.mimetype = filter(None, root.attrib.get('mimetype', '').split(';'))
     syntax.version = root.attrib.get('version', None)
     syntax.kateversion = root.attrib.get('kateversion', None)
     syntax.priority = root.attrib.get('priority', None)
@@ -515,7 +516,11 @@ def _loadSyntaxDescription(root, syntax):
 
 def loadSyntax(syntax, filePath, formatConverterFunction = None):
     with open(filePath, 'r') as definitionFile:
-        root = xml.etree.ElementTree.parse(definitionFile).getroot()
+        try:
+            root = xml.etree.ElementTree.parse(definitionFile).getroot()
+        except Exception as ex:
+            print >> sys.stderr, 'When opening %s:' % filePath
+            raise
 
     highlightingElement = root.find('highlighting')
     

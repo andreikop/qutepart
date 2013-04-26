@@ -155,9 +155,10 @@ class SyntaxManager:
         self._syntaxNameToXmlFileName = syntaxDb['syntaxNameToXmlFileName']
         self._mimeTypeToXmlFileName = syntaxDb['mimeTypeToXmlFileName']
         self._extensionToXmlFileName = syntaxDb['extensionToXmlFileName']
+        self._firstLineToXmlFileName = syntaxDb['firstLineToXmlFileName']
 
     def _getSyntaxByXmlFileName(self, xmlFileName, formatConverterFunction):
-        """Get Syntax by its xml file name
+        """Get syntax by its xml file name
         """
         import qutepart.syntax.loader  # delayed import for avoid cross-imports problem
         
@@ -177,7 +178,7 @@ class SyntaxManager:
         return self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
     
     def _getSyntaxBySourceFileName(self, name, formatConverterFunction):
-        """Get Syntax by source name of file, which is going to be highlighted
+        """Get syntax by source name of file, which is going to be highlighted
         """
         for pattern, xmlFileName in self._extensionToXmlFileName.items():
             if fnmatch.fnmatch(name, pattern):
@@ -186,13 +187,26 @@ class SyntaxManager:
             raise KeyError("No syntax for " + name)
 
     def _getSyntaxByMimeType(self, mimeType, formatConverterFunction):
-        """Get Syntax by file mime type
+        """Get syntax by first line of the file
         """
         xmlFileName = self._mimeTypeToXmlFileName[mimeType]
         return self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
+    
+    def _getSyntaxByFirstLine(self, firstLine, formatConverterFunction):
+        """Get syntax by first line of the file
+        """
+        for pattern, xmlFileName in self._firstLineToXmlFileName.items():
+            if fnmatch.fnmatch(firstLine, pattern):
+                return self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
+        else:
+            raise KeyError("No syntax for " + firstLine)
 
     def getSyntax(self, formatConverterFunction = None,
-                  xmlFileName = None, mimeType = None, languageName = None, sourceFilePath = None):
+                  xmlFileName=None,
+                  mimeType=None,
+                  languageName=None,
+                  sourceFilePath=None,
+                  firstLine=None):
         """Get syntax by one of parameters:
             * xmlFileName
             * mimeType
@@ -224,6 +238,12 @@ class SyntaxManager:
             baseName = os.path.basename(sourceFilePath)
             try:
                 syntax = self._getSyntaxBySourceFileName(baseName, formatConverterFunction)
+            except KeyError:
+                pass
+        
+        if syntax is None and firstLine is not None:
+            try:
+                syntax = self._getSyntaxByFirstLine(firstLine, formatConverterFunction)
             except KeyError:
                 pass
 

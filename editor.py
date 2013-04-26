@@ -45,7 +45,11 @@ def main():
     qpart = qutepart.Qutepart()
     window.setCentralWidget(qpart)
     
-    qpart.detectSyntax(sourceFilePath = filePath)
+    line = None
+    with open(filePath) as f:
+        line = f.readline()
+    
+    qpart.detectSyntax(sourceFilePath = filePath, firstLine=line)
     
     qpart.text = text
     

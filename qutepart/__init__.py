@@ -630,13 +630,19 @@ class Qutepart(QPlainTextEdit):
         """
         return self.replaceText(pos, 0, text)
     
-    def detectSyntax(self, xmlFileName = None, mimeType = None, language = None, sourceFilePath = None):
-        """Get syntax by one of parameters:
+    def detectSyntax(self,
+                     xmlFileName=None,
+                     mimeType=None,
+                     language=None,
+                     sourceFilePath=None,
+                     firstLine=None):
+        """Get syntax by next parameters (fill as many, as known):
         
             * xmlFileName
             * mimeType
             * language
             * sourceFilePath
+            * firstLine
         First parameter in the list has the hightest priority.
         Old syntax is always cleared, even if failed to detect new.
         
@@ -647,10 +653,11 @@ class Qutepart(QPlainTextEdit):
         self.clearSyntax()
         
         syntax = self._globalSyntaxManager.getSyntax(SyntaxHighlighter.formatConverterFunction,
-                                                     xmlFileName = xmlFileName,
-                                                     mimeType = mimeType,
-                                                     languageName = language,
-                                                     sourceFilePath = sourceFilePath)
+                                                     xmlFileName=xmlFileName,
+                                                     mimeType=mimeType,
+                                                     languageName=language,
+                                                     sourceFilePath=sourceFilePath,
+                                                     firstLine=firstLine)
 
         if syntax is not None:
             self._highlighter = SyntaxHighlighter(syntax, self.document())

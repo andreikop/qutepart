@@ -139,5 +139,23 @@ class IsCodeOrComment(_BaseTest):
         self.assertTrue(self.qpart.isComment(1, 2))
 
 
+class DetectSyntax(_BaseTest):
+    def test_1(self):
+        self.qpart.detectSyntax(xmlFileName='ada.xml')
+        self.assertEquals(self.qpart.language(), 'Ada')
+        
+        self.qpart.detectSyntax(mimeType='text/x-cgsrc')
+        self.assertEquals(self.qpart.language(), 'Cg')
+        
+        self.qpart.detectSyntax(language='CSS')
+        self.assertEquals(self.qpart.language(), 'CSS')
+        
+        self.qpart.detectSyntax(sourceFilePath='/tmp/file.feh')
+        self.assertEquals(self.qpart.language(), 'ferite')
+        
+        self.qpart.detectSyntax(firstLine='<?php hello() ?>')
+        self.assertEquals(self.qpart.language(), 'HTML')
+
+
 if __name__ == '__main__':
     unittest.main()

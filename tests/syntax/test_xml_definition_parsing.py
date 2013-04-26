@@ -15,7 +15,7 @@ class XmlParsingTestCase(unittest.TestCase):
         """Parse all definitions
         Test, if we can open all xml files without exceptions.
         """
-        xmlFilesPath = os.path.join(os.path.dirname(__file__), '..', '..', 'qutepart', 'syntax', 'data')
+        xmlFilesPath = os.path.join(os.path.dirname(__file__), '..', '..', 'qutepart', 'syntax', 'data', 'xml')
         for xmlFileName in os.listdir(xmlFilesPath):
             if xmlFileName.endswith('.xml'):
                 syntax = SyntaxManager().getSyntax(None, xmlFileName = xmlFileName)

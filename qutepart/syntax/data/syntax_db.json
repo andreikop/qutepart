@@ -1,6 +1,5 @@
 {
     "extensionToXmlFileName": {
-        "": "fortran.xml", 
         " *.ADO": "stata.xml", 
         " *.DO": "stata.xml", 
         " *.DOH": "stata.xml", 
@@ -403,8 +402,20 @@
         "qrpg*.*": "ilerpg.xml", 
         "xorg.conf": "xorg.xml"
     }, 
+    "firstLineToXmlFileName": {
+        "*/sh*": "bash.xml", 
+        "*bash": "bash.xml", 
+        "*perl*": "perl.xml", 
+        "*python*": "python.xml", 
+        "<!doctype html*": "html.xml", 
+        "<!doctype*": "xml.xml", 
+        "<?php*": "html.xml", 
+        "<?xml*": "xml.xml", 
+        "<html*": "html.xml", 
+        "Index: *": "diff.xml", 
+        "\\\\documentclass": "latex.xml"
+    }, 
     "mimeTypeToXmlFileName": {
-        "": "modelines.xml", 
         "application/directory": "ldif.xml", 
         "application/json": "json.xml", 
         "application/postscript": "postscript.xml", 
