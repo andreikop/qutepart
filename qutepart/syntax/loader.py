@@ -439,22 +439,12 @@ def _textTypeForDefStyleName(attribute, defStyleName):
     else:
         return ' '
 
-def _loadAttributeToFormatMap(highlightingElement):
-    defaultTheme = ColorTheme(TextFormat)
-    attributeToFormatMap = {}
-    
-    itemDatasElement = highlightingElement.find('itemDatas')
-    for item in itemDatasElement.findall('itemData'):
-        attribute, defaultStyleName = item.get('name'), item.get('defStyleNum')
-        
-        if not defaultStyleName in defaultTheme.format:
-            _logger.error("Unknown default style '%s'", defaultStyleName)
-            defaultStyleName = 'dsNormal'
-            
-        format = copy.copy(defaultTheme.format[defaultStyleName])
+def _makeFormat(defaultTheme, defaultStyleName, textType, item=None):
+    format = copy.copy(defaultTheme.format[defaultStyleName])
 
-        format.textType = _textTypeForDefStyleName(attribute, defaultStyleName)
-        
+    format.textType = textType
+    
+    if item is not None:
         caseInsensitiveAttributes = {}
         for key, value in item.attrib.iteritems():
             caseInsensitiveAttributes[key.lower()] = value.lower()
@@ -474,9 +464,36 @@ def _loadAttributeToFormatMap(highlightingElement):
         if 'spellChecking' in caseInsensitiveAttributes:
             format.spellChecking = _parseBoolAttribute(caseInsensitiveAttributes['spellChecking'])
         
-        attribute = attribute.lower()  # style names are not case sensitive
-        attributeToFormatMap[attribute] = format
+    return format
+
+def _loadAttributeToFormatMap(highlightingElement):
+    defaultTheme = ColorTheme(TextFormat)
+    attributeToFormatMap = {}
     
+    itemDatasElement = highlightingElement.find('itemDatas')
+    for item in itemDatasElement.findall('itemData'):
+        attribute = item.get('name').lower()
+        defaultStyleName = item.get('defStyleNum')
+        
+        if not defaultStyleName in defaultTheme.format:
+            _logger.error("Unknown default style '%s'", defaultStyleName)
+            defaultStyleName = 'dsNormal'
+            
+        format = _makeFormat(defaultTheme,
+                             defaultStyleName,
+                             _textTypeForDefStyleName(attribute, defaultStyleName),
+                             item)
+        
+        attributeToFormatMap[attribute] = format
+
+    # HACK not documented, but 'normal' attribute is used by some parsers without declaration
+    if not 'normal' in attributeToFormatMap:
+        attributeToFormatMap['normal'] = _makeFormat(defaultTheme, 'dsNormal',
+                                                     _textTypeForDefStyleName('normal', 'dsNormal'))
+    if not 'string' in attributeToFormatMap:
+        attributeToFormatMap['string'] = _makeFormat(defaultTheme, 'dsString',
+                                                     _textTypeForDefStyleName('string', 'dsString'))
+
     return attributeToFormatMap
     
 def _loadLists(root, highlightingElement):
