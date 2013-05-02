@@ -6,8 +6,10 @@ import os.path
 import logging
 
 from PyQt4.QtCore import QRect, Qt, pyqtSignal
-from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, QFont, QIcon, QKeySequence, QPainter, QPalette, QPlainTextEdit, \
-                        QPixmap, QShortcut, QTextCharFormat, QTextCursor, QTextEdit, QTextFormat, QWidget
+from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, QDialog, QFont, \
+                        QIcon, QKeySequence, QPainter, QPalette, QPlainTextEdit, \
+                        QPixmap, QPrintDialog, QShortcut, QTextCharFormat, QTextCursor, \
+                        QTextEdit, QTextFormat, QWidget
 
 from qutepart.syntax import SyntaxManager
 from qutepart.syntaxhlighter import SyntaxHighlighter
@@ -299,6 +301,7 @@ class Qutepart(QPlainTextEdit):
     * ``pasteLineAction`` - Paste line
     * ``cutLineAction`` - Cut line
     * ``duplicateLineAction`` - Duplicate line
+    * ``printAction`` - Print file
     
     **Text modification and Undo/Redo**
     
@@ -411,6 +414,7 @@ class Qutepart(QPlainTextEdit):
         self.pasteLineAction = createAction('Paste line', 'Alt+V', self._onShortcutPasteLine)
         self.cutLineAction = createAction('Cut line', 'Alt+X', self._onShortcutCutLine)
         self.duplicateLineAction = createAction('Duplicate line', 'Alt+D', self._onShortcutDuplicateLine)
+        self.printAction = createAction('Print', 'Ctrl+P', self._onShortcutPrint)
     
     def __enter__(self):
         """Context management method.
@@ -1184,6 +1188,15 @@ class Qutepart(QPlainTextEdit):
             self.ensureCursorVisible()
         
         self._updateExtraSelections()  # newly inserted text might be highlighted as braces
+    
+    def _onShortcutPrint(self):
+        """Ctrl+P handler.
+        Show dialog, print file
+        """
+        dialog = QPrintDialog(self)
+        if dialog.exec_() == QDialog.Accepted:
+            printer = dialog.printer()
+            self.print_(printer)
     
     def _onShortcutAutoIndentSelection(self):
         """Indent current line or selected lines

@@ -7,8 +7,8 @@ first release
   Support DetectComments##Roff        1     done 18.04.13
   draw line wrap markers              1     done 21.04.13
   detect syntax by first line         1     done 27.04.13
+  support printing                    1     done 02.05.13
   replace mode                        1
-  support printing                    1
   brace matching supports isCode      1
 
 next release:
@@ -25,6 +25,3 @@ next release:
 
 sometimes
   highlight indent markers            1   # doesn't work. Done in a branch
-
-when found:
-    alt+d doesn't work for duplicating selection
