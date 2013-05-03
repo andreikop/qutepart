@@ -9,7 +9,7 @@ from PyQt4.QtCore import QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, QDialog, QFont, \
                         QIcon, QKeySequence, QPainter, QPalette, QPlainTextEdit, \
                         QPixmap, QPrintDialog, QShortcut, QTextCharFormat, QTextCursor, \
-                        QTextEdit, QTextFormat, QWidget
+                        QTextBlock, QTextEdit, QTextFormat, QWidget
 
 from qutepart.syntax import SyntaxManager
 from qutepart.syntaxhlighter import SyntaxHighlighter
@@ -690,12 +690,17 @@ class Qutepart(QPlainTextEdit):
         else:
             return self._highlighter.syntax().name
     
-    def isCode(self, line, column):
+    def isCode(self, blockOrBlockNumber, column):
         """Check if text at given position is a code
         If language is not known, or text is not parsed yet, True is returned
         """
+        if isinstance(blockOrBlockNumber, QTextBlock):
+            block = blockOrBlockNumber
+        else:
+            block = self.document().findBlockByNumber(blockOrBlockNumber)
+            
         return self._highlighter is None or \
-               self._highlighter.isCode(self.document().findBlockByNumber(line), column)
+               self._highlighter.isCode(block, column)
 
     def isComment(self, line, column):
         """Check if text at given position is a comment. Including block comments and here documents
@@ -945,7 +950,8 @@ class Qutepart(QPlainTextEdit):
         # TODO use positionInBlock when Qt 4.6 is not supported
         cursorColumnIndex = self.textCursor().positionInBlock()
         
-        bracketSelections = self._bracketHighlighter.extraSelections(self.textCursor().block(),
+        bracketSelections = self._bracketHighlighter.extraSelections(self,
+                                                                     self.textCursor().block(),
                                                                      cursorColumnIndex)
         allSelections = [currentLineSelection] + bracketSelections + self._userExtraSelections
         QPlainTextEdit.setExtraSelections(self, allSelections)

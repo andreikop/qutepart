@@ -63,11 +63,10 @@ class BracketHighlighter:
             
             block = block.previous()
     
-    def _findMatchingBracket(self, bracket, block, columnIndex):
+    def _findMatchingBracket(self, bracket, qpart, block, columnIndex):
         """Find matching bracket for the bracket.
         Return (block, columnIndex) or (None, None)
         Raise UserWarning, if time is over
-        TODO improve this method sometimes for skipping strings and comments
         """
         if bracket in self._START_BRACKETS:
             charsGenerator = self._iterateDocumentCharsForward(block, columnIndex + 1)
@@ -77,12 +76,13 @@ class BracketHighlighter:
         depth = 1
         oposite = self._OPOSITE_BRACKET[bracket]
         for block, columnIndex, char in charsGenerator:
-            if char == oposite:
-                depth -= 1
-                if depth == 0:
-                    return block, columnIndex
-            elif char == bracket:
-                depth += 1
+            if qpart.isCode(block, columnIndex):
+                if char == oposite:
+                    depth -= 1
+                    if depth == 0:
+                        return block, columnIndex
+                elif char == bracket:
+                    depth += 1
         else:
             return None, None
     
@@ -103,12 +103,12 @@ class BracketHighlighter:
         
         return selection
 
-    def _highlightBracket(self, bracket, block, columnIndex):
+    def _highlightBracket(self, bracket, qpart, block, columnIndex):
         """Highlight bracket and matching bracket
         Return tuple of QTextEdit.ExtraSelection's
         """
         try:
-            matchedBlock, matchedColumnIndex = self._findMatchingBracket(bracket, block, columnIndex)
+            matchedBlock, matchedColumnIndex = self._findMatchingBracket(bracket, qpart, block, columnIndex)
         except UserWarning:  # not found, time is over
             return[] # highlight nothing
         
@@ -118,14 +118,18 @@ class BracketHighlighter:
         else:
             return [self._makeMatchSelection(block, columnIndex, False)]
     
-    def extraSelections(self, block, columnIndex):
+    def extraSelections(self, qpart, block, columnIndex):
         """List of QTextEdit.ExtraSelection's, which highlighte brackets
         """
         blockText = block.text()
         
-        if columnIndex > 0 and blockText[columnIndex - 1] in self._ALL_BRACKETS:
-            return self._highlightBracket(blockText[columnIndex - 1], block, columnIndex - 1)
-        elif columnIndex < len(blockText) and blockText[columnIndex] in self._ALL_BRACKETS:
-            return self._highlightBracket(blockText[columnIndex], block, columnIndex)
+        if columnIndex > 0 and \
+           blockText[columnIndex - 1] in self._ALL_BRACKETS and \
+           qpart.isCode(block, columnIndex - 1):
+            return self._highlightBracket(blockText[columnIndex - 1], qpart, block, columnIndex - 1)
+        elif columnIndex < len(blockText) and \
+             blockText[columnIndex] in self._ALL_BRACKETS and \
+             qpart.isCode(block, columnIndex):
+            return self._highlightBracket(blockText[columnIndex], qpart, block, columnIndex)
         else:
             return []
