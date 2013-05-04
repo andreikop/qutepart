@@ -388,10 +388,13 @@ class Qutepart(QPlainTextEdit):
         """Init shortcuts for text editing
         """
         
-        def createAction(text, shortcut, slot):
+        def createAction(text, shortcut, slot, iconFileName=None):
             """Create QAction with given parameters and add to the widget
             """
             action = QAction(text, self)
+            if iconFileName is not None:
+                action.setIcon(QIcon(_getIconPath(iconFileName)))
+            
             action.setShortcut(QKeySequence(shortcut))
             action.setShortcutContext(Qt.WidgetShortcut)
             action.triggered.connect(slot)
@@ -401,9 +404,11 @@ class Qutepart(QPlainTextEdit):
             return action
         
         self.scrollUpAction = createAction('Scroll up', 'Ctrl+Up',
-                                           lambda: self._onShortcutScroll(down = False))
+                                           lambda: self._onShortcutScroll(down = False),
+                                           'up.png')
         self.scrollDownAction = createAction('Scroll down', 'Ctrl+Down',
-                                             lambda: self._onShortcutScroll(down = True))
+                                             lambda: self._onShortcutScroll(down = True),
+                                             'down.png')
         self.selectAndScrollUpAction = createAction('Select and scroll Up', 'Ctrl+Shift+Up',
                                                     lambda: self._onShortcutSelectAndScroll(down = False))
         self.selectAndScrollDownAction = createAction('Select and scroll Down', 'Ctrl+Shift+Down',
@@ -413,15 +418,15 @@ class Qutepart(QPlainTextEdit):
         self.autoIndentLineAction = createAction('Autoindent line', 'Ctrl+I',
                                                   self._onShortcutAutoIndentSelection)
         self.moveLineUpAction = createAction('Move line up', 'Alt+Up',
-                                             lambda: self._onShortcutMoveLine(down = False))
+                                             lambda: self._onShortcutMoveLine(down = False), 'up.png')
         self.moveLineDownAction = createAction('Move line down', 'Alt+Down',
-                                               lambda: self._onShortcutMoveLine(down = True))
-        self.deleteLineAction = createAction('Delete line', 'Alt+Del', self._onShortcutDeleteLine)
-        self.copyLineAction = createAction('Copy line', 'Alt+C', self._onShortcutCopyLine)
-        self.pasteLineAction = createAction('Paste line', 'Alt+V', self._onShortcutPasteLine)
-        self.cutLineAction = createAction('Cut line', 'Alt+X', self._onShortcutCutLine)
+                                               lambda: self._onShortcutMoveLine(down = True), 'down.png')
+        self.deleteLineAction = createAction('Delete line', 'Alt+Del', self._onShortcutDeleteLine, 'deleted.png')
+        self.copyLineAction = createAction('Copy line', 'Alt+C', self._onShortcutCopyLine, 'copy.png')
+        self.pasteLineAction = createAction('Paste line', 'Alt+V', self._onShortcutPasteLine, 'paste.png')
+        self.cutLineAction = createAction('Cut line', 'Alt+X', self._onShortcutCutLine, 'cut.png')
         self.duplicateLineAction = createAction('Duplicate line', 'Alt+D', self._onShortcutDuplicateLine)
-        self.printAction = createAction('Print', 'Ctrl+P', self._onShortcutPrint)
+        self.printAction = createAction('Print', 'Ctrl+P', self._onShortcutPrint, 'print.png')
     
     def __enter__(self):
         """Context management method.
