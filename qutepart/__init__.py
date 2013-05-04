@@ -18,6 +18,13 @@ from qutepart.indenter import getIndenter
 from qutepart.completer import Completer
 from qutepart.lines import Lines
 
+"""Qutepart API version as (major, minor, patch)
+
+* Major versions might be incompatible.
+* Minor versions add new API, but remain backward compatilbe
+* Patch versions does not change API
+"""
+VERSION = (1, 0, 0)
 
 logger = logging.getLogger('qutepart')
 consoleHandler = logging.StreamHandler()

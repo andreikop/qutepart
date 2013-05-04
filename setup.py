@@ -5,6 +5,8 @@ import sys
 from distutils.core import setup, Extension
 import distutils.ccompiler
 
+import qutepart
+
 packages=['qutepart', 'qutepart/syntax', 'qutepart/indenter']
 
 package_data={'qutepart' : ['icons/*.png'],
@@ -34,9 +36,12 @@ if 'install' in sys.argv or 'build' in sys.argv or 'build_ext' in sys.argv:
             sys.exit(-1)
 
 
-setup (name = 'qutepart',
-       version = '1.0',
-       description = 'Code editor component for PyQt and PySide',
+setup (name='qutepart',
+       version='%s.%s.%s' % qutepart.VERSION,
+       description='Code editor component for PyQt and PySide',
+       author='Andrei Kopats',
+       author_email='hlamer@tut.by',
+       url='https://github.com/hlamer/qutepart',
        packages = packages,
        package_data = package_data,
        ext_modules = [extension])
