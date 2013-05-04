@@ -222,7 +222,6 @@
         "*.mab": "mab.xml", 
         "*.mac": "maxima.xml", 
         "*.mch": "bmethod.xml", 
-        "*.md": "modula-2.xml", 
         "*.mel": "mel.xml", 
         "*.menu": "ample.xml", 
         "*.mf": "metafont.xml", 
