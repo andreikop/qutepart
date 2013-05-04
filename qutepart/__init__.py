@@ -61,9 +61,9 @@ class _Bookmarks:
         self._markArea = markArea
         qpart.toggleBookmarkAction = self._createAction(qpart, "bookmark.png", "Toogle bookmark", 'Ctrl+B',
                                                         self._onToggleBookmark)
-        qpart.nextBookmarkAction = self._createAction(qpart, "up.png", "Previous bookmark", 'Alt+PgUp',
+        qpart.prevBookmarkAction = self._createAction(qpart, "up.png", "Previous bookmark", 'Alt+PgUp',
                                                       self._onPrevBookmark)
-        qpart.prevBookmarkAction = self._createAction(qpart, "down.png", "Next bookmark", 'Alt+PgDown',
+        qpart.nextBookmarkAction = self._createAction(qpart, "down.png", "Next bookmark", 'Alt+PgDown',
                                                       self._onNextBookmark)
 
     def _createAction(self, widget, iconFileName, text, shortcut, slot):
