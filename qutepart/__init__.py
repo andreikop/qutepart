@@ -18,12 +18,6 @@ from qutepart.indenter import getIndenter
 from qutepart.completer import Completer
 from qutepart.lines import Lines
 
-"""Qutepart API version as (major, minor, patch)
-
-* Major versions might be incompatible.
-* Minor versions add new API, but remain backward compatilbe
-* Patch versions does not change API
-"""
 VERSION = (1, 0, 0)
 
 logger = logging.getLogger('qutepart')
@@ -230,7 +224,7 @@ class _MarkArea(QWidget):
 class Qutepart(QPlainTextEdit):
     '''Qutepart is based on QPlainTextEdit, and you can use QPlainTextEdit methods,
     if you don't see some functionality here.
-    
+
     **Text**
     
     ``text`` attribute holds current text. It may be read and written.::
@@ -238,7 +232,7 @@ class Qutepart(QPlainTextEdit):
         qpart.text = readFile()
         saveFile(qpart.text)
     
-    This attribute always returns text, separated with ``\n``. Use textForSaving() for get original text.
+    This attribute always returns text, separated with ``\\n``. Use ``textForSaving()`` for get original text.
     
     It is recommended to use ``lines`` attribute whenever possible,
     because access to ``text`` might require long time on big files.
@@ -278,14 +272,18 @@ class Qutepart(QPlainTextEdit):
         
         qpart.lines = ['one', 'thow', 'three']  # replace whole text
 
-    ``cursorPosition`` cursor position as ``(line, column)``. Lines are numerated from zero. If column is set to ``None`` - cursor will be placed before first non-whitespace character
-    ``absCursorPosition`` cursor position as offset from the beginning of text.
-    ``selectedPosition`` selection coordinates as ``((startLine, startCol), (cursorLine, cursorCol))``.
-    ``absSelectedPosition`` selection coordinates as ``(startPosition, cursorPosition)`` where position is offset from the beginning of text.
-    ``eol`` End Of Line character. Supported values are ``\n``, ``\r``, ``\r\n``. See comments for ``textForSaving()``
-    ``indentWidth`` Width of Tab character, and width of one indentation level
-    ``indentUseTabs`` If True, Tab character inserts Tab, otherwise - spaces
-
+    **Position and selection**
+    
+    * ``cursorPosition`` - cursor position as ``(line, column)``. Lines are numerated from zero. If column is set to ``None`` - cursor will be placed before first non-whitespace character.
+    * ``absCursorPosition`` - cursor position as offset from the beginning of text.
+    * ``selectedPosition`` - selection coordinates as ``((startLine, startCol), (cursorLine, cursorCol))``.
+    * ``absSelectedPosition`` - selection coordinates as ``(startPosition, cursorPosition)`` where position is offset from the beginning of text.
+    
+    **EOL and indentation**
+    
+    * ``eol`` - End Of Line character. Supported values are ``\\n``, ``\\r``, ``\\r\\n``. See comments for ``textForSaving()``
+    * ``indentWidth`` - Width of ``Tab`` character, and width of one indentation level
+    * ``indentUseTabs`` - If True, ``Tab`` character inserts ``\\t``, otherwise - spaces
 
     **Actions**
     
@@ -322,11 +320,13 @@ class Qutepart(QPlainTextEdit):
     
     Nested atomic operations are joined in one operation
     
-    ***Signals***
+    **Signals**
     
-    ``languageChanged``` Language has changed. See also ``language()``
-    ``indentWidthChanged(int)`` Indentation width changed. See also ``indentWidth``
-    ``indentUseTabsChanged(bool)`` Indentation uses tab property changed. See also ``indentUseTabs``
+    * ``languageChanged``` Language has changed. See also ``language()``
+    * ``indentWidthChanged(int)`` Indentation width changed. See also ``indentWidth``
+    * ``indentUseTabsChanged(bool)`` Indentation uses tab property changed. See also ``indentUseTabs``
+    
+    **Public methods**
     '''
     
     languageChanged = pyqtSignal(unicode)
@@ -618,7 +618,7 @@ class Qutepart(QPlainTextEdit):
             return ' ' * self._indentWidth
     
     def replaceText(self, pos, length, text):
-        """Replace length symbols from (line, col) with new text.
+        """Replace length symbols from ``pos`` with new text.
         
         If ``pos`` is an integer, it is interpreted as absolute position, if a tuple - as ``(line, column)``
         """
@@ -654,11 +654,11 @@ class Qutepart(QPlainTextEdit):
                      firstLine=None):
         """Get syntax by next parameters (fill as many, as known):
         
-            * xmlFileName
-            * mimeType
-            * language
-            * sourceFilePath
-            * firstLine
+            * name of XML file with syntax definition
+            * MIME type of source file
+            * Programming language name
+            * Source file path
+            * First line of source file
         First parameter in the list has the hightest priority.
         Old syntax is always cleared, even if failed to detect new.
         
@@ -703,8 +703,9 @@ class Qutepart(QPlainTextEdit):
             return self._highlighter.syntax().name
     
     def isCode(self, blockOrBlockNumber, column):
-        """Check if text at given position is a code
-        If language is not known, or text is not parsed yet, True is returned
+        """Check if text at given position is a code.
+        
+        If language is not known, or text is not parsed yet, ``True`` is returned
         """
         if isinstance(blockOrBlockNumber, QTextBlock):
             block = blockOrBlockNumber
@@ -715,22 +716,25 @@ class Qutepart(QPlainTextEdit):
                self._highlighter.isCode(block, column)
 
     def isComment(self, line, column):
-        """Check if text at given position is a comment. Including block comments and here documents
-        If language is not known, or text is not parsed yet, False is returned
+        """Check if text at given position is a comment. Including block comments and here documents.
+        
+        If language is not known, or text is not parsed yet, ``False`` is returned
         """
         return self._highlighter is not None and \
                self._highlighter.isComment(self.document().findBlockByNumber(line), column)
 
     def isBlockComment(self, line, column):
-        """Check if text at given position is a block comment
-        If language is not known, or text is not parsed yet, False is returned
+        """Check if text at given position is a block comment.
+        
+        If language is not known, or text is not parsed yet, ``False`` is returned
         """
         return self._highlighter is not None and \
                self._highlighter.isBlockComment(self.document().findBlockByNumber(line), column)
 
     def isHereDoc(self, line, column):
         """Check if text at given position is a here document.
-        If language is not known, or text is not parsed yet, False is returned
+        
+        If language is not known, or text is not parsed yet, ``False`` is returned
         """
         return self._highlighter is not None and \
                self._highlighter.isHereDoc(self.document().findBlockByNumber(line), column)
@@ -765,7 +769,7 @@ class Qutepart(QPlainTextEdit):
         return block.position() + column
     
     def mapToLineCol(self, absPosition):
-        """Convert absolute position to (line, column)
+        """Convert absolute position to ``(line, column)``
         """
         block = self.document().findBlock(absPosition)
         if not block.isValid():
