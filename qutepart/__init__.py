@@ -322,9 +322,10 @@ class Qutepart(QPlainTextEdit):
     
     **Signals**
     
-    * ``languageChanged``` Language has changed. See also ``language()``
+    * ``languageChanged(langName)``` Language has changed. See also ``language()``
     * ``indentWidthChanged(int)`` Indentation width changed. See also ``indentWidth``
     * ``indentUseTabsChanged(bool)`` Indentation uses tab property changed. See also ``indentUseTabs``
+    * ``eolChanged(eol)`` EOL mode changed. See also ``eol``.
     
     **Public methods**
     '''
@@ -332,6 +333,7 @@ class Qutepart(QPlainTextEdit):
     languageChanged = pyqtSignal(unicode)
     indentWidthChanged = pyqtSignal(int)
     indentUseTabsChanged = pyqtSignal(bool)
+    eolChanged = pyqtSignal(unicode)
     
     _DEFAULT_EOL = '\n'
     _DEFAULT_INDENT_WIDTH = 4
@@ -587,6 +589,7 @@ class Qutepart(QPlainTextEdit):
             raise ValueError("Invalid EOL value")
         if eol != self._eol:
             self._eol = eol
+            self.eolChanged.emit(self._eol)
 
     @property
     def indentWidth(self):

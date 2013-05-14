@@ -157,5 +157,45 @@ class DetectSyntax(_BaseTest):
         self.assertEquals(self.qpart.language(), 'HTML')
 
 
+class Signals(_BaseTest):
+    def test_language_changed(self):
+        newValue = [None]
+        def setNeVal(val):
+            newValue[0] = val
+        self.qpart.languageChanged.connect(setNeVal)
+        
+        self.qpart.detectSyntax(language='Python')
+        self.assertEquals(newValue[0], 'Python')
+
+    def test_indent_width_changed(self):
+        newValue = [None]
+        def setNeVal(val):
+            newValue[0] = val
+        self.qpart.indentWidthChanged.connect(setNeVal)
+        
+        self.qpart.indentWidth = 7
+        self.assertEquals(newValue[0], 7)
+
+    def test_use_tabs_changed(self):
+        newValue = [None]
+        def setNeVal(val):
+            newValue[0] = val
+        
+        self.qpart.indentUseTabsChanged.connect(setNeVal)
+        
+        self.qpart.indentUseTabs = True
+        self.assertEquals(newValue[0], True)
+
+    def test_eol_changed(self):
+        newValue = [None]
+        def setNeVal(val):
+            newValue[0] = val
+        
+        self.qpart.eolChanged.connect(setNeVal)
+        
+        self.qpart.eol = '\r\n'
+        self.assertEquals(newValue[0], '\r\n')
+
+
 if __name__ == '__main__':
     unittest.main()

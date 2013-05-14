@@ -1,4 +1,5 @@
 fixme:
+  many warnings when regenerating syntax DB
 
 first release
   indenters                           4     done 06.04.13
