@@ -7,7 +7,9 @@ import unittest
 import sip
 sip.setapi('QString', 2)
 
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QApplication
+from PyQt4.QtTest import QTest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.insert(0, os.path.abspath('.'))
@@ -197,5 +199,42 @@ class Signals(_BaseTest):
         self.assertEquals(newValue[0], '\r\n')
 
 
+class Completion(_BaseTest):
+    def _assertVisible(self):
+        self.assertTrue(self.qpart._completer._widget is not None)
+    
+    def _assertNotVisible(self):
+        self.assertTrue(self.qpart._completer._widget is None)
+    
+    def setUp(self):
+        super(Completion, self).setUp()
+        self.qpart.text = 'completableWord\n'
+        self.qpart.cursorPosition = (1, 0)
+
+    def test_completion_enabled(self):
+        self._assertNotVisible()
+        
+        self.qpart.completionEnabled = True
+        QTest.keyClicks(self.qpart, "comple")
+        self._assertVisible()
+        
+        for i in range(len('comple')):
+            QTest.keyClick(self.qpart, Qt.Key_Backspace)
+        self._assertNotVisible()
+        
+        self.qpart.completionEnabled = False
+        QTest.keyClicks(self.qpart, "comple")
+        self._assertNotVisible()
+    
+    def test_threshold(self):
+        self._assertNotVisible()
+        
+        self.qpart.completionThreshold = 8
+        QTest.keyClicks(self.qpart, "complet")
+        self._assertNotVisible()
+        
+        QTest.keyClicks(self.qpart, "a")
+        self._assertVisible()
+    
 if __name__ == '__main__':
     unittest.main()

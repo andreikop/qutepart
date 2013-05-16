@@ -287,12 +287,16 @@ class Completer(QObject):
     def _invokeCompletionIfAvailable(self):
         """Invoke completion, if available. Called after text has been typed in qpart
         """
+        if not self._qpart.completionEnabled:
+            self._closeCompletion()
+            return
+        
         wordBeforeCursor = self._wordBeforeCursor()
         if not wordBeforeCursor:
             self._closeCompletion()
             return
         
-        if len(wordBeforeCursor) < self._qpart._COMPLETION_THRESHOLD:
+        if len(wordBeforeCursor) < self._qpart.completionThreshold:
             self._closeCompletion()
             return
         

@@ -285,6 +285,12 @@ class Qutepart(QPlainTextEdit):
     * ``indentWidth`` - Width of ``Tab`` character, and width of one indentation level
     * ``indentUseTabs`` - If True, ``Tab`` character inserts ``\\t``, otherwise - spaces
 
+    **Autocompletion**
+    
+    Qutepart supports autocompletion, based on document contents.
+    It is enabled, if ``completionEnabled`` is ``True``.
+    ``completionThreshold`` is count of typed symbols, after which completion is shown.
+
     **Actions**
     
     Component contains list of actions (QAction instances).
@@ -339,7 +345,8 @@ class Qutepart(QPlainTextEdit):
     _DEFAULT_INDENT_WIDTH = 4
     _DEFAULT_INDENT_USE_TABS = False
     
-    _COMPLETION_THRESHOLD = 3
+    _DEFAULT_COMPLETION_THRESHOLD = 3
+    _DEFAULT_COMPLETION_ENABLED = True
     
     _globalSyntaxManager = SyntaxManager()
     
@@ -365,6 +372,8 @@ class Qutepart(QPlainTextEdit):
         
         self._initActions()
         
+        self.completionThreshold = self._DEFAULT_COMPLETION_THRESHOLD
+        self.completionEnabled = self._DEFAULT_COMPLETION_ENABLED
         self._completer = Completer(self)
         
         self._lineNumberArea = _LineNumberArea(self)

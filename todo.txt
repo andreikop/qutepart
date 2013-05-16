@@ -1,5 +1,6 @@
 fixme:
   many warnings when regenerating syntax DB
+  _DEFAULT_COMPLETION_ENABLED scroll bars on completer
 
 first release
   indenters                           4     done 06.04.13
