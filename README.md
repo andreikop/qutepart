@@ -27,7 +27,7 @@ It will probably be gcc
 #### 4. Build and install the package
 ``python setup.py install``
 
-### Qutepart and Katepart
+## Qutepart and Katepart
 [Kate](http://kate-editor.org/) and Katepart (an editor component) is really cool software. Kate authors and comunity has created, probably, the biggest set of highlighters and indenters for programming languages.
 
 * Qutepart uses kate syntax highlighters (XML files)
