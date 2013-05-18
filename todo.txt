@@ -1,6 +1,4 @@
 fixme:
-  many warnings when regenerating syntax DB
-  _DEFAULT_COMPLETION_ENABLED scroll bars on completer
 
 first release
   indenters                           4     done 06.04.13
@@ -26,3 +24,4 @@ next release:
 
 sometimes
   highlight indent markers            1   # doesn't work. Done in a branch
+  many warnings when regenerating syntax DB

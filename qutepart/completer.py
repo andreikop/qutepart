@@ -144,7 +144,7 @@ class _CompletionList(QListView):
         width = max([self.fontMetrics().width(word) \
                         for word in self.model().words])
         width = width * 1.1  # FIXME bad hack. invent better formula
-        width += 16  # margin
+        width += 30  # margin
         
         # drawn with scrollbar without +2. I don't know why
         rowCount = min(self.model().rowCount(), self._MAX_VISIBLE_ROWS)
