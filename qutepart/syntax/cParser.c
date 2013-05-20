@@ -2936,8 +2936,9 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     bool lineContinue = false;
     int currentColumnIndex = 0;
     int textLen = PyUnicode_GET_SIZE(unicodeText);
-    PyObject* textTypeMap = PyString_FromStringAndSize("", textLen + 1);
+    PyObject* textTypeMap = PyString_FromStringAndSize(NULL, textLen + 1);
     char* textTypeMapData = PyString_AS_STRING(textTypeMap);
+    memset(textTypeMapData, ' ', textLen);
     textTypeMapData[textLen + 1] = 0;
     
     while (currentColumnIndex < textLen)
