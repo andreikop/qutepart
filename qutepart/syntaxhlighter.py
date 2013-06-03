@@ -187,12 +187,13 @@ class SyntaxHighlighter(QObject):
         ranges = []
         currentPos = 0
         for length, format in highlightedSegments:
-            range = QTextLayout.FormatRange()
-            range.format = format
-            range.start = currentPos
-            range.length = length
-            ranges.append(range)
+            if format is not None:  # might be in incorrect syntax file
+                range = QTextLayout.FormatRange()
+                range.format = format
+                range.start = currentPos
+                range.length = length
+                ranges.append(range)
             currentPos += length
-            
+                
         block.layout().setAdditionalFormats(ranges)
         self._document.markContentsDirty(block.position(), block.length())
