@@ -143,7 +143,7 @@ class _CompletionList(QListView):
         """
         width = max([self.fontMetrics().width(word) \
                         for word in self.model().words])
-        width = width * 1.2  # FIXME bad hack. invent better formula
+        width = width * 1.4  # FIXME bad hack. invent better formula
         width += 30  # margin
         
         # drawn with scrollbar without +2. I don't know why
