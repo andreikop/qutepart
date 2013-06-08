@@ -896,6 +896,8 @@ class Qutepart(QPlainTextEdit):
         
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
+        elif event.key() == Qt.Key_Insert and event.modifiers() == Qt.NoModifier:
+            self.setOverwriteMode(not self.overwriteMode())
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
             if self.textCursor().hasSelection():
                 self._onChangeSelectedBlocksIndent(increase = True)
