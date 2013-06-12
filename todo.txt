@@ -1,4 +1,5 @@
 fixme:
+  slow edit of the strace
 
 first release
   indenters                           4     done 06.04.13
