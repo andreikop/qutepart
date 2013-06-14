@@ -15,6 +15,47 @@ class _TextBlockUserData(QTextBlockUserData):
         self.data = data
 
 
+class GlobalTimer:
+    """All parsing and highlighting is done in main loop thread.
+    If parsing is being done for long time, main loop gets blocked.
+    Therefore SyntaxHighlighter controls, how long parsign is going, and, if too long,
+    schedules timer and releases main loop.
+    One global timer is used by all Qutepart instances, because main loop time usage
+    must not depend on opened files count
+    """
+    
+    def __init__(self):
+        self._timer = QTimer()
+        self._timer.setSingleShot(True)
+        self._timer.timeout.connect(self._onTimer)
+        
+        self._scheduledCallbacks = []
+    
+    def isActive(self):
+        return self._timer.isActive()
+    
+    def scheduleCallback(self, callback):
+        if not callback in self._scheduledCallbacks:
+            self._scheduledCallbacks.append(callback)
+            self._timer.start()
+    
+    def unScheduleCallback(self, callback):
+        if callback in self._scheduledCallbacks:
+            self._scheduledCallbacks.remove(callback)
+        if not self._scheduledCallbacks:
+            self._timer.stop()
+    
+    def isCallbackScheduled(self, callback):
+        return callback in self._scheduledCallbacks
+    
+    def _onTimer(self):
+        if self._scheduledCallbacks:
+            callback = self._scheduledCallbacks.pop()
+            callback()
+        if self._scheduledCallbacks:
+            self._timer.start()
+
+
 class SyntaxHighlighter(QObject):
     
     # when initially parsing text, it is better, if highlighted text is drawn without flickering
@@ -22,6 +63,11 @@ class SyntaxHighlighter(QObject):
     # when user is typing text - response shall be quick
     _MAX_PARSING_TIME_SMALL_CHANGE_SEC = 0.02
 
+    # Global var, because main loop time usage shall not depend on Qutepart instances count
+    _lastChangeTime = -777
+
+    _globalTimer = GlobalTimer()
+    
     def __init__(self, syntax, object):
         if isinstance(object, QTextDocument):
             document = object
@@ -38,17 +84,14 @@ class SyntaxHighlighter(QObject):
         self._pendingBlock = None
         self._pendingAtLeastUntilBlock = None
         
-        self._continueTimer = QTimer()
-        self._continueTimer.setSingleShot(True)
-        self._continueTimer.timeout.connect(self._onContinueHighlighting)
-        
         document.contentsChange.connect(self._onContentsChange)
-        self._highlighBlocks(self._document.firstBlock(), self._document.lastBlock(),
-                             self._MAX_PARSING_TIME_BIG_CHANGE_SEC)
-    
+
+        charsAdded = document.lastBlock().position() + document.lastBlock().length()
+        self._onContentsChange(0, 0, charsAdded, zeroTimeout=self._wasChangedJustBefore())
+
     def del_(self):
         self._document.contentsChange.disconnect(self._onContentsChange)
-        self._continueTimer.stop()
+        self._globalTimer.unScheduleCallback(self._onContinueHighlighting)
         block = self._document.firstBlock()
         while block.isValid():
             block.layout().setAdditionalFormats([])
@@ -109,11 +152,15 @@ class SyntaxHighlighter(QObject):
         else:
             return None
     
-    def _onContentsChange(self, from_, charsRemoved, charsAdded):
+    def _wasChangedJustBefore(self):
+        """Check if ANY Qutepart instance was changed just before"""
+        return time.clock() <= SyntaxHighlighter._lastChangeTime + 1
+    
+    def _onContentsChange(self, from_, charsRemoved, charsAdded, zeroTimeout=False):
         firstBlock = self._document.findBlock(from_)
         untilBlock = self._document.findBlock(from_ + charsAdded)
         
-        if self._continueTimer.isActive():  # have not finished task.
+        if self._globalTimer.isCallbackScheduled(self._onContinueHighlighting):  # have not finished task.
             """ Intersect ranges. Might produce a lot of extra highlighting work
             More complicated algorithm might be invented later
             """
@@ -122,10 +169,18 @@ class SyntaxHighlighter(QObject):
             if self._pendingAtLeastUntilBlock.blockNumber() > untilBlock.blockNumber():
                 untilBlock = self._pendingAtLeastUntilBlock
             
-            self._continueTimer.stop()
+            self._globalTimer.unScheduleCallback(self._onContinueHighlighting)
         
-        timeout = self._MAX_PARSING_TIME_BIG_CHANGE_SEC if charsAdded > 20 else \
-                  self._MAX_PARSING_TIME_SMALL_CHANGE_SEC
+        if zeroTimeout:
+            timeout = 0  # no parsing, only schedule
+        elif charsAdded > 20 and \
+             (not self._wasChangedJustBefore()):
+            """Use big timeout, if change is really big and previous big change was long time ago"""
+            timeout = self._MAX_PARSING_TIME_BIG_CHANGE_SEC
+        else:
+            timeout = self._MAX_PARSING_TIME_SMALL_CHANGE_SEC
+        
+        SyntaxHighlighter._lastChangeTime = time.clock()
         
         self._highlighBlocks(firstBlock, untilBlock, timeout)
 
@@ -143,7 +198,7 @@ class SyntaxHighlighter(QObject):
             if time.clock() >= endTime:  # time is over, schedule parsing later and release event loop
                 self._pendingBlock = block
                 self._pendingAtLeastUntilBlock = atLeastUntilBlock
-                self._continueTimer.start()
+                self._globalTimer.scheduleCallback(self._onContinueHighlighting)
                 return
             
             contextStack = lineData[0] if lineData is not None else None
@@ -162,7 +217,7 @@ class SyntaxHighlighter(QObject):
             if time.clock() >= endTime:  # time is over, schedule parsing later and release event loop
                 self._pendingBlock = block
                 self._pendingAtLeastUntilBlock = atLeastUntilBlock
-                self._continueTimer.start()
+                self._globalTimer.scheduleCallback(self._onContinueHighlighting)
                 return
 
             contextStack = lineData[0] if lineData is not None else None
