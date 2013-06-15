@@ -6,6 +6,7 @@ import fnmatch
 import json
 import threading
 import logging
+import re
 
 _logger = logging.getLogger('qutepart')
 
@@ -142,6 +143,7 @@ class Syntax:
         """
         return self._getTextType(lineData, column) ==  'h'
 
+
 class SyntaxManager:
     """SyntaxManager holds references to loaded Syntax'es and allows to find or
     load Syntax by its name or by source file name
@@ -154,8 +156,13 @@ class SyntaxManager:
             syntaxDb = json.load(syntaxDbFile)
         self._syntaxNameToXmlFileName = syntaxDb['syntaxNameToXmlFileName']
         self._mimeTypeToXmlFileName = syntaxDb['mimeTypeToXmlFileName']
-        self._extensionToXmlFileName = syntaxDb['extensionToXmlFileName']
         self._firstLineToXmlFileName = syntaxDb['firstLineToXmlFileName']
+        globToXmlFileName = syntaxDb['extensionToXmlFileName']
+        
+        # Applying glob patterns is really slow. Therefore they are compiled to reg exps
+        self._extensionToXmlFileName = \
+                {re.compile(fnmatch.translate(glob)): xmlFileName \
+                        for glob, xmlFileName in globToXmlFileName.items()}
 
     def _getSyntaxByXmlFileName(self, xmlFileName, formatConverterFunction):
         """Get syntax by its xml file name
@@ -180,8 +187,8 @@ class SyntaxManager:
     def _getSyntaxBySourceFileName(self, name, formatConverterFunction):
         """Get syntax by source name of file, which is going to be highlighted
         """
-        for pattern, xmlFileName in self._extensionToXmlFileName.items():
-            if fnmatch.fnmatch(name, pattern):
+        for regExp, xmlFileName in self._extensionToXmlFileName.items():
+            if regExp.match(name):
                 return self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
         else:
             raise KeyError("No syntax for " + name)
