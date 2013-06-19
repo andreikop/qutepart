@@ -452,7 +452,7 @@ class RegExpr(AbstractRule):
         try:
             return re.compile(string)
         except (re.error, AssertionError) as ex:
-            _logger.error("Invalid pattern '%s': %s", string, str(ex))
+            _logger.warning("Invalid pattern '%s': %s", string, str(ex))
             return None
 
     @staticmethod

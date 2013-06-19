@@ -25,6 +25,8 @@ consoleHandler = logging.StreamHandler()
 consoleHandler.setFormatter(logging.Formatter("qutepart: %(message)s"))
 logger.addHandler(consoleHandler)
 
+logger.setLevel(logging.ERROR)
+
 
 _ICONS_PATH = os.path.join(os.path.dirname(__file__), 'icons')
 

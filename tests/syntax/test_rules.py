@@ -3,9 +3,14 @@
 import unittest
 
 import sys
-sys.path.insert(0, '../..')
-sys.path.insert(0, '../../build/lib.linux-x86_64-2.6/')
-sys.path.insert(0, '../../build/lib.linux-x86_64-2.7/')
+import os.path
+
+topLevelPath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, topLevelPath)
+sys.path.insert(0, os.path.join(topLevelPath, 'build/lib.linux-x86_64-2.6/'))
+sys.path.insert(0, os.path.join(topLevelPath, 'build/lib.linux-x86_64-2.7/'))
+
+import qutepart
 
 from qutepart.syntax import SyntaxManager
 

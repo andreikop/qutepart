@@ -15,7 +15,7 @@ _logger = logging.getLogger('qutepart')
 try:
     import qutepart.syntax.cParser as _parserModule
 except ImportError:
-    _logger.error('Failed to import quick parser in C. Using slow parser for syntax highlighting')
+    _logger.warning('Failed to import quick parser in C. Using slow parser for syntax highlighting')
     import qutepart.syntax.parser as _parserModule
 
 
@@ -93,7 +93,7 @@ def _safeGetRequiredAttribute(xmlElement, name, default):
     if name in xmlElement.attrib:
         return unicode(xmlElement.attrib[name])
     else:
-        _logger.error("Required attribute '%s' is not set for element '%s'", name, xmlElement.tag)
+        _logger.warning("Required attribute '%s' is not set for element '%s'", name, xmlElement.tag)
         return default
 
 
@@ -115,7 +115,7 @@ def _getContext(contextName, parser, formatConverterFunction, defaultValue):
         parser = parser.syntax.manager.getSyntax(formatConverterFunction, languageName = syntaxName).parser
         return parser.contexts[name]
     else:
-        _logger.error('Invalid context name %s', repr(contextName))
+        _logger.warning('Invalid context name %s', repr(contextName))
         return parser.defaultContext
 
 
@@ -130,7 +130,7 @@ def _makeContextSwitcher(contextOperation, parser, formatConverterFunction):
     
     if rest == '#stay':
         if popsCount:
-            _logger.error("Invalid context operation '%s'", contextOperation)
+            _logger.warning("Invalid context operation '%s'", contextOperation)
     else:
         contextToSwitch = _getContext(rest, parser, formatConverterFunction, None)
 
@@ -186,7 +186,7 @@ def _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, for
             if formatConverterFunction is not None and format is not None:
                 format = formatConverterFunction(format)
         except KeyError:
-            _logger.error('Unknown rule attribute %s', attribute)
+            _logger.warning('Unknown rule attribute %s', attribute)
             format = parentContext.format
             textType = parentContext.textType
     else:
@@ -224,11 +224,11 @@ def _loadDetectChar(parentContext, xmlElement, attributeToFormatMap, formatConve
         try:
             index = int(char)
         except ValueError:
-            _logger.error('Invalid DetectChar char %s', char)
+            _logger.warning('Invalid DetectChar char %s', char)
             index = 0
         char = None
         if index <= 0:
-            _logger.error('Too little DetectChar index %d', index)
+            _logger.warning('Too little DetectChar index %d', index)
             index = 0
 
     return _parserModule.DetectChar(abstractRuleParams, unicode(char), index)
@@ -269,7 +269,7 @@ def _loadKeyword(parentContext, xmlElement, attributeToFormatMap, formatConverte
     try:
         words = parentContext.parser.lists[string]
     except KeyError:
-        _logger.error("List '%s' not found", string)
+        _logger.warning("List '%s' not found", string)
         
         words = list()
     
@@ -391,7 +391,7 @@ def _loadContext(context, xmlElement, attributeToFormatMap, formatConverterFunct
         try:
             format = attributeToFormatMap[attribute]
         except KeyError:
-            _logger.error('Unknown context attribute %s', attribute)
+            _logger.warning('Unknown context attribute %s', attribute)
             format = TextFormat()
     else:
         format = None
@@ -476,7 +476,7 @@ def _loadAttributeToFormatMap(highlightingElement):
         defaultStyleName = item.get('defStyleNum')
         
         if not defaultStyleName in defaultTheme.format:
-            _logger.error("Unknown default style '%s'", defaultStyleName)
+            _logger.warning("Unknown default style '%s'", defaultStyleName)
             defaultStyleName = 'dsNormal'
             
         format = _makeFormat(defaultTheme,
