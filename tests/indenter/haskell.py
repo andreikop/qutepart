@@ -1,3 +1,15 @@
+#!/usr/bin/env python
+
+import unittest
+
+from indenttest import IndentTest
+
+
+class Test(IndentTest):
+    LANGUAGE = 'Haskell'
+    INDENT_WIDTH = 4
+
+    @unittest.skip("Haskell not supported yet")
     def test_dontIndent1(self):
         origin = [
             "main = do",
@@ -23,6 +35,7 @@
         
         self.verifyExpected(expected)
 
+    @unittest.skip("Haskell not supported yet")
     def test_if2(self):
         origin = [
             "foo = if true",
@@ -40,6 +53,7 @@
         
         self.verifyExpected(expected)
 
+    @unittest.skip("Haskell not supported yet")
     def test_afterComma1(self):
         origin = [
             "primitives = [("+", numericBinop (+)),",
@@ -57,6 +71,7 @@
         
         self.verifyExpected(expected)
 
+    @unittest.skip("Haskell not supported yet")
     def test_parsec1(self):
         origin = [
             "parseExpr = parseString",
@@ -76,6 +91,7 @@
         
         self.verifyExpected(expected)
 
+    @unittest.skip("Haskell not supported yet")
     def test_if1(self):
         origin = [
             "foo = if true",
@@ -93,3 +109,6 @@
         
         self.verifyExpected(expected)
 
+
+if __name__ == '__main__':
+    unittest.main()

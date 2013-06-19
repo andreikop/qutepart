@@ -6,6 +6,7 @@ import unittest
 
 import sip
 sip.setapi('QString', 2)
+
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt, QTimer
 from PyQt4.QtGui import QApplication

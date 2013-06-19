@@ -26,6 +26,7 @@ class _BaseTest(unittest.TestCase):
     def tearDown(self):
         del self.qpart
 
+
 class Selection(_BaseTest):
     
     def test_resetSelection(self):
@@ -35,6 +36,7 @@ class Selection(_BaseTest):
         self.assertTrue(self.qpart.textCursor().hasSelection())
         self.qpart.resetSelection()
         self.assertFalse(self.qpart.textCursor().hasSelection())
+
 
 class ReplaceText(_BaseTest):
     def test_replaceText1(self):
@@ -108,10 +110,15 @@ class InsertText(_BaseTest):
 
 
 class IsCodeOrComment(_BaseTest):
+    def _wait_highlighting_finished(self):
+        while QApplication.hasPendingEvents():
+            QApplication.processEvents()
+
     def test_1(self):
         # Basic case
         self.qpart.text = 'a + b # comment'
         self.qpart.detectSyntax(language = 'Python')
+        self._wait_highlighting_finished()
         self.assertEquals([self.qpart.isCode(0, i) for i in range(len(self.qpart.text))],
                           [True, True, True, True, True, True, False, False, False, False, \
                            False, False, False, False, False])
@@ -122,6 +129,8 @@ class IsCodeOrComment(_BaseTest):
     def test_2(self):
         self.qpart.text = '#'
         self.qpart.detectSyntax(language = 'Python')
+        self._wait_highlighting_finished()
+        
         self.assertFalse(self.qpart.isCode(0, 0))
         self.assertTrue(self.qpart.isComment(0, 0))
         self.assertFalse(self.qpart.isBlockComment(0, 0))
@@ -129,6 +138,8 @@ class IsCodeOrComment(_BaseTest):
     def test_block_comment(self):
         self.qpart.text = 'if foo\n=begin xxx'
         self.qpart.detectSyntax(language = 'Ruby')
+        self._wait_highlighting_finished()
+        
         self.assertFalse(self.qpart.isBlockComment(0, 3))
         self.assertTrue(self.qpart.isBlockComment(1, 8))
         self.assertTrue(self.qpart.isComment(1, 8))
@@ -136,6 +147,9 @@ class IsCodeOrComment(_BaseTest):
     def test_here_doc(self):
         self.qpart.text = "doc = <<EOF\nkoko"
         self.qpart.detectSyntax(language = 'Ruby')
+        
+        self._wait_highlighting_finished()
+        
         self.assertFalse(self.qpart.isHereDoc(0, 3))
         self.assertTrue(self.qpart.isHereDoc(1, 2))
         self.assertTrue(self.qpart.isComment(1, 2))

@@ -2,3 +2,5 @@ tmp/
 build/
 *.pyc
 MANIFEST
+a.out
+dist
