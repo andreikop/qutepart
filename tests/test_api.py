@@ -249,6 +249,88 @@ class Completion(_BaseTest):
         
         QTest.keyClicks(self.qpart, "a")
         self._assertVisible()
+
+
+class Lines(_BaseTest):
+    def setUp(self):
+        super(Lines, self).setUp()
+        self.qpart.text = 'abcd\nefgh\nklmn\nopqr'
+
+    def test_accessByIndex(self):
+        self.assertEquals(self.qpart.lines[0], 'abcd')
+        self.assertEquals(self.qpart.lines[1], 'efgh')
+        self.assertEquals(self.qpart.lines[-1], 'opqr')
+
+    def test_modifyByIndex(self):
+        self.qpart.lines[2] = 'new text'
+        self.assertEquals(self.qpart.text, 'abcd\nefgh\nnew text\nopqr')
     
+    def test_getSlice(self):
+        self.assertEquals(self.qpart.lines[0], 'abcd')
+        self.assertEquals(self.qpart.lines[1], 'efgh')
+        self.assertEquals(self.qpart.lines[3], 'opqr')
+        self.assertEquals(self.qpart.lines[-4], 'abcd')
+        self.assertEquals(self.qpart.lines[1:4], ['efgh', 'klmn', 'opqr'])
+        self.assertEquals(self.qpart.lines[1:7], ['efgh', 'klmn', 'opqr'])  # Python list behaves this way
+        self.assertEquals(self.qpart.lines[0:0], [])
+        self.assertEquals(self.qpart.lines[0:1], ['abcd'])
+        self.assertEquals(self.qpart.lines[:2], ['abcd', 'efgh'])
+        self.assertEquals(self.qpart.lines[0:-2], ['abcd', 'efgh'])
+        self.assertEquals(self.qpart.lines[-2:], ['klmn', 'opqr'])
+        self.assertEquals(self.qpart.lines[-4:-2], ['abcd', 'efgh'])
+        
+        with self.assertRaises(IndexError):
+            self.qpart.lines[4]
+        with self.assertRaises(IndexError):
+            self.qpart.lines[-5]
+
+    def test_setSlice_1(self):
+        self.qpart.lines[0] = 'xyz'
+        self.assertEquals(self.qpart.text, 'xyz\nefgh\nklmn\nopqr')
+    
+    def test_setSlice_2(self):
+        self.qpart.lines[1] = 'xyz'
+        self.assertEquals(self.qpart.text, 'abcd\nxyz\nklmn\nopqr')
+        
+    def test_setSlice_3(self):
+        self.qpart.lines[-4] = 'xyz'
+        self.assertEquals(self.qpart.text, 'xyz\nefgh\nklmn\nopqr')
+    
+    def test_setSlice_4(self):
+        self.qpart.lines[0:4] = ['st', 'uv', 'wx', 'z']
+        self.assertEquals(self.qpart.text, 'st\nuv\nwx\nz')
+    
+    def test_setSlice_5(self):
+        self.qpart.lines[0:47] = ['st', 'uv', 'wx', 'z']
+        self.assertEquals(self.qpart.text, 'st\nuv\nwx\nz')
+    
+    def test_setSlice_6(self):
+        self.qpart.lines[1:3] = ['st', 'uv']
+        self.assertEquals(self.qpart.text, 'abcd\nst\nuv\nopqr')
+    
+    def test_setSlice_61(self):
+        with self.assertRaises(ValueError):
+            self.qpart.lines[1:3] = ['st', 'uv', 'wx', 'z']
+    
+    def test_setSlice_7(self):
+        self.qpart.lines[-3:3] = ['st', 'uv']
+        self.assertEquals(self.qpart.text, 'abcd\nst\nuv\nopqr')
+    
+    def test_setSlice_8(self):
+        self.qpart.lines[-3:-1] = ['st', 'uv']
+        self.assertEquals(self.qpart.text, 'abcd\nst\nuv\nopqr')
+    
+    def test_setSlice_9(self):
+        with self.assertRaises(IndexError):
+            self.qpart.lines[4] = 'st'
+        with self.assertRaises(IndexError):
+            self.qpart.lines[-5] = 'st'
+
+
+class LinesWin(Lines):
+    def setUp(self):
+        super(LinesWin, self).setUp()
+        self.qpart.eol = '\r\n'
+
 if __name__ == '__main__':
     unittest.main()

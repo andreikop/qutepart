@@ -85,7 +85,7 @@ class Lines:
             """
             start, stop, step = index.indices(self._doc.blockCount())
             if step > 0:
-                start, stop, step = stop, start, step * -1
+                start, stop, step = stop - 1, start - 1, step * -1
 
             blockIndexes = list(range(start, stop, step))
             
