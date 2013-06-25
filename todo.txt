@@ -1,5 +1,6 @@
 fixme:
   slow edit of the strace
+  no docs on rtfd.org
 
 first release
   indenters                           4     done 06.04.13
