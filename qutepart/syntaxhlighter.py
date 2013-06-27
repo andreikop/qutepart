@@ -203,7 +203,13 @@ class SyntaxHighlighter(QObject):
                 return
             
             contextStack = lineData[0] if lineData is not None else None
-            lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), contextStack)
+            if block.length() < 4096:
+                lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), contextStack)
+            else:
+                """Parser freezes for a long time, if line is too long
+                invalid parsing results are still better, than freeze
+                """
+                lineData, highlightedSegments = None, []
             if lineData is not None:
                 block.setUserData(_TextBlockUserData(lineData))
             else:
