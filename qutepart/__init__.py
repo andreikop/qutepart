@@ -673,6 +673,7 @@ class Qutepart(QPlainTextEdit):
             * Programming language name
             * Source file path
             * First line of source file
+        
         First parameter in the list has the hightest priority.
         Old syntax is always cleared, even if failed to detect new.
         
