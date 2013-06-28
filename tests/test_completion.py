@@ -8,7 +8,7 @@ import sip
 sip.setapi('QString', 2)
 
 from PyQt4.QtCore import Qt, QPoint
-from PyQt4.QtGui import QApplication
+from PyQt4.QtGui import QApplication, QMainWindow
 from PyQt4.QtTest import QTest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -22,7 +22,10 @@ class Test(unittest.TestCase):
     app = QApplication(sys.argv)  # app crashes, if created more than once
     
     def setUp(self):
+        self._window = QMainWindow()
         self.qpart = Qutepart()
+        self._window.setCentralWidget(self.qpart)
+        self._window.menuBar().addAction(self.qpart.invokeCompletionAction)
     
     def tearDown(self):
         del self.qpart
@@ -60,6 +63,19 @@ class Test(unittest.TestCase):
         self.assertEqual(self.qpart.text, 'aaaaa\naaaaaXXXXX\naaaaa')
         QTest.keyClick(self.qpart, Qt.Key_Tab)
         self.assertEqual(self.qpart.text, 'aaaaa\naaaaaXXXXX\naaaaaXXXXX')
+
+    def test_manual(self):
+        self._window.show()
+        
+        self.qpart.text = 'aaaaa\naaaaaXXXXX\n'
+        self.qpart.cursorPosition = (2, 0)
+        QTest.keyClicks(self.qpart, "a")
+        
+        QTest.keyPress(self.qpart, Qt.Key_Space, Qt.ControlModifier, 100)
+        
+        QTest.keyClicks(self.qpart, "a")
+        QTest.keyClick(self.qpart, Qt.Key_Tab)
+        self.assertEqual(self.qpart.text, 'aaaaa\naaaaaXXXXX\naaaaa')
 
 
 if __name__ == '__main__':

@@ -76,6 +76,7 @@ def main():
                            'pasteLineAction',
                            'cutLineAction',
                            'duplicateLineAction',
+                           'invokeCompletionAction',
                            )
     }
     for k, v in menu.items():

@@ -315,6 +315,7 @@ class Qutepart(QPlainTextEdit):
     * ``pasteLineAction`` - Paste line
     * ``cutLineAction`` - Cut line
     * ``duplicateLineAction`` - Duplicate line
+    * ``invokeCompletionAction`` - Invoke completion
     * ``printAction`` - Print file
     
     **Text modification and Undo/Redo**
@@ -374,11 +375,11 @@ class Qutepart(QPlainTextEdit):
         
         self._lines = Lines(self)
         
-        self._initActions()
-        
         self.completionThreshold = self._DEFAULT_COMPLETION_THRESHOLD
         self.completionEnabled = self._DEFAULT_COMPLETION_ENABLED
         self._completer = Completer(self)
+        
+        self._initActions()
         
         self._lineNumberArea = _LineNumberArea(self)
         self._countCache = (-1, -1)
@@ -441,6 +442,7 @@ class Qutepart(QPlainTextEdit):
         self.pasteLineAction = createAction('Paste line', 'Alt+V', self._onShortcutPasteLine, 'paste.png')
         self.cutLineAction = createAction('Cut line', 'Alt+X', self._onShortcutCutLine, 'cut.png')
         self.duplicateLineAction = createAction('Duplicate line', 'Alt+D', self._onShortcutDuplicateLine)
+        self.invokeCompletionAction = createAction('Invoke completion', 'Ctrl+Space', self._completer.invokeCompletion)
         self.printAction = createAction('Print', 'Ctrl+P', self._onShortcutPrint, 'print.png')
     
     def __enter__(self):

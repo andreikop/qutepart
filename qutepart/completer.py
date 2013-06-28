@@ -252,7 +252,7 @@ class _CompletionList(QListView):
 class Completer(QObject):
     """Object listens Qutepart widget events, computes and shows autocompletion lists
     """
-    _wordPattern = "\w\w+"
+    _wordPattern = "\w+"
     _wordRegExp = re.compile(_wordPattern)
     _wordAtEndRegExp = re.compile(_wordPattern + '$')
     _wordAtStartRegExp = re.compile('^' + _wordPattern)
@@ -262,6 +262,7 @@ class Completer(QObject):
         
         self._qpart = qpart
         self._widget = None
+        self._completionOpenedManually = False
         
         qpart.installEventFilter(self)
     
@@ -269,6 +270,11 @@ class Completer(QObject):
         """Close completion widget, if exists
         """
         self._closeCompletion()
+
+    def invokeCompletion(self):
+        """Invoke completion manually"""
+        if self._invokeCompletionIfAvailable(requestedByUser=True):
+            self._completionOpenedManually = True
 
     def eventFilter(self, object, event):
         """Catch events from qpart. Show completion if necessary
@@ -285,38 +291,34 @@ class Completer(QObject):
         
         return False
 
-    def _invokeCompletionIfAvailable(self):
+    def _invokeCompletionIfAvailable(self, requestedByUser=False):
         """Invoke completion, if available. Called after text has been typed in qpart
+        Returns True, if invoked
         """
-        if not self._qpart.completionEnabled:
-            self._closeCompletion()
-            return
+        if self._qpart.completionEnabled:
+            wordBeforeCursor = self._wordBeforeCursor()
+            if wordBeforeCursor:
+                if len(wordBeforeCursor) >= self._qpart.completionThreshold or \
+                   self._completionOpenedManually or \
+                   requestedByUser:
         
-        wordBeforeCursor = self._wordBeforeCursor()
-        if not wordBeforeCursor:
-            self._closeCompletion()
-            return
-        
-        if len(wordBeforeCursor) < self._qpart.completionThreshold:
-            self._closeCompletion()
-            return
-        
-        words = self._makeListOfCompletions(wordBeforeCursor)
-        if not words:
-            self._closeCompletion()
-            return
-        
-        commonStart = self._commonWordStart(words)
-        
-        if self._widget is None:
-            model = _CompletionModel(wordBeforeCursor, words, commonStart)
-            self._widget = _CompletionList(self._qpart, model)
-            self._widget.closeMe.connect(self._closeCompletion)
-            self._widget.itemSelected.connect(self._onCompletionListItemSelected)
-            self._widget.tabPressed.connect(self._onCompletionListTabPressed)
-        else:
-            self._widget.model().updateData(wordBeforeCursor, words, commonStart)
-            self._widget.updateGeometry()
+                    words = self._makeListOfCompletions(wordBeforeCursor)
+                    if words:
+                        commonStart = self._commonWordStart(words)
+                        
+                        if self._widget is None:
+                            model = _CompletionModel(wordBeforeCursor, words, commonStart)
+                            self._widget = _CompletionList(self._qpart, model)
+                            self._widget.closeMe.connect(self._closeCompletion)
+                            self._widget.itemSelected.connect(self._onCompletionListItemSelected)
+                            self._widget.tabPressed.connect(self._onCompletionListTabPressed)
+                        else:
+                            self._widget.model().updateData(wordBeforeCursor, words, commonStart)
+                            self._widget.updateGeometry()
+                        return True
+                
+        self._closeCompletion()
+        return False
 
     def _closeCompletion(self):
         """Close completion, if visible.
@@ -325,6 +327,7 @@ class Completer(QObject):
         if self._widget is not None:
             self._widget.del_()
             self._widget = None
+            self._completionOpenedManually = False
     
     def _wordBeforeCursor(self):
         """Get word, which is located before cursor
