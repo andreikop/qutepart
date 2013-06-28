@@ -944,23 +944,29 @@ class Qutepart(QPlainTextEdit):
             
             if block.isVisible() and blockGeometry.toRect().intersects(paintEventRect):
                 text = block.text()
+                
+                shallDrawEdge = self.lineLengthEdge is not None and \
+                                block.length() > self.lineLengthEdge and \
+                                self.cursorPosition != (block.blockNumber(), self.lineLengthEdge)
+                
                 # Draw indent markers
                 painter.setPen(Qt.blue)
                 column = indentWidthChars
                 while text.startswith(self._indentText()) and \
                       len(text) > indentWidthChars and \
                       text[indentWidthChars].isspace():
-                    
-                    rect = _cursorRect(block, column, 2)
-                    painter.drawLine(rect.topLeft(), rect.bottomLeft())
-                    text = text[indentWidthChars:]
-                    column += indentWidthChars
                 
-                # Draw edge
-                if self.lineLengthEdge is not None and \
-                   block.length() > self.lineLengthEdge:
-                    painter.setPen(QPen(QBrush(Qt.red), 2))
-                    rect = _cursorRect(block, self.lineLengthEdge, 3)
+                    if not shallDrawEdge or column != self.lineLengthEdge:  # looks ugly, if both drawn
+                        rect = _cursorRect(block, column, 2)
+                        painter.drawLine(rect.topLeft(), rect.bottomLeft())
+                        text = text[indentWidthChars:]
+                    column += indentWidthChars
+                    
+                # Draw edge, but not over a cursor
+                if shallDrawEdge:
+                    color = QColor(255, 0, 0, 1)
+                    painter.setPen(QPen(QBrush(Qt.red), 1))
+                    rect = _cursorRect(block, self.lineLengthEdge, 1)
                     painter.drawLine(rect.topLeft(), rect.bottomLeft())
     
     def paintEvent(self, event):
