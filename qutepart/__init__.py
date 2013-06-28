@@ -936,6 +936,8 @@ class Qutepart(QPlainTextEdit):
             cursor = QTextCursor(block)
             cursor.setPositionInBlock(column)
             return self.cursorRect(cursor).translated(offset, 0)
+        
+        cursorPos = self.cursorPosition
 
         for block in iterateBlocksFrom(self.firstVisibleBlock()):
             blockGeometry = self.blockBoundingGeometry(block).translated(self.contentOffset())
@@ -945,10 +947,6 @@ class Qutepart(QPlainTextEdit):
             if block.isVisible() and blockGeometry.toRect().intersects(paintEventRect):
                 text = block.text()
                 
-                shallDrawEdge = self.lineLengthEdge is not None and \
-                                block.length() > self.lineLengthEdge and \
-                                self.cursorPosition != (block.blockNumber(), self.lineLengthEdge)
-                
                 # Draw indent markers
                 painter.setPen(Qt.blue)
                 column = indentWidthChars
@@ -956,15 +954,17 @@ class Qutepart(QPlainTextEdit):
                       len(text) > indentWidthChars and \
                       text[indentWidthChars].isspace():
                 
-                    if not shallDrawEdge or column != self.lineLengthEdge:  # looks ugly, if both drawn
-                        rect = _cursorRect(block, column, 2)
+                    if column != self.lineLengthEdge and \
+                       (block.blockNumber(), column) != cursorPos:  # looks ugly, if both drawn
+                        rect = _cursorRect(block, column, 1)
                         painter.drawLine(rect.topLeft(), rect.bottomLeft())
                         text = text[indentWidthChars:]
                     column += indentWidthChars
                     
                 # Draw edge, but not over a cursor
-                if shallDrawEdge:
-                    color = QColor(255, 0, 0, 1)
+                if self.lineLengthEdge is not None and \
+                   block.length() > self.lineLengthEdge and \
+                   (block.blockNumber(), self.lineLengthEdge) != cursorPos:
                     painter.setPen(QPen(QBrush(Qt.red), 1))
                     rect = _cursorRect(block, self.lineLengthEdge, 1)
                     painter.drawLine(rect.topLeft(), rect.bottomLeft())
