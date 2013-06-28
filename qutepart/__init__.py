@@ -7,7 +7,7 @@ import logging
 
 from PyQt4.QtCore import QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, QDialog, QFont, \
-                        QIcon, QKeySequence, QPainter, QPalette, QPlainTextEdit, \
+                        QIcon, QKeySequence, QPainter, QPen, QPalette, QPlainTextEdit, \
                         QPixmap, QPrintDialog, QShortcut, QTextCharFormat, QTextCursor, \
                         QTextBlock, QTextEdit, QTextFormat, QWidget
 
@@ -281,11 +281,12 @@ class Qutepart(QPlainTextEdit):
     * ``selectedPosition`` - selection coordinates as ``((startLine, startCol), (cursorLine, cursorCol))``.
     * ``absSelectedPosition`` - selection coordinates as ``(startPosition, cursorPosition)`` where position is offset from the beginning of text.
     
-    **EOL and indentation**
+    **EOL, indentation, edge**
     
     * ``eol`` - End Of Line character. Supported values are ``\\n``, ``\\r``, ``\\r\\n``. See comments for ``textForSaving()``
-    * ``indentWidth`` - Width of ``Tab`` character, and width of one indentation level
-    * ``indentUseTabs`` - If True, ``Tab`` character inserts ``\\t``, otherwise - spaces
+    * ``indentWidth`` - Width of ``Tab`` character, and width of one indentation level. Default is ``4``.
+    * ``indentUseTabs`` - If True, ``Tab`` character inserts ``\\t``, otherwise - spaces. Default is ``False``.
+    * ``lineLengthEdge`` - If not ``None`` - maximal allowed line width (i.e. 80 chars). Longer lines are marked with red line. Default is ``None``.
 
     **Autocompletion**
     
@@ -361,6 +362,7 @@ class Qutepart(QPlainTextEdit):
         self._eol = self._DEFAULT_EOL
         self._indentWidth = self._DEFAULT_INDENT_WIDTH
         self._indentUseTabs = self._DEFAULT_INDENT_USE_TABS
+        self.lineLengthEdge = None
         self._atomicModificationDepth = 0
 
         self.setFont(QFont("Monospace"))
@@ -921,20 +923,18 @@ class Qutepart(QPlainTextEdit):
             else:
                 super(Qutepart, self).keyPressEvent(event)
     
-    def _drawIndentMarkers(self, paintEventRect):
+    def _drawIndentMarkersAndEdge(self, paintEventRect):
         """Draw indentation markers
         """
         painter = QPainter(self.viewport())
-        painter.setPen(Qt.blue)
         
         indentWidthChars = len(self._indentText())
-        indentWidthPixels = self.fontMetrics().width(' ' * self._indentWidth)
         
-        cursorHeight = self.cursorRect().height()  # block might be wrapped,
-                                                   # but we always draw marker, equal to single line width
-        
-        leftMargin = 7  # FIXME experimental value. Probably won't work on all themes and Qt versions
-        
+        def _cursorRect(block, column, offset):
+            cursor = QTextCursor(block)
+            cursor.setPositionInBlock(column)
+            return self.cursorRect(cursor).translated(offset, 0)
+
         for block in iterateBlocksFrom(self.firstVisibleBlock()):
             blockGeometry = self.blockBoundingGeometry(block).translated(self.contentOffset())
             if blockGeometry.top() > paintEventRect.bottom():
@@ -942,16 +942,24 @@ class Qutepart(QPlainTextEdit):
             
             if block.isVisible() and blockGeometry.toRect().intersects(paintEventRect):
                 text = block.text()
-                x = blockGeometry.left() + indentWidthPixels + leftMargin
+                # Draw indent markers
+                painter.setPen(Qt.blue)
+                column = indentWidthChars
                 while text.startswith(self._indentText()) and \
                       len(text) > indentWidthChars and \
                       text[indentWidthChars].isspace():
-                    painter.drawLine(x,
-                                     blockGeometry.top(),
-                                     x,
-                                     blockGeometry.top() + cursorHeight)
+                    
+                    rect = _cursorRect(block, column, 2)
+                    painter.drawLine(rect.topLeft(), rect.bottomLeft())
                     text = text[indentWidthChars:]
-                    x = x + indentWidthPixels
+                    column += indentWidthChars
+                
+                # Draw edge
+                if self.lineLengthEdge is not None and \
+                   block.length() > self.lineLengthEdge:
+                    painter.setPen(QPen(QBrush(Qt.red), 2))
+                    rect = _cursorRect(block, self.lineLengthEdge, 3)
+                    painter.drawLine(rect.topLeft(), rect.bottomLeft())
     
     def paintEvent(self, event):
         pass # suppress dockstring for non-public method
@@ -959,7 +967,7 @@ class Qutepart(QPlainTextEdit):
         Draw indentation markers after main contents is drawn
         """
         super(Qutepart, self).paintEvent(event)
-        self._drawIndentMarkers(event.rect())
+        self._drawIndentMarkersAndEdge(event.rect())
     
     def _currentLineExtraSelection(self):
         """QTextEdit.ExtraSelection, which highlightes current line
