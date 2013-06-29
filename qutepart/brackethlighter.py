@@ -15,7 +15,7 @@ class BracketHighlighter:
     Currently, this class might be just a set of functions.
     Probably, it will contain instance specific selection colors later
     """
-    _MAX_SEARCH_TIME_SEC = 0.02
+    _MAX_SEARCH_TIME_SEC = 0.05
     
     _START_BRACKETS = '({['
     _END_BRACKETS = ')}]'
