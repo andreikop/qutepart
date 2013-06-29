@@ -286,7 +286,8 @@ class Qutepart(QPlainTextEdit):
     * ``eol`` - End Of Line character. Supported values are ``\\n``, ``\\r``, ``\\r\\n``. See comments for ``textForSaving()``
     * ``indentWidth`` - Width of ``Tab`` character, and width of one indentation level. Default is ``4``.
     * ``indentUseTabs`` - If True, ``Tab`` character inserts ``\\t``, otherwise - spaces. Default is ``False``.
-    * ``lineLengthEdge`` - If not ``None`` - maximal allowed line width (i.e. 80 chars). Longer lines are marked with red line. Default is ``None``.
+    * ``lineLengthEdge`` - If not ``None`` - maximal allowed line width (i.e. 80 chars). Longer lines are marked with red (see ``lineLengthEdgeColor``) line. Default is ``None``.
+    * ``lineLengthEdgeColor`` - Color of line length edge line. Default is red.
 
     **Autocompletion**
     
@@ -364,6 +365,7 @@ class Qutepart(QPlainTextEdit):
         self._indentWidth = self._DEFAULT_INDENT_WIDTH
         self._indentUseTabs = self._DEFAULT_INDENT_USE_TABS
         self.lineLengthEdge = None
+        self.lineLengthEdgeColor = Qt.red
         self._atomicModificationDepth = 0
 
         self.setFont(QFont("Monospace"))
@@ -965,7 +967,7 @@ class Qutepart(QPlainTextEdit):
                 if self.lineLengthEdge is not None and \
                    block.length() > self.lineLengthEdge and \
                    (block.blockNumber(), self.lineLengthEdge) != cursorPos:
-                    painter.setPen(QPen(QBrush(Qt.red), 1))
+                    painter.setPen(QPen(QBrush(self.lineLengthEdgeColor), 1))
                     rect = _cursorRect(block, self.lineLengthEdge, 1)
                     painter.drawLine(rect.topLeft(), rect.bottomLeft())
     
