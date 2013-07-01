@@ -960,15 +960,16 @@ class Qutepart(QPlainTextEdit):
                        (block.blockNumber(), column) != cursorPos:  # looks ugly, if both drawn
                         rect = _cursorRect(block, column, 1)
                         painter.drawLine(rect.topLeft(), rect.bottomLeft())
-                        text = text[indentWidthChars:]
+                    
+                    text = text[indentWidthChars:]
                     column += indentWidthChars
                     
                 # Draw edge, but not over a cursor
                 if self.lineLengthEdge is not None and \
                    block.length() > self.lineLengthEdge and \
                    (block.blockNumber(), self.lineLengthEdge) != cursorPos:
-                    painter.setPen(QPen(QBrush(self.lineLengthEdgeColor), 1))
-                    rect = _cursorRect(block, self.lineLengthEdge, 1)
+                    painter.setPen(QPen(QBrush(self.lineLengthEdgeColor), 0))
+                    rect = _cursorRect(block, self.lineLengthEdge, 0)
                     painter.drawLine(rect.topLeft(), rect.bottomLeft())
     
     def paintEvent(self, event):
