@@ -54,6 +54,7 @@ def main():
     window.setCentralWidget(qpart)
     
     qpart.detectSyntax(sourceFilePath=ns.file, firstLine=text.splitlines()[0])
+    qpart.lineLengthEdge = 80
     
     qpart.text = text
     

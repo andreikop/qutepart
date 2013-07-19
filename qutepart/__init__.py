@@ -5,7 +5,7 @@
 import os.path
 import logging
 
-from PyQt4.QtCore import QRect, Qt, pyqtSignal
+from PyQt4.QtCore import QPoint, QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, QDialog, QFont, \
                         QIcon, QKeySequence, QPainter, QPen, QPalette, QPlainTextEdit, \
                         QPixmap, QPrintDialog, QShortcut, QTextCharFormat, QTextCursor, \
@@ -367,6 +367,8 @@ class Qutepart(QPlainTextEdit):
         self.lineLengthEdge = None
         self.lineLengthEdgeColor = Qt.red
         self._atomicModificationDepth = 0
+        
+        self._rectangularSelectionStart = None
 
         self.setFont(QFont("Monospace"))
         
@@ -535,8 +537,7 @@ class Qutepart(QPlainTextEdit):
         else:
             col = len(lineText) - len(lineText.lstrip())
         
-        block = QTextCursor(self.document().findBlockByNumber(line))
-        cursor = QTextCursor(block)
+        cursor = QTextCursor(self.document().findBlockByNumber(line))
         cursor.setPositionInBlock(col)
         self.setTextCursor(cursor)
     
@@ -966,7 +967,7 @@ class Qutepart(QPlainTextEdit):
                     
                 # Draw edge, but not over a cursor
                 if self.lineLengthEdge is not None and \
-                   block.length() > self.lineLengthEdge and \
+                   block.length() > (self.lineLengthEdge + 1) and \
                    (block.blockNumber(), self.lineLengthEdge) != cursorPos:
                     painter.setPen(QPen(QBrush(self.lineLengthEdgeColor), 0))
                     rect = _cursorRect(block, self.lineLengthEdge, 0)
@@ -994,18 +995,42 @@ class Qutepart(QPlainTextEdit):
         
         return selection
 
+    def _rectangularSelections(self):
+        """Build list of extra selections for rectangular selection
+        """
+        color = self.palette().color(QPalette.Highlight)
+        selections = []
+        if self._rectangularSelectionStart is not None:
+            startLine, startCol = self._rectangularSelectionStart
+            currentLine, currentCol = self.cursorPosition
+            for lineNumber in range(min(startLine, currentLine),
+                                    max(startLine, currentLine) + 1):
+                selection = QTextEdit.ExtraSelection()
+                selection.format.setBackground(color)
+                cursor = QTextCursor(self.document().findBlockByNumber(lineNumber))
+                cursor.setPositionInBlock(startCol)
+                cursor.setPositionInBlock(currentCol, QTextCursor.KeepAnchor)
+                selection.cursor = cursor
+                
+                selections.append(selection)
+
+        return selections
+
     def _updateExtraSelections(self):
         """Highlight current line
         """
-        currentLineSelection = self._currentLineExtraSelection()
-
         # TODO use positionInBlock when Qt 4.6 is not supported
         cursorColumnIndex = self.textCursor().positionInBlock()
         
         bracketSelections = self._bracketHighlighter.extraSelections(self,
                                                                      self.textCursor().block(),
                                                                      cursorColumnIndex)
-        allSelections = [currentLineSelection] + bracketSelections + self._userExtraSelections
+        #[self._currentLineExtraSelection()] + \
+        allSelections = \
+                        self._rectangularSelections() + \
+                        bracketSelections + \
+                        self._userExtraSelections
+
         QPlainTextEdit.setExtraSelections(self, allSelections)
 
     def _onShortcutScroll(self, down):
