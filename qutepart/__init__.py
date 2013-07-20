@@ -7,7 +7,7 @@ import logging
 
 from PyQt4.QtCore import QPoint, QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, QDialog, QFont, \
-                        QIcon, QKeySequence, QPainter, QPen, QPalette, QPlainTextEdit, \
+                        QIcon, QKeyEvent, QKeySequence, QPainter, QPen, QPalette, QPlainTextEdit, \
                         QPixmap, QPrintDialog, QShortcut, QTextCharFormat, QTextCursor, \
                         QTextBlock, QTextEdit, QTextFormat, QWidget
 
@@ -34,13 +34,12 @@ def _getIconPath(iconFileName):
     return os.path.join(_ICONS_PATH, iconFileName)
 
 
-#Define for old Qt versions method, which appeared in 4.7
+#Define for old Qt versions methods, which appeared in 4.7
 if not hasattr(QTextCursor, 'positionInBlock'):
     def _positionInBlock(cursor):
         return cursor.position() - cursor.block().position()
     QTextCursor.positionInBlock = _positionInBlock
 
-# Helper method, not supported by Qt
 if not hasattr(QTextCursor, 'setPositionInBlock'):
     if not hasattr(QTextCursor, 'MoveAnchor'):  # using a mock, avoiding crash. See doc/source/conf.py
         QTextCursor.MoveAnchor = None
@@ -280,6 +279,7 @@ class Qutepart(QPlainTextEdit):
     * ``absCursorPosition`` - cursor position as offset from the beginning of text.
     * ``selectedPosition`` - selection coordinates as ``((startLine, startCol), (cursorLine, cursorCol))``.
     * ``absSelectedPosition`` - selection coordinates as ``(startPosition, cursorPosition)`` where position is offset from the beginning of text.
+    Rectangular selection is not available via API currently.
     
     **EOL, indentation, edge**
     
@@ -397,9 +397,12 @@ class Qutepart(QPlainTextEdit):
 
         self.blockCountChanged.connect(self._updateLineNumberAreaWidth)
         self.updateRequest.connect(self._updateSideAreas)
+        self.cursorPositionChanged.connect(self._resetRectangularSelection)  # disconnected during Alt+Shift+...
         self.cursorPositionChanged.connect(self._updateExtraSelections)
         self.textChanged.connect(lambda: self.setExtraSelections([]))  # drop user extra selections
         self.textChanged.connect(self._resetCachedText)
+        self.textChanged.connect(self._resetRectangularSelection)
+        self.selectionChanged.connect(self._resetRectangularSelection)  # disconnected during Alt+Shift+...
 
         self._updateLineNumberAreaWidth(0)
         self._updateExtraSelections()
@@ -903,9 +906,15 @@ class Qutepart(QPlainTextEdit):
             return atEnd and \
                    event.text() and \
                    event.text() in self._indenter.TRIGGER_CHARACTERS
-        
+
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
+        elif self._rectangularSelectionStart is not None and \
+             (event.matches(QKeySequence.Delete) or \
+              (event.key() == Qt.Key_Backspace and event.modifiers() == Qt.NoModifier)):
+            with self:
+                for cursor in self._rectangularSelectionCursors():
+                    cursor.deleteChar()
         elif event.key() == Qt.Key_Insert and event.modifiers() == Qt.NoModifier:
             self.setOverwriteMode(not self.overwriteMode())
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
@@ -920,13 +929,33 @@ class Qutepart(QPlainTextEdit):
             self._onShortcutHome(select=False)
         elif event.matches(QKeySequence.SelectStartOfLine):
             self._onShortcutHome(select=True)
-        else:
-            if _shouldAutoIndent(event):
+        elif event.modifiers() & Qt.ShiftModifier and \
+             event.modifiers() & Qt.AltModifier and \
+             event.key() in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Down, Qt.Key_Up,
+                             Qt.Key_PageUp, Qt.Key_PageDown, Qt.Key_Home, Qt.Key_End):
+                if self._rectangularSelectionStart is None:
+                    self._rectangularSelectionStart = self.cursorPosition
+                modifiersWithoutAltShift = event.modifiers() & ( ~ (Qt.AltModifier | Qt.ShiftModifier))
+                newEvent = QKeyEvent(event.type(),
+                                     event.key(),
+                                     modifiersWithoutAltShift,
+                                     event.text(),
+                                     event.isAutoRepeat(),
+                                     event.count())
+                
+                self.cursorPositionChanged.disconnect(self._resetRectangularSelection)
+                self.selectionChanged.disconnect(self._resetRectangularSelection)
+                super(Qutepart, self).keyPressEvent(newEvent)
+                self.cursorPositionChanged.connect(self._resetRectangularSelection)
+                self.selectionChanged.connect(self._resetRectangularSelection)
+                
+                self._updateExtraSelections()
+        elif _shouldAutoIndent(event):
                 with self:
                     super(Qutepart, self).keyPressEvent(event)
                     self._autoIndentBlock(self.textCursor().block(), event.text())
-            else:
-                super(Qutepart, self).keyPressEvent(event)
+        else:
+            super(Qutepart, self).keyPressEvent(event)
     
     def _drawIndentMarkersAndEdge(self, paintEventRect):
         """Draw indentation markers
@@ -981,35 +1010,57 @@ class Qutepart(QPlainTextEdit):
         super(Qutepart, self).paintEvent(event)
         self._drawIndentMarkersAndEdge(event.rect())
     
-    def _currentLineExtraSelection(self):
-        """QTextEdit.ExtraSelection, which highlightes current line
-        """
-        selection = QTextEdit.ExtraSelection()
-
-        lineColor = QColor('#ffff99')
-
-        selection.format.setBackground(lineColor)
-        selection.format.setProperty(QTextFormat.FullWidthSelection, True)
-        selection.cursor = self.textCursor()
-        selection.cursor.clearSelection()
-        
-        return selection
-
-    def _rectangularSelections(self):
-        """Build list of extra selections for rectangular selection
-        """
-        color = self.palette().color(QPalette.Highlight)
-        selections = []
+    def _rectangularSelectionCursors(self):
+        cursors = []
         if self._rectangularSelectionStart is not None:
             startLine, startCol = self._rectangularSelectionStart
             currentLine, currentCol = self.cursorPosition
             for lineNumber in range(min(startLine, currentLine),
                                     max(startLine, currentLine) + 1):
+                block = self.document().findBlockByNumber(lineNumber)
+                cursor = QTextCursor(block)
+                cursor.setPositionInBlock(min(startCol, block.length() - 1))
+                cursor.setPositionInBlock(min(currentCol, block.length() - 1), QTextCursor.KeepAnchor)
+                
+                cursors.append(cursor)
+
+        return cursors
+    
+    def _resetRectangularSelection(self):
+        """Cursor moved while Alt is not pressed, or text modified.
+        Reset rectangular selection"""
+        if self._rectangularSelectionStart is not None:
+            self._rectangularSelectionStart = None
+            self._updateExtraSelections()
+    
+    def _currentLineExtraSelections(self):
+        """QTextEdit.ExtraSelection, which highlightes current line
+        """
+        lineColor = QColor('#ffff99')
+        def makeSelection(cursor):
+            selection = QTextEdit.ExtraSelection()
+            selection.format.setBackground(lineColor)
+            selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+            cursor.clearSelection()
+            selection.cursor = cursor
+            return selection
+        
+        if self._rectangularSelectionStart is None:
+            return [makeSelection(self.textCursor())]
+        else:
+            return [makeSelection(cursor) \
+                        for cursor in self._rectangularSelectionCursors()]
+
+    def _rectangularSelections(self):
+        """Build list of extra selections for rectangular selection
+        """
+        selections = []
+        cursors = self._rectangularSelectionCursors()
+        if cursors:
+            color = self.palette().color(QPalette.Highlight)
+            for cursor in cursors:
                 selection = QTextEdit.ExtraSelection()
                 selection.format.setBackground(color)
-                cursor = QTextCursor(self.document().findBlockByNumber(lineNumber))
-                cursor.setPositionInBlock(startCol)
-                cursor.setPositionInBlock(currentCol, QTextCursor.KeepAnchor)
                 selection.cursor = cursor
                 
                 selections.append(selection)
@@ -1019,14 +1070,13 @@ class Qutepart(QPlainTextEdit):
     def _updateExtraSelections(self):
         """Highlight current line
         """
-        # TODO use positionInBlock when Qt 4.6 is not supported
         cursorColumnIndex = self.textCursor().positionInBlock()
         
         bracketSelections = self._bracketHighlighter.extraSelections(self,
                                                                      self.textCursor().block(),
                                                                      cursorColumnIndex)
-        #[self._currentLineExtraSelection()] + \
-        allSelections = \
+        
+        allSelections = self._currentLineExtraSelections() + \
                         self._rectangularSelections() + \
                         bracketSelections + \
                         self._userExtraSelections

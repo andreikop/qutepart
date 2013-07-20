@@ -39,6 +39,42 @@ class Test(unittest.TestCase):
         QTest.keyClicks(self.qpart, "z")
         self.assertEqual(self.qpart.text, 'stuxyzcd')
 
+    def test_rectangular_selection(self):
+        self.qpart.show()
+        for key in [Qt.Key_Delete, Qt.Key_Backspace]:
+            self.qpart.text = 'abcd\nef\nghkl\nmnop'
+            QTest.keyClick(self.qpart, Qt.Key_Right)
+            QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+            QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+            QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
+            QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
+            QTest.keyClick(self.qpart, key)
+            self.assertEqual(self.qpart.text, 'ad\ne\ngl\nmnop')
+
+    def test_rectangular_selection_reset_by_move(self):
+        self.qpart.show()
+        self.qpart.text = 'abcd\nef\nghkl\nmnop'
+        QTest.keyClick(self.qpart, Qt.Key_Right)
+        QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Left)
+        QTest.keyClick(self.qpart, Qt.Key_Backspace)
+        self.assertEqual(self.qpart.text, 'abcd\nef\ngkl\nmnop')
+
+    def test_rectangular_selection_reset_by_edit(self):
+        self.qpart.show()
+        self.qpart.text = 'abcd\nef\nghkl\nmnop'
+        QTest.keyClick(self.qpart, Qt.Key_Right)
+        QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClicks(self.qpart, 'x')
+        QTest.keyClick(self.qpart, Qt.Key_Backspace)
+        self.assertEqual(self.qpart.text, 'abcd\nef\nghkl\nmnop')
+
 
 if __name__ == '__main__':
     unittest.main()
