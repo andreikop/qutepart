@@ -934,7 +934,10 @@ class Qutepart(QPlainTextEdit):
              event.key() in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Down, Qt.Key_Up,
                              Qt.Key_PageUp, Qt.Key_PageDown, Qt.Key_Home, Qt.Key_End):
                 if self._rectangularSelectionStart is None:
-                    self._rectangularSelectionStart = self.cursorPosition
+                    currentBlockText = self.textCursor().block().text()
+                    line = self.cursorPosition[0]
+                    visibleColumn = self._realToVisibleColumn(currentBlockText, self.cursorPosition[1])
+                    self._rectangularSelectionStart = (line, visibleColumn)
                 modifiersWithoutAltShift = event.modifiers() & ( ~ (Qt.AltModifier | Qt.ShiftModifier))
                 newEvent = QKeyEvent(event.type(),
                                      event.key(),
@@ -1009,18 +1012,68 @@ class Qutepart(QPlainTextEdit):
         """
         super(Qutepart, self).paintEvent(event)
         self._drawIndentMarkersAndEdge(event.rect())
+
+    def _visibleCharPositionGenerator(self, text):
+        currentPos = 0
+        yield currentPos
+        
+        for index, char in enumerate(text):
+            if char == '\t':
+                currentPos += self.indentWidth
+                # trim reminder. If width('\t') == 4,   width('abc\t') == 4
+                currentPos = currentPos / self.indentWidth * self.indentWidth
+            else:
+                currentPos += 1
+            yield currentPos
+
+    def _realToVisibleColumn(self, text, realColumn):
+        """If \t is used, real position of symbol in block and visible position differs
+        This function converts real to visible
+        """
+        generator = self._visibleCharPositionGenerator(text)
+        for i in range(realColumn):
+            val = generator.next()
+        return generator.next()
+    
+    def _visibleToRealColumn(self, text, visiblePos):
+        """If \t is used, real position of symbol in block and visible position differs
+        This function converts visible to real.
+        Bigger value is returned, if visiblePos is in the middle of \t, None if text is too short
+        """
+        if visiblePos == 0:
+            return 0
+
+        currentIndex = 1
+        for currentVisiblePos in self._visibleCharPositionGenerator(text):
+            if currentVisiblePos >= visiblePos:
+                return currentIndex - 1
+            currentIndex += 1
+        
+        return None
     
     def _rectangularSelectionCursors(self):
+        """Cursors for rectangular selection.
+        1 cursor for every line
+        """
         cursors = []
         if self._rectangularSelectionStart is not None:
-            startLine, startCol = self._rectangularSelectionStart
+            startLine, startVisibleCol = self._rectangularSelectionStart
             currentLine, currentCol = self.cursorPosition
+            currentBlockText = self.textCursor().block().text()
+            currentVisibleCol = self._realToVisibleColumn(currentBlockText, currentCol)
+
             for lineNumber in range(min(startLine, currentLine),
                                     max(startLine, currentLine) + 1):
                 block = self.document().findBlockByNumber(lineNumber)
                 cursor = QTextCursor(block)
-                cursor.setPositionInBlock(min(startCol, block.length() - 1))
-                cursor.setPositionInBlock(min(currentCol, block.length() - 1), QTextCursor.KeepAnchor)
+                realStartCol = self._visibleToRealColumn(block.text(), startVisibleCol)
+                realCurrentCol = self._visibleToRealColumn(block.text(), currentVisibleCol)
+                if realStartCol is None:
+                    realStartCol = block.length()  # out of range value
+                if realCurrentCol is None:
+                    realCurrentCol = block.length()  # out of range value
+                cursor.setPositionInBlock(min(realStartCol, block.length() - 1))
+                cursor.setPositionInBlock(min(realCurrentCol, block.length() - 1), QTextCursor.KeepAnchor)
                 
                 cursors.append(cursor)
 

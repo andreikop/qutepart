@@ -74,7 +74,17 @@ class Test(unittest.TestCase):
         QTest.keyClicks(self.qpart, 'x')
         QTest.keyClick(self.qpart, Qt.Key_Backspace)
         self.assertEqual(self.qpart.text, 'abcd\nef\nghkl\nmnop')
-
+    
+    def test_rectangular_selection_with_tabs(self):
+        self.qpart.show()
+        self.qpart.text = 'abcdefghhhhh\n\tklm\n\t\txyz'
+        self.qpart.cursorPosition = (0, 6)
+        QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Delete)
+        self.assertEqual(self.qpart.text, 'abcdefhh\n\tkl\n\t\tz')
 
 if __name__ == '__main__':
     unittest.main()
