@@ -951,8 +951,7 @@ class Qutepart(QPlainTextEdit):
                 super(Qutepart, self).keyPressEvent(newEvent)
                 self.cursorPositionChanged.connect(self._resetRectangularSelection)
                 self.selectionChanged.connect(self._resetRectangularSelection)
-                
-                self._updateExtraSelections()
+                # extra selections will be updated, because cursor has been moved
         elif _shouldAutoIndent(event):
                 with self:
                     super(Qutepart, self).keyPressEvent(event)
