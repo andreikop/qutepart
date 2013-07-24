@@ -222,6 +222,148 @@ class _MarkArea(QWidget):
         return self._MARGIN + self._bookmarkPixmap.width() + self._MARGIN
 
 
+class RectangularSelection:
+    """This class does not replresent any object, but is part of Qutepart
+    It just groups together Qutepart rectangular selection methods and fields
+    """
+    def __init__(self, qpart):
+        self._qpart = qpart
+        self._start = None
+
+        qpart.cursorPositionChanged.connect(self._reset)  # disconnected during Alt+Shift+...
+        qpart.textChanged.connect(self._reset)
+        qpart.selectionChanged.connect(self._reset)  # disconnected during Alt+Shift+...
+
+    def _reset(self):
+        """Cursor moved while Alt is not pressed, or text modified.
+        Reset rectangular selection"""
+        if self._start is not None:
+            self._start = None
+            self._qpart._updateExtraSelections()
+    
+    def isDeleteKeyEvent(self, keyEvent):
+        """Check if key event should be handled as Delete command"""
+        return self._start is not None and \
+               (keyEvent.matches(QKeySequence.Delete) or \
+                (keyEvent.key() == Qt.Key_Backspace and keyEvent.modifiers() == Qt.NoModifier))
+    
+    def onDeleteKeyEvent(self):
+        """Del or Backspace pressed. Delete selection"""
+        with self._qpart:
+            for cursor in self.cursors():
+                cursor.deleteChar()
+    
+    def isExpandKeyEvent(self, keyEvent):
+        """Check if key event should expand rectangular selection"""
+        return keyEvent.modifiers() & Qt.ShiftModifier and \
+               keyEvent.modifiers() & Qt.AltModifier and \
+               keyEvent.key() in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Down, Qt.Key_Up,
+                                  Qt.Key_PageUp, Qt.Key_PageDown, Qt.Key_Home, Qt.Key_End)
+    
+    def onExpandKeyEvent(self, keyEvent):
+        """One of expand selection key events"""
+        if self._start is None:
+            currentBlockText = self._qpart.textCursor().block().text()
+            line = self._qpart.cursorPosition[0]
+            visibleColumn = self._realToVisibleColumn(currentBlockText, self._qpart.cursorPosition[1])
+            self._start = (line, visibleColumn)
+        modifiersWithoutAltShift = keyEvent.modifiers() & ( ~ (Qt.AltModifier | Qt.ShiftModifier))
+        newEvent = QKeyEvent(keyEvent.type(),
+                             keyEvent.key(),
+                             modifiersWithoutAltShift,
+                             keyEvent.text(),
+                             keyEvent.isAutoRepeat(),
+                             keyEvent.count())
+        
+        self._qpart.cursorPositionChanged.disconnect(self._reset)
+        self._qpart.selectionChanged.disconnect(self._reset)
+        super(Qutepart, self._qpart).keyPressEvent(newEvent)
+        self._qpart.cursorPositionChanged.connect(self._reset)
+        self._qpart.selectionChanged.connect(self._reset)
+        # extra selections will be updated, because cursor has been moved
+
+    def _visibleCharPositionGenerator(self, text):
+        currentPos = 0
+        yield currentPos
+        
+        for index, char in enumerate(text):
+            if char == '\t':
+                currentPos += self._qpart.indentWidth
+                # trim reminder. If width('\t') == 4,   width('abc\t') == 4
+                currentPos = currentPos / self._qpart.indentWidth * self._qpart.indentWidth
+            else:
+                currentPos += 1
+            yield currentPos
+
+    def _realToVisibleColumn(self, text, realColumn):
+        """If \t is used, real position of symbol in block and visible position differs
+        This function converts real to visible
+        """
+        generator = self._visibleCharPositionGenerator(text)
+        for i in range(realColumn):
+            val = generator.next()
+        return generator.next()
+    
+    def _visibleToRealColumn(self, text, visiblePos):
+        """If \t is used, real position of symbol in block and visible position differs
+        This function converts visible to real.
+        Bigger value is returned, if visiblePos is in the middle of \t, None if text is too short
+        """
+        if visiblePos == 0:
+            return 0
+
+        currentIndex = 1
+        for currentVisiblePos in self._visibleCharPositionGenerator(text):
+            if currentVisiblePos >= visiblePos:
+                return currentIndex - 1
+            currentIndex += 1
+        
+        return None
+
+    def cursors(self):
+        """Cursors for rectangular selection.
+        1 cursor for every line
+        """
+        cursors = []
+        if self._start is not None:
+            startLine, startVisibleCol = self._start
+            currentLine, currentCol = self._qpart.cursorPosition
+            currentBlockText = self._qpart.textCursor().block().text()
+            currentVisibleCol = self._realToVisibleColumn(currentBlockText, currentCol)
+
+            for lineNumber in range(min(startLine, currentLine),
+                                    max(startLine, currentLine) + 1):
+                block = self._qpart.document().findBlockByNumber(lineNumber)
+                cursor = QTextCursor(block)
+                realStartCol = self._visibleToRealColumn(block.text(), startVisibleCol)
+                realCurrentCol = self._visibleToRealColumn(block.text(), currentVisibleCol)
+                if realStartCol is None:
+                    realStartCol = block.length()  # out of range value
+                if realCurrentCol is None:
+                    realCurrentCol = block.length()  # out of range value
+                cursor.setPositionInBlock(min(realStartCol, block.length() - 1))
+                cursor.setPositionInBlock(min(realCurrentCol, block.length() - 1), QTextCursor.KeepAnchor)
+                
+                cursors.append(cursor)
+
+        return cursors
+
+    def selections(self):
+        """Build list of extra selections for rectangular selection"""
+        selections = []
+        cursors = self.cursors()
+        if cursors:
+            color = self._qpart.palette().color(QPalette.Highlight)
+            for cursor in cursors:
+                selection = QTextEdit.ExtraSelection()
+                selection.format.setBackground(color)
+                selection.cursor = cursor
+                
+                selections.append(selection)
+
+        return selections
+
+
 class Qutepart(QPlainTextEdit):
     '''Qutepart is based on QPlainTextEdit, and you can use QPlainTextEdit methods,
     if you don't see some functionality here.
@@ -368,7 +510,7 @@ class Qutepart(QPlainTextEdit):
         self.lineLengthEdgeColor = Qt.red
         self._atomicModificationDepth = 0
         
-        self._rectangularSelectionStart = None
+        self._rectangularSelection = RectangularSelection(self)
 
         self.setFont(QFont("Monospace"))
         
@@ -397,12 +539,9 @@ class Qutepart(QPlainTextEdit):
 
         self.blockCountChanged.connect(self._updateLineNumberAreaWidth)
         self.updateRequest.connect(self._updateSideAreas)
-        self.cursorPositionChanged.connect(self._resetRectangularSelection)  # disconnected during Alt+Shift+...
         self.cursorPositionChanged.connect(self._updateExtraSelections)
         self.textChanged.connect(lambda: self.setExtraSelections([]))  # drop user extra selections
         self.textChanged.connect(self._resetCachedText)
-        self.textChanged.connect(self._resetRectangularSelection)
-        self.selectionChanged.connect(self._resetRectangularSelection)  # disconnected during Alt+Shift+...
 
         self._updateLineNumberAreaWidth(0)
         self._updateExtraSelections()
@@ -909,12 +1048,8 @@ class Qutepart(QPlainTextEdit):
 
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
-        elif self._rectangularSelectionStart is not None and \
-             (event.matches(QKeySequence.Delete) or \
-              (event.key() == Qt.Key_Backspace and event.modifiers() == Qt.NoModifier)):
-            with self:
-                for cursor in self._rectangularSelectionCursors():
-                    cursor.deleteChar()
+        elif self._rectangularSelection.isDeleteKeyEvent(event):
+            self._rectangularSelection.onDeleteKeyEvent()
         elif event.key() == Qt.Key_Insert and event.modifiers() == Qt.NoModifier:
             self.setOverwriteMode(not self.overwriteMode())
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
@@ -929,29 +1064,8 @@ class Qutepart(QPlainTextEdit):
             self._onShortcutHome(select=False)
         elif event.matches(QKeySequence.SelectStartOfLine):
             self._onShortcutHome(select=True)
-        elif event.modifiers() & Qt.ShiftModifier and \
-             event.modifiers() & Qt.AltModifier and \
-             event.key() in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Down, Qt.Key_Up,
-                             Qt.Key_PageUp, Qt.Key_PageDown, Qt.Key_Home, Qt.Key_End):
-                if self._rectangularSelectionStart is None:
-                    currentBlockText = self.textCursor().block().text()
-                    line = self.cursorPosition[0]
-                    visibleColumn = self._realToVisibleColumn(currentBlockText, self.cursorPosition[1])
-                    self._rectangularSelectionStart = (line, visibleColumn)
-                modifiersWithoutAltShift = event.modifiers() & ( ~ (Qt.AltModifier | Qt.ShiftModifier))
-                newEvent = QKeyEvent(event.type(),
-                                     event.key(),
-                                     modifiersWithoutAltShift,
-                                     event.text(),
-                                     event.isAutoRepeat(),
-                                     event.count())
-                
-                self.cursorPositionChanged.disconnect(self._resetRectangularSelection)
-                self.selectionChanged.disconnect(self._resetRectangularSelection)
-                super(Qutepart, self).keyPressEvent(newEvent)
-                self.cursorPositionChanged.connect(self._resetRectangularSelection)
-                self.selectionChanged.connect(self._resetRectangularSelection)
-                # extra selections will be updated, because cursor has been moved
+        elif self._rectangularSelection.isExpandKeyEvent(event):
+            self._rectangularSelection.onExpandKeyEvent(event)
         elif _shouldAutoIndent(event):
                 with self:
                     super(Qutepart, self).keyPressEvent(event)
@@ -1011,80 +1125,7 @@ class Qutepart(QPlainTextEdit):
         """
         super(Qutepart, self).paintEvent(event)
         self._drawIndentMarkersAndEdge(event.rect())
-
-    def _visibleCharPositionGenerator(self, text):
-        currentPos = 0
-        yield currentPos
         
-        for index, char in enumerate(text):
-            if char == '\t':
-                currentPos += self.indentWidth
-                # trim reminder. If width('\t') == 4,   width('abc\t') == 4
-                currentPos = currentPos / self.indentWidth * self.indentWidth
-            else:
-                currentPos += 1
-            yield currentPos
-
-    def _realToVisibleColumn(self, text, realColumn):
-        """If \t is used, real position of symbol in block and visible position differs
-        This function converts real to visible
-        """
-        generator = self._visibleCharPositionGenerator(text)
-        for i in range(realColumn):
-            val = generator.next()
-        return generator.next()
-    
-    def _visibleToRealColumn(self, text, visiblePos):
-        """If \t is used, real position of symbol in block and visible position differs
-        This function converts visible to real.
-        Bigger value is returned, if visiblePos is in the middle of \t, None if text is too short
-        """
-        if visiblePos == 0:
-            return 0
-
-        currentIndex = 1
-        for currentVisiblePos in self._visibleCharPositionGenerator(text):
-            if currentVisiblePos >= visiblePos:
-                return currentIndex - 1
-            currentIndex += 1
-        
-        return None
-    
-    def _rectangularSelectionCursors(self):
-        """Cursors for rectangular selection.
-        1 cursor for every line
-        """
-        cursors = []
-        if self._rectangularSelectionStart is not None:
-            startLine, startVisibleCol = self._rectangularSelectionStart
-            currentLine, currentCol = self.cursorPosition
-            currentBlockText = self.textCursor().block().text()
-            currentVisibleCol = self._realToVisibleColumn(currentBlockText, currentCol)
-
-            for lineNumber in range(min(startLine, currentLine),
-                                    max(startLine, currentLine) + 1):
-                block = self.document().findBlockByNumber(lineNumber)
-                cursor = QTextCursor(block)
-                realStartCol = self._visibleToRealColumn(block.text(), startVisibleCol)
-                realCurrentCol = self._visibleToRealColumn(block.text(), currentVisibleCol)
-                if realStartCol is None:
-                    realStartCol = block.length()  # out of range value
-                if realCurrentCol is None:
-                    realCurrentCol = block.length()  # out of range value
-                cursor.setPositionInBlock(min(realStartCol, block.length() - 1))
-                cursor.setPositionInBlock(min(realCurrentCol, block.length() - 1), QTextCursor.KeepAnchor)
-                
-                cursors.append(cursor)
-
-        return cursors
-    
-    def _resetRectangularSelection(self):
-        """Cursor moved while Alt is not pressed, or text modified.
-        Reset rectangular selection"""
-        if self._rectangularSelectionStart is not None:
-            self._rectangularSelectionStart = None
-            self._updateExtraSelections()
-    
     def _currentLineExtraSelections(self):
         """QTextEdit.ExtraSelection, which highlightes current line
         """
@@ -1097,27 +1138,12 @@ class Qutepart(QPlainTextEdit):
             selection.cursor = cursor
             return selection
         
-        if self._rectangularSelectionStart is None:
-            return [makeSelection(self.textCursor())]
-        else:
+        rectangularSelectionCursors = self._rectangularSelection.cursors()
+        if rectangularSelectionCursors:
             return [makeSelection(cursor) \
-                        for cursor in self._rectangularSelectionCursors()]
-
-    def _rectangularSelections(self):
-        """Build list of extra selections for rectangular selection
-        """
-        selections = []
-        cursors = self._rectangularSelectionCursors()
-        if cursors:
-            color = self.palette().color(QPalette.Highlight)
-            for cursor in cursors:
-                selection = QTextEdit.ExtraSelection()
-                selection.format.setBackground(color)
-                selection.cursor = cursor
-                
-                selections.append(selection)
-
-        return selections
+                        for cursor in rectangularSelectionCursors]
+        else:
+            return [makeSelection(self.textCursor())]
 
     def _updateExtraSelections(self):
         """Highlight current line
@@ -1129,7 +1155,7 @@ class Qutepart(QPlainTextEdit):
                                                                      cursorColumnIndex)
         
         allSelections = self._currentLineExtraSelections() + \
-                        self._rectangularSelections() + \
+                        self._rectangularSelection.selections() + \
                         bracketSelections + \
                         self._userExtraSelections
 
