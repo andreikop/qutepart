@@ -5,9 +5,10 @@
 import os.path
 import logging
 
-from PyQt4.QtCore import QPoint, QRect, Qt, pyqtSignal
+from PyQt4.QtCore import QMimeData, QPoint, QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, QDialog, QFont, \
-                        QIcon, QKeyEvent, QKeySequence, QPainter, QPen, QPalette, QPlainTextEdit, \
+                        QIcon, QKeyEvent, QKeySequence, QPainter, QPen, QPalette, \
+                        QPlainTextEdit, \
                         QPixmap, QPrintDialog, QShortcut, QTextCharFormat, QTextCursor, \
                         QTextBlock, QTextEdit, QTextFormat, QWidget
 
@@ -362,6 +363,19 @@ class RectangularSelection:
                 selections.append(selection)
 
         return selections
+
+    def isActive(self):
+        """Some rectangle is selected"""
+        return self._start is not None
+    
+    def copy(self):
+        """Copy to the clipboard"""
+        data = QMimeData()
+        text = '\n'.join([cursor.selectedText() \
+                            for cursor in self.cursors()])
+        data.setText(text)
+        data.setData('text/rectangular-selection', text)
+        QApplication.clipboard().setMimeData(data)
 
 
 class Qutepart(QPlainTextEdit):
@@ -1048,6 +1062,8 @@ class Qutepart(QPlainTextEdit):
 
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
+        elif event.matches(QKeySequence.Copy) and self._rectangularSelection.isActive():
+            self._rectangularSelection.copy()
         elif self._rectangularSelection.isDeleteKeyEvent(event):
             self._rectangularSelection.onDeleteKeyEvent()
         elif event.key() == Qt.Key_Insert and event.modifiers() == Qt.NoModifier:
