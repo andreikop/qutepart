@@ -227,6 +227,8 @@ class RectangularSelection:
     """This class does not replresent any object, but is part of Qutepart
     It just groups together Qutepart rectangular selection methods and fields
     """
+    MIME_TYPE = 'text/rectangular-selection'
+    
     def __init__(self, qpart):
         self._qpart = qpart
         self._start = None
@@ -374,9 +376,40 @@ class RectangularSelection:
         text = '\n'.join([cursor.selectedText() \
                             for cursor in self.cursors()])
         data.setText(text)
-        data.setData('text/rectangular-selection', text)
+        data.setData(self.MIME_TYPE, text.encode('utf8'))
         QApplication.clipboard().setMimeData(data)
-
+    
+    def _indentUpTo(self, text, width):
+        """Add space to text, so text width will be at least width.
+        Return text, which must be added
+        """
+        visibleTextWidth = self._realToVisibleColumn(text, len(text))
+        diff = width - visibleTextWidth
+        if diff <= 0:
+            return ''
+        elif self._qpart.indentUseTabs and \
+           all([char == '\t' for char in text]):  # if using tabs and only tabs in text
+            return '\t' * (diff / self._qpart.indentWidth) + \
+                   ' ' * (diff % self._qpart.indentWidth)
+        else:
+            return ' ' * diff
+    
+    def paste(self, mimeData):
+        """Paste recrangular selection.
+        Add space at the beginning of line, if necessary
+        """
+        text = str(mimeData.data(self.MIME_TYPE)).decode('utf8')
+        lines = text.splitlines()
+        cursorLine, cursorCol = self._qpart.cursorPosition
+        with self._qpart:
+            for index, line in enumerate(lines):
+                currentLine = self._qpart.lines[cursorLine + index]
+                newLine = currentLine[:cursorCol] + \
+                          self._indentUpTo(currentLine, cursorCol) + \
+                          line + \
+                          currentLine[cursorCol:]
+                self._qpart.lines[cursorLine + index] = newLine
+        self._qpart.cursorPosition = cursorLine, cursorCol
 
 class Qutepart(QPlainTextEdit):
     '''Qutepart is based on QPlainTextEdit, and you can use QPlainTextEdit methods,
@@ -1444,6 +1477,13 @@ class Qutepart(QPlainTextEdit):
                     block = block.next()
         else:  # indent 1 line
             self._autoIndentBlock(startBlock, '')
+    
+    def insertFromMimeData(self, source):
+        pass # suppress docstring for non-public method
+        if source.hasFormat(self._rectangularSelection.MIME_TYPE):
+            self._rectangularSelection.paste(source)
+        else:
+            super(Qutepart, self).insertFromMimeData(source)
 
 
 def iterateBlocksFrom(block):
