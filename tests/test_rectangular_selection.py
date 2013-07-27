@@ -148,6 +148,18 @@ class Test(unittest.TestCase):
         self.assertEqual(self.qpart.text,
                          'asasdff')
 
+    def test_cut(self):
+        self.qpart.show()
+        self.qpart.text = 'asdf'
+        
+        for i in range(4):
+            QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_X, Qt.ControlModifier)
+        self.assertEqual(self.qpart.text, '')
+        
+        QTest.keyClick(self.qpart, Qt.Key_V, Qt.ControlModifier)
+        self.assertEqual(self.qpart.text, 'asdf')
+
 
 if __name__ == '__main__':
     unittest.main()

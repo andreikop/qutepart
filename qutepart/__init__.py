@@ -379,6 +379,12 @@ class RectangularSelection:
         data.setData(self.MIME_TYPE, text.encode('utf8'))
         QApplication.clipboard().setMimeData(data)
     
+    def cut(self):
+        """Cut action. Copy and delete
+        """
+        self.copy()
+        self.delete()
+    
     def _indentUpTo(self, text, width):
         """Add space to text, so text width will be at least width.
         Return text, which must be added
@@ -1102,6 +1108,8 @@ class Qutepart(QPlainTextEdit):
             self._insertNewBlock()
         elif event.matches(QKeySequence.Copy) and self._rectangularSelection.isActive():
             self._rectangularSelection.copy()
+        elif event.matches(QKeySequence.Cut) and self._rectangularSelection.isActive():
+            self._rectangularSelection.cut()
         elif self._rectangularSelection.isDeleteKeyEvent(event):
             self._rectangularSelection.delete()
         elif event.key() == Qt.Key_Insert and event.modifiers() == Qt.NoModifier:
