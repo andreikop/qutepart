@@ -118,6 +118,36 @@ class Test(unittest.TestCase):
         self.assertEqual(self.qpart.text,
                          u'фыва фыв')
 
+    def test_paste_replace_selection(self):
+        self.qpart.show()
+        self.qpart.text = 'asdf'
+        
+        for i in range(4):
+            QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_C, Qt.ControlModifier)
+        
+        QTest.keyClick(self.qpart, Qt.Key_End)
+        QTest.keyClick(self.qpart, Qt.Key_Left, Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_V, Qt.ControlModifier)
+        
+        self.assertEqual(self.qpart.text,
+                         'asdasdf')
+
+    def test_paste_replace_rectangular_selection(self):
+        self.qpart.show()
+        self.qpart.text = 'asdf'
+        
+        for i in range(4):
+            QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_C, Qt.ControlModifier)
+        
+        QTest.keyClick(self.qpart, Qt.Key_Left)
+        QTest.keyClick(self.qpart, Qt.Key_Left, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_V, Qt.ControlModifier)
+        
+        self.assertEqual(self.qpart.text,
+                         'asasdff')
+
 
 if __name__ == '__main__':
     unittest.main()

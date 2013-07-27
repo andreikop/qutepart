@@ -250,7 +250,7 @@ class RectangularSelection:
                (keyEvent.matches(QKeySequence.Delete) or \
                 (keyEvent.key() == Qt.Key_Backspace and keyEvent.modifiers() == Qt.NoModifier))
     
-    def onDeleteKeyEvent(self):
+    def delete(self):
         """Del or Backspace pressed. Delete selection"""
         with self._qpart:
             for cursor in self.cursors():
@@ -398,6 +398,11 @@ class RectangularSelection:
         """Paste recrangular selection.
         Add space at the beginning of line, if necessary
         """
+        if self.isActive():
+            self.delete()
+        elif self._qpart.textCursor().hasSelection():
+            self._qpart.textCursor().deleteChar()
+        
         text = str(mimeData.data(self.MIME_TYPE)).decode('utf8')
         lines = text.splitlines()
         cursorLine, cursorCol = self._qpart.cursorPosition
@@ -1098,7 +1103,7 @@ class Qutepart(QPlainTextEdit):
         elif event.matches(QKeySequence.Copy) and self._rectangularSelection.isActive():
             self._rectangularSelection.copy()
         elif self._rectangularSelection.isDeleteKeyEvent(event):
-            self._rectangularSelection.onDeleteKeyEvent()
+            self._rectangularSelection.delete()
         elif event.key() == Qt.Key_Insert and event.modifiers() == Qt.NoModifier:
             self.setOverwriteMode(not self.overwriteMode())
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
