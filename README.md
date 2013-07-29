@@ -13,6 +13,7 @@ Component has been created for [Enki editor](http://enki-editor.org) as replacem
 * Matching braces highlighting
 * Autocompletion based on document content
 * Marking too long lines with red line
+* Rectangular selection and copy-paste
 
 ## Building and installation
 #### 1. Install [pcre](http://www.pcre.org/) and development files
