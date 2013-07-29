@@ -16,7 +16,7 @@ all install:
 
 changelog-update:
 	cd debian && \
-		$(ENV) dch -v $(VERSION)-1~ppa1 -b --distribution lucid
+		$(ENV) dch --check-dirname-regex qutepart -v $(VERSION)-1~ppa1 -b --distribution lucid
 
 dsc:
 	rm -rf dist
