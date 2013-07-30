@@ -1,3 +1,15 @@
+python-qutepart (1.0.2-1~ppa1) precise; urgency=low
+
+  * Target distribution changed to precise. Python 2.6 not supported
+
+ -- Andrei Kopats <hlamer@tut.by>  Tue, 30 Jul 2013 08:09:51 +0300
+
+python-qutepart (1.0.1-1~ppa1) lucid; urgency=low
+
+  * Added python-qt4 to the build dependencies list
+
+ -- Andrei Kopats <hlamer@tut.by>  Mon, 29 Jul 2013 22:35:03 +0300
+
 python-qutepart (1.0.0-1~ppa1) lucid; urgency=low
 
   * Initial release

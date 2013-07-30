@@ -16,6 +16,12 @@ Component has been created for [Enki editor](http://enki-editor.org) as replacem
 * Rectangular selection and copy-paste
 
 ## Building and installation
+Qutepart depends on:
+
+* Python 2.7
+* PyQt4
+
+
 #### 1. Install [pcre](http://www.pcre.org/) and development files
 On Debian, Ubuntu and other Linuxes install package ``libpcreX-dev``, where ``X`` is available in your distribution pcre version.
 For other OSes - see instructions on pcre website
