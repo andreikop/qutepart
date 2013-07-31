@@ -60,7 +60,7 @@ class GlobalTimer:
 class SyntaxHighlighter(QObject):
     
     # when initially parsing text, it is better, if highlighted text is drawn without flickering
-    _MAX_PARSING_TIME_BIG_CHANGE_SEC = 0.4
+    _MAX_PARSING_TIME_BIG_CHANGE_SEC = 0.7
     # when user is typing text - response shall be quick
     _MAX_PARSING_TIME_SMALL_CHANGE_SEC = 0.02
 
