@@ -148,6 +148,23 @@ class Test(unittest.TestCase):
         self.assertEqual(self.qpart.text,
                          'asasdff')
 
+    def test_paste_new_lines(self):
+        self.qpart.show()
+        self.qpart.text = 'a\nb\nc\nd'
+        
+        for i in range(4):
+            QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_C, Qt.ControlModifier)
+        
+        self.qpart.text = 'x\ny'
+        self.qpart.cursorPosition = (1, 1)
+        
+        QTest.keyClick(self.qpart, Qt.Key_V, Qt.ControlModifier)
+        
+        self.assertEqual(self.qpart.text,
+                         'x\nya\n b\n c\n d')
+    
     def test_cut(self):
         self.qpart.show()
         self.qpart.text = 'asdf'

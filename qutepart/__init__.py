@@ -412,6 +412,10 @@ class RectangularSelection:
         text = str(mimeData.data(self.MIME_TYPE)).decode('utf8')
         lines = text.splitlines()
         cursorLine, cursorCol = self._qpart.cursorPosition
+        if cursorLine + len(lines) > len(self._qpart.lines):
+           for i in range(cursorLine + len(lines) - len(self._qpart.lines)):
+               self._qpart.lines.append('')
+        
         with self._qpart:
             for index, line in enumerate(lines):
                 currentLine = self._qpart.lines[cursorLine + index]
