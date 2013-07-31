@@ -314,15 +314,17 @@ class RectangularSelection:
         """
         if visiblePos == 0:
             return 0
-
-        currentIndex = 1
-        for currentVisiblePos in self._visibleCharPositionGenerator(text):
-            if currentVisiblePos >= visiblePos:
-                return currentIndex - 1
-            currentIndex += 1
-        
-        return None
-
+        elif not '\t' in text:
+            return visiblePos
+        else:
+            currentIndex = 1
+            for currentVisiblePos in self._visibleCharPositionGenerator(text):
+                if currentVisiblePos >= visiblePos:
+                    return currentIndex - 1
+                currentIndex += 1
+            
+            return None
+    
     def cursors(self):
         """Cursors for rectangular selection.
         1 cursor for every line

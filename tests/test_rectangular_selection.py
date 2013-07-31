@@ -30,6 +30,34 @@ class Test(unittest.TestCase):
         self.qpart.hide()
         del self.qpart
 
+    def test_real_to_visible(self):
+        self.qpart.text = 'abcdfg'
+        self.assertEqual(0, self.qpart._rectangularSelection._realToVisibleColumn(self.qpart.text, 0))
+        self.assertEqual(2, self.qpart._rectangularSelection._realToVisibleColumn(self.qpart.text, 2))
+        self.assertEqual(6, self.qpart._rectangularSelection._realToVisibleColumn(self.qpart.text, 6))
+        
+        self.qpart.text = '\tab\tcde\t'
+        self.assertEqual(0, self.qpart._rectangularSelection._realToVisibleColumn(self.qpart.text, 0))
+        self.assertEqual(4, self.qpart._rectangularSelection._realToVisibleColumn(self.qpart.text, 1))
+        self.assertEqual(5, self.qpart._rectangularSelection._realToVisibleColumn(self.qpart.text, 2))
+        self.assertEqual(8, self.qpart._rectangularSelection._realToVisibleColumn(self.qpart.text, 4))
+        self.assertEqual(12, self.qpart._rectangularSelection._realToVisibleColumn(self.qpart.text, 8))
+
+    def test_visible_to_real(self):
+        self.qpart.text = 'abcdfg'
+        self.assertEqual(0, self.qpart._rectangularSelection._visibleToRealColumn(self.qpart.text, 0))
+        self.assertEqual(2, self.qpart._rectangularSelection._visibleToRealColumn(self.qpart.text, 2))
+        self.assertEqual(6, self.qpart._rectangularSelection._visibleToRealColumn(self.qpart.text, 6))
+        
+        self.qpart.text = '\tab\tcde\t'
+        self.assertEqual(0, self.qpart._rectangularSelection._visibleToRealColumn(self.qpart.text, 0))
+        self.assertEqual(1, self.qpart._rectangularSelection._visibleToRealColumn(self.qpart.text, 4))
+        self.assertEqual(2, self.qpart._rectangularSelection._visibleToRealColumn(self.qpart.text, 5))
+        self.assertEqual(4, self.qpart._rectangularSelection._visibleToRealColumn(self.qpart.text, 8))
+        self.assertEqual(8, self.qpart._rectangularSelection._visibleToRealColumn(self.qpart.text, 12))
+        
+        self.assertEqual(None, self.qpart._rectangularSelection._visibleToRealColumn(self.qpart.text, 13))
+
     def test_basic(self):
         self.qpart.show()
         for key in [Qt.Key_Delete, Qt.Key_Backspace]:
