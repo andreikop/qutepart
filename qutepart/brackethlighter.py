@@ -28,7 +28,7 @@ class BracketHighlighter:
         Raise UserWarning if time is over
         """
         # Chars in the start line
-        endTime = time.clock() + self._MAX_SEARCH_TIME_SEC
+        endTime = time.time() + self._MAX_SEARCH_TIME_SEC
         for columnIndex, char in list(enumerate(block.text()))[startColumnIndex:]:
             yield block, columnIndex, char
         block = block.next()
@@ -38,7 +38,7 @@ class BracketHighlighter:
             for columnIndex, char in enumerate(block.text()):
                 yield block, columnIndex, char
             
-            if time.clock() > endTime:
+            if time.time() > endTime:
                 raise UserWarning('Time is over')
             
             block = block.next()
@@ -48,7 +48,7 @@ class BracketHighlighter:
         Raise UserWarning if time is over
         """
         # Chars in the start line
-        endTime = time.clock() + self._MAX_SEARCH_TIME_SEC
+        endTime = time.time() + self._MAX_SEARCH_TIME_SEC
         for columnIndex, char in reversed(list(enumerate(block.text()[:startColumnIndex]))):
             yield block, columnIndex, char
         block = block.previous()
@@ -58,7 +58,7 @@ class BracketHighlighter:
             for columnIndex, char in reversed(list(enumerate(block.text()))):
                 yield block, columnIndex, char
             
-            if time.clock() > endTime:
+            if time.time() > endTime:
                 raise UserWarning('Time is over')
             
             block = block.previous()

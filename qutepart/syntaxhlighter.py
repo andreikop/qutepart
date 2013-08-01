@@ -60,7 +60,7 @@ class GlobalTimer:
 class SyntaxHighlighter(QObject):
     
     # when initially parsing text, it is better, if highlighted text is drawn without flickering
-    _MAX_PARSING_TIME_BIG_CHANGE_SEC = 0.7
+    _MAX_PARSING_TIME_BIG_CHANGE_SEC = 0.4
     # when user is typing text - response shall be quick
     _MAX_PARSING_TIME_SMALL_CHANGE_SEC = 0.02
 
@@ -155,7 +155,7 @@ class SyntaxHighlighter(QObject):
     
     def _wasChangedJustBefore(self):
         """Check if ANY Qutepart instance was changed just before"""
-        return time.clock() <= SyntaxHighlighter._lastChangeTime + 1
+        return time.time() <= SyntaxHighlighter._lastChangeTime + 1
     
     def _onContentsChange(self, from_, charsRemoved, charsAdded, zeroTimeout=False):
         firstBlock = self._document.findBlock(from_)
@@ -181,7 +181,7 @@ class SyntaxHighlighter(QObject):
         else:
             timeout = self._MAX_PARSING_TIME_SMALL_CHANGE_SEC
         
-        SyntaxHighlighter._lastChangeTime = time.clock()
+        SyntaxHighlighter._lastChangeTime = time.time()
         
         self._highlighBlocks(firstBlock, untilBlock, timeout)
 
@@ -190,13 +190,13 @@ class SyntaxHighlighter(QObject):
                              self._MAX_PARSING_TIME_SMALL_CHANGE_SEC)
 
     def _highlighBlocks(self, fromBlock, atLeastUntilBlock, timeout):
-        endTime = time.clock() + timeout
+        endTime = time.time() + timeout
 
         block = fromBlock
         lineData = self._lineData(block.previous())
         
         while block.isValid() and block != atLeastUntilBlock:
-            if time.clock() >= endTime:  # time is over, schedule parsing later and release event loop
+            if time.time() >= endTime:  # time is over, schedule parsing later and release event loop
                 self._pendingBlock = block
                 self._pendingAtLeastUntilBlock = atLeastUntilBlock
                 self._globalTimer.scheduleCallback(self._onContinueHighlighting)
@@ -221,7 +221,7 @@ class SyntaxHighlighter(QObject):
         # reached atLeastUntilBlock, now parse next only while data changed
         prevLineData = self._lineData(block)
         while block.isValid():
-            if time.clock() >= endTime:  # time is over, schedule parsing later and release event loop
+            if time.time() >= endTime:  # time is over, schedule parsing later and release event loop
                 self._pendingBlock = block
                 self._pendingAtLeastUntilBlock = atLeastUntilBlock
                 self._globalTimer.scheduleCallback(self._onContinueHighlighting)
