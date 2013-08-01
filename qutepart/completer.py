@@ -9,32 +9,36 @@ from PyQt4.QtGui import QCursor, QListView, QStyle
 from qutepart.htmldelegate import HTMLDelegate
 
 
+_wordPattern = "\w+"
+_wordRegExp = re.compile(_wordPattern)
+_wordAtEndRegExp = re.compile(_wordPattern + '$')
+_wordAtStartRegExp = re.compile('^' + _wordPattern)
+
+
 class _CompletionModel(QAbstractItemModel):
     """QAbstractItemModel implementation for a list of completion variants
     
     words attribute contains all words
     canCompleteText attribute contains text, which may be inserted with tab
     """
-    def __init__(self, wordBeforeCursor, words, commonStart):
+    def __init__(self, qpart):
         QAbstractItemModel.__init__(self)
         
-        self._setData(wordBeforeCursor, words, commonStart)
+        self._wordSet = self._makeWordSet(qpart)
 
-    def _setData(self, wordBeforeCursor, words, commonStart):
+    def setData(self, wordBeforeCursor, wholeWord):
         """Set model information
         """
         self._typedText = wordBeforeCursor
-        self.words = words
+        self.words = self._makeListOfCompletions(wordBeforeCursor, wholeWord)
+        commonStart = self._commonWordStart(self.words)
         self.canCompleteText = commonStart[len(wordBeforeCursor):]
         
         self.layoutChanged.emit()
 
-    def updateData(self, wordBeforeCursor, words, commonStart):
-        """Set model information
-        """
-        self._setData(wordBeforeCursor, words, commonStart)
-        self.layoutChanged.emit()
-
+    def hasWords(self):
+        return len(self.words) > 0
+    
     def data(self, index, role):
         """QAbstractItemModel method implementation
         """
@@ -65,6 +69,37 @@ class _CompletionModel(QAbstractItemModel):
         """Get current typed text
         """
         return self._typedText
+
+    def _commonWordStart(self, words):
+        """Get common start of all words.
+        i.e. for ['blablaxxx', 'blablayyy', 'blazzz'] common start is 'bla'
+        """
+        if not words:
+            return ''
+        
+        length = 0
+        firstWord = words[0]
+        otherWords = words[1:]
+        for index, char in enumerate(firstWord):
+            if not all([word[index] == char for word in otherWords]):
+                break
+            length = index + 1
+        
+        return firstWord[:length]
+
+    def _makeWordSet(self, qpart):
+        """Make a set of words, which shall be completed, from text
+        """
+        return set(_wordRegExp.findall(qpart.toPlainText()))
+
+    def _makeListOfCompletions(self, wordBeforeCursor, wholeWord):
+        """Make list of completions, which shall be shown
+        """
+        onlySuitable = [word for word in self._wordSet \
+                                if word.startswith(wordBeforeCursor) and \
+                                   word != wholeWord]
+        
+        return sorted(onlySuitable)
     
     """Trivial QAbstractItemModel methods implementation
     """
@@ -252,11 +287,6 @@ class _CompletionList(QListView):
 class Completer(QObject):
     """Object listens Qutepart widget events, computes and shows autocompletion lists
     """
-    _wordPattern = "\w+"
-    _wordRegExp = re.compile(_wordPattern)
-    _wordAtEndRegExp = re.compile(_wordPattern + '$')
-    _wordAtStartRegExp = re.compile('^' + _wordPattern)
-    
     def __init__(self, qpart):
         QObject.__init__(self, qpart)
         
@@ -297,26 +327,27 @@ class Completer(QObject):
         """
         if self._qpart.completionEnabled:
             wordBeforeCursor = self._wordBeforeCursor()
+            wholeWord = wordBeforeCursor + self._wordAfterCursor()
+
             if wordBeforeCursor:
                 if len(wordBeforeCursor) >= self._qpart.completionThreshold or \
                    self._completionOpenedManually or \
                    requestedByUser:
-        
-                    words = self._makeListOfCompletions(wordBeforeCursor)
-                    if words:
-                        commonStart = self._commonWordStart(words)
-                        
-                        if self._widget is None:
-                            model = _CompletionModel(wordBeforeCursor, words, commonStart)
+                    if self._widget is None:
+                        model = _CompletionModel(self._qpart)
+                        model.setData(wordBeforeCursor, wholeWord)
+                        if model.hasWords():
                             self._widget = _CompletionList(self._qpart, model)
                             self._widget.closeMe.connect(self._closeCompletion)
                             self._widget.itemSelected.connect(self._onCompletionListItemSelected)
                             self._widget.tabPressed.connect(self._onCompletionListTabPressed)
-                        else:
-                            self._widget.model().updateData(wordBeforeCursor, words, commonStart)
+                            return True
+                    else:
+                        self._widget.model().setData(wordBeforeCursor, wholeWord)
+                        if self._widget.model().hasWords():
                             self._widget.updateGeometry()
-                        return True
-                
+                            return True
+        
         self._closeCompletion()
         return False
 
@@ -334,7 +365,7 @@ class Completer(QObject):
         """
         cursor = self._qpart.textCursor()
         textBeforeCursor = cursor.block().text()[:cursor.positionInBlock()]
-        match = self._wordAtEndRegExp.search(textBeforeCursor)
+        match = _wordAtEndRegExp.search(textBeforeCursor)
         if match:
             return match.group(0)
         else:
@@ -345,44 +376,11 @@ class Completer(QObject):
         """
         cursor = self._qpart.textCursor()
         textAfterCursor = cursor.block().text()[cursor.positionInBlock():]
-        match = self._wordAtStartRegExp.search(textAfterCursor)
+        match = _wordAtStartRegExp.search(textAfterCursor)
         if match:
             return match.group(0)
         else:
             return ''
-    
-    def _makeWordSet(self):
-        """Make a set of words, which shall be completed, from text
-        """
-        return set(self._wordRegExp.findall(self._qpart.toPlainText()))
-
-    def _makeListOfCompletions(self, wordBeforeCursor):
-        """Make list of completions, which shall be shown
-        """
-        wholeWord = wordBeforeCursor + self._wordAfterCursor()
-        allWords = self._makeWordSet()
-        onlySuitable = [word for word in allWords \
-                                if word.startswith(wordBeforeCursor) and \
-                                   word != wholeWord]
-        
-        return sorted(onlySuitable)
-    
-    def _commonWordStart(self, words):
-        """Get common start of all words.
-        i.e. for ['blablaxxx', 'blablayyy', 'blazzz'] common start is 'bla'
-        """
-        if not words:
-            return ''
-        
-        length = 0
-        firstWord = words[0]
-        otherWords = words[1:]
-        for index, char in enumerate(firstWord):
-            if not all([word[index] == char for word in otherWords]):
-                break
-            length = index + 1
-        
-        return firstWord[:length]
     
     def _onCompletionListItemSelected(self, index):
         """Item selected. Insert completion to editor
