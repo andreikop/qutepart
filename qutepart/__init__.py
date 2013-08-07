@@ -228,7 +228,8 @@ class RectangularSelection:
     It just groups together Qutepart rectangular selection methods and fields
     """
     MIME_TYPE = 'text/rectangular-selection'
-    
+    _MAX_SIZE = 256
+        
     def __init__(self, qpart):
         self._qpart = qpart
         self._start = None
@@ -333,6 +334,13 @@ class RectangularSelection:
         if self._start is not None:
             startLine, startVisibleCol = self._start
             currentLine, currentCol = self._qpart.cursorPosition
+            if abs(startLine - currentLine) > self._MAX_SIZE or \
+               abs(startVisibleCol - currentCol) > self._MAX_SIZE:
+                # Too big rectangular selection freezes the GUI
+                self._qpart.userWarning.emit('Rectangular selection area is too big')
+                self._start = None
+                return []
+            
             currentBlockText = self._qpart.textCursor().block().text()
             currentVisibleCol = self._realToVisibleColumn(currentBlockText, currentCol)
 
@@ -427,6 +435,7 @@ class RectangularSelection:
                           currentLine[cursorCol:]
                 self._qpart.lines[cursorLine + index] = newLine
         self._qpart.cursorPosition = cursorLine, cursorCol
+
 
 class Qutepart(QPlainTextEdit):
     '''Qutepart is based on QPlainTextEdit, and you can use QPlainTextEdit methods,
@@ -539,6 +548,7 @@ class Qutepart(QPlainTextEdit):
     
     **Signals**
     
+    * ``userWarning(text)``` Warning, which shall be shown to the user on status bar. I.e. 'Rectangular selection area is too big'
     * ``languageChanged(langName)``` Language has changed. See also ``language()``
     * ``indentWidthChanged(int)`` Indentation width changed. See also ``indentWidth``
     * ``indentUseTabsChanged(bool)`` Indentation uses tab property changed. See also ``indentUseTabs``
@@ -547,6 +557,7 @@ class Qutepart(QPlainTextEdit):
     **Public methods**
     '''
     
+    userWarning = pyqtSignal(unicode)
     languageChanged = pyqtSignal(unicode)
     indentWidthChanged = pyqtSignal(int)
     indentUseTabsChanged = pyqtSignal(bool)

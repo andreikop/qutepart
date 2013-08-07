@@ -85,6 +85,8 @@ def main():
         for actionName in v:
             menuObject.addAction(getattr(qpart, actionName))
     
+    qpart.userWarning.connect(lambda text: window.statusBar().showMessage(text, 3000))
+    
     window.resize(800, 600)
     window.show()
     

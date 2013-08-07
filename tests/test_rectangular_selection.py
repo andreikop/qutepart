@@ -205,6 +205,18 @@ class Test(unittest.TestCase):
         QTest.keyClick(self.qpart, Qt.Key_V, Qt.ControlModifier)
         self.assertEqual(self.qpart.text, 'asdf')
 
+    def test_warning(self):
+        self.qpart.show()
+        self.qpart.text = 'a\n' * 300
+        warning = [None]
+        def _saveWarning(text):
+            warning[0] = text
+        self.qpart.userWarning.connect(_saveWarning)
+        
+        QTest.keyClick(self.qpart, Qt.Key_End, Qt.AltModifier | Qt.ShiftModifier | Qt.ControlModifier)
+        
+        self.assertEqual(warning[0], 'Rectangular selection area is too big')
+
 
 if __name__ == '__main__':
     unittest.main()
