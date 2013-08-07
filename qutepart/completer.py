@@ -2,6 +2,7 @@
 """
 
 import re
+import time
 
 from PyQt4.QtCore import pyqtSignal, QAbstractItemModel, QEvent, QModelIndex, QObject, QSize, Qt, QTimer, Qt
 from PyQt4.QtGui import QCursor, QListView, QStyle
@@ -309,6 +310,8 @@ class Completer(QObject):
     """
     _globalUpdateWordSetTimer = _GlobalUpdateWordSetTimer()
     
+    _WORD_SET_UPDATE_MAX_TIME_SEC = 0.4
+    
     def __init__(self, qpart):
         QObject.__init__(self, qpart)
         
@@ -333,7 +336,16 @@ class Completer(QObject):
     def _updateWordSet(self):
         """Make a set of words, which shall be completed, from text
         """
-        self._wordSet = _wordRegExp.findall(self._qpart.text)
+        self._wordSet = set()
+        
+        start = time.time()
+        
+        for line in self._qpart.lines:
+            for match in _wordRegExp.findall(line):
+                self._wordSet.add(match)
+            if time.time() - start > self._WORD_SET_UPDATE_MAX_TIME_SEC:
+                """It is better to have incomplete word set, than to freeze the GUI"""
+                break
 
     def invokeCompletion(self):
         """Invoke completion manually"""

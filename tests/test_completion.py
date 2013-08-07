@@ -13,7 +13,10 @@ from PyQt4.QtTest import QTest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.insert(0, os.path.abspath('.'))
+
 from qutepart import Qutepart
+import qutepart.completer
+qutepart.completer._GlobalUpdateWordSetTimer._IDLE_TIMEOUT_MS = 0
 
 
 class Test(unittest.TestCase):
@@ -32,6 +35,10 @@ class Test(unittest.TestCase):
 
     def test_down_selects_first(self):
         self.qpart.text = 'aaaa\nbbbb\ncccX\ndddd\ncccY'
+        
+        while QApplication.hasPendingEvents():
+            QApplication.processEvents()
+        
         QTest.keyClicks(self.qpart, "ccc")
         QTest.keyClick(self.qpart, Qt.Key_Down)
         QTest.keyClick(self.qpart, Qt.Key_Enter)
@@ -40,6 +47,11 @@ class Test(unittest.TestCase):
         
     def test_down_selects_second(self):
         self.qpart.text = 'aaaa\nbbbb\ncccX\ndddd\ncccY'
+        
+        while QApplication.hasPendingEvents():
+            QApplication.processEvents()
+        
+        QTest.keyClicks(self.qpart, "ccc")
         QTest.keyClicks(self.qpart, "ccc")
         QTest.keyClick(self.qpart, Qt.Key_Down)
         QTest.keyClick(self.qpart, Qt.Key_Down)
@@ -50,6 +62,11 @@ class Test(unittest.TestCase):
     @unittest.skip("Crashes Qt 4.8.3")
     def test_click_selects_first(self):
         self.qpart.text = 'aaaa\nbbbb\ncccX\ndddd\ncccY'
+        
+        while QApplication.hasPendingEvents():
+            QApplication.processEvents()
+        
+        QTest.keyClicks(self.qpart, "ccc")
         QTest.keyClicks(self.qpart, "ccc")
         QTest.mouseClick(self.qpart, Qt.LeftButton)
         QTest.keyClick(self.qpart, Qt.Key_Enter)
@@ -57,6 +74,11 @@ class Test(unittest.TestCase):
         
     def test_tab_completes(self):
         self.qpart.text = 'aaaaa\naaaaaXXXXX\n'
+        
+        while QApplication.hasPendingEvents():
+            QApplication.processEvents()
+        
+        QTest.keyClicks(self.qpart, "ccc")
         self.qpart.cursorPosition = (2, 0)
         QTest.keyClicks(self.qpart, "aaa")
         QTest.keyClick(self.qpart, Qt.Key_Tab)
@@ -68,6 +90,11 @@ class Test(unittest.TestCase):
         self._window.show()
         
         self.qpart.text = 'aaaaa\naaaaaXXXXX\n'
+        
+        while QApplication.hasPendingEvents():
+            QApplication.processEvents()
+        
+        QTest.keyClicks(self.qpart, "ccc")
         self.qpart.cursorPosition = (2, 0)
         QTest.keyClicks(self.qpart, "a")
         
