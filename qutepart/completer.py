@@ -15,16 +15,41 @@ _wordAtEndRegExp = re.compile(_wordPattern + '$')
 _wordAtStartRegExp = re.compile('^' + _wordPattern)
 
 
+class _GlobalUpdateWordSetTimer:
+    """Timer updates word set, when editor is idle. (5 sec. after last change)
+    Timer is global, for avoid situation, when all instances
+    update set simultaneously
+    """
+    _IDLE_TIMEOUT_MS = 3000
+    
+    def __init__(self):
+        self._timer = QTimer()
+        self._timer.setSingleShot(True)
+        self._timer.timeout.connect(self._onTimer)
+        self._scheduledMethods = []
+    
+    def schedule(self, method):
+        if not method in self._scheduledMethods:
+            self._scheduledMethods.append(method)
+        self._timer.start(self._IDLE_TIMEOUT_MS)
+    
+    def _onTimer(self):
+        method = self._scheduledMethods.pop()
+        method()
+        if self._scheduledMethods:
+            self._timer.start(self._IDLE_TIMEOUT_MS)
+
+
 class _CompletionModel(QAbstractItemModel):
     """QAbstractItemModel implementation for a list of completion variants
     
     words attribute contains all words
     canCompleteText attribute contains text, which may be inserted with tab
     """
-    def __init__(self, qpart):
+    def __init__(self, wordSet):
         QAbstractItemModel.__init__(self)
         
-        self._wordSet = self._makeWordSet(qpart)
+        self._wordSet = wordSet
 
     def setData(self, wordBeforeCursor, wholeWord):
         """Set model information
@@ -86,11 +111,6 @@ class _CompletionModel(QAbstractItemModel):
             length = index + 1
         
         return firstWord[:length]
-
-    def _makeWordSet(self, qpart):
-        """Make a set of words, which shall be completed, from text
-        """
-        return set(_wordRegExp.findall(qpart.toPlainText()))
 
     def _makeListOfCompletions(self, wordBeforeCursor, wholeWord):
         """Make list of completions, which shall be shown
@@ -287,6 +307,8 @@ class _CompletionList(QListView):
 class Completer(QObject):
     """Object listens Qutepart widget events, computes and shows autocompletion lists
     """
+    _globalUpdateWordSetTimer = _GlobalUpdateWordSetTimer()
+    
     def __init__(self, qpart):
         QObject.__init__(self, qpart)
         
@@ -294,12 +316,24 @@ class Completer(QObject):
         self._widget = None
         self._completionOpenedManually = False
         
+        self._wordSet = None
+        
         qpart.installEventFilter(self)
+        qpart.textChanged.connect(self._onTextChanged)
     
     def __del__(self):
         """Close completion widget, if exists
         """
         self._closeCompletion()
+
+    def _onTextChanged(self):
+        """Text in the qpart changed. Update word set"""
+        self._globalUpdateWordSetTimer.schedule(self._updateWordSet)
+
+    def _updateWordSet(self):
+        """Make a set of words, which shall be completed, from text
+        """
+        self._wordSet = _wordRegExp.findall(self._qpart.text)
 
     def invokeCompletion(self):
         """Invoke completion manually"""
@@ -325,7 +359,7 @@ class Completer(QObject):
         """Invoke completion, if available. Called after text has been typed in qpart
         Returns True, if invoked
         """
-        if self._qpart.completionEnabled:
+        if self._qpart.completionEnabled and self._wordSet is not None:
             wordBeforeCursor = self._wordBeforeCursor()
             wholeWord = wordBeforeCursor + self._wordAfterCursor()
 
@@ -334,7 +368,7 @@ class Completer(QObject):
                    self._completionOpenedManually or \
                    requestedByUser:
                     if self._widget is None:
-                        model = _CompletionModel(self._qpart)
+                        model = _CompletionModel(self._wordSet)
                         model.setData(wordBeforeCursor, wholeWord)
                         if model.hasWords():
                             self._widget = _CompletionList(self._qpart, model)
