@@ -21,7 +21,7 @@ class _GlobalUpdateWordSetTimer:
     Timer is global, for avoid situation, when all instances
     update set simultaneously
     """
-    _IDLE_TIMEOUT_MS = 3000
+    _IDLE_TIMEOUT_MS = 1000
     
     def __init__(self):
         self._timer = QTimer()
