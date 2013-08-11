@@ -4,6 +4,7 @@ import sys
 
 from distutils.core import setup, Extension
 import distutils.ccompiler
+import distutils.sysconfig
 
 import qutepart
 
@@ -21,6 +22,23 @@ extension = Extension('qutepart.syntax.cParser',
 
 def _checkDependencies():
     compiler = distutils.ccompiler.new_compiler()
+    """check if function without parameters from stdlib can be called
+    There should be better way to check, if C compiler is installed
+    """
+    if not compiler.has_function('rand', includes = ['stdlib.h']):
+        print "It seems like C compiler is not installed or not operable."
+        return False
+    
+    if not compiler.has_function('Py_GetVersion',
+                                 includes = ['Python.h'],
+                                 include_dirs=[distutils.sysconfig.get_python_inc()],
+                                 libraries = ['Python'],
+                                 library_dirs = [distutils.sysconfig.get_python_lib()]):
+        print "Failed to find Python headers."
+        print "\tTry to install python-dev package"
+        print "\tIf not standard directories are used, set CFLAGS and LDFLAGS environment variables"
+        return False
+    
     if not compiler.has_function('pcre_version', includes = ['pcre.h'], libraries = ['pcre']):
         print "Failed to find pcre library."
         print "\tTry to install libpcre{version}-dev package, or go to http://pcre.org"
