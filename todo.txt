@@ -1,6 +1,4 @@
 fixme:
-  slow edit of the strace
-  completer freezes editor on big file
 
 first release
   indenters                           4     done 06.04.13
