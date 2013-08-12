@@ -1,4 +1,4 @@
-python-qutepart (1.0.0-1~ppa1) ubuntuseries; urgency=low
+python-qutepart (1.0.0-1~ppa1) precise; urgency=low
 
   * Initial release
 

@@ -16,25 +16,37 @@ all install:
 
 changelog-update:
 	cd debian && \
-		$(ENV) dch --check-dirname-regex qutepart -v $(VERSION)-1~ppa1 -b --distribution precise
+		$(ENV) dch --check-dirname-regex qutepart -v $(VERSION)-1~ppa1 -b --distribution ubuntuseries
 
-dsc:
+dist/${ARCHIVE}:
 	rm -rf dist
-	rm -rf build
 	./setup.py sdist
+
+prepare-build:
+	rm -rf build
 	mkdir build
 	cp dist/${ARCHIVE} build/${DEBIGAN_ORIG_ARCHIVE}
 	cd build && tar -xf ${DEBIGAN_ORIG_ARCHIVE}
 	cp -r debian build/${PACKAGE_NAME}-${VERSION}
+
+dput-%:
+	git checkout debian/changelog
+	sed -i s/ubuntuseries/$*/g ../../debian/changelog
+	$(ENV) debuild -us -uc -S
+	$(ENV) debsign ../*.changes
+	dput enki *.changes
+	git checkout debian/changelog
+
+dput: dist/${ARCHIVE} prepare-build
+	git checkout debian/changelog
 	cd build/${PACKAGE_NAME}-${VERSION} && \
-		$(ENV) debuild -us -uc -S
-
-	cd build/${PACKAGE_NAME}-${VERSION} && \
-		$(ENV) debsign ../*.changes
-
-dput: dsc
-	cd build && dput enki *.changes
-
+		for series in precise quantal raring; do \
+			sed -i s/ubuntuseries/$$series/g ../../debian/changelog && \
+			$(ENV) debuild -us -uc -S && \
+			$(ENV) debsign ../*.changes && \
+			dput enki *.changes; \
+		done
+	
 deb: dsc
 	cd build/$(PACKAGE_NAME)-$(VERSION) && debuild
 
