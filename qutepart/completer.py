@@ -249,12 +249,12 @@ class _CompletionList(QListView):
                spaceAbove > self.minimumHeight():
                 height = spaceAbove
                 width = width + SCROLLBAR_WIDTH
-            yPos = cursorRect.top() - height
+            yPos = max(3, cursorRect.top() - height)
 
         xPos = cursorRect.right() - self._horizontalShift()
         
         if xPos + width + WIDGET_BORDER_MARGIN > parentSize.width():
-            xPos = parentSize.width() - WIDGET_BORDER_MARGIN - width
+            xPos = max(3, parentSize.width() - WIDGET_BORDER_MARGIN - width)
         
         self.setGeometry(xPos, yPos, width, height)
         self._closeIfNotUpdatedTimer.stop()
