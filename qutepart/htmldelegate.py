@@ -19,10 +19,12 @@ _HTML_ESCAPE_TABLE = \
     "\t": "&nbsp;&nbsp;&nbsp;&nbsp;",
 }
 
+
 def htmlEscape(text):
     """Replace special HTML symbols with escase sequences
     """
     return "".join(_HTML_ESCAPE_TABLE.get(c,c) for c in text)
+
 
 class HTMLDelegate(QStyledItemDelegate):
     """QStyledItemDelegate implementation. Draws HTML
@@ -59,7 +61,10 @@ class HTMLDelegate(QStyledItemDelegate):
         textRect = style.subElementRect(QStyle.SE_ItemViewItemText, options)
         painter.save()
         painter.translate(textRect.topLeft())
-        painter.setClipRect(textRect.translated(-textRect.topLeft()))
+        """Original example contained line
+            painter.setClipRect(textRect.translated(-textRect.topLeft()))
+        but text is drawn clipped with it on kubuntu 12.04
+        """
         doc.documentLayout().draw(painter, ctx)
 
         painter.restore()
