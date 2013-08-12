@@ -15,6 +15,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, os.path.abspath('.'))
 from qutepart import Qutepart
 
+import qutepart.completer
+qutepart.completer._GlobalUpdateWordSetTimer._IDLE_TIMEOUT_MS = 0
+
 class _BaseTest(unittest.TestCase):
     """Base class for tests
     """
@@ -224,6 +227,8 @@ class Completion(_BaseTest):
         super(Completion, self).setUp()
         self.qpart.text = 'completableWord\n'
         self.qpart.cursorPosition = (1, 0)
+        while QApplication.hasPendingEvents():
+            QApplication.processEvents()
 
     def test_completion_enabled(self):
         self._assertNotVisible()
