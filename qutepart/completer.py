@@ -77,9 +77,9 @@ class _CompletionModel(QAbstractItemModel):
                 # NOTE foreground colors are hardcoded, but I can't set background color of selected item (Qt bug?)
                 # might look bad on some color themes
                 return '<html>' \
-                            '<font color="#000000">%s</font>' \
+                            '%s' \
                             '<font color="#e80000">%s</font>' \
-                            '<font color="#000000">%s</font>' \
+                            '%s' \
                         '</html>' % (typed, canComplete, rest)
             else:
                 return typed + rest
