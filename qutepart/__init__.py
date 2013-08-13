@@ -19,7 +19,7 @@ from qutepart.indenter import getIndenter
 from qutepart.completer import Completer
 from qutepart.lines import Lines
 
-VERSION = (1, 0, 8)
+VERSION = (1, 0, 9)
 
 logger = logging.getLogger('qutepart')
 consoleHandler = logging.StreamHandler()

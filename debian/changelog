@@ -1,3 +1,9 @@
+python-qutepart (1.0.9-1~ubuntuseries1) ubuntuseries; urgency=low
+
+  * Fix gray background on short files
+
+ -- Andrei Kopats <hlamer@tut.by>  Tue, 13 Aug 2013 14:26:29 +0300
+
 python-qutepart (1.0.8-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Initial release
