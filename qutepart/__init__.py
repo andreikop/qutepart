@@ -590,7 +590,6 @@ class Qutepart(QPlainTextEdit):
         self.setFont(QFont("Monospace"))
         
         # highlighting uses white background. Hardcode for other regions
-        self.setBackgroundVisible(True)
         palette = self.palette()
         palette.setColor(QPalette.Base, QColor('#ffffff'))
         self.setPalette(palette)
