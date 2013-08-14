@@ -26,9 +26,8 @@ class GlobalTimer:
     
     def __init__(self):
         self._timer = QTimer()
-        if hasattr(self._timer, 'setSingleShot'):  # if building docs, mock is used instead of Qt objects
-            self._timer.setSingleShot(True)
-            self._timer.timeout.connect(self._onTimer)
+        self._timer.setSingleShot(True)
+        self._timer.timeout.connect(self._onTimer)
         
         self._scheduledCallbacks = []
     
