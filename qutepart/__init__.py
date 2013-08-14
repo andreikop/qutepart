@@ -223,7 +223,7 @@ class _MarkArea(QWidget):
         return self._MARGIN + self._bookmarkPixmap.width() + self._MARGIN
 
 
-class RectangularSelection:
+class _RectangularSelection:
     """This class does not replresent any object, but is part of Qutepart
     It just groups together Qutepart rectangular selection methods and fields
     """
@@ -585,7 +585,7 @@ class Qutepart(QPlainTextEdit):
         self.lineLengthEdgeColor = Qt.red
         self._atomicModificationDepth = 0
         
-        self._rectangularSelection = RectangularSelection(self)
+        self._rectangularSelection = _RectangularSelection(self)
 
         self.setFont(QFont("Monospace"))
         
