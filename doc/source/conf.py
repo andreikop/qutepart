@@ -260,8 +260,8 @@ class Mock(object):
     def __getattr__(self, name):
         if name in ('__file__', '__path__'):
             return '/dev/null'
-        elif name[0] == name[0].upper():
-            mockType = type(name, (), {})
+        elif name[0].isupper():
+            mockType = type(name + ' mock', (), {'__getattr__': Mock.__getattr__})
             mockType.__module__ = __name__
             return mockType
         else:
@@ -270,5 +270,3 @@ class Mock(object):
 MOCK_MODULES = ['PyQt4', 'PyQt4.QtCore', 'PyQt4.QtGui', 'PyQt4.QtWebKit']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
-
-
