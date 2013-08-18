@@ -1193,7 +1193,9 @@ class Qutepart(QPlainTextEdit):
                 
                     if column != self.lineLengthEdge and \
                        (block.blockNumber(), column) != cursorPos:  # looks ugly, if both drawn
-                        rect = _cursorRect(block, column, 1)
+                        """on some fonts line is drawn below the cursor, if offset is 1
+                        Looks like Qt bug"""
+                        rect = _cursorRect(block, column, offset=0)
                         painter.drawLine(rect.topLeft(), rect.bottomLeft())
                     
                     text = text[indentWidthChars:]
