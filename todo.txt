@@ -1,4 +1,5 @@
 fixme:
+  on Enki cursor is not on the same width, as indent markers
 
 first release
   indenters                           4     done 06.04.13

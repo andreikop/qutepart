@@ -40,6 +40,14 @@ class Selection(_BaseTest):
         self.qpart.resetSelection()
         self.assertFalse(self.qpart.textCursor().hasSelection())
 
+    def test_setSelection(self):
+        self.qpart.text = 'asdf fdsa'
+        
+        self.qpart.selectedPosition = ((0, 3), (0, 7))
+        
+        self.assertEquals(self.qpart.selectedText, "f fd")
+        self.assertEquals(self.qpart.selectedPosition, ((0, 3), (0, 7)))
+
 
 class ReplaceText(_BaseTest):
     def test_replaceText1(self):

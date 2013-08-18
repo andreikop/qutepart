@@ -776,7 +776,7 @@ class Qutepart(QPlainTextEdit):
     @property
     def selectedPosition(self):
         cursor = self.textCursor()
-        cursorLine, cursorPos = cursor.blockNumber(), cursor.positionInBlock()
+        cursorLine, cursorCol = cursor.blockNumber(), cursor.positionInBlock()
     
         cursor.setPosition(cursor.anchor())
         startLine, startCol = cursor.blockNumber(), cursor.positionInBlock()
@@ -789,15 +789,15 @@ class Qutepart(QPlainTextEdit):
         anchorLine, anchorCol = anchorPos
         cursorLine, cursorCol = cursorPos
         
-        anchorCursor = self.document().findBlockByNumber(anchorLine)
+        anchorCursor = QTextCursor(self.document().findBlockByNumber(anchorLine))
         anchorCursor.setPositionInBlock(anchorCol)
         
         # just get absolute position
-        cursor = self.document().findBlockByNumber(cursorLine)
+        cursor = QTextCursor(self.document().findBlockByNumber(cursorLine))
         cursor.setPositionInBlock(cursorCol)
         
-        anchorCursor.setPosition(cursor.position(), Qt.KeepAnchor)
-        self.setTextCursor(cursor)
+        anchorCursor.setPosition(cursor.position(), QTextCursor.KeepAnchor)
+        self.setTextCursor(anchorCursor)
     
     @property
     def absSelectedPosition(self):
