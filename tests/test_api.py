@@ -48,6 +48,10 @@ class Selection(_BaseTest):
         self.assertEquals(self.qpart.selectedText, "f fd")
         self.assertEquals(self.qpart.selectedPosition, ((0, 3), (0, 7)))
 
+    def test_selected_multiline_text(self):
+        self.qpart.text = "a\nb"
+        self.qpart.selectedPosition = ((0, 0), (1, 1))
+        self.assertEquals(self.qpart.selectedText, "a\nb")
 
 class ReplaceText(_BaseTest):
     def test_replaceText1(self):

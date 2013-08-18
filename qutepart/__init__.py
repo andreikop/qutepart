@@ -736,7 +736,12 @@ class Qutepart(QPlainTextEdit):
     
     @property
     def selectedText(self):
-        return self.textCursor().selectedText()
+        text = self.textCursor().selectedText()
+        
+        # replace unicode paragraph separator with habitual \n
+        text = text.replace(u'\u2029', '\n')
+        
+        return text
     
     @selectedText.setter
     def selectedText(self, text):
