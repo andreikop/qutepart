@@ -255,7 +255,8 @@ class _RectangularSelection:
         """Del or Backspace pressed. Delete selection"""
         with self._qpart:
             for cursor in self.cursors():
-                cursor.deleteChar()
+                if cursor.hasSelection():
+                    cursor.deleteChar()
     
     def isExpandKeyEvent(self, keyEvent):
         """Check if key event should expand rectangular selection"""

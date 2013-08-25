@@ -105,6 +105,18 @@ class Test(unittest.TestCase):
         QTest.keyClick(self.qpart, Qt.Key_Delete)
         self.assertEqual(self.qpart.text, 'abcdefhh\n\tkl\n\t\tz')
     
+    def test_delete(self):
+        self.qpart.show()
+        self.qpart.text = 'this is long\nshort\nthis is long'
+        self.qpart.cursorPosition = (0, 8)
+        for i in range(2):
+            QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
+        for i in range(4):
+            QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        
+        QTest.keyClick(self.qpart, Qt.Key_Delete)
+        self.assertEqual(self.qpart.text, 'this is \nshort\nthis is ')
+    
     def test_copy_paste(self):
         self.qpart.indentUseTabs = True
         self.qpart.show()
