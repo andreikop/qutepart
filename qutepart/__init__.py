@@ -19,7 +19,7 @@ from qutepart.indenter import getIndenter
 from qutepart.completer import Completer
 from qutepart.lines import Lines
 
-VERSION = (1, 0, 9)
+VERSION = (1, 1, 0)
 
 logger = logging.getLogger('qutepart')
 consoleHandler = logging.StreamHandler()
@@ -505,6 +505,11 @@ class Qutepart(QPlainTextEdit):
     * ``lineLengthEdge`` - If not ``None`` - maximal allowed line width (i.e. 80 chars). Longer lines are marked with red (see ``lineLengthEdgeColor``) line. Default is ``None``.
     * ``lineLengthEdgeColor`` - Color of line length edge line. Default is red.
 
+    **Visible white spaces**
+    
+    * ``drawWhiteSpaceTrailing`` - Draw trailing whitespaces. Default is ``True``.
+    * ``drawWhiteSpaceAnyIndentation`` - Draw trailing and other whitespaces, used as indentation. Default is ``False``.
+
     **Autocompletion**
     
     Qutepart supports autocompletion, based on document contents.
@@ -585,6 +590,9 @@ class Qutepart(QPlainTextEdit):
         self.lineLengthEdge = None
         self.lineLengthEdgeColor = Qt.red
         self._atomicModificationDepth = 0
+        
+        self.drawWhiteSpaceTrailing = True
+        self.drawWhiteSpaceAnyIndentation = False
         
         self._rectangularSelection = _RectangularSelection(self)
 
@@ -1168,15 +1176,40 @@ class Qutepart(QPlainTextEdit):
         """
         painter = QPainter(self.viewport())
         
-        indentWidthChars = len(self._indentText())
-        
-        def _cursorRect(block, column, offset):
+        def cursorRect(block, column, offset):
             cursor = QTextCursor(block)
             cursor.setPositionInBlock(column)
             return self.cursorRect(cursor).translated(offset, 0)
         
-        cursorPos = self.cursorPosition
+        def drawWhiteSpace(block, column, char):
+            leftCursorRect = cursorRect(block, column, 0)
+            rightCursorRect = cursorRect(block, column + 1, 0)
+            if leftCursorRect.top() == rightCursorRect.top():  # if on the same visual line
+                middleHeight = (leftCursorRect.top() + leftCursorRect.bottom()) / 2
+                if char == ' ':
+                    radius = 3
+                    painter.setPen(Qt.transparent)
+                    painter.setBrush(QBrush(Qt.gray))
+                    painter.drawEllipse((leftCursorRect.x() + rightCursorRect.x()) / 2 - (radius / 2),
+                                        middleHeight - (radius / 2),
+                                        radius, radius)
+                else:
+                    painter.setPen(QColor(Qt.gray).lighter(factor=120))
+                    painter.drawLine(leftCursorRect.x() + 3, middleHeight, rightCursorRect.x() - 3, middleHeight)
 
+        def drawEdgeLine(block):
+            painter.setPen(QPen(QBrush(self.lineLengthEdgeColor), 0))
+            rect = cursorRect(block, self.lineLengthEdge, 0)
+            painter.drawLine(rect.topLeft(), rect.bottomLeft())
+        
+        def drawIndentMarker(block, column):
+            painter.setPen(QColor(Qt.blue).lighter())
+            rect = cursorRect(block, column, offset=0)
+            painter.drawLine(rect.topLeft(), rect.bottomLeft())
+
+        indentWidthChars = len(self._indentText())
+        cursorPos = self.cursorPosition
+        
         for block in iterateBlocksFrom(self.firstVisibleBlock()):
             blockGeometry = self.blockBoundingGeometry(block).translated(self.contentOffset())
             if blockGeometry.top() > paintEventRect.bottom():
@@ -1184,32 +1217,41 @@ class Qutepart(QPlainTextEdit):
             
             if block.isVisible() and blockGeometry.toRect().intersects(paintEventRect):
                 text = block.text()
-                
-                # Draw indent markers
-                painter.setPen(Qt.blue)
-                column = indentWidthChars
-                while text.startswith(self._indentText()) and \
-                      len(text) > indentWidthChars and \
-                      text[indentWidthChars].isspace():
-                
-                    if column != self.lineLengthEdge and \
-                       (block.blockNumber(), column) != cursorPos:  # looks ugly, if both drawn
-                        """on some fonts line is drawn below the cursor, if offset is 1
-                        Looks like Qt bug"""
-                        rect = _cursorRect(block, column, offset=0)
-                        painter.drawLine(rect.topLeft(), rect.bottomLeft())
+                if not self.drawWhiteSpaceAnyIndentation:
+                    # Draw indent markers
+                    column = indentWidthChars
+                    while text.startswith(self._indentText()) and \
+                          len(text) > indentWidthChars and \
+                          text[indentWidthChars].isspace():
                     
-                    text = text[indentWidthChars:]
-                    column += indentWidthChars
+                        if column != self.lineLengthEdge and \
+                           (block.blockNumber(), column) != cursorPos:  # looks ugly, if both drawn
+                            """on some fonts line is drawn below the cursor, if offset is 1
+                            Looks like Qt bug"""
+                            drawIndentMarker(block, column)
+                        
+                        text = text[indentWidthChars:]
+                        column += indentWidthChars
                     
                 # Draw edge, but not over a cursor
                 if self.lineLengthEdge is not None and \
                    block.length() > (self.lineLengthEdge + 1) and \
                    (block.blockNumber(), self.lineLengthEdge) != cursorPos:
-                    painter.setPen(QPen(QBrush(self.lineLengthEdgeColor), 0))
-                    rect = _cursorRect(block, self.lineLengthEdge, 0)
-                    painter.drawLine(rect.topLeft(), rect.bottomLeft())
-    
+                    drawEdgeLine(block)
+                
+                text = block.text()
+                lastNonSpaceColumn = len(text.rstrip()) - 1
+                if self.drawWhiteSpaceTrailing or self.drawWhiteSpaceAnyIndentation:
+                    # Draw whitespace symbols
+                    text = block.text()
+                    for column, char in enumerate(text):
+                        if char.isspace():
+                            if (char == '\t' or column == 0 or text[column - 1].isspace()) and \
+                               self.drawWhiteSpaceAnyIndentation:
+                                drawWhiteSpace(block, column, char)
+                            elif column > lastNonSpaceColumn and self.drawWhiteSpaceTrailing:
+                                drawWhiteSpace(block, column, char)
+                    
     def paintEvent(self, event):
         pass # suppress dockstring for non-public method
         """Paint event

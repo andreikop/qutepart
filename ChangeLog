@@ -1,0 +1,5 @@
+1.1.0   Aug 29 2013
+    API: Added settings drawWhiteSpaceTrailing and drawWhiteSpaceAnyIndentation
+
+1.0.9   Aug 13 2013
+    Initial release

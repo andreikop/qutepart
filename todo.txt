@@ -1,17 +1,7 @@
 fixme:
+  no red line on spaces
 
-first release
-  indenters                           4     done 06.04.13
-  scheme indenter                     1     done 14.04.13
-  add keyboard actions to main menu   1     done 18.04.13
-  Support DetectComments##Roff        1     done 18.04.13
-  draw line wrap markers              1     done 21.04.13
-  detect syntax by first line         1     done 27.04.13
-  support printing                    1     done 02.05.13
-  brace matching supports isCode      1     done 03.05.13
-  rectangular selection                     done    08.13
-
-next release:
+todo:
   switch hihglighting language        2
   when positioning cursor - \
     show few lines lower/higher       1
@@ -22,7 +12,5 @@ next release:
   dark theme
   autoindenter settings
   Replace mode. Match bracke under cursor in replace mode
-
-sometimes
   highlight indent markers            1   # doesn't work. Done in a branch
   many warnings when regenerating syntax DB

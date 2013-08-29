@@ -56,6 +56,8 @@ def main():
     qpart.detectSyntax(sourceFilePath=ns.file, firstLine=text.splitlines()[0])
     qpart.lineLengthEdge = 80
     
+    qpart.indentUseTabs = False
+    
     qpart.text = text
     
     qpart.setWindowTitle(ns.file)
