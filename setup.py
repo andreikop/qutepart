@@ -29,11 +29,9 @@ def _checkDependencies():
         print "It seems like C compiler is not installed or not operable."
         return False
     
-    if not compiler.has_function('Py_GetVersion',
-                                 includes = ['Python.h'],
-                                 include_dirs=[distutils.sysconfig.get_python_inc()],
-                                 libraries = ['Python'],
-                                 library_dirs = [distutils.sysconfig.get_python_lib()]):
+    if not compiler.has_function('rand',
+                                 includes = ['stdlib.h', 'Python.h'],
+                                 include_dirs=[distutils.sysconfig.get_python_inc()]):
         print "Failed to find Python headers."
         print "\tTry to install python-dev package"
         print "\tIf not standard directories are used, set CFLAGS and LDFLAGS environment variables"
