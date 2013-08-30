@@ -32,7 +32,7 @@ class Mock(object):
         if name in ('__file__', '__path__'):
             return '/dev/null'
         elif name[0].isupper():
-            mockType = type(name + ' mock', (), {'__getattr__': Mock.__getattr__})
+            mockType = type(name, (), {'__getattr__': Mock.__getattr__})
             mockType.__module__ = __name__
             return mockType
         else:
