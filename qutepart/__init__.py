@@ -1187,12 +1187,10 @@ class Qutepart(QPlainTextEdit):
             if leftCursorRect.top() == rightCursorRect.top():  # if on the same visual line
                 middleHeight = (leftCursorRect.top() + leftCursorRect.bottom()) / 2
                 if char == ' ':
-                    radius = 3
                     painter.setPen(Qt.transparent)
                     painter.setBrush(QBrush(Qt.gray))
-                    painter.drawEllipse((leftCursorRect.x() + rightCursorRect.x()) / 2 - (radius / 2),
-                                        middleHeight - (radius / 2),
-                                        radius, radius)
+                    xPos = (leftCursorRect.x() + rightCursorRect.x()) / 2
+                    painter.drawRect(QRect(xPos, middleHeight, 2, 2))
                 else:
                     painter.setPen(QColor(Qt.gray).lighter(factor=120))
                     painter.drawLine(leftCursorRect.x() + 3, middleHeight, rightCursorRect.x() - 3, middleHeight)
