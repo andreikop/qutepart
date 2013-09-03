@@ -27,7 +27,7 @@ class Test(unittest.TestCase):
     def tearDown(self):
         del self.qpart
 
-    def test_1(self):
+    def test_overwrite_edit(self):
         self.qpart.show()
         self.qpart.text = 'abcd'
         QTest.keyClicks(self.qpart, "stu")
@@ -38,6 +38,16 @@ class Test(unittest.TestCase):
         QTest.keyClick(self.qpart, Qt.Key_Insert)
         QTest.keyClicks(self.qpart, "z")
         self.assertEqual(self.qpart.text, 'stuxyzcd')
+
+    def test_overwrite_backspace(self):
+        self.qpart.show()
+        self.qpart.text = 'abcd'
+        QTest.keyClick(self.qpart, Qt.Key_Insert)
+        for i in range(3):
+            QTest.keyClick(self.qpart, Qt.Key_Right)
+        for i in range(2):
+            QTest.keyClick(self.qpart, Qt.Key_Backspace)
+        self.assertEqual(self.qpart.text, 'a  d')
 
 
 if __name__ == '__main__':

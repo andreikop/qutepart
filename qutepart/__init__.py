@@ -1124,21 +1124,28 @@ class Qutepart(QPlainTextEdit):
         """QPlainTextEdit.keyPressEvent() implementation.
         Catch events, which may not be catched with QShortcut and call slots
         """
-        def _shouldUnindentWithBackspace():
-            cursor = self.textCursor()
+        cursor = self.textCursor()
+        
+        def shouldUnindentWithBackspace():
             text = cursor.block().text()
             spaceAtStartLen = len(text) - len(text.lstrip())
             
             return self._textBeforeCursor().endswith(self._indentText()) and \
-                   not self.textCursor().hasSelection() and \
+                   not cursor.hasSelection() and \
                    cursor.positionInBlock() == spaceAtStartLen
         
-        def _shouldAutoIndent(event):
-            cursor = self.textCursor()
+        def shouldAutoIndent(event):
             atEnd = cursor.positionInBlock() == cursor.block().length() - 1
             return atEnd and \
                    event.text() and \
                    event.text() in self._indenter.TRIGGER_CHARACTERS
+
+        def backspaceOverwrite():
+            with self:
+                cursor.deletePreviousChar()
+                cursor.insertText(' ')
+                cursor.setPositionInBlock(cursor.positionInBlock() - 1)
+                self.setTextCursor(cursor)
 
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
@@ -1151,23 +1158,28 @@ class Qutepart(QPlainTextEdit):
         elif event.key() == Qt.Key_Insert and event.modifiers() == Qt.NoModifier:
             self.setOverwriteMode(not self.overwriteMode())
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
-            if self.textCursor().hasSelection():
+            if cursor.hasSelection():
                 self._onChangeSelectedBlocksIndent(increase = True)
             else:
                 self._onShortcutIndentAfterCursor()
         elif event.key() == Qt.Key_Backspace and \
-             _shouldUnindentWithBackspace():
+             shouldUnindentWithBackspace():
             self._onShortcutUnindentWithBackspace()
+        elif event.key() == Qt.Key_Backspace and \
+             not cursor.hasSelection() and \
+             self.overwriteMode() and \
+             cursor.positionInBlock() > 0:
+            backspaceOverwrite()
         elif event.matches(QKeySequence.MoveToStartOfLine):
             self._onShortcutHome(select=False)
         elif event.matches(QKeySequence.SelectStartOfLine):
             self._onShortcutHome(select=True)
         elif self._rectangularSelection.isExpandKeyEvent(event):
             self._rectangularSelection.onExpandKeyEvent(event)
-        elif _shouldAutoIndent(event):
+        elif shouldAutoIndent(event):
                 with self:
                     super(Qutepart, self).keyPressEvent(event)
-                    self._autoIndentBlock(self.textCursor().block(), event.text())
+                    self._autoIndentBlock(cursor.block(), event.text())
         else:
             super(Qutepart, self).keyPressEvent(event)
     
