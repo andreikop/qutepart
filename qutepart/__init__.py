@@ -61,6 +61,8 @@ class _Bookmarks:
                                                       self._onPrevBookmark)
         qpart.nextBookmarkAction = self._createAction(qpart, "down.png", "Next bookmark", 'Alt+PgDown',
                                                       self._onNextBookmark)
+        
+        markArea.blockClicked.connect(self._toggleBookmark)
 
     def _createAction(self, widget, iconFileName, text, shortcut, slot):
         """Create QAction with given parameters and add to the widget
@@ -94,12 +96,14 @@ class _Bookmarks:
         """
         block.setUserState(1 if marked else -1)
     
+    def _toggleBookmark(self, block):
+        self._setBlockMarked(block, not self.isBlockMarked(block))
+        self._markArea.update()
+    
     def _onToggleBookmark(self):
         """Toogle Bookmark action triggered
         """
-        block = self._qpart.textCursor().block()
-        self._setBlockMarked(block, not self.isBlockMarked(block))
-        self._markArea.update()
+        self._toggleBookmark(self._qpart.textCursor().block())
     
     def _onPrevBookmark(self):
         """Previous Bookmark action triggered. Move cursor
@@ -178,6 +182,8 @@ class _LineNumberArea(QWidget):
 
 class _MarkArea(QWidget):
     
+    blockClicked = pyqtSignal(QTextBlock)
+    
     _MARGIN = 1
     
     def __init__(self, qpart):
@@ -221,6 +227,13 @@ class _MarkArea(QWidget):
         """Desired width. Includes text and margins
         """
         return self._MARGIN + self._bookmarkPixmap.width() + self._MARGIN
+    
+    def mousePressEvent(self, mouseEvent):
+        cursor = self._qpart.cursorForPosition(QPoint(0, mouseEvent.y()))
+        block = cursor.block()
+        blockRect = self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset())
+        if blockRect.bottom() >= mouseEvent.y():  # clicked not lower, then end of text
+            self.blockClicked.emit(block)
 
 
 class _RectangularSelection:
