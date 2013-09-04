@@ -4,15 +4,11 @@ import os
 import sys
 import unittest
 
-import sip
-sip.setapi('QString', 2)
+import base
 
 from PyQt4.QtCore import Qt, QPoint
 from PyQt4.QtGui import QApplication, QMainWindow
 from PyQt4.QtTest import QTest
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-sys.path.insert(0, os.path.abspath('.'))
 
 from qutepart import Qutepart
 import qutepart.completer

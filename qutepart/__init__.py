@@ -1160,6 +1160,14 @@ class Qutepart(QPlainTextEdit):
                 cursor.setPositionInBlock(cursor.positionInBlock() - 1)
                 self.setTextCursor(cursor)
 
+        def typeOverwrite(text):
+            """QPlainTextEdit records text input in replace mode as 2 actions:
+            delete char, and type char. Actions are undone separately. This is 
+            workaround for the Qt bug"""
+            with self:
+                cursor.deleteChar()
+                cursor.insertText(text)
+        
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
         elif event.matches(QKeySequence.Copy) and self._rectangularSelection.isActive():
@@ -1183,6 +1191,12 @@ class Qutepart(QPlainTextEdit):
              self.overwriteMode() and \
              cursor.positionInBlock() > 0:
             backspaceOverwrite()
+        elif self.overwriteMode() and \
+            event.text() and \
+            event.text().isalnum() and \
+            not cursor.hasSelection() and \
+            cursor.positionInBlock() < cursor.block().length():
+            typeOverwrite(event.text())
         elif event.matches(QKeySequence.MoveToStartOfLine):
             self._onShortcutHome(select=False)
         elif event.matches(QKeySequence.SelectStartOfLine):

@@ -1,18 +1,14 @@
 #!/usr/bin/env python
 
-import os
 import sys
 import unittest
 
-import sip
-sip.setapi('QString', 2)
+import base
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-sys.path.insert(0, os.path.abspath('.'))
 from qutepart import Qutepart
 
 
@@ -48,6 +44,20 @@ class Test(unittest.TestCase):
         for i in range(2):
             QTest.keyClick(self.qpart, Qt.Key_Backspace)
         self.assertEqual(self.qpart.text, 'a  d')
+
+    @base.in_main_loop
+    def test_overwrite_undo(self):
+        self.qpart.show()
+        self.qpart.text = 'abcd'
+        QTest.keyClick(self.qpart, Qt.Key_Insert)
+        QTest.keyClick(self.qpart, Qt.Key_Right)
+        QTest.keyClick(self.qpart, Qt.Key_X)
+        QTest.keyClick(self.qpart, Qt.Key_X)
+        self.assertEqual(self.qpart.text, 'axxd')
+        # Ctrl+Z doesn't work. Wtf???
+        self.qpart.document().undo()
+        self.qpart.document().undo()
+        self.assertEqual(self.qpart.text, 'abcd')
 
 
 if __name__ == '__main__':
