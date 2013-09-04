@@ -214,6 +214,24 @@ class Test(unittest.TestCase):
         QTest.keyClick(self.qpart, Qt.Key_V, Qt.ControlModifier)
         self.assertEqual(self.qpart.text, 'asdf')
 
+    def test_cut_paste(self):
+        # Cursor must be moved to top-left after cut, and original text is restored after paste
+        
+        self.qpart.show()
+        self.qpart.text = 'abcd\nefgh\nklmn'
+        
+        QTest.keyClick(self.qpart, Qt.Key_Right)
+        for i in range(2):
+            QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        for i in range(2):
+            QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
+        
+        QTest.keyClick(self.qpart, Qt.Key_X, Qt.ControlModifier)
+        self.assertEqual(self.qpart.cursorPosition, (0, 1))
+        
+        QTest.keyClick(self.qpart, Qt.Key_V, Qt.ControlModifier)
+        self.assertEqual(self.qpart.text, 'abcd\nefgh\nklmn')
+
     def test_warning(self):
         self.qpart.show()
         self.qpart.text = 'a\n' * 300

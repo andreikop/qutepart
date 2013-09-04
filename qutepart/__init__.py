@@ -406,8 +406,15 @@ class _RectangularSelection:
     def cut(self):
         """Cut action. Copy and delete
         """
+        cursorPos = self._qpart.cursorPosition
+        topLeft = (min(self._start[0], cursorPos[0]),
+                   min(self._start[1], cursorPos[1]))
         self.copy()
         self.delete()
+        
+        """Move cursor to top-left corner of the selection,
+        so that if text gets pasted again, original text will be restored"""
+        self._qpart.cursorPosition = topLeft
     
     def _indentUpTo(self, text, width):
         """Add space to text, so text width will be at least width.
