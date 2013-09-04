@@ -1223,16 +1223,22 @@ class Qutepart(QPlainTextEdit):
         else:
             super(Qutepart, self).keyPressEvent(event)
     
+    # any of this modifiers are supported
+    _rectangularSelectionModifiers = (Qt.ControlModifier | Qt.AltModifier,
+                                      Qt.AltModifier | Qt.ShiftModifier,
+                                      Qt.AltModifier)
+    
     def mousePressEvent(self, mouseEvent):
         pass  # suppress docstring for non-public method
-        if mouseEvent.modifiers() == Qt.ControlModifier | Qt.AltModifier:
+        if mouseEvent.modifiers() in self._rectangularSelectionModifiers and \
+           mouseEvent.button() == Qt.LeftButton:
             self._rectangularSelection.mousePressEvent(mouseEvent)
         else:
             super(Qutepart, self).mousePressEvent(mouseEvent)
     
     def mouseMoveEvent(self, mouseEvent):
         pass  # suppress docstring for non-public method
-        if mouseEvent.modifiers() == Qt.ControlModifier | Qt.AltModifier and \
+        if mouseEvent.modifiers() in self._rectangularSelectionModifiers and \
            mouseEvent.buttons() == Qt.LeftButton:
             self._rectangularSelection.mouseMoveEvent(mouseEvent)
         else:
