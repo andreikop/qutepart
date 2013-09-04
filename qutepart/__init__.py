@@ -450,6 +450,19 @@ class _RectangularSelection:
                 self._qpart.lines[cursorLine + index] = newLine
         self._qpart.cursorPosition = cursorLine, cursorCol
 
+    def mousePressEvent(self, mouseEvent):
+        cursor = self._qpart.cursorForPosition(mouseEvent.pos())
+        self._start = cursor.block().blockNumber(), cursor.positionInBlock()
+
+    def mouseMoveEvent(self, mouseEvent):
+        cursor = self._qpart.cursorForPosition(mouseEvent.pos())
+
+        self._qpart.cursorPositionChanged.disconnect(self._reset)
+        self._qpart.selectionChanged.disconnect(self._reset)
+        self._qpart.setTextCursor(cursor)
+        self._qpart.cursorPositionChanged.connect(self._reset)
+        self._qpart.selectionChanged.connect(self._reset)
+        # extra selections will be updated, because cursor has been moved
 
 class Qutepart(QPlainTextEdit):
     '''Qutepart is based on QPlainTextEdit, and you can use QPlainTextEdit methods,
@@ -1210,6 +1223,21 @@ class Qutepart(QPlainTextEdit):
         else:
             super(Qutepart, self).keyPressEvent(event)
     
+    def mousePressEvent(self, mouseEvent):
+        pass  # suppress docstring for non-public method
+        if mouseEvent.modifiers() == Qt.ControlModifier | Qt.AltModifier:
+            self._rectangularSelection.mousePressEvent(mouseEvent)
+        else:
+            super(Qutepart, self).mousePressEvent(mouseEvent)
+    
+    def mouseMoveEvent(self, mouseEvent):
+        pass  # suppress docstring for non-public method
+        if mouseEvent.modifiers() == Qt.ControlModifier | Qt.AltModifier and \
+           mouseEvent.buttons() == Qt.LeftButton:
+            self._rectangularSelection.mouseMoveEvent(mouseEvent)
+        else:
+            super(Qutepart, self).mouseMoveEvent(mouseEvent)
+
     def _drawIndentMarkersAndEdge(self, paintEventRect):
         """Draw indentation markers
         """
