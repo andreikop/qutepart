@@ -18,9 +18,9 @@ from qutepart import Qutepart, iterateBlocksFrom
 class Test(unittest.TestCase):
     """Base class for tests
     """
-    app = QApplication(sys.argv)  # app crashes, if created more than once
     
     def setUp(self):
+        self.app = QApplication(sys.argv)  # app crashes, if created more than once
         self.qpart = Qutepart()
     
     def tearDown(self):
@@ -85,4 +85,4 @@ class Test(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    base.main()
