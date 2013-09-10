@@ -1,5 +1,4 @@
 fixme:
-  no red line on spaces
 
 todo:
   switch hihglighting language        2
@@ -11,6 +10,4 @@ todo:
   color theme editor
   dark theme
   autoindenter settings
-  Replace mode. Match bracke under cursor in replace mode
-  highlight indent markers            1   # doesn't work. Done in a branch
   many warnings when regenerating syntax DB

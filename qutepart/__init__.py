@@ -291,7 +291,7 @@ class Qutepart(QPlainTextEdit):
 
     **Position and selection**
     
-    * ``cursorPosition`` - cursor position as ``(line, column)``. Lines are numerated from zero. If column is set to ``None`` - cursor will be placed before first non-whitespace character.
+    * ``cursorPosition`` - cursor position as ``(line, column)``. Lines are numerated from zero. If column is set to ``None`` - cursor will be placed before first non-whitespace character. If line or column is bigger, than actual file, cursor will be placed to the last line, to the last column
     * ``absCursorPosition`` - cursor position as offset from the beginning of text.
     * ``selectedPosition`` - selection coordinates as ``((startLine, startCol), (cursorLine, cursorCol))``.
     * ``absSelectedPosition`` - selection coordinates as ``(startPosition, cursorPosition)`` where position is offset from the beginning of text.
