@@ -9,6 +9,20 @@ from PyQt4.QtGui import QBrush, QColor, QFont, \
                         QTextBlockUserData, QTextCharFormat, QTextDocument, QTextLayout
 
 
+"""PyQt does not define proper comparison for QTextLayout.FormatRange
+Define it to check correctly, if formats has changed.
+It is important for the performance
+"""
+def _cmpFormatRanges(a, b):
+    if a.format == b.format and \
+       a.start == b.start and \
+       a.length == b.length:
+        return 0
+    else:
+        return cmp(id(a), id(b))
+QTextLayout.FormatRange.__cmp__ = _cmpFormatRanges
+
+
 class _TextBlockUserData(QTextBlockUserData):
     def __init__(self, data):
         QTextBlockUserData.__init__(self)
@@ -255,6 +269,7 @@ class SyntaxHighlighter(QObject):
                 range.length = length
                 ranges.append(range)
             currentPos += length
-                
-        block.layout().setAdditionalFormats(ranges)
-        self._document.markContentsDirty(block.position(), block.length())
+        
+        if block.layout().additionalFormats() != ranges:
+            block.layout().setAdditionalFormats(ranges)
+            self._document.markContentsDirty(block.position(), block.length())
