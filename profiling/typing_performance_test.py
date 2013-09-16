@@ -61,6 +61,8 @@ def doTest():
     clickTimeKeys = sorted(clickTimes.keys())
     for ckt in clickTimeKeys:
         print '       %5dms:            %4d' % (ckt, clickTimes[ckt])
+    
+    app.quit()
 
 QTimer.singleShot(0, doTest)
 app.exec_()
