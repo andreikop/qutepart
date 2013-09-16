@@ -8,6 +8,7 @@ from PyQt4.QtCore import Qt, QObject, QTimer
 from PyQt4.QtGui import QBrush, QColor, QFont, \
                         QTextBlockUserData, QTextCharFormat, QTextDocument, QTextLayout
 
+import qutepart.syntax
 
 """PyQt does not define proper comparison for QTextLayout.FormatRange
 Define it to check correctly, if formats has changed.
@@ -148,6 +149,9 @@ class SyntaxHighlighter(QObject):
 
     @staticmethod
     def formatConverterFunction(format):
+        if format == qutepart.syntax.TextFormat():
+            return None  # Do not apply default format. Performance optimization
+        
         qtFormat = QTextCharFormat()
         qtFormat.setForeground(QBrush(QColor(format.color)))
         qtFormat.setBackground(QBrush(QColor(format.background)))
@@ -261,6 +265,7 @@ class SyntaxHighlighter(QObject):
     def _applyHighlightedSegments(self, block, highlightedSegments):
         ranges = []
         currentPos = 0
+        
         for length, format in highlightedSegments:
             if format is not None:  # might be in incorrect syntax file
                 range = QTextLayout.FormatRange()

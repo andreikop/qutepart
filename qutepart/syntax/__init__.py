@@ -42,6 +42,9 @@ class TextFormat:
         self.strikeOut = strikeOut
         self.spellChecking = spellChecking
         self.textType = ' '  # modified later
+    
+    def __cmp__(self, other):
+        return cmp(self.__dict__, other.__dict__)
 
 
 class Syntax:
