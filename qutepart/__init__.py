@@ -429,7 +429,7 @@ class Qutepart(QPlainTextEdit):
         self.blockCountChanged.connect(self._updateLineNumberAreaWidth)
         self.updateRequest.connect(self._updateSideAreas)
         self.cursorPositionChanged.connect(self._updateExtraSelections)
-        self.textChanged.connect(lambda: self.setExtraSelections([]))  # drop user extra selections
+        self.textChanged.connect(self._dropUserExtraSelections)
         self.textChanged.connect(self._resetCachedText)
 
         self._updateLineNumberAreaWidth(0)
@@ -796,6 +796,10 @@ class Qutepart(QPlainTextEdit):
         """
         return self._highlighter is not None and \
                self._highlighter.isHereDoc(self.document().findBlockByNumber(line), column)
+
+    def _dropUserExtraSelections(self):
+        if self._userExtraSelections:
+            self.setExtraSelections([])
 
     def setExtraSelections(self, selections):
         """Set list of extra selections.
