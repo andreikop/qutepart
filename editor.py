@@ -53,7 +53,8 @@ def main():
     qpart = qutepart.Qutepart()
     window.setCentralWidget(qpart)
     
-    qpart.detectSyntax(sourceFilePath=ns.file, firstLine=text.splitlines()[0])
+    firstLine = text.splitlines()[0] if text else None
+    qpart.detectSyntax(sourceFilePath=ns.file, firstLine=firstLine)
     qpart.lineLengthEdge = 80
     
     qpart.indentUseTabs = False
