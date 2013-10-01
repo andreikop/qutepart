@@ -1,3 +1,9 @@
+python-qutepart (1.1.0-1~ubuntuseries1) ubuntuseries; urgency=low
+
+  * API: Added settings drawWhiteSpaceTrailing and drawWhiteSpaceAnyIndentation
+
+ -- Andrei Kopats <hlamer@tut.by>  Tue, 01 Oct 2013 08:02:47 +0300
+
 python-qutepart (1.0.9-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Fix gray background on short files
