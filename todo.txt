@@ -1,5 +1,5 @@
 fixme:
-  green on line number area not redrawn, if line has became shorter
+  apply compiler libraries
 
 todo:
   switch hihglighting language        2

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import os
 
 from distutils.core import setup, Extension
 import distutils.ccompiler
@@ -15,9 +16,22 @@ package_data={'qutepart' : ['icons/*.png'],
                                    'data/syntax_db.json']
              }
 
+pcre_include_dirs = [os.environ['PCRE_INCLUDE_DIR']] if 'PCRE_INCLUDE_DIR' in os.environ else []
+pcre_library_dirs = [os.environ['PCRE_LIBRARY_DIR']] if 'PCRE_LIBRARY_DIR' in os.environ else []
+
+if sys.platform == 'darwin':
+    if not pcre_include_dirs and \
+       not pcre_library_dirs:
+        # default locations for mac ports
+        pcre_include_dirs.append('/opt/local/include')
+        pcre_library_dirs.append('/opt/local/lib')
+
+
 extension = Extension('qutepart.syntax.cParser',
                       sources = ['qutepart/syntax/cParser.c'],
-                      libraries = ['pcre'])
+                      libraries = ['pcre'],
+                      include_dirs=pcre_include_dirs,
+                      library_dirs=pcre_library_dirs)
 
 
 def _checkDependencies():
@@ -37,10 +51,16 @@ def _checkDependencies():
         print "\tIf not standard directories are used, set CFLAGS and LDFLAGS environment variables"
         return False
     
-    if not compiler.has_function('pcre_version', includes = ['pcre.h'], libraries = ['pcre']):
+    if not compiler.has_function('pcre_version',
+                                 includes = ['pcre.h'],
+                                 libraries = ['pcre'],
+                                 include_dirs=pcre_include_dirs,
+                                 library_dirs=pcre_library_dirs):
         print "Failed to find pcre library."
         print "\tTry to install libpcre{version}-dev package, or go to http://pcre.org"
-        print "\tIf not standard directories are used, set CFLAGS and LDFLAGS environment variables"
+        print "\tIf not standard directories are used, set environment variables:"
+        print "\t\tPCRE_INCLUDE_DIR - location of pcre.h header"
+        print "\t\tPCRE_LIBRARY_DIR - location of libpcre.a library"
         return False
     
     return True
