@@ -126,7 +126,7 @@ class _Bookmarks:
 class _LineNumberArea(QWidget):
     """Line number area widget
     """
-    _LEFT_MARGIN = 3
+    _LEFT_MARGIN = 5
     _RIGHT_MARGIN = 3
     
     def __init__(self, qpart):
