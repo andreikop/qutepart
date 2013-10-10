@@ -177,7 +177,6 @@ class _LineNumberArea(QWidget):
         """Desired width. Includes text and margins
         """
         digits = len(str(max(1, self._qpart.blockCount())))
-
         return self._LEFT_MARGIN + self._qpart.fontMetrics().width('9') * digits + self._RIGHT_MARGIN
 
 
@@ -396,8 +395,6 @@ class Qutepart(QPlainTextEdit):
         
         self._rectangularSelection = RectangularSelection(self)
 
-        self.setFont(QFont("Monospace"))
-        
         # highlighting uses white background. Hardcode for other regions
         palette = self.palette()
         palette.setColor(QPalette.Base, QColor('#ffffff'))
@@ -431,6 +428,8 @@ class Qutepart(QPlainTextEdit):
         self.cursorPositionChanged.connect(self._updateExtraSelections)
         self.textChanged.connect(self._dropUserExtraSelections)
         self.textChanged.connect(self._resetCachedText)
+
+        self.setFont(QFont("Monospace"))
 
         self._updateLineNumberAreaWidth(0)
         self._updateExtraSelections()
@@ -505,6 +504,10 @@ class Qutepart(QPlainTextEdit):
         """
         QPlainTextEdit.setFont(self, font)
         self._updateTabStopWidth()
+        
+        lineNumbersFont = self._lineNumberArea.font()
+        lineNumbersFont.setPointSize(font.pointSize())
+        self._lineNumberArea.setFont(lineNumbersFont)
     
     def _updateTabStopWidth(self):
         """Update tabstop width after font or indentation changed
