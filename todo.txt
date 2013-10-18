@@ -1,7 +1,4 @@
 fixme:
-  apply compiler libraries
-  line numbers font equal to code font
-  margin for line numbers
 
 todo:
   switch hihglighting language        2

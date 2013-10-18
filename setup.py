@@ -9,6 +9,24 @@ import distutils.sysconfig
 
 import qutepart
 
+
+def parse_arg_list(param_start):
+    """Exctract values like --libdir=bla/bla/bla
+    param_start must be '--libdir='
+    """
+    values = [arg[len(param_start):] \
+                for arg in sys.argv \
+                if arg.startswith(param_start)]
+    
+    # remove recognized arguments from the sys.argv
+    otherArgs = [arg \
+                    for arg in sys.argv \
+                    if not arg.startswith(param_start)]
+    sys.argv = otherArgs
+    
+    return values
+
+
 packages=['qutepart', 'qutepart/syntax', 'qutepart/indenter']
 
 package_data={'qutepart' : ['icons/*.png'],
@@ -16,22 +34,22 @@ package_data={'qutepart' : ['icons/*.png'],
                                    'data/syntax_db.json']
              }
 
-pcre_include_dirs = [os.environ['PCRE_INCLUDE_DIR']] if 'PCRE_INCLUDE_DIR' in os.environ else []
-pcre_library_dirs = [os.environ['PCRE_LIBRARY_DIR']] if 'PCRE_LIBRARY_DIR' in os.environ else []
 
-if sys.platform == 'darwin':
-    if not pcre_include_dirs and \
-       not pcre_library_dirs:
-        # default locations for mac ports
-        pcre_include_dirs.append('/opt/local/include')
-        pcre_library_dirs.append('/opt/local/lib')
+include_dirs = parse_arg_list('--include-dir=')
+if not include_dirs:
+    include_dirs = ['/usr/include', '/usr/local/include', '/opt/local/include']
+
+library_dirs = parse_arg_list('--lib-dir=')
+if not library_dirs:
+    library_dirs = ['/usr/lib', '/usr/local/lib', '/opt/local/lib']
+
 
 
 extension = Extension('qutepart.syntax.cParser',
                       sources = ['qutepart/syntax/cParser.c'],
                       libraries = ['pcre'],
-                      include_dirs=pcre_include_dirs,
-                      library_dirs=pcre_library_dirs)
+                      include_dirs=include_dirs,
+                      library_dirs=library_dirs)
 
 
 def _checkDependencies():
@@ -47,20 +65,22 @@ def _checkDependencies():
                                  includes = ['stdlib.h', 'Python.h'],
                                  include_dirs=[distutils.sysconfig.get_python_inc()]):
         print "Failed to find Python headers."
-        print "\tTry to install python-dev package"
-        print "\tIf not standard directories are used, set CFLAGS and LDFLAGS environment variables"
+        print "Try to install python-dev package"
+        print "If not standard directories are used, pass parameters"
+        print "\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include"
+        print "--lib-dir= and --include-dir= may be used multiply times"
         return False
     
     if not compiler.has_function('pcre_version',
                                  includes = ['pcre.h'],
                                  libraries = ['pcre'],
-                                 include_dirs=pcre_include_dirs,
-                                 library_dirs=pcre_library_dirs):
+                                 include_dirs=include_dirs,
+                                 library_dirs=include_dirs):
         print "Failed to find pcre library."
-        print "\tTry to install libpcre{version}-dev package, or go to http://pcre.org"
-        print "\tIf not standard directories are used, set environment variables:"
-        print "\t\tPCRE_INCLUDE_DIR - location of pcre.h header"
-        print "\t\tPCRE_LIBRARY_DIR - location of libpcre.a library"
+        print "Try to install libpcre{version}-dev package, or go to http://pcre.org"
+        print "If not standard directories are used, pass parameters:"
+        print "\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include"
+        print "--lib-dir= and --include-dir= may be used multiply times"
         return False
     
     return True
