@@ -395,9 +395,13 @@ class Qutepart(QPlainTextEdit):
         
         self._rectangularSelection = RectangularSelection(self)
 
-        # highlighting uses white background. Hardcode for other regions
+        """Sometimes color themes will be supported. 
+        Now black on white is hardcoded in the highlighters.
+        Hardcode same palette for not highlighted text
+        """
         palette = self.palette()
         palette.setColor(QPalette.Base, QColor('#ffffff'))
+        palette.setColor(QPalette.Text, QColor('#000000'))
         self.setPalette(palette)
         
         self._highlighter = None
