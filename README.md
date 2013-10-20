@@ -36,7 +36,7 @@ It will probably be gcc
 ``python setup.py install``
 
 ## Qutepart and Katepart
-[Kate](http://kate-editor.org/) and Katepart (an editor component) is really cool software. Kate authors and comunity has created, probably, the biggest set of highlighters and indenters for programming languages.
+[Kate](http://kate-editor.org/) and Katepart (an editor component) is really cool software. Kate authors and community has created, probably, the biggest set of highlighters and indenters for programming languages.
 
 * Qutepart uses kate syntax highlighters (XML files)
 * Qutepart contains port from Javascript to Python of Kate indenters (12% of the code base in version 1.0.0)
