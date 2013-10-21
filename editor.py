@@ -59,9 +59,6 @@ def main():
     
     qpart.indentUseTabs = False
     
-    from PyQt4.QtGui import QFont
-    qpart.setFont(QFont('Tahoma', 18))
-    
     qpart.text = text
     
     qpart.setWindowTitle(ns.file)
