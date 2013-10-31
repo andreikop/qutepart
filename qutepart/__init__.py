@@ -509,9 +509,8 @@ class Qutepart(QPlainTextEdit):
         QPlainTextEdit.setFont(self, font)
         self._updateTabStopWidth()
         
-        lineNumbersFont = self._lineNumberArea.font()
-        lineNumbersFont.setPointSize(font.pointSize())
-        self._lineNumberArea.setFont(lineNumbersFont)
+        # text on line numbers may overlap, if font is bigger, than code font
+        self._lineNumberArea.setFont(font)
     
     def _updateTabStopWidth(self):
         """Update tabstop width after font or indentation changed
