@@ -21,9 +21,9 @@ Qutepart depends on:
 * Python 2.7
 * PyQt4
 
-Some PyQt versions contain bug, due which exceptions about QTextBlockUserData are generated.
-Bug reproduces on 4.9.6 from OpenSUSE repo.
-Bug doesn't reproduce on OpenSUSE + PyQt built from sources
+Some PyQt versions have bug, due which exceptions about QTextBlockUserData are generated.
+Bug reproduces on 4.9.6 from OpenSUSE repo (12.3).
+Bug doesn't reproduce on OpenSUSE 12.3 + PyQt built from sources
 But doesn't reproduce on PyQt from Ubuntu repositories
 if you have information about other versions - let know the author to update this README
 
