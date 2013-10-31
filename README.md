@@ -19,7 +19,13 @@ Component has been created for [Enki editor](http://enki-editor.org) as replacem
 Qutepart depends on:
 
 * Python 2.7
-* PyQt4 >= 4.10
+* PyQt4
+
+Some PyQt versions contain bug, due which exceptions about QTextBlockUserData are generated.
+Bug reproduces on 4.9.6 from OpenSUSE repo.
+Bug doesn't reproduce on OpenSUSE + PyQt built from sources
+But doesn't reproduce on PyQt from Ubuntu repositories
+if you have information about other versions - let know the author to update this README
 
 
 #### 1. Install [pcre](http://www.pcre.org/) and development files
