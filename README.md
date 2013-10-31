@@ -19,7 +19,7 @@ Component has been created for [Enki editor](http://enki-editor.org) as replacem
 Qutepart depends on:
 
 * Python 2.7
-* PyQt4
+* PyQt4 >= 4.10
 
 
 #### 1. Install [pcre](http://www.pcre.org/) and development files
