@@ -19,14 +19,8 @@ Component has been created for [Enki editor](http://enki-editor.org) as replacem
 Qutepart depends on:
 
 * Python 2.7
-* PyQt4
-
-Some PyQt versions have bug, due which exceptions about QTextBlockUserData are generated.
-Bug reproduces on 4.9.6 from OpenSUSE repo (12.3).
-Bug doesn't reproduce on OpenSUSE 12.3 + PyQt built from sources
-But doesn't reproduce on PyQt from Ubuntu repositories
-if you have information about other versions - let know the author to update this README
-
+* PyQt4 (see *Known problems* section)
+* pcre
 
 #### 1. Install [pcre](http://www.pcre.org/) and development files
 On Debian, Ubuntu and other Linuxes install package ``libpcreX-dev``, where ``X`` is available in your distribution pcre version.
@@ -53,6 +47,20 @@ Nothing is wrong with Katepart. Qutepart has been created for possibility to reu
 ## Author
 Andrei Kopats
 [hlamer@tut.by](mailto:hlamer@tut.by)
+
+## Known problems
+Some PyQt versions have bug, due which exceptions about QTextBlockUserData are generated.
+The bug reproduces on:
+
+* PyQt 4.9.6 from OpenSUSE 12.3 repository
+
+The bug doesn't reproduce on:
+
+* PyQt 4.10 built from sources on OpenSUSE 12.3
+* Any PyQt from Ubuntu repositories
+
+If you have information about other versions - let know the author to update this README
+
 
 ## Bug reports, patches
 [Github page](https://github.com/hlamer/qutepart)
