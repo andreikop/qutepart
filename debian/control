@@ -2,18 +2,18 @@ Source: python-qutepart
 Maintainer: Andrei Kopats <hlamer@tut.by>
 Section: python
 Priority: optional
-Build-Depends: debhelper (>= 7.4.1), python (>= 2.7), libpcre3-dev, python-dev, python-qt4
+Build-Depends: debhelper (>= 7.4.1), python2.7, libpcre3-dev, python2.7-dev, python-qt4
+X-Python-Version: >= 2.7
 Standards-Version: 3.9.4
 Homepage: https://github.com/hlamer/qutepart
 Vcs-Git: https://github.com/hlamer/qutepart
 Vcs-Browser: https://github.com/hlamer/qutepart
-X-Python-Version: >= 2.7
 
 Package: python-qutepart
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-qt4, libpcre3
 Description: Code editor component
- Some of features:
+ Some of the features:
   * Syntax highlighting for 196 languages
   * Smart indentation for many languages
   * Line numbers
