@@ -45,7 +45,7 @@ dput-all: $(foreach series, $(ALL_SERIES), dput-$(series))
 deb-$(CURRENT_SERIES): dsc-$(CURRENT_SERIES)
 	cd build-$(CURRENT_SERIES)/$(PACKAGE_NAME)-$(VERSION) && debuild
 
-obs: dist/${ARCHIVE}
+deb-obs: dist/${ARCHIVE}
 	rm -rf build-obs
 	mkdir build-obs
 	cp dist/${ARCHIVE} build-obs/${DEBIGAN_ORIG_ARCHIVE}
@@ -54,6 +54,19 @@ obs: dist/${ARCHIVE}
 	sed -i s/ubuntuseries/obs/g build-obs/${PACKAGE_NAME}-${VERSION}/debian/changelog
 	cd build-obs/${PACKAGE_NAME}-${VERSION} && $(ENV) debuild -us -uc -S
 
+obs_home_hlamer_enki:
+	osc co home:hlamer:enki python-qutepart
+	mv home\:hlamer\:enki obs_home_hlamer_enki
+
+put-obs: obs_home_hlamer_enki deb-obs
+	cp rpm/python-qutepart.spec obs_home_hlamer_enki/python-qutepart
+	cp dist/${ARCHIVE} obs_home_hlamer_enki/python-qutepart
+	cp build-obs/*.debian.tar.gz obs_home_hlamer_enki/python-qutepart
+	cp build-obs/*.orig.tar.gz obs_home_hlamer_enki/python-qutepart
+	cp build-obs/*.dsc obs_home_hlamer_enki/python-qutepart
+	cd obs_home_hlamer_enki/python-qutepart && \
+		osc addremove && \
+		osc ci -m 'update by the publish script'
 
 sdist:
 	./setup.py sdist --formats=gztar,zip

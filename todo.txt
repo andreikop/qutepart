@@ -1,4 +1,5 @@
 fixme:
+  create manifest, which lists what to sdist
 
 todo:
   switch hihglighting language        2
