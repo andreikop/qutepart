@@ -451,8 +451,9 @@ class IndenterCStyle(IndenterBase):
                     if alignOnAnchor:
                         if not match.group(2) in ('"', "'"):
                             foundColumn += 1
-                        while foundColumn < foundBlock.length() and \
-                              foundBlock.text()[foundColumn].isspace():
+                        foundBlockText = foundBlock.text()
+                        while foundColumn < len(foundBlockText) and \
+                              foundBlockText[foundColumn].isspace():
                             foundColumn += 1
                         indentation = self._makeIndentFromWidth(foundColumn)
                     else:
