@@ -389,7 +389,7 @@ class IndenterCStyle(IndenterBase):
         if match is not None:
             alignOnAnchor = len(match.group(3)) == 0 and match.group(2) != ')'
             # search for opening ", ' or (
-            if match.group(2) == '"' or alignOnSingleQuote and match.group(2) == "'":
+            if match.group(2) == '"' or (alignOnSingleQuote and match.group(2) == "'"):
                 while True:
                     # start from matched closing ' or "
                     # find string opener
@@ -455,7 +455,6 @@ class IndenterCStyle(IndenterBase):
                               foundBlock.text()[foundColumn].isspace():
                             foundColumn += 1
                         indentation = self._makeIndentFromWidth(foundColumn)
-                    
                     else:
                         currentBlock = foundBlock
                         indentation = self._blockIndent(currentBlock)
