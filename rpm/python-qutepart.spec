@@ -57,10 +57,10 @@ Qutepart is a code editor widget for PyQt. Features:
 
 
 %changelog
-* Sun Sep 8 2013 Jairo Llopis <yajo.sk8@gmail.com>  1.1.0-1
-- Initial RPM release
-
-* Wed Nov 20 2013 Andrei Kopats <hlamer@tut.by>  1.1.1-1
+* Wed Nov 20 2013 Andrei Kopats <hlamer@tut.by>  1.1.1-2
 - RPM release for Suse
 - Highlight XXX alert
 - Bugfixes
+
+* Sun Sep 8 2013 Jairo Llopis <yajo.sk8@gmail.com>  1.1.0-1
+- Initial RPM release
