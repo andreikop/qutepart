@@ -20,7 +20,7 @@ from qutepart.completer import Completer
 from qutepart.lines import Lines
 from qutepart.rectangularselection import RectangularSelection
 
-VERSION = (1, 1, 0)
+VERSION = (1, 1, 1)
 
 logger = logging.getLogger('qutepart')
 consoleHandler = logging.StreamHandler()
