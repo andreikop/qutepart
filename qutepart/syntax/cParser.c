@@ -366,10 +366,12 @@ _RegExpMatchGroups_getItem(_RegExpMatchGroups* self, int index)
 static PyObject**
 _listToDynamicallyAllocatedArray(PyObject* list, int* size)
 {
-    *size = PyList_Size(list);
-    PyObject** array = PyMem_Malloc((sizeof (PyObject*)) * *size);
-    
+    PyObject** array;
     int i;
+
+    *size = PyList_Size(list);
+    array = PyMem_Malloc((sizeof (PyObject*)) * *size);
+    
     for (i = 0; i < *size; i++)
         array[i] = PyList_GetItem(list, i);
     
@@ -383,9 +385,10 @@ static bool
 _isDeliminatorNoCache(Py_UNICODE character, PyObject* setAsUnicodeString)
 {
     int deliminatorSetLen = PyUnicode_GET_SIZE(setAsUnicodeString);
+    int i;
+
     Py_UNICODE* deliminatorSetUnicode = PyUnicode_AS_UNICODE(setAsUnicodeString);
     
-    int i;
     for(i = 0; i < deliminatorSetLen; i++)
         if (deliminatorSetUnicode[i] == character)
             return true;
@@ -586,6 +589,9 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
                                   int currentColumnIndex,
                                   DeliminatorSet* deliminatorSet)
 {
+    int i;
+    int prevTextLen;
+    int step;
     Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(self->wholeLineUnicodeText);
     Py_UNICODE* wholeLineUnicodeBufferLower = PyUnicode_AS_UNICODE(self->wholeLineUnicodeTextLower);
     
@@ -593,11 +599,10 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
     self->unicodeText = wholeLineUnicodeBuffer + currentColumnIndex;
     self->unicodeTextLower = wholeLineUnicodeBufferLower + currentColumnIndex;
     
-    int prevTextLen = self->textLen;
+    prevTextLen = self->textLen;
     self->textLen = self->wholeLineLen - currentColumnIndex;
-    int step = prevTextLen - self->textLen;
+    step = prevTextLen - self->textLen;
 
-    int i;
     for (i = 0; i < step; i++)
     {
         int firstCharacterLength = _utf8CharacterLengthTable[(unsigned char)self->utf8Text[0]];
@@ -699,6 +704,8 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
     PyObject* text = NULL;
     PyObject* deliminatorSetAsUnicodeString = NULL;
     PyObject* contextDataTuple = NULL;
+    DeliminatorSet deliminatorSet;
+    _RegExpMatchGroups* contextData = NULL;
     
     if (! PyArg_ParseTuple(args, "|iOOO", &column, &text, &deliminatorSetAsUnicodeString, &contextDataTuple))
         return -1;
@@ -706,15 +713,21 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
     UNICODE_CHECK(text, -1);
     UNICODE_CHECK(deliminatorSetAsUnicodeString, -1);
     
-    _RegExpMatchGroups* contextData = NULL;
     if (Py_None != contextDataTuple)
     {
-        TUPLE_CHECK(contextDataTuple, -1);
-        int size = PyTuple_GET_SIZE(contextDataTuple);
-        int memsize = (size + 1) * sizeof(const char*);  // size + NULL pointer
+        int size;
+        int memsize;
         int i;
+        char* data;        
+        char* freeSpaceForString;
+        const char** charPointers;
+
+        TUPLE_CHECK(contextDataTuple, -1);
+        size = PyTuple_GET_SIZE(contextDataTuple);
+        memsize = (size + 1) * sizeof(const char*);  // size + NULL pointer
         for (i = 0; i < size; i++)
         {
+            PyObject* utf8String;
             PyObject* unicodeString = PyTuple_GET_ITEM(contextDataTuple, i);
 
             if ( ! PyUnicode_Check(unicodeString))
@@ -722,21 +735,22 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
                 PyErr_SetString(PyExc_TypeError, "Context data items must be unicode");
                 return -1;
             }
-            PyObject* utf8String = PyUnicode_AsUTF8String(unicodeString);
+            utf8String = PyUnicode_AsUTF8String(unicodeString);
             memsize += PyString_GET_SIZE(utf8String) + 1; // + null char
             Py_XDECREF(utf8String);
         }
-        char* data = pcre_malloc(memsize);
+        data = pcre_malloc(memsize);
         
-        char* freeSpaceForString = data + ((size + 1) * sizeof(char*));
-        const char** charPointers = (const char**)data;
+        freeSpaceForString = data + ((size + 1) * sizeof(char*));
+        charPointers = (const char**)data;
         
         for (i = 0; i < size; i++)
         {
+            int printedSize;
             PyObject* unicodeString = PyTuple_GET_ITEM(contextDataTuple, i);
             PyObject* utf8String = PyUnicode_AsUTF8String(unicodeString);
             strcpy(freeSpaceForString, PyString_AS_STRING(utf8String));
-            int printedSize = PyString_GET_SIZE(utf8String) + 1;
+            printedSize = PyString_GET_SIZE(utf8String) + 1;
             charPointers[i] = freeSpaceForString;
             freeSpaceForString += printedSize;
             Py_XDECREF(utf8String);
@@ -749,7 +763,7 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
     
     self->internal = TextToMatchObject_internal_make(column, text, contextData);
 
-    DeliminatorSet deliminatorSet = _MakeDeliminatorSet(deliminatorSetAsUnicodeString);
+    deliminatorSet = _MakeDeliminatorSet(deliminatorSetAsUnicodeString);
     
     TextToMatchObject_internal_update(&(self->internal), column, &deliminatorSet);
     _FreeDeliminatorSet(&deliminatorSet);
@@ -869,28 +883,32 @@ _makeDynamicSubstitutions(char* utf8String,
                           bool escapeRegEx)
 {
     int resultLen = 0;
-    
     int i;
+
     for (i = 0; i < stringLen && resultLen < maxResultLen; i++)
     {
         int index = _numPlaceholderIndex(&utf8String[i]);
         if (index >= 0)
         {
+            const char* group;
+            int groupLen;
+
             if (index >= _RegExpMatchGroups_size(contextData))
             {
                 fprintf(stderr, "Invalid dynamic string index %d\n", index);
                 return -1;
             }
-            const char* group = _RegExpMatchGroups_getItem(contextData, index);
-            int groupLen = strlen(group);
+            group = _RegExpMatchGroups_getItem(contextData, index);
+            groupLen = strlen(group);
             
             if (escapeRegEx)
             {
+                int groupCharIndex;
+
                 // check if have space for all escaped chars. Quicker, than checking every step
                 if ((groupLen * 2) > (maxResultLen - resultLen))
                     return -1;
                 
-                int groupCharIndex;
                 for (groupCharIndex = 0; groupCharIndex < groupLen; groupCharIndex++)
                 {
                     if (group[groupCharIndex] > 0x7f ||
@@ -932,16 +950,17 @@ _makeDynamicSubstitutions(char* utf8String,
 static PyObject*
 AbstractRule_tryMatch(AbstractRule* self, PyObject *args, PyObject *kwds)
 {
+    PyObject* retVal;
     TextToMatchObject* textToMatchObject = NULL;
-    
+    RuleTryMatchResult_internal internalResult;
+
     if (! PyArg_ParseTuple(args, "|O", &textToMatchObject))
         return NULL;
 
     TYPE_CHECK(textToMatchObject, TextToMatchObject, NULL);
     
-    RuleTryMatchResult_internal internalResult = AbstractRule_tryMatch_internal(self, &(textToMatchObject->internal));
+    internalResult = AbstractRule_tryMatch_internal(self, &(textToMatchObject->internal));
     
-    PyObject* retVal;
     if (NULL == internalResult.rule)
     {
         retVal = Py_None;
@@ -976,6 +995,7 @@ static RuleTryMatchResult_internal
 DetectChar_tryMatch(DetectChar* self, TextToMatchObject_internal* textToMatchObject)
 {
     const char* utf8Char;
+    int charIndex = 1;
     
     if (self->abstractRuleParams->dynamic)
     {
@@ -996,7 +1016,6 @@ DetectChar_tryMatch(DetectChar* self, TextToMatchObject_internal* textToMatchObj
     if (utf8Char[0] != textToMatchObject->utf8Text[0])
         return MakeEmptyTryMatchResult();
     
-    int charIndex = 1;
     while (utf8Char[charIndex] != '\0' &&
            textToMatchObject->utf8Text[charIndex] != '\0')
     {
@@ -1010,10 +1029,11 @@ DetectChar_tryMatch(DetectChar* self, TextToMatchObject_internal* textToMatchObj
 static int
 DetectChar_init(DetectChar *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = DetectChar_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
     PyObject* char_ = NULL;
+    PyObject* utf8Text;
+    
+    self->_tryMatch = DetectChar_tryMatch;
     
     if (! PyArg_ParseTuple(args, "|OOi", &abstractRuleParams, &char_, &self->index))
         return -1;
@@ -1023,7 +1043,7 @@ DetectChar_init(DetectChar *self, PyObject *args, PyObject *kwds)
     
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
     
-    PyObject* utf8Text = PyUnicode_AsUTF8String(char_);
+    utf8Text = PyUnicode_AsUTF8String(char_);
     strncpy(self->utf8Char, PyString_AS_STRING(utf8Text), sizeof self->utf8Char);
     Py_XDECREF(utf8Text);
 
@@ -1066,10 +1086,11 @@ Detect2Chars_tryMatch(Detect2Chars* self, TextToMatchObject_internal* textToMatc
 static int
 Detect2Chars_init(Detect2Chars *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = Detect2Chars_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
     PyObject* string = NULL;
+    Py_UNICODE* unicode;
+    
+    self->_tryMatch = Detect2Chars_tryMatch;
     
     if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &string))
         return -1;
@@ -1079,7 +1100,7 @@ Detect2Chars_init(Detect2Chars *self, PyObject *args, PyObject *kwds)
     
     UNICODE_CHECK(string, -1);
     
-    Py_UNICODE* unicode = PyUnicode_AS_UNICODE(string);
+    unicode = PyUnicode_AS_UNICODE(string);
     self->char_ = unicode[0];
     self->char1_ = unicode[1];
 
@@ -1125,10 +1146,10 @@ AnyChar_tryMatch(AnyChar* self, TextToMatchObject_internal* textToMatchObject)
 static int
 AnyChar_init(AnyChar *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = AnyChar_tryMatch;
-
     PyObject* abstractRuleParams = NULL;
     PyObject* string = NULL;
+
+    self->_tryMatch = AnyChar_tryMatch;
 
     if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &string))
         return -1;
@@ -1190,11 +1211,12 @@ StringDetect_tryMatch(StringDetect* self, TextToMatchObject_internal* textToMatc
 static int
 StringDetect_init(StringDetect *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = StringDetect_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
     PyObject* string = NULL;
+    PyObject* utf8String;
         
+    self->_tryMatch = StringDetect_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &string))
         return -1;
 
@@ -1203,7 +1225,7 @@ StringDetect_init(StringDetect *self, PyObject *args, PyObject *kwds)
     
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
     
-    PyObject* utf8String = PyUnicode_AsUTF8String(string);
+    utf8String = PyUnicode_AsUTF8String(string);
     self->stringLen = PyString_GET_SIZE(utf8String);
     self->utf8String = PyMem_Malloc(self->stringLen + 1);
     strncpy(self->utf8String, PyString_AS_STRING(utf8String), self->stringLen + 1);
@@ -1238,12 +1260,15 @@ WordDetect_dealloc_fields(WordDetect* self)
 static RuleTryMatchResult_internal
 WordDetect_tryMatch(WordDetect* self, TextToMatchObject_internal* textToMatchObject)
 {
+    const char* wordToCheck;
+    Parser* parentParser;
+
     if (self->utf8WordLength != textToMatchObject->utf8WordLength)
         return MakeEmptyTryMatchResult();
     
-    const char* wordToCheck = textToMatchObject->utf8Text;
+    wordToCheck = textToMatchObject->utf8Text;
     
-    Parser* parentParser = AbstractRule_parentParser(self->abstractRuleParams);
+    parentParser = AbstractRule_parentParser(self->abstractRuleParams);
     if (self->insensitive ||
         ( ! (parentParser->keywordsCaseSensitive)))
     {
@@ -1259,12 +1284,13 @@ WordDetect_tryMatch(WordDetect* self, TextToMatchObject_internal* textToMatchObj
 static int
 WordDetect_init(WordDetect *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = WordDetect_tryMatch;
-
     PyObject* abstractRuleParams = NULL;
     PyObject* word = NULL;
     PyObject* insensitive = NULL;
+    PyObject* utf8Word;
         
+    self->_tryMatch = WordDetect_tryMatch;
+
     if (! PyArg_ParseTuple(args, "|OOO", &abstractRuleParams, &word, &insensitive))
         return -1;
 
@@ -1275,7 +1301,7 @@ WordDetect_init(WordDetect *self, PyObject *args, PyObject *kwds)
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
     ASSIGN_BOOL_FIELD(insensitive);
     
-    PyObject* utf8Word = PyUnicode_AsUTF8String(word);
+    utf8Word = PyUnicode_AsUTF8String(word);
     self->utf8Word = strdup(PyString_AS_STRING(utf8Word));
     Py_XDECREF(utf8Word);
     
@@ -1314,16 +1340,21 @@ _WordTree_wordBufferSize(int wordLength)
 static void
 _WordTree_init(_WordTree* self, PyObject* listOfUnicodeStrings)
 {
+    int wordLength;
+    int i;
+    int totalWordCount = PyList_Size(listOfUnicodeStrings);
+    int currentWordIndex[QUTEPART_MAX_WORD_LENGTH];
+
     memset(self->wordCount, 0, sizeof(int) * QUTEPART_MAX_WORD_LENGTH);
     
     // first pass, calculate length
-    int totalWordCount = PyList_Size(listOfUnicodeStrings);
-    int i;
     for (i = 0; i < totalWordCount; i++)
     {
+        int wordLength;
+
         PyObject* unicodeWord = PyList_GetItem(listOfUnicodeStrings, i);
         PyObject* utf8Word = PyUnicode_AsUTF8String(unicodeWord);
-        int wordLength = PyString_GET_SIZE(utf8Word);
+        wordLength = PyString_GET_SIZE(utf8Word);
         
         if (wordLength <= QUTEPART_MAX_WORD_LENGTH)
             self->wordCount[wordLength]++;
@@ -1334,7 +1365,6 @@ _WordTree_init(_WordTree* self, PyObject* listOfUnicodeStrings)
     }
 
     // allocate the buffers
-    int wordLength;
     for (wordLength = 0; wordLength < QUTEPART_MAX_WORD_LENGTH; wordLength++)
     {
         if (self->wordCount[wordLength] > 0)
@@ -1348,19 +1378,23 @@ _WordTree_init(_WordTree* self, PyObject* listOfUnicodeStrings)
         }
     }
     
-    int currentWordIndex[QUTEPART_MAX_WORD_LENGTH];
     memset(currentWordIndex, 0, sizeof(int) * QUTEPART_MAX_WORD_LENGTH);
     
     // second pass, copy data
     for (i = 0; i < totalWordCount; i++)
     {
+        int wordLength;
+        int wordIndex;
+        int wordOffset;
+        char* wordPointer;
+
         PyObject* unicodeWord = PyList_GetItem(listOfUnicodeStrings, i);
         PyObject* utf8Word = PyUnicode_AsUTF8String(unicodeWord);
-        int wordLength = PyString_GET_SIZE(utf8Word);
+        wordLength = PyString_GET_SIZE(utf8Word);
         
-        int wordIndex = currentWordIndex[wordLength];
-        int wordOffset = _WordTree_wordBufferSize(wordLength) * wordIndex;
-        char* wordPointer = self->words[wordLength] + wordOffset;
+        wordIndex = currentWordIndex[wordLength];
+        wordOffset = _WordTree_wordBufferSize(wordLength) * wordIndex;
+        wordPointer = self->words[wordLength] + wordOffset;
         memset(wordPointer, 0, _WordTree_wordBufferSize(wordLength));
         strncpy(wordPointer, PyString_AS_STRING(utf8Word), wordLength);  // copy without zero
         wordPointer += _WordTree_wordBufferSize(wordLength);
@@ -1385,12 +1419,15 @@ _WordTree_free(_WordTree* self)
 static bool
 _WordTree_contains(_WordTree* self, const char* utf8Word, int wordLength)
 {
+    int step;
+    const char* outOfStringPointer;
+    const char* wordPointer;
+
     if (NULL == self->words[wordLength]) // no any words
         return false;
     
-    int step = _WordTree_wordBufferSize(wordLength);
-    const char* outOfStringPointer = self->words[wordLength] + (step * self->wordCount[wordLength]);
-    const char* wordPointer;
+    step = _WordTree_wordBufferSize(wordLength);
+    outOfStringPointer = self->words[wordLength] + (step * self->wordCount[wordLength]);
 
     for(wordPointer = self->words[wordLength]; wordPointer != outOfStringPointer; wordPointer += step)
     {
@@ -1421,10 +1458,11 @@ keyword_dealloc_fields(keyword* self)
 static RuleTryMatchResult_internal
 keyword_tryMatch(keyword* self, TextToMatchObject_internal* textToMatchObject)
 {
+    const char* utf8Word;
+
     if (textToMatchObject->utf8WordLength <= 0)
         return MakeEmptyTryMatchResult();
     
-    const char* utf8Word;
     if (self->insensitive)
         utf8Word = textToMatchObject->utf8WordLower;
     else
@@ -1439,12 +1477,13 @@ keyword_tryMatch(keyword* self, TextToMatchObject_internal* textToMatchObject)
 static int
 keyword_init(keyword *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = keyword_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
     PyObject* words = NULL;
     PyObject* insensitive = NULL;
+    Parser* parentParser;
         
+    self->_tryMatch = keyword_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|OOO", &abstractRuleParams, &words, &insensitive))
         return -1;
 
@@ -1455,7 +1494,7 @@ keyword_init(keyword *self, PyObject *args, PyObject *kwds)
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
     ASSIGN_BOOL_FIELD(insensitive);
     
-    Parser* parentParser = AbstractRule_parentParser(self->abstractRuleParams);
+    parentParser = AbstractRule_parentParser(self->abstractRuleParams);
     self->insensitive = self->insensitive || ( ! parentParser->keywordsCaseSensitive);
     
     _WordTree_init(&(self->wordTree), words);
@@ -1497,14 +1536,15 @@ _compileRegExp(const char* utf8String, bool insensitive, pcre_extra** pExtra)
 {
     const char* errptr = NULL;
     int erroffset = 0;
+    pcre* regExp;
     
     int options = PCRE_ANCHORED | PCRE_UTF8 | PCRE_NO_UTF8_CHECK;
     if (insensitive)
         options |= PCRE_CASELESS;
     
-    pcre* regExp = pcre_compile(utf8String,
-                                options,
-                                &errptr, &erroffset, NULL);
+    regExp = pcre_compile(utf8String,
+                          options,
+                          &errptr, &erroffset, NULL);
     
     if (NULL == regExp)
     {
@@ -1559,6 +1599,11 @@ _matchRegExp(pcre* regExp, pcre_extra* extra, const char* utf8Text, int textLen,
 static RuleTryMatchResult_internal
 RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
 {
+    int matchLen;
+    pcre* regExp = NULL;
+    pcre_extra* extra = NULL;
+    _RegExpMatchGroups* groups = NULL;
+    
     // Special case. if pattern starts with \b, we have to check it manually,
     //because string is passed to .match(..) without beginning
     if (self->wordStart &&
@@ -1570,9 +1615,6 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
         textToMatchObject->currentColumnIndex > 0)
         return MakeEmptyTryMatchResult();
 
-    pcre* regExp = NULL;
-    pcre_extra* extra = NULL;
-    
     if (self->abstractRuleParams->dynamic)
     {
         char buffer[QUTEPART_DYNAMIC_STRING_MAX_LENGTH];
@@ -1594,10 +1636,6 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
     if (NULL == regExp)
         return MakeEmptyTryMatchResult();
     
-    _RegExpMatchGroups* groups = NULL;
-
-    int matchLen;
-    
     matchLen = _matchRegExp(regExp, extra, textToMatchObject->utf8Text, textToMatchObject->textLen, &groups);
     
     if (matchLen != 0)
@@ -1609,15 +1647,15 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
 static int
 RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = RegExpr_tryMatch;
-    
-    PyObject* abstractRuleParams = NULL;
-    
+    PyObject* abstractRuleParams = NULL;    
     PyObject* string = NULL;
     PyObject* insensitive = NULL;
     PyObject* wordStart = NULL;
     PyObject* lineStart = NULL;
+    PyObject* utf8String;    
         
+    self->_tryMatch = RegExpr_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|OOOOO", &abstractRuleParams,
                            &string, &insensitive, &wordStart, &lineStart))
         return -1;
@@ -1634,7 +1672,7 @@ RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
     ASSIGN_BOOL_FIELD(wordStart);
     ASSIGN_BOOL_FIELD(lineStart);
 
-    PyObject* utf8String = PyUnicode_AsUTF8String(string);    
+    utf8String = PyUnicode_AsUTF8String(string);    
     if (self->abstractRuleParams->dynamic)
     {
         self->stringLen = PyString_GET_SIZE(utf8String);
@@ -1713,6 +1751,8 @@ Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
     if (textToMatchObject->textLen > matchedLength &&
         textToMatchObject->unicodeTextLower[matchedLength] == 'e')
     {
+        bool haveDigitInExponent = false;
+        
         matchedLength += 1;
         
         if (textToMatchObject->textLen > matchedLength &&
@@ -1721,8 +1761,6 @@ Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
         {
             matchedLength += 1;
         }
-        
-        bool haveDigitInExponent = false;
         
         digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText + matchedLength,
                                                     textToMatchObject->textLen - matchedLength);
@@ -1756,11 +1794,12 @@ AbstractNumberRule_tryMatch(AbstractRule* self,
                             bool isIntRule,
                             TextToMatchObject_internal* textToMatchObject)
 {
+    int index;
+    int matchEndIndex;
+    
     if ( ! textToMatchObject->isWordStart)
         return MakeEmptyTryMatchResult();
 
-    int index;
-    
     if (isIntRule)
         index = Int_tryMatchText(textToMatchObject);
     else
@@ -1769,21 +1808,23 @@ AbstractNumberRule_tryMatch(AbstractRule* self,
     if (-1 == index)
         return MakeEmptyTryMatchResult();
     
-    int matchEndIndex = textToMatchObject->currentColumnIndex + index;
+    matchEndIndex = textToMatchObject->currentColumnIndex + index;
     if (matchEndIndex < PyUnicode_GET_SIZE(textToMatchObject->wholeLineUnicodeText))
     {
+        int i;
+        bool haveMatch = false;
+        Parser* parentParser;
+
         TextToMatchObject_internal newTextToMatchObject =
                 TextToMatchObject_internal_make(textToMatchObject->currentColumnIndex + index,
                                                 textToMatchObject->wholeLineUnicodeText,
                                                 textToMatchObject->contextData);
         
-        Parser* parentParser = AbstractRule_parentParser(self->abstractRuleParams);
+        parentParser = AbstractRule_parentParser(self->abstractRuleParams);
         TextToMatchObject_internal_update(&newTextToMatchObject,
                                           matchEndIndex,
-                                         &parentParser->deliminatorSet);
+                                          &parentParser->deliminatorSet);
         
-        int i;
-        bool haveMatch = false;
         for (i = 0; i < childRulesSize && ( ! haveMatch); i++)
         {
             RuleTryMatchResult_internal result = AbstractRule_tryMatch_internal(childRules[i], &newTextToMatchObject);
@@ -1830,11 +1871,11 @@ Int_tryMatch(Int* self, TextToMatchObject_internal* textToMatchObject)
 static int
 Int_init(Int *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = Int_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
     PyObject* childRulesPython = NULL;
         
+    self->_tryMatch = Int_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &childRulesPython))
         return -1;
 
@@ -1879,11 +1920,11 @@ Float_tryMatch(Float* self, TextToMatchObject_internal* textToMatchObject)
 static int
 Float_init(Float *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = Float_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
     PyObject* childRulesPython = NULL;
         
+    self->_tryMatch = Float_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &childRulesPython))
         return -1;
 
@@ -1924,10 +1965,11 @@ _isOctChar(Py_UNICODE symbol)
 static RuleTryMatchResult_internal
 HlCOct_tryMatch(HlCOct* self, TextToMatchObject_internal* textToMatchObject)
 {
+    int index = 1;
+
     if (textToMatchObject->unicodeText[0] != '0')
         return MakeEmptyTryMatchResult();
 
-    int index = 1;
     while (index < textToMatchObject->textLen &&
            _isOctChar(textToMatchObject->unicodeText[index]))
         index ++;
@@ -1946,10 +1988,10 @@ HlCOct_tryMatch(HlCOct* self, TextToMatchObject_internal* textToMatchObject)
 static int
 HlCOct_init(HlCOct *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = HlCOct_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
         
+    self->_tryMatch = HlCOct_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
 
@@ -1986,6 +2028,8 @@ _isHexChar(Py_UNICODE symbol)
 static RuleTryMatchResult_internal
 HlCHex_tryMatch(HlCHex* self, TextToMatchObject_internal* textToMatchObject)
 {
+    int index = 2;
+
     if (textToMatchObject->textLen < 3)
         return MakeEmptyTryMatchResult();
     
@@ -1993,7 +2037,6 @@ HlCHex_tryMatch(HlCHex* self, TextToMatchObject_internal* textToMatchObject)
         textToMatchObject->unicodeTextLower[1] != 'x')
         return MakeEmptyTryMatchResult();
     
-    int index = 2;
     while (index < textToMatchObject->textLen &&
            _isHexChar(textToMatchObject->unicodeTextLower[index]))
         index ++;
@@ -2012,10 +2055,10 @@ HlCHex_tryMatch(HlCHex* self, TextToMatchObject_internal* textToMatchObject)
 static int
 HlCHex_init(HlCHex *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = HlCHex_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
         
+    self->_tryMatch = HlCHex_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
 
@@ -2103,10 +2146,10 @@ HlCStringChar_tryMatch(HlCStringChar* self, TextToMatchObject_internal* textToMa
 static int
 HlCStringChar_init(HlCStringChar *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = HlCStringChar_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
         
+    self->_tryMatch = HlCStringChar_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
 
@@ -2140,8 +2183,8 @@ HlCChar_tryMatch(HlCChar* self, TextToMatchObject_internal* textToMatchObject)
         textToMatchObject->unicodeText[0] == '\'' &&
         textToMatchObject->unicodeText[1] != '\'')
     {
-        int result = _checkEscapedChar(textToMatchObject->unicodeTextLower + 1, textToMatchObject->textLen - 1);
         int index;
+        int result = _checkEscapedChar(textToMatchObject->unicodeTextLower + 1, textToMatchObject->textLen - 1);
         if (result != -1)
             index = 1 + result;
         else  // 1 not escaped character
@@ -2160,10 +2203,10 @@ HlCChar_tryMatch(HlCChar* self, TextToMatchObject_internal* textToMatchObject)
 static int
 HlCChar_init(HlCChar *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = HlCChar_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
         
+    self->_tryMatch = HlCChar_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
 
@@ -2218,12 +2261,12 @@ RangeDetect_tryMatch(RangeDetect* self, TextToMatchObject_internal* textToMatchO
 static int
 RangeDetect_init(RangeDetect *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = RangeDetect_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
     PyObject* char_ = NULL;
     PyObject* char1_ = NULL;
         
+    self->_tryMatch = RangeDetect_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|OOO", &abstractRuleParams, &char_, &char1_))
         return -1;
 
@@ -2270,10 +2313,10 @@ LineContinue_tryMatch(LineContinue* self, TextToMatchObject_internal* textToMatc
 static int
 LineContinue_init(LineContinue *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = LineContinue_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
         
+    self->_tryMatch = LineContinue_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
 
@@ -2305,8 +2348,8 @@ IncludeRules_dealloc_fields(IncludeRules* self)
 static RuleTryMatchResult_internal
 IncludeRules_tryMatch(IncludeRules* self, TextToMatchObject_internal* textToMatchObject)
 {
-    AbstractRule** rules = self->context->rulesC;
     int i;
+    AbstractRule** rules = self->context->rulesC;
     for (i = 0; i < self->context->rulesSize; i++)
     {
         RuleTryMatchResult_internal ruleTryMatchResult = AbstractRule_tryMatch_internal(rules[i], textToMatchObject);
@@ -2320,11 +2363,11 @@ IncludeRules_tryMatch(IncludeRules* self, TextToMatchObject_internal* textToMatc
 static int
 IncludeRules_init(IncludeRules *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = IncludeRules_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
     PyObject* context = NULL;
         
+    self->_tryMatch = IncludeRules_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|OO", &abstractRuleParams, &context))
         return -1;
 
@@ -2371,10 +2414,10 @@ DetectSpaces_tryMatch(DetectSpaces* self, TextToMatchObject_internal* textToMatc
 static int
 DetectSpaces_init(DetectSpaces *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = DetectSpaces_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
         
+    self->_tryMatch = DetectSpaces_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
 
@@ -2421,10 +2464,10 @@ DetectIdentifier_tryMatch(DetectIdentifier* self, TextToMatchObject_internal* te
 static int
 DetectIdentifier_init(DetectIdentifier *self, PyObject *args, PyObject *kwds)
 {
-    self->_tryMatch = DetectIdentifier_tryMatch;
-    
     PyObject* abstractRuleParams = NULL;
         
+    self->_tryMatch = DetectIdentifier_tryMatch;
+    
     if (! PyArg_ParseTuple(args, "|O", &abstractRuleParams))
         return -1;
 
@@ -2455,9 +2498,9 @@ DECLARE_TYPE_WITHOUT_CONSTRUCTOR(ContextStack, NULL, "Context stack");
 static ContextStack*
 ContextStack_new(Context** contexts, _RegExpMatchGroups** data, int size)  // not a constructor, just C function
 {
+    int i;
     ContextStack* contextStack = PyObject_New(ContextStack, &ContextStackType);
 
-    int i;
     for (i = 0; i < size; i++)
     {
         contextStack->_contexts[i] = contexts[i];
@@ -2513,6 +2556,7 @@ static ContextStack*
 ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* contextStack, _RegExpMatchGroups* data)
 {
     bool haveContextToSwitch = Py_None != (PyObject*)self->_contextToSwitch;
+    ContextStack* newContextStack;
     
     if (contextStack->_size - self->_popsCount < 0 ||
         (contextStack->_size - self->_popsCount == 0 && 
@@ -2524,9 +2568,9 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* context
                                 contextStack->_size);
     }
     
-    ContextStack* newContextStack = ContextStack_new(contextStack->_contexts,
-                                                     contextStack->_data,
-                                                     contextStack->_size - self->_popsCount);
+    newContextStack = ContextStack_new(contextStack->_contexts,
+                                       contextStack->_data,
+                                       contextStack->_size - self->_popsCount);
     
     if (haveContextToSwitch)
     {
@@ -2698,27 +2742,29 @@ Context_parseBlock(Context* self,
                    ContextStack** pContextStack,
                    bool* pLineContinue)
 {
+    int startColumnIndex = currentColumnIndex;
+    int wholeLineLen;
+    int countOfNotMatchedSymbols = 0;
+    
     TextToMatchObject_internal textToMatchObject = 
                     TextToMatchObject_internal_make(currentColumnIndex,
                                                     unicodeText,
                                                     ContextStack_currentData(*pContextStack));
     
-    int startColumnIndex = currentColumnIndex;
-    int wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject.wholeLineUnicodeText);
-
-    int countOfNotMatchedSymbols = 0;
+    wholeLineLen = PyUnicode_GET_SIZE(textToMatchObject.wholeLineUnicodeText);
     
     *pLineContinue = false;
     
     while (currentColumnIndex < wholeLineLen)
     {
+        int i;
+        RuleTryMatchResult_internal result;
+    
         Parser* parentParser = (Parser*)self->parser;
         TextToMatchObject_internal_update(&textToMatchObject, currentColumnIndex, &parentParser->deliminatorSet);
         
-        RuleTryMatchResult_internal result;
         result.rule = NULL;
         
-        int i;
         for (i = 0; i < self->rulesSize; i++)
         {
             result = AbstractRule_tryMatch_internal((AbstractRule*)self->rulesC[i], &textToMatchObject);
@@ -2902,6 +2948,14 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
 {
     PyObject* unicodeText = NULL;
     ContextStack* prevContextStack = NULL;
+    Context* currentContext;    
+    PyObject* segmentList = NULL;
+    bool lineContinue = false;
+    int currentColumnIndex = 0;
+    int textLen;
+    PyObject* textTypeMap;
+    char* textTypeMapData;
+    ContextStack* contextStack;
 
     if (! PyArg_ParseTuple(args, "|OO",
                            &unicodeText,
@@ -2912,7 +2966,6 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     if (Py_None != (PyObject*)(prevContextStack))
         TYPE_CHECK(prevContextStack, ContextStack, NULL);
     
-    ContextStack* contextStack;
     if (Py_None != (PyObject*)prevContextStack)
         contextStack = prevContextStack;
     else
@@ -2920,9 +2973,9 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
 
     Py_INCREF(contextStack);
     
-    Context* currentContext = ContextStack_currentContext(contextStack);
+    currentContext = ContextStack_currentContext(contextStack);
     
-    PyObject* segmentList = NULL;
+    segmentList = NULL;
     if (returnSegments)
     {
         segmentList = PyList_New(0);
@@ -2933,16 +2986,16 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
         Py_INCREF(Py_None);
     }
 
-    bool lineContinue = false;
-    int currentColumnIndex = 0;
-    int textLen = PyUnicode_GET_SIZE(unicodeText);
-    PyObject* textTypeMap = PyString_FromStringAndSize(NULL, textLen + 1);
-    char* textTypeMapData = PyString_AS_STRING(textTypeMap);
+    textLen = PyUnicode_GET_SIZE(unicodeText);
+    textTypeMap = PyString_FromStringAndSize(NULL, textLen + 1);
+    textTypeMapData = PyString_AS_STRING(textTypeMap);
     memset(textTypeMapData, ' ', textLen);
     textTypeMapData[textLen + 1] = 0;
     
     while (currentColumnIndex < textLen)
     {
+        int length;
+
         if (self->debugOutputEnabled)
         {
             fprintf(stderr, "In context ");
@@ -2950,13 +3003,13 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
             fprintf(stderr, "\n");
         }
 
-        int length = Context_parseBlock( currentContext,
-                                         currentColumnIndex,
-                                         unicodeText,
-                                         segmentList,
-                                         textTypeMapData,
-                                        &contextStack,
-                                        &lineContinue);
+        length = Context_parseBlock( currentContext,
+                                     currentColumnIndex,
+                                     unicodeText,
+                                     segmentList,
+                                     textTypeMapData,
+                                     &contextStack,
+                                     &lineContinue);
         currentColumnIndex += length;
         currentContext = ContextStack_currentContext(contextStack);
     }
@@ -3003,6 +3056,8 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     else
     {
         PyObject* retStack = NULL;
+        PyObject* retContextData;
+
         if ( ! Parser_contextStackEqualToDefault(self->defaultContext, contextStack))
         {
             retStack = (PyObject*)contextStack;
@@ -3014,7 +3069,7 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
             Py_DECREF(contextStack);
         }
         
-        PyObject* retContextData = Py_BuildValue("OO", retStack, textTypeMap);
+        retContextData = Py_BuildValue("OO", retStack, textTypeMap);
         
         if (Py_None != segmentList)
             return Py_BuildValue("OO", retContextData, segmentList);
@@ -3062,10 +3117,10 @@ static PyMethodDef cParser_methods[] = {
 PyMODINIT_FUNC
 initcParser(void) 
 {
-    _utf8CharacterLengthTable_init();
-    
     PyObject* m;
 
+    _utf8CharacterLengthTable_init();
+    
     m = Py_InitModule3("cParser", cParser_methods,
                        "Example module that creates an extension type.");
 
