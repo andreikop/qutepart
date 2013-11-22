@@ -68,7 +68,7 @@ def _checkDependencies():
         print "Try to install python-dev package"
         print "If not standard directories are used, pass parameters"
         print "\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include"
-        print "--lib-dir= and --include-dir= may be used multiply times"
+        print "--lib-dir= and --include-dir= may be used multiple times"
         return False
     
     if not compiler.has_function('pcre_version',
@@ -80,7 +80,7 @@ def _checkDependencies():
         print "Try to install libpcre{version}-dev package, or go to http://pcre.org"
         print "If not standard directories are used, pass parameters:"
         print "\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include"
-        print "--lib-dir= and --include-dir= may be used multiply times"
+        print "--lib-dir= and --include-dir= may be used multiple times"
         return False
     
     return True
