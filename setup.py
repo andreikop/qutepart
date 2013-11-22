@@ -75,7 +75,7 @@ def _checkDependencies():
                                  includes = ['pcre.h'],
                                  libraries = ['pcre'],
                                  include_dirs=include_dirs,
-                                 library_dirs=include_dirs):
+                                 library_dirs=library_dirs):
         print "Failed to find pcre library."
         print "Try to install libpcre{version}-dev package, or go to http://pcre.org"
         print "If not standard directories are used, pass parameters:"
