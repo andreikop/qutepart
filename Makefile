@@ -59,6 +59,7 @@ obs_home_hlamer_enki:
 	mv home\:hlamer\:enki obs_home_hlamer_enki
 
 put-obs: obs_home_hlamer_enki deb-obs
+	rm -f obs_home_hlamer_enki/python-qutepart/*
 	cp rpm/python-qutepart.spec obs_home_hlamer_enki/python-qutepart
 	cp dist/${ARCHIVE} obs_home_hlamer_enki/python-qutepart
 	cp build-obs/*.debian.tar.gz obs_home_hlamer_enki/python-qutepart
