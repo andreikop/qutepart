@@ -965,6 +965,10 @@ class Qutepart(QPlainTextEdit):
                 cursor.deleteChar()
                 cursor.insertText(text)
         
+        def moreThanOneLineSelected():
+            ((l1, c1), (l2, c2)) = self.selectedPosition
+            return l1 != l2
+        
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
         elif event.matches(QKeySequence.Copy) and self._rectangularSelection.isActive():
@@ -977,9 +981,13 @@ class Qutepart(QPlainTextEdit):
             self.setOverwriteMode(not self.overwriteMode())
         elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
             if cursor.hasSelection():
-                self._onChangeSelectedBlocksIndent(increase = True)
+                self._onChangeSelectedBlocksIndent(increase=True)
             else:
                 self._onShortcutIndentAfterCursor()
+        elif event.key() == Qt.Key_Space and moreThanOneLineSelected():
+            self._onChangeSelectedBlocksIndent(increase=True, withSpace=True)
+        elif event.key() == Qt.Key_Backspace and moreThanOneLineSelected():
+            self._onChangeSelectedBlocksIndent(increase=False, withSpace=True)
         elif event.key() == Qt.Key_Backspace and \
              shouldUnindentWithBackspace():
             self._onShortcutUnindentWithBackspace()
@@ -1164,46 +1172,44 @@ class Qutepart(QPlainTextEdit):
         self.setTextCursor(cursor)
         self._onShortcutScroll(down)
 
-    def _indentBlock(self, block):
-        """Increase indentation level
-        """
-        QTextCursor(block).insertText(self._indentText())
-    
-    def _unIndentBlock(self, block):
-        """Increase indentation level
-        """
-        text = block.text()
-        
-        if self._indentUseTabs:
-            if text.startswith('\t'):
-                charsToRemove = 1
-            else:
-                spacesCount = len(text) - len(text.lstrip(' '))
-                charsToRemove = min(spacesCount, self._indentWidth)
-        else:  # spaces
-            if text.startswith(self._indentText()):  # remove indent level
-                charsToRemove = self._indentWidth
-            elif text.startswith('\t'):  # remove 1 Tab
-                charsToRemove = 1
-            else:  # remove all spaces
-                charsToRemove = len(text) - len(text.lstrip(' '))
-        
-        if charsToRemove:
-            cursor = QTextCursor(block)
-            cursor.setPosition(cursor.position() + charsToRemove, QTextCursor.KeepAnchor)
-            cursor.removeSelectedText()
-    
-    def _onChangeSelectedBlocksIndent(self, increase):
-        """Tab pressed and few blocks are selected, or Shift+Tab pressed
+    def _onChangeSelectedBlocksIndent(self, increase, withSpace=False):
+        """Tab or Space pressed and few blocks are selected, or Shift+Tab pressed
         Insert or remove text from the beginning of blocks
         """
+        def indentBlock(block):
+            QTextCursor(block).insertText(' ' if withSpace else self._indentText())
         
+        def unIndentBlock(block):
+            text = block.text()
+            
+            if self._indentUseTabs:
+                if text.startswith('\t'):
+                    charsToRemove = 1
+                else:
+                    spacesCount = len(text) - len(text.lstrip(' '))
+                    charsToRemove = min(spacesCount, self._indentWidth)
+            else:  # spaces
+                if withSpace:
+                    charsToRemove = 1
+                else:
+                    if text.startswith(self._indentText()):  # remove indent level
+                        charsToRemove = self._indentWidth
+                    elif text.startswith('\t'):  # remove 1 Tab
+                        charsToRemove = 1
+                    else:  # remove all spaces
+                        charsToRemove = len(text) - len(text.lstrip(' '))
+            
+            if charsToRemove:
+                cursor = QTextCursor(block)
+                cursor.setPosition(cursor.position() + charsToRemove, QTextCursor.KeepAnchor)
+                cursor.removeSelectedText()
+    
         cursor = self.textCursor()
 
         startBlock = self.document().findBlock(cursor.selectionStart())
         endBlock = self.document().findBlock(cursor.selectionEnd())
         
-        indentFunc = self._indentBlock if increase else self._unIndentBlock
+        indentFunc = indentBlock if increase else unIndentBlock
 
         if startBlock != endBlock:  # indent multiply lines
             stopBlock = endBlock.next()
