@@ -66,7 +66,7 @@ class Test(unittest.TestCase):
         self.qpart.indentUseTabs = False
 
         self.qpart.text = '  ab\n  cd'
-        self.qpart.selectedPosition = ((0, 2), (1, 5))
+        self.qpart.selectedPosition = ((0, 2), (1, 3))
 
         QTest.keyClick(self.qpart, Qt.Key_Tab)
         self.assertEqual(self.qpart.text, '      ab\n      cd')
@@ -79,13 +79,35 @@ class Test(unittest.TestCase):
         self.qpart.indentUseTabs = False
 
         self.qpart.text = '  ab\n  cd'
-        self.qpart.selectedPosition = ((0, 2), (1, 5))
+        self.qpart.selectedPosition = ((0, 2), (1, 3))
 
         QTest.keyClick(self.qpart, Qt.Key_Space)
         self.assertEqual(self.qpart.text, '   ab\n   cd')
 
         QTest.keyClick(self.qpart, Qt.Key_Backspace)
         self.assertEqual(self.qpart.text, '  ab\n  cd')
+
+    def test_6(self):
+        # (Unindent Tab/Space mix
+        self.qpart.indentUseTabs = False
+
+        self.qpart.text = '    \t  \tab'
+        self.qpart.cursorPosition = ((0, 8))
+
+        self.qpart.decreaseIndentAction.trigger()
+        self.assertEqual(self.qpart.text, '    \t  ab')
+
+        self.qpart.decreaseIndentAction.trigger()
+        self.assertEqual(self.qpart.text, '    \tab')
+
+        self.qpart.decreaseIndentAction.trigger()
+        self.assertEqual(self.qpart.text, '    ab')
+
+        self.qpart.decreaseIndentAction.trigger()
+        self.assertEqual(self.qpart.text, 'ab')
+
+        self.qpart.decreaseIndentAction.trigger()
+        self.assertEqual(self.qpart.text, 'ab')
 
 
 if __name__ == '__main__':

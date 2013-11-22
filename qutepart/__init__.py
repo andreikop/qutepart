@@ -1176,32 +1176,41 @@ class Qutepart(QPlainTextEdit):
         """Tab or Space pressed and few blocks are selected, or Shift+Tab pressed
         Insert or remove text from the beginning of blocks
         """
+        def blockIndentation(block):
+            text = block.text()
+            return text[:len(text) - len(text.lstrip())]
+        
+        def cursorAtSpaceEnd(block):
+            cursor = QTextCursor(block)
+            cursor.setPositionInBlock(len(blockIndentation(block)))
+            return cursor
+        
         def indentBlock(block):
-            QTextCursor(block).insertText(' ' if withSpace else self._indentText())
+            cursor = cursorAtSpaceEnd(block)
+            cursor.insertText(' ' if withSpace else self._indentText())
+        
+        def spacesCount(text):
+            return len(text) - len(text.rstrip(' '))
         
         def unIndentBlock(block):
-            text = block.text()
+            currentIndent = blockIndentation(block)
             
-            if self._indentUseTabs:
-                if text.startswith('\t'):
-                    charsToRemove = 1
-                else:
-                    spacesCount = len(text) - len(text.lstrip(' '))
-                    charsToRemove = min(spacesCount, self._indentWidth)
-            else:  # spaces
-                if withSpace:
-                    charsToRemove = 1
-                else:
-                    if text.startswith(self._indentText()):  # remove indent level
+            if currentIndent.endswith('\t'):
+                charsToRemove = 1
+            elif withSpace:
+                charsToRemove = 1 if currentIndent else 0
+            else:
+                if self._indentUseTabs:
+                    charsToRemove = min(spacesCount(currentIndent), self._indentWidth)
+                else:  # spaces
+                    if currentIndent.endswith(self._indentText()):  # remove indent level
                         charsToRemove = self._indentWidth
-                    elif text.startswith('\t'):  # remove 1 Tab
-                        charsToRemove = 1
                     else:  # remove all spaces
-                        charsToRemove = len(text) - len(text.lstrip(' '))
-            
+                        charsToRemove = min(spacesCount(currentIndent), self._indentWidth)
+        
             if charsToRemove:
-                cursor = QTextCursor(block)
-                cursor.setPosition(cursor.position() + charsToRemove, QTextCursor.KeepAnchor)
+                cursor = cursorAtSpaceEnd(block)
+                cursor.setPosition(cursor.position() - charsToRemove, QTextCursor.KeepAnchor)
                 cursor.removeSelectedText()
     
         cursor = self.textCursor()
