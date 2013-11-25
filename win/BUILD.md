@@ -13,12 +13,10 @@ Downloads
 Make pcre
 ------------
     cd <root dir to pcre-8.33 source>
-    cmake pcre-8.33 -D BUILD_SHARED_LIBS:BOOL=ON -D PCRE_SUPPORT_UTF:BOOL=ON --build pcre-8.33-bin -G "Visual Studio 9 2008"
+    cmake pcre-8.33 -D BUILD_SHARED_LIBS:BOOL=OFF -D PCRE_SUPPORT_UTF:BOOL=ON --build pcre-8.33-bin -G "Visual Studio 9 2008"
 Then open the resulting `pcre-8.33-bin/PCRE.sln` in Visual Studio 2008, choose the release build configuration, then build `pcre`.
 
 Build/install Python modules
 ----------------------------------
     cd qutepart
     python setup.py install --include-dir=..\pcre-8.33-bin --include-dir=win --lib-dir=..\pcre-8.33-bin\Release
-
-Now, manually copy pcre.dll to C:\Python27\Lib\site-packages\qutepart\syntax.
