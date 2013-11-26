@@ -2,6 +2,7 @@
 
 import sys
 import os
+import platform
 
 from distutils.core import setup, Extension
 import distutils.ccompiler
@@ -43,14 +44,16 @@ library_dirs = parse_arg_list('--lib-dir=')
 if not library_dirs:
     library_dirs = ['/usr/lib', '/usr/local/lib', '/opt/local/lib']
 
-
+macros = []
+if platform.system() == 'Windows':
+    macros.append(('HAVE_PCRE_CONFIG_H', None))
 
 extension = Extension('qutepart.syntax.cParser',
                       sources = ['qutepart/syntax/cParser.c'],
                       libraries = ['pcre'],
                       include_dirs=include_dirs,
                       library_dirs=library_dirs,
-                      define_macros = [('HAVE_CONFIG_H', None)])
+                      define_macros = macros)
 
 
 def _checkDependencies():

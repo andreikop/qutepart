@@ -12,8 +12,8 @@
 #include <stdio.h>
 
 // Allow the PCRE's config.h to set options used by pcre.h below.
-#ifdef HAVE_CONFIG_H
-#include "config.h"
+#ifdef HAVE_PCRE_CONFIG_H
+    #include "config.h"
 #endif
 
 #include <pcre.h>
