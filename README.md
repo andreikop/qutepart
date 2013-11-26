@@ -15,7 +15,8 @@ Component has been created for [Enki editor](http://enki-editor.org) as replacem
 * Marking too long lines with red line
 * Rectangular selection and copy-paste
 
-## Building and installation
+## Building and installation on Linux
+
 Qutepart depends on:
 
 * Python 2.7
@@ -35,6 +36,22 @@ It will probably be gcc
 #### 4. Build and install the package
 ``python setup.py install``
 
+## Building and installation on Windows
+
+* Download and install [CMake binary](http://www.cmake.org/). Tested with 2.8.12.
+* Download and install Microsoft Visual Studio 2008 Express Edition (or the full version).
+* Create a root directory and place the following as subdirectories in it:
+    - Download [pcre source](http://www.pcre.org/). Tested with v. 8.33.
+    - Download latest Qutepart [release](https://github.com/hlamer/qutepart/releases)
+
+#### Make pcre
+    cd <root dir to pcre-8.33 source>
+    cmake pcre-8.33 -D BUILD_SHARED_LIBS:BOOL=OFF -D PCRE_SUPPORT_UTF:BOOL=ON --build pcre-8.33-bin -G "Visual Studio 9 2008"
+Then open the resulting `pcre-8.33-bin/PCRE.sln` in Visual Studio 2008, choose the release build configuration, then build `pcre`.
+
+####Build/install Python modules
+    cd qutepart
+    python setup.py install --include-dir=..\pcre-8.33-bin --include-dir=win --lib-dir=..\pcre-8.33-bin\Release
 ## Qutepart and Katepart
 [Kate](http://kate-editor.org/) and Katepart (an editor component) is really cool software. Kate authors and community has created, probably, the biggest set of highlighters and indenters for programming languages.
 
@@ -43,6 +60,7 @@ It will probably be gcc
 * Qutepart doesn't contain Katepart code.
 
 Nothing is wrong with Katepart. Qutepart has been created for possibility to reuse highlighters and indenters in projects, where KDE dependency is not acceptable.
+
 
 ## Author
 Andrei Kopats
