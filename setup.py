@@ -49,7 +49,8 @@ extension = Extension('qutepart.syntax.cParser',
                       sources = ['qutepart/syntax/cParser.c'],
                       libraries = ['pcre'],
                       include_dirs=include_dirs,
-                      library_dirs=library_dirs)
+                      library_dirs=library_dirs,
+                      define_macros = [('HAVE_CONFIG_H', None)])
 
 
 def _checkDependencies():
@@ -63,24 +64,25 @@ def _checkDependencies():
     
     if not compiler.has_function('rand',
                                  includes = ['stdlib.h', 'Python.h'],
-                                 include_dirs=[distutils.sysconfig.get_python_inc()]):
+                                 include_dirs=[distutils.sysconfig.get_python_inc()],
+                                 library_dirs=[os.path.join(os.path.dirname(sys.executable), 'libs')]):
         print "Failed to find Python headers."
         print "Try to install python-dev package"
         print "If not standard directories are used, pass parameters"
         print "\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include"
-        print "--lib-dir= and --include-dir= may be used multiply times"
+        print "--lib-dir= and --include-dir= may be used multiple times"
         return False
     
     if not compiler.has_function('pcre_version',
                                  includes = ['pcre.h'],
                                  libraries = ['pcre'],
                                  include_dirs=include_dirs,
-                                 library_dirs=include_dirs):
+                                 library_dirs=library_dirs):
         print "Failed to find pcre library."
         print "Try to install libpcre{version}-dev package, or go to http://pcre.org"
         print "If not standard directories are used, pass parameters:"
         print "\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include"
-        print "--lib-dir= and --include-dir= may be used multiply times"
+        print "--lib-dir= and --include-dir= may be used multiple times"
         return False
     
     return True
