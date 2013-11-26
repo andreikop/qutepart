@@ -55,9 +55,9 @@ def main():
     
     firstLine = text.splitlines()[0] if text else None
     qpart.detectSyntax(sourceFilePath=ns.file, firstLine=firstLine)
-    qpart.lineLengthEdge = 80
+    qpart.lineLengthEdge = 20
     
-    qpart.indentUseTabs = False
+    qpart.indentUseTabs = True
     
     qpart.text = text
     

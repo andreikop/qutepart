@@ -1060,11 +1060,38 @@ class Qutepart(QPlainTextEdit):
                     painter.drawRect(QRect(xPos, middleHeight, 2, 2))
                 else:
                     painter.setPen(QColor(Qt.gray).lighter(factor=120))
-                    painter.drawLine(leftCursorRect.x() + 3, middleHeight, rightCursorRect.x() - 3, middleHeight)
+                    painter.drawLine(leftCursorRect.x() + 3, middleHeight,
+                                     rightCursorRect.x() - 3, middleHeight)
 
-        def drawEdgeLine(block):
+        def effectiveEdgePos(text):
+            """Position of edge in a block.
+            Defined by self.lineLengthEdge, but visible width of \t is more than 1,
+            therefore effective position depends on count and position of \t symbols
+            Return -1 if line is too short to have edge
+            """
+            if self.lineLengthEdge is None:
+                return -1
+            
+            tabExtraWidth = self.indentWidth - 1
+            fullWidth = len(text) + (text.count('\t') * tabExtraWidth)
+            if fullWidth <= self.lineLengthEdge:
+                return -1
+            
+            currentWidth = 0
+            for pos, char in enumerate(text):
+                if char == '\t':
+                    # Qt indents up to indentation level, so visible \t width depends on position
+                    currentWidth += (self.indentWidth - (currentWidth % self.indentWidth))
+                else:
+                    currentWidth += 1
+                if currentWidth > self.lineLengthEdge:
+                    return pos
+            else:  # line too narrow, probably visible \t width is small
+                return -1
+        
+        def drawEdgeLine(block, edgePos):
             painter.setPen(QPen(QBrush(self.lineLengthEdgeColor), 0))
-            rect = cursorRect(block, self.lineLengthEdge, 0)
+            rect = cursorRect(block, edgePos, 0)
             painter.drawLine(rect.topLeft(), rect.bottomLeft())
         
         def drawIndentMarker(block, column):
@@ -1099,10 +1126,9 @@ class Qutepart(QPlainTextEdit):
                         column += indentWidthChars
                     
                 # Draw edge, but not over a cursor
-                if self.lineLengthEdge is not None and \
-                   block.length() > (self.lineLengthEdge + 1) and \
-                   (block.blockNumber(), self.lineLengthEdge) != cursorPos:
-                    drawEdgeLine(block)
+                edgePos = effectiveEdgePos(block.text())
+                if edgePos != -1 and edgePos != cursorPos[1]:
+                    drawEdgeLine(block, edgePos)
                 
                 text = block.text()
                 lastNonSpaceColumn = len(text.rstrip()) - 1
