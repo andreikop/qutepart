@@ -20,7 +20,9 @@ from qutepart.completer import Completer
 from qutepart.lines import Lines
 from qutepart.rectangularselection import RectangularSelection
 
-VERSION = (1, 1, 1)
+
+VERSION = (1, 2, 0)
+
 
 logger = logging.getLogger('qutepart')
 consoleHandler = logging.StreamHandler()
@@ -28,6 +30,11 @@ consoleHandler.setFormatter(logging.Formatter("qutepart: %(message)s"))
 logger.addHandler(consoleHandler)
 
 logger.setLevel(logging.ERROR)
+
+
+# After logging setup
+import qutepart.syntax.loader
+binaryParserAvailable = qutepart.syntax.loader.binaryParserAvailable
 
 
 _ICONS_PATH = os.path.join(os.path.dirname(__file__), 'icons')

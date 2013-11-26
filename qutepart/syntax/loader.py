@@ -14,9 +14,11 @@ _logger = logging.getLogger('qutepart')
 
 try:
     import qutepart.syntax.cParser as _parserModule
+    binaryParserAvailable = True
 except ImportError:
     _logger.warning('Failed to import quick parser in C. Using slow parser for syntax highlighting')
     import qutepart.syntax.parser as _parserModule
+    binaryParserAvailable = False
 
 
 _seqReplacer = re.compile('\\\\.')

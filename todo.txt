@@ -1,5 +1,5 @@
 fixme:
-  create manifest, which lists what to sdist
+  bad scala doxygen comments highlighting
 
 todo:
   switch hihglighting language        2

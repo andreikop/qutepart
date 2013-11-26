@@ -28,3 +28,7 @@ API version is available as ``qutepart.VERSION``. It is a tuple ``(major, minor,
 * Major versions might be incompatible.
 * Minor versions add new API, but remain backward compatilbe
 * Patch versions does not change API
+
+Binary parser
+^^^^^^^^^^^^^
+Qutepart has 2 text parsers - slower in Python, and quicker in C. If C parser has been successfully loaded, ``qutepart.binaryParserAvailable`` is True
