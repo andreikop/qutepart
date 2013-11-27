@@ -51,7 +51,7 @@ Then open the resulting `pcre-8.33-bin/PCRE.sln` in Visual Studio 2008, choose t
 
 ####Build/install Python modules
     cd qutepart
-    python setup.py install --include-dir=..\pcre-8.33-bin --include-dir=win --lib-dir=..\pcre-8.33-bin\Release
+    python setup.py install --include-dir=..\pcre-8.33-bin --lib-dir=..\pcre-8.33-bin\Release
 ## Qutepart and Katepart
 [Kate](http://kate-editor.org/) and Katepart (an editor component) is really cool software. Kate authors and community has created, probably, the biggest set of highlighters and indenters for programming languages.
 
