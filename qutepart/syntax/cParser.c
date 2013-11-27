@@ -250,11 +250,11 @@ typedef struct {
     Py_UNICODE* unicodeTextLower;
     const char* utf8Text;
     const char* utf8TextLower;
-    int textLen;
+    unsigned int textLen;
     bool firstNonSpace;
     bool isWordStart;
-    int wordLength;
-    int utf8WordLength;   // word length in bytes of utf8 code
+    unsigned int wordLength;
+    unsigned int utf8WordLength;   // word length in bytes of utf8 code
     char utf8Word[QUTEPART_MAX_WORD_LENGTH];
     char utf8WordLower[QUTEPART_MAX_WORD_LENGTH];
 } TextToMatchObject_internal;
@@ -337,7 +337,7 @@ _RegExpMatchGroups_release(_RegExpMatchGroups* self)
     
     if (0 == self->refCount)
     {
-        pcre_free(self->data);
+        pcre_free((void*)self->data);
         PyMem_Free(self);
     }
 }
@@ -723,7 +723,7 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
         int size;
         int memsize;
         int i;
-        char* data;        
+        char* data;
         char* freeSpaceForString;
         const char** charPointers;
 
@@ -916,7 +916,7 @@ _makeDynamicSubstitutions(char* utf8String,
                 
                 for (groupCharIndex = 0; groupCharIndex < groupLen; groupCharIndex++)
                 {
-                    if (group[groupCharIndex] > 0x7f ||
+                    if (group[groupCharIndex] < 0 ||
                         isdigit(group[groupCharIndex]) ||
                         isalpha(group[groupCharIndex])) // leave as is
                     {
@@ -1250,7 +1250,7 @@ typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
     char* utf8Word;
-    int utf8WordLength;
+    unsigned int utf8WordLength;
     bool insensitive;
 } WordDetect;
 
@@ -1333,7 +1333,7 @@ typedef struct {
 } _WordTree;
 
 static int
-_WordTree_wordBufferSize(int wordLength)
+_WordTree_wordBufferSize(unsigned int wordLength)
 {
     // +1 for \0
     if (wordLength + 1 < sizeof(_StringHash))
@@ -1686,7 +1686,7 @@ RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
     }
     else
     {
-        self->regExp = _compileRegExp(PyString_AS_STRING(utf8String), insensitive, &(self->extra));
+        self->regExp = _compileRegExp(PyString_AS_STRING(utf8String), self->insensitive, &(self->extra));
     }
     Py_DECREF(utf8String);
 
@@ -1730,7 +1730,7 @@ Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
     bool haveDigit = false;
     bool havePoint = false;
     
-    int matchedLength = 0;
+    unsigned int matchedLength = 0;
     
     int digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText, textToMatchObject->textLen);
     if(digitCount)
@@ -1970,7 +1970,7 @@ _isOctChar(Py_UNICODE symbol)
 static RuleTryMatchResult_internal
 HlCOct_tryMatch(HlCOct* self, TextToMatchObject_internal* textToMatchObject)
 {
-    int index = 1;
+    unsigned int index = 1;
 
     if (textToMatchObject->unicodeText[0] != '0')
         return MakeEmptyTryMatchResult();
@@ -2033,7 +2033,7 @@ _isHexChar(Py_UNICODE symbol)
 static RuleTryMatchResult_internal
 HlCHex_tryMatch(HlCHex* self, TextToMatchObject_internal* textToMatchObject)
 {
-    int index = 2;
+    unsigned int index = 2;
 
     if (textToMatchObject->textLen < 3)
         return MakeEmptyTryMatchResult();
@@ -2083,8 +2083,10 @@ DECLARE_RULE_METHODS_AND_TYPE(HlCHex);
 static bool
 _charInString(Py_UNICODE character, const char* string)
 {
+    char charToSearch = character;
+    
     for( ; *string != '\0'; string++)
-        if (*string == character)
+        if (*string == charToSearch)
             return true;
     return false;
 }
@@ -2188,7 +2190,7 @@ HlCChar_tryMatch(HlCChar* self, TextToMatchObject_internal* textToMatchObject)
         textToMatchObject->unicodeText[0] == '\'' &&
         textToMatchObject->unicodeText[1] != '\'')
     {
-        int index;
+        unsigned int index;
         int result = _checkEscapedChar(textToMatchObject->unicodeTextLower + 1, textToMatchObject->textLen - 1);
         if (result != -1)
             index = 1 + result;
@@ -2246,7 +2248,7 @@ RangeDetect_tryMatch(RangeDetect* self, TextToMatchObject_internal* textToMatchO
     if (textToMatchObject->unicodeText[0] == self->char_)
     {
         int end = -1;
-        int i;
+        unsigned int i;
         for (i = 0; i < textToMatchObject->textLen; i++)
         {
             if (textToMatchObject->unicodeText[i] == self->char1_)
@@ -2405,7 +2407,7 @@ DetectSpaces_dealloc_fields(DetectSpaces* self)
 static RuleTryMatchResult_internal
 DetectSpaces_tryMatch(DetectSpaces* self, TextToMatchObject_internal* textToMatchObject)
 {
-    int spaceLen = 0;
+    unsigned int spaceLen = 0;
     while(spaceLen < textToMatchObject->textLen &&
           Py_UNICODE_ISSPACE(textToMatchObject->unicodeText[spaceLen]))
         spaceLen++;
@@ -2454,7 +2456,7 @@ DetectIdentifier_tryMatch(DetectIdentifier* self, TextToMatchObject_internal* te
 {
     if (Py_UNICODE_ISALPHA(textToMatchObject->unicodeText[0]))
     {
-        int index = 1;
+        unsigned int index = 1;
         while(index < textToMatchObject->textLen &&
               (Py_UNICODE_ISALPHA(textToMatchObject->unicodeText[index]) ||
                Py_UNICODE_ISDIGIT(textToMatchObject->unicodeText[index])))
