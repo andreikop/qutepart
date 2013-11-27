@@ -4,8 +4,8 @@
   <!ENTITY roffidc "[^]\s]">
   <!ENTITY roffid  "(&roffidc;|\(&roffidc;{2}|\[&roffidc;+\])">
   <!ENTITY roffnum "([0-9]+)">
-  <!ENTITY argsep1 "([^\\]|\\[&#37; |^{}'`-_!?@)/,&amp;:~0acdeEprtu])">
-  <!ENTITY argsep2 "([^\\0-9]|\\[&#37;:{}'`-_!@/cep])">
+  <!ENTITY argsep1 "([^\\]|\\[&#37; |^{}'`\-_!?@)/,&amp;:~0acdeEprtu])">
+  <!ENTITY argsep2 "([^\\0-9]|\\[&#37;:{}'`\-_!@/cep])">
 ]>
 <language name="Roff" section="Markup" version="0.11" kateversion="2.9" extensions="" author="Matthew Woehlke (mw_triad@users.sourceforge.net)" license="GPL">
 
