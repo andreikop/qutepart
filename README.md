@@ -60,7 +60,7 @@ Then open the resulting `pcre-8.33-bin/PCRE.sln` in Visual Studio 2008, choose t
 * Qutepart contains a port from Javascript to Python of Kate indenters (12% of the code base in version 1.0.0)
 * Qutepart doesn't contain Katepart code.
 
-Nothing is wrong with Katepart. Qutepart has been created for to enable reusing highlighters and indenters in projects where a KDE dependency is not acceptable.
+Nothing is wrong with Katepart. Qutepart has been created to enable reusing highlighters and indenters in projects where a KDE dependency is not acceptable.
 
 
 ## Author
