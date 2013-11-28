@@ -96,8 +96,9 @@ class SyntaxHighlighter(QObject):
         self._syntax = syntax
         self._document = document
         
-        self._pendingBlock = None
-        self._pendingAtLeastUntilBlock = None
+        # can't store references to block, Qt crashes if block removed
+        self._pendingBlockNumber = None
+        self._pendingAtLeastUntilBlockNumber = None
         
         document.contentsChange.connect(self._onContentsChange)
 
@@ -182,11 +183,12 @@ class SyntaxHighlighter(QObject):
             """ Intersect ranges. Might produce a lot of extra highlighting work
             More complicated algorithm might be invented later
             """
-            if self._pendingBlock.blockNumber() < firstBlock.blockNumber():
-                firstBlock = self._pendingBlock
-            if self._pendingAtLeastUntilBlock.blockNumber() > untilBlock.blockNumber():
-                untilBlock = self._pendingAtLeastUntilBlock
-            
+            if self._pendingBlockNumber < firstBlock.blockNumber():
+                firstBlock = self._document.findBlockByNumber(self._pendingBlockNumber)
+            if self._pendingAtLeastUntilBlockNumber > untilBlock.blockNumber():
+                untilBlockNumber = min(self._pendingAtLeastUntilBlockNumber,
+                                       self._document.blockCount() - 1)
+                untilBlock = self._document.findBlockByNumber(untilBlockNumber)
             self._globalTimer.unScheduleCallback(self._onContinueHighlighting)
         
         if zeroTimeout:
@@ -203,7 +205,8 @@ class SyntaxHighlighter(QObject):
         self._highlighBlocks(firstBlock, untilBlock, timeout)
 
     def _onContinueHighlighting(self):
-        self._highlighBlocks(self._pendingBlock, self._pendingAtLeastUntilBlock,
+        self._highlighBlocks(self._document.findBlockByNumber(self._pendingBlockNumber),
+                             self._document.findBlockByNumber(self._pendingAtLeastUntilBlockNumber),
                              self._MAX_PARSING_TIME_SMALL_CHANGE_SEC)
 
     def _highlighBlocks(self, fromBlock, atLeastUntilBlock, timeout):
@@ -214,8 +217,8 @@ class SyntaxHighlighter(QObject):
         
         while block.isValid() and block != atLeastUntilBlock:
             if time.time() >= endTime:  # time is over, schedule parsing later and release event loop
-                self._pendingBlock = block
-                self._pendingAtLeastUntilBlock = atLeastUntilBlock
+                self._pendingBlockNumber = block.blockNumber()
+                self._pendingAtLeastUntilBlockNumber = atLeastUntilBlock.blockNumber()
                 self._globalTimer.scheduleCallback(self._onContinueHighlighting)
                 return
             
@@ -239,11 +242,10 @@ class SyntaxHighlighter(QObject):
         prevLineData = self._lineData(block)
         while block.isValid():
             if time.time() >= endTime:  # time is over, schedule parsing later and release event loop
-                self._pendingBlock = block
-                self._pendingAtLeastUntilBlock = atLeastUntilBlock
+                self._pendingBlockNumber = block.blockNumber()
+                self._pendingAtLeastUntilBlockNumber = atLeastUntilBlock.blockNumber()
                 self._globalTimer.scheduleCallback(self._onContinueHighlighting)
                 return
-
             contextStack = lineData[0] if lineData is not None else None
             lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), contextStack)
             if lineData is not None:
@@ -259,8 +261,8 @@ class SyntaxHighlighter(QObject):
             prevLineData = self._lineData(block)
         
         # sucessfully finished, reset pending tasks
-        self._pendingBlock = None
-        self._pendingAtLeastUntilBlock = None
+        self._pendingBlockNumber = None
+        self._pendingAtLeastUntilBlockNumber = None
 
     def _applyHighlightedSegments(self, block, highlightedSegments):
         ranges = []
