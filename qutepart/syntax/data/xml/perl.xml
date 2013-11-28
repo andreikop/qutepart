@@ -573,7 +573,7 @@
       </context>
 
       <context name="tr" attribute="Pattern" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop" >
-        <RegExpr attribute="Pattern" context="#pop" String="([^)]*\)\s*\(?:[^)]*\)" />
+        <RegExpr attribute="Pattern" context="#pop" String="\([^)]*\)\s*\(?:[^)]*\)" />
         <RegExpr attribute="Pattern" context="#pop" String="{[^}]*\}\s*\{[^}]*\}" />
         <RegExpr attribute="Pattern" context="#pop" String="\[[^}]*\]\s*\[[^\]]*\]" />
         <RegExpr attribute="Pattern" context="#pop" String="([^a-zA-Z0-9_\s[\]{}()]).*\1.*\1" minimal="true"/>
@@ -655,7 +655,7 @@
         <DetectChar attribute="Pattern Internal Operator" context="#stay" char="^" />
         <Detect2Chars attribute="Pattern Character Class" context="#stay" char="\" char1="\" />
         <Detect2Chars attribute="Pattern Character Class" context="#stay" char="\" char1="]" />
-        <RegExpr attribute="Pattern Character Class" context="#stay" String="\[:^?[a-z]+:\]" />
+        <RegExpr attribute="Pattern Character Class" context="#stay" String="\[:^\?[a-z]+:\]" />
         <DetectChar attribute="Pattern Internal Operator" context="#pop" char="]" />
       </context>
 

@@ -2,8 +2,8 @@
 <!DOCTYPE language SYSTEM "language.dtd"
 [
         <!ENTITY inlinestart "(^|[\s&apos;&quot;\(\[-{&lt;/:‘“’«¡¿‐‑‒–— ])">
-        <!ENTITY inlineend "([\s’”»‐‑‒–— &apos;&quot;\)\]}&gt;-/:\.,;!\?\\]|$)">
-        <!ENTITY SimpleReferenceNameChars "\w-_\.:\+">
+        <!ENTITY inlineend "([\s’”»‐‑‒–— &apos;&quot;\)\]}&gt;\-/:\.,;!\?\\]|$)">
+        <!ENTITY SimpleReferenceNameChars "\w\-_\.:\+">
 ]>
 <!-- Copyright Matt Williams <matt@milliams.com> June 2010 -->
 <language name="reStructuredText" extensions="*.rst" section="Markup" mimetype="text/x-rst" version="1.01" kateversion="2.4" casesensitive="1">
