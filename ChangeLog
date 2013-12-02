@@ -1,3 +1,6 @@
+1.3.0   Dec 2 2013
+    API: Added indentWithSpaceAction, unIndentWithSpaceAction
+
 1.2.0   Nov 26 2013
     API: Added binaryParserAvailable flag
 

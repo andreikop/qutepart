@@ -81,6 +81,8 @@ def main():
                            'cutLineAction',
                            'duplicateLineAction',
                            'invokeCompletionAction',
+                           'indentWithSpaceAction',
+                           'unIndentWithSpaceAction'
                            )
     }
     for k, v in menu.items():

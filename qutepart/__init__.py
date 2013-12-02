@@ -21,7 +21,7 @@ from qutepart.lines import Lines
 from qutepart.rectangularselection import RectangularSelection
 
 
-VERSION = (1, 2, 0)
+VERSION = (1, 3, 0)
 
 
 logger = logging.getLogger('qutepart')
@@ -345,6 +345,8 @@ class Qutepart(QPlainTextEdit):
     * ``duplicateLineAction`` - Duplicate line
     * ``invokeCompletionAction`` - Invoke completion
     * ``printAction`` - Print file
+    * ``indentWithSpaceAction`` - Indent all selected lines by 1 space symbol
+    * ``unIndentWithSpaceAction`` - Unindent all selected lines by 1 space symbol
     
     **Text modification and Undo/Redo**
     
@@ -489,6 +491,12 @@ class Qutepart(QPlainTextEdit):
         self.duplicateLineAction = createAction('Duplicate line', 'Alt+D', self._onShortcutDuplicateLine)
         self.invokeCompletionAction = createAction('Invoke completion', 'Ctrl+Space', self._completer.invokeCompletion)
         self.printAction = createAction('Print', 'Ctrl+P', self._onShortcutPrint, 'print.png')
+        self.indentWithSpaceAction = createAction('Indent with 1 space', 'Shift+Space',
+                                                   lambda: self._onChangeSelectedBlocksIndent(increase=True,
+                                                                                              withSpace=True))
+        self.unIndentWithSpaceAction = createAction('Unindent with 1 space', 'Shift+Backspace',
+                                                    lambda: self._onChangeSelectedBlocksIndent(increase=False,
+                                                                                               withSpace=True))
     
     def __enter__(self):
         """Context management method.
@@ -972,10 +980,6 @@ class Qutepart(QPlainTextEdit):
                 cursor.deleteChar()
                 cursor.insertText(text)
         
-        def moreThanOneLineSelected():
-            ((l1, c1), (l2, c2)) = self.selectedPosition
-            return l1 != l2
-        
         if event.matches(QKeySequence.InsertParagraphSeparator):
             self._insertNewBlock()
         elif event.matches(QKeySequence.Copy) and self._rectangularSelection.isActive():
@@ -991,10 +995,6 @@ class Qutepart(QPlainTextEdit):
                 self._onChangeSelectedBlocksIndent(increase=True)
             else:
                 self._onShortcutIndentAfterCursor()
-        elif event.key() == Qt.Key_Space and moreThanOneLineSelected():
-            self._onChangeSelectedBlocksIndent(increase=True, withSpace=True)
-        elif event.key() == Qt.Key_Backspace and moreThanOneLineSelected():
-            self._onChangeSelectedBlocksIndent(increase=False, withSpace=True)
         elif event.key() == Qt.Key_Backspace and \
              shouldUnindentWithBackspace():
             self._onShortcutUnindentWithBackspace()
@@ -1020,7 +1020,14 @@ class Qutepart(QPlainTextEdit):
                     super(Qutepart, self).keyPressEvent(event)
                     self._autoIndentBlock(cursor.block(), event.text())
         else:
-            super(Qutepart, self).keyPressEvent(event)
+            # make action shortcuts override keyboard events (non-default Qt behaviour)
+            for action in self.actions():
+                seq = action.shortcut()
+                if seq.count() == 1 and seq[0] == event.key() | int(event.modifiers()):
+                    action.trigger()
+                    break
+            else:
+                super(Qutepart, self).keyPressEvent(event)
     
     def mousePressEvent(self, mouseEvent):
         pass  # suppress docstring for non-public method
