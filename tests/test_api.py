@@ -123,8 +123,7 @@ class InsertText(_BaseTest):
 
 class IsCodeOrComment(_BaseTest):
     def _wait_highlighting_finished(self):
-        while QApplication.hasPendingEvents():
-            QApplication.processEvents()
+        base._processPendingEvents(self.app)
 
     def test_1(self):
         # Basic case
@@ -236,8 +235,7 @@ class Completion(_BaseTest):
         super(Completion, self).setUp()
         self.qpart.text = 'completableWord\n'
         self.qpart.cursorPosition = (1, 0)
-        while QApplication.hasPendingEvents():
-            QApplication.processEvents()
+        base._processPendingEvents(self.app)
 
     def test_completion_enabled(self):
         self._assertNotVisible()
