@@ -24,17 +24,17 @@ Qutepart depends on:
 * pcre
 
 #### 1. Install [pcre](http://www.pcre.org/) and development files
-On Debian, Ubuntu and other Linuxes install package ``libpcreX-dev``, where ``X`` is available in your distribution pcre version.
+On Debian, Ubuntu and other Linuxes install package `libpcreX-dev`, where `X` is available in your distribution pcre version.
 For other OSes - see instructions on pcre website
 
 #### 2. Install Python development files
-On Debian, Ubuntu and other Linuxes install package ``python-dev``, on other systems - see Python website
+On Debian, Ubuntu and other Linuxes install package `python-dev`, on other systems - see Python website
 
 #### 3. Install C compiler
 It will probably be gcc
 
 #### 4. Build and install the package
-``python setup.py install``
+`python setup.py install`
 
 ## Building and installation on Windows
 
@@ -53,7 +53,7 @@ Then open the resulting `pcre-8.33-bin/PCRE.sln` in Visual Studio 2008, choose t
     cd qutepart
     python setup.py install --include-dir=..\pcre-8.33-bin --lib-dir=..\pcre-8.33-bin\Release
 
- ## Qutepart and Katepart
+## Qutepart and Katepart
 [Kate](http://kate-editor.org/) and Katepart (an editor component) is really cool software. The Kate authors and community have created, probably, the biggest set of highlighters and indenters for programming languages.
 
 * Qutepart uses Kate syntax highlighters (XML files)
