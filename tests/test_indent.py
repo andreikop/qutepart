@@ -81,10 +81,10 @@ class Test(unittest.TestCase):
         self.qpart.text = '  ab\n  cd'
         self.qpart.selectedPosition = ((0, 2), (1, 3))
 
-        QTest.keyClick(self.qpart, Qt.Key_Space)
+        QTest.keyClick(self.qpart, Qt.Key_Space, Qt.ShiftModifier)
         self.assertEqual(self.qpart.text, '   ab\n   cd')
 
-        QTest.keyClick(self.qpart, Qt.Key_Backspace)
+        QTest.keyClick(self.qpart, Qt.Key_Backspace, Qt.ShiftModifier)
         self.assertEqual(self.qpart.text, '  ab\n  cd')
 
     def test_6(self):
