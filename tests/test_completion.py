@@ -44,8 +44,7 @@ class Test(unittest.TestCase):
     def test_down_selects_second(self):
         self.qpart.text = 'aaaa\nbbbb\ncccX\ndddd\ncccY'
         
-        while QApplication.hasPendingEvents():
-            QApplication.processEvents()
+        base._processPendingEvents(self.app)
         
         QTest.keyClicks(self.qpart, "ccc")
         
@@ -67,8 +66,7 @@ class Test(unittest.TestCase):
     def test_tab_completes(self):
         self.qpart.text = 'aaaaa\naaaaaXXXXX\n'
         
-        while QApplication.hasPendingEvents():
-            QApplication.processEvents()
+        base._processPendingEvents(self.app)
         
         self.qpart.cursorPosition = (2, 0)
         QTest.keyClicks(self.qpart, "aaa")
@@ -82,8 +80,7 @@ class Test(unittest.TestCase):
         
         self.qpart.text = 'aaaaa\naaaaaXXXXX\n'
         
-        while QApplication.hasPendingEvents():
-            QApplication.processEvents()
+        base._processPendingEvents(self.app)
         
         self.qpart.cursorPosition = (2, 0)
         QTest.keyClicks(self.qpart, "a")
