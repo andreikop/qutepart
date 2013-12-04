@@ -34,14 +34,15 @@ class Print(_BaseTest):
     def _exists(self):
         return os.path.isfile('print.pdf')
     
+    @unittest.skipUnless(sys.platform.startswith("linux"), "Works only on Linux")
     def test_1(self):
         self._rm()
         self.assertFalse(self._exists())
         self.qpart.show()
         def acceptDialog():
             QTest.keyClick(self.app.focusWidget(), Qt.Key_Enter, Qt.NoModifier)
-        QTimer.singleShot(600, acceptDialog)
-        QTest.keyClick(self.qpart, Qt.Key_P, Qt.ControlModifier, 100)
+        QTimer.singleShot(1000, acceptDialog)
+        QTest.keyClick(self.qpart, Qt.Key_P, Qt.ControlModifier)
         
         self.assertTrue(self._exists())
         self._rm()
