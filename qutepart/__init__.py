@@ -4,6 +4,7 @@
 
 import os.path
 import logging
+import platform
 
 from PyQt4.QtCore import QPoint, QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, QDialog, QFont, \
@@ -442,7 +443,10 @@ class Qutepart(QPlainTextEdit):
         self.textChanged.connect(self._dropUserExtraSelections)
         self.textChanged.connect(self._resetCachedText)
 
-        self.setFont(QFont("Monospace"))
+        fontFamilies = {'Windows':'Courier New',
+                        'Darwin': 'Menlo'}
+        fontFamily = fontFamilies.get(platform.system(), 'Monospace')
+        self.setFont(QFont(fontFamily))
 
         self._updateLineNumberAreaWidth(0)
         self._updateExtraSelections()
