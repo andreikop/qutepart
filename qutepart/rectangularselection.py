@@ -153,10 +153,12 @@ class RectangularSelection:
         selections = []
         cursors = self.cursors()
         if cursors:
-            color = self._qpart.palette().color(QPalette.Highlight)
+            background = self._qpart.palette().color(QPalette.Highlight)
+            foreground = self._qpart.palette().color(QPalette.HighlightedText)
             for cursor in cursors:
                 selection = QTextEdit.ExtraSelection()
-                selection.format.setBackground(color)
+                selection.format.setBackground(background)
+                selection.format.setForeground(foreground)
                 selection.cursor = cursor
                 
                 selections.append(selection)
