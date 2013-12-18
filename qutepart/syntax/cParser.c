@@ -487,7 +487,12 @@ AbstractRuleParams_init(AbstractRuleParams *self, PyObject *args, PyObject *kwds
     
     ASSIGN_PYOBJECT_FIELD(parentContext);
     ASSIGN_PYOBJECT_FIELD(format);
-    self->textType = PyString_AsString(textType)[0];
+    
+    if (Py_None != textType)
+        self->textType = PyString_AsString(textType)[0];
+    else
+        self->textType = 0;
+    
     ASSIGN_PYOBJECT_FIELD(attribute);
     ASSIGN_FIELD(ContextSwitcher, context);
     
@@ -2749,6 +2754,7 @@ Context_appendTextType(int fromIndex, int count, char* textTypeMapData, char tex
         textTypeMapData[i] = textType;
 }
 
+
 static int
 Context_parseBlock(Context* self,
                    int currentColumnIndex,
@@ -2791,6 +2797,8 @@ Context_parseBlock(Context* self,
 
         if (NULL != result.rule)  // if something matched
         {
+            PyObject* format;
+            char textType;
             *pLineContinue = result.lineContinue;
             
             if (parentParser->debugOutputEnabled)
@@ -2808,9 +2816,22 @@ Context_parseBlock(Context* self,
                 countOfNotMatchedSymbols = 0;
             }
             
-            Context_appendSegment(segmentList, result.length, result.rule->abstractRuleParams->format);
+            if (Py_None != result.rule->abstractRuleParams->format)
+                format = result.rule->abstractRuleParams->format;
+            else
+                format = self->format;
+            
+            if ('\0' != result.rule->abstractRuleParams->textType)
+                textType = result.rule->abstractRuleParams->textType;
+            else
+                textType = self->textType;
+            
+            Context_appendSegment(segmentList,
+                                  result.length,
+                                  format);
             Context_appendTextType(currentColumnIndex, result.length,
-                                   textTypeMapData, result.rule->abstractRuleParams->textType);
+                                   textTypeMapData,
+                                   textType);
             currentColumnIndex += result.length;
             
             if (Py_None != (PyObject*)result.rule->abstractRuleParams->context)

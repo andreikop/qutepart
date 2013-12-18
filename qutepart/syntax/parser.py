@@ -54,7 +54,7 @@ class ContextStack:
         """Get current data
         """
         return self._data[-1]
-        
+
 
 class ContextSwitcher:
     """Class parses 'context', 'lineBeginContext', 'lineEndContext', 'fallthroughContext'
@@ -81,6 +81,7 @@ class ContextSwitcher:
             contextStack = contextStack.append(self._contextToSwitch, data)
         
         return contextStack
+
 
 class TextToMatchObject:
     """Peace of text, which shall be matched.
@@ -113,6 +114,7 @@ class TextToMatchObject:
         
         self.contextData = contextData
 
+
 class RuleTryMatchResult:
     def __init__(self, rule, length, data=None):
         self.rule = rule
@@ -121,6 +123,7 @@ class RuleTryMatchResult:
         
         if rule.lookAhead:
             self.length = 0
+
 
 class AbstractRuleParams:
     """Parameters, passed to the AbstractRule constructor
@@ -141,7 +144,9 @@ class AbstractRule:
     """Base class for rule classes
     Public attributes:
         parentContext
-        attribute
+        format              May be None
+        textType            May be None
+        attribute           May be None
         context
         lookAhead
         firstNonSpace
@@ -167,7 +172,7 @@ class AbstractRule:
         For debug logs
         """
         res = '\t\tRule %s\n' % self.shortId()
-        res += '\t\t\tstyleName: %s\n' % self.attribute
+        res += '\t\t\tstyleName: %s\n' % (self.attribute or 'None')
         res += '\t\t\tcontext: %s\n' % self.context
         return res
     
@@ -230,6 +235,7 @@ class DetectChar(AbstractRule):
         if textToMatchObject.text[0] == string:
             return RuleTryMatchResult(self, 1)
         return None
+
 
 class Detect2Chars(AbstractRule):
     """Public attributes
@@ -309,7 +315,6 @@ class StringDetect(AbstractRule):
                 return escapeMatchObject.group(0)  # no any replacements, return original value
 
         return _numSeqReplacer.sub(_replaceFunc, string)
-
 
 
 class WordDetect(AbstractRule):
@@ -515,7 +520,8 @@ class AbstractNumberRule(AbstractRule):
                 break
             index += 1
         return index
-    
+
+
 class Int(AbstractNumberRule):
     def shortId(self):
         return 'Int()'
@@ -527,7 +533,8 @@ class Int(AbstractNumberRule):
             return matchedLength
         else:
             return None
-    
+
+
 class Float(AbstractNumberRule):
     def shortId(self):
         return 'Float()'
@@ -578,7 +585,7 @@ class Float(AbstractNumberRule):
             return matchedLength
         else:
             return None
-    
+
 
 class HlCOct(AbstractRule):
     def shortId(self):
@@ -602,6 +609,7 @@ class HlCOct(AbstractRule):
 
     def shortId(self):
         return 'HlCOct()'
+
 
 class HlCHex(AbstractRule):
     def shortId(self):
@@ -651,7 +659,7 @@ def _checkEscapedChar(text):
         return index
     
     return None
-    
+
 
 class HlCStringChar(AbstractRule):
     def shortId(self):
@@ -726,7 +734,7 @@ class IncludeRules(AbstractRule):
         For debug logs
         """
         res = '\t\tRule %s\n' % self.shortId()
-        res += '\t\t\tstyleName: %s\n' % self.attribute
+        res += '\t\t\tstyleName: %s\n' % (self.attribute or 'None')
         return res
 
     def shortId(self):
@@ -739,6 +747,8 @@ class IncludeRules(AbstractRule):
         for rule in self.context.rules:
             ruleTryMatchResult = rule.tryMatch(textToMatchObject)
             if ruleTryMatchResult is not None:
+                _logger.debug('\tmatched rule %s(%d) at %d in included context %s',
+                              rule.__class__.__name__, self.context.rules.index(rule), textToMatchObject.currentColumnIndex, self.context.name)
                 return ruleTryMatchResult
         else:
             return None
@@ -767,6 +777,7 @@ class DetectIdentifier(AbstractRule):
             return RuleTryMatchResult(self, len(match.group(0)))
         
         return None
+
 
 class Context:
     """Highlighting context
@@ -831,15 +842,17 @@ class Context:
             for rule in self.rules:
                 ruleTryMatchResult = rule.tryMatch(textToMatchObject)
                 if ruleTryMatchResult is not None:
-                    _logger.debug('\tmatched rule %d at %d',
-                                  self.rules.index(rule), currentColumnIndex)
+                    _logger.debug('\tmatched rule %s(%d) at %d',
+                                  rule.__class__.__name__, self.rules.index(rule), currentColumnIndex)
                     if countOfNotMatchedSymbols > 0:
                         highlightedSegments.append((countOfNotMatchedSymbols, self.format))
                         textTypeMap += [self.textType for i in range(countOfNotMatchedSymbols)]
                         countOfNotMatchedSymbols = 0
                     
-                    highlightedSegments.append((ruleTryMatchResult.length, ruleTryMatchResult.rule.format))
-                    textTypeMap += [ruleTryMatchResult.rule.textType for i in range(ruleTryMatchResult.length)]
+                    highlightedSegments.append((ruleTryMatchResult.length,
+                                               ruleTryMatchResult.rule.format or self.format))
+                    textTypeMap += [(ruleTryMatchResult.rule.textType or self.textType)
+                                        for i in range(ruleTryMatchResult.length)]
 
                     currentColumnIndex += ruleTryMatchResult.length
                     if ruleTryMatchResult.rule.context is not None:

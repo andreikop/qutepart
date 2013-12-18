@@ -180,7 +180,7 @@ def _loadChildRules(context, xmlElement, attributeToFormatMap, formatConverterFu
 def _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     # attribute
     attribute = xmlElement.attrib.get("attribute", None)
-    if not attribute is None:
+    if attribute is not None:
         attribute = attribute.lower()  # not case sensitive
         try:
             format = attributeToFormatMap[attribute]
@@ -192,8 +192,8 @@ def _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, for
             format = parentContext.format
             textType = parentContext.textType
     else:
-        format = parentContext.format
-        textType = parentContext.textType
+        format = None
+        textType = None
     
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
