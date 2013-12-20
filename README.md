@@ -39,19 +39,22 @@ It will probably be gcc
 ## Building and installation on Windows
 
 * Download and install the [CMake binary](http://www.cmake.org/). Tested with 2.8.12.
-* Download and install Microsoft Visual Studio 2008 Express Edition (or the full version).
+* Download and install Microsoft Visual Studio Express Edition (or the full version).
 * Create a root directory and place the following as subdirectories in it:
     - Download the [pcre source](http://www.pcre.org/). Tested with v. 8.33.
     - Download the latest Qutepart [release](https://github.com/hlamer/qutepart/releases).
 
 #### Make pcre
-    cd <root dir to pcre-8.33 source>
-    cmake pcre-8.33 -D BUILD_SHARED_LIBS:BOOL=OFF -D PCRE_SUPPORT_UTF:BOOL=ON --build pcre-8.33-bin -G "Visual Studio 9 2008"
+    cd <pcre-8.33 source>
+    mkdir build
+    cd build
+    cmake .. -DBUILD_SHARED_LIBS:BOOL=OFF -DPCRE_SUPPORT_UTF:BOOL=ON -DPCRE_SUPPORT_JIT:BOOL=ON
+    cmake --build
 Then open the resulting `pcre-8.33-bin/PCRE.sln` in Visual Studio 2008, choose the release build configuration, then build `pcre`.
 
 #### Build/install Python modules
     cd qutepart
-    python setup.py install --include-dir=..\pcre-8.33-bin --lib-dir=..\pcre-8.33-bin\Release
+    python setup.py install --include-dir=..\pcre-8.33\build --lib-dir=..\pcre-8.33\build\Release
 
 ## Qutepart and Katepart
 [Kate](http://kate-editor.org/) and Katepart (an editor component) is really cool software. The Kate authors and community have created, probably, the biggest set of highlighters and indenters for programming languages.
