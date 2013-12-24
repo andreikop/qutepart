@@ -178,6 +178,27 @@ class Test(IndentTest):
         self.type("pass");
         self.verifyExpected(expected)
 
+    def test_autoIndentAfterEmpty(self):
+        origin = [
+            "while True:",
+            "   returnFunc()",
+            "",
+            "   myVar = 3"]
+        expected = [
+            "while True:",
+            "   returnFunc()",
+            "",
+            "   x",
+            "   myVar = 3"]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2, 0);
+        self.enter();
+        self.tab();
+        self.type("x");
+        self.verifyExpected(expected)
+
 
 if __name__ == '__main__':
     unittest.main()

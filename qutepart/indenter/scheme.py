@@ -50,7 +50,7 @@ class IndenterScheme(IndenterBase):
         else:
             return expEndBlock, len(text) - len(self._lastWord(text))
 
-    def computeIndent(self, block, char):
+    def computeSmartIndent(self, block, char):
         """Compute indent for the block
         """
         try:

@@ -34,6 +34,9 @@ class IndentTest(unittest.TestCase):
     def enter(self):
         QTest.keyClick(self.qpart, Qt.Key_Enter)
     
+    def tab(self):
+        QTest.keyClick(self.qpart, Qt.Key_Tab)
+    
     def type(self, text):
         QTest.keyClicks(self.qpart, text)
 
@@ -50,7 +53,7 @@ class IndentTest(unittest.TestCase):
     
     def alignAll(self):
         QTest.keyClick(self.qpart, Qt.Key_A, Qt.ControlModifier)
-        self.qpart._onShortcutAutoIndentSelection()
+        self.qpart.autoIndentLineAction.trigger()
     
     def setUp(self):
         self.qpart = Qutepart()

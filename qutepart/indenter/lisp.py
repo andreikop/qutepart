@@ -5,7 +5,7 @@ from qutepart.indenter.base import IndenterBase
 class IndenterLisp(IndenterBase):
     TRIGGER_CHARACTERS = ";"
 
-    def computeIndent(self, block, ch):
+    def computeSmartIndent(self, block, ch):
         """special rules: ;;; -> indent 0
                           ;;  -> align with next line, if possible
                           ;   -> usually on the same line as code -> ignore

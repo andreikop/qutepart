@@ -466,7 +466,7 @@ class IndenterCStyle(IndenterBase):
             dbg("tryStatement: success in line %d" % currentBlock.blockNumber())
         return indentation
     
-    def tryMatchedAnchor(self, block, alignOnly):
+    def tryMatchedAnchor(self, block, autoIndent):
         """
         find out whether we pressed return in something like {} or () or [] and indent properly:
          {}
@@ -489,7 +489,7 @@ class IndenterCStyle(IndenterBase):
         except ValueError:
             return None
         
-        if alignOnly:
+        if autoIndent:
             # when aligning only, don't be too smart and just take the indent level of the open anchor
             return self._blockIndent(foundBlock)
         
@@ -535,16 +535,16 @@ class IndenterCStyle(IndenterBase):
         dbg("tryMatchedAnchor: success in line %d" % foundBlock.blockNumber())
         return self._increaseIndent(indentation)
     
-    def indentLine(self, block, alignOnly):
+    def indentLine(self, block, autoIndent):
         """ Indent line.
         Return filler or null.
         """
         indent = None
         if indent is None:
-            indent = self.tryMatchedAnchor(block, alignOnly)
+            indent = self.tryMatchedAnchor(block, autoIndent)
         if indent is None:
             indent = self.tryCComment(block)
-        if indent is None and not alignOnly:
+        if indent is None and not autoIndent:
             indent = self.tryCppComment(block)
         if indent is None:
             indent = self.trySwitchStatement(block)
@@ -563,7 +563,7 @@ class IndenterCStyle(IndenterBase):
             return indent
         else:
             dbg("Nothing matched")
-            return self._blockIndent(self._prevNonEmptyBlock(block))
+            return self._prevNonEmptyBlockIndent(block)
     
     def processChar(self, block, c):
         if c == ';' or (not (c in self.TRIGGER_CHARACTERS)):
@@ -624,10 +624,10 @@ class IndenterCStyle(IndenterBase):
             return ''
         return blockIndent
     
-    def computeIndent(self, block, char):
-        alignOnly = char == ""
+    def computeSmartIndent(self, block, char):
+        autoIndent = char == ""
     
-        if char != '\n' and not alignOnly:
+        if char != '\n' and not autoIndent:
             return self.processChar(block, char)
     
-        return self.indentLine(block, alignOnly)
+        return self.indentLine(block, autoIndent)

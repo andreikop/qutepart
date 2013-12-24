@@ -337,6 +337,8 @@ class Qutepart(QPlainTextEdit):
     * ``selectAndScrollDownAction`` - Select 1 line Down and scroll
     * ``decreaseIndentAction`` - Decrease indentation
     * ``autoIndentLineAction`` - Autoindent line
+    * ``indentWithSpaceAction`` - Indent all selected lines by 1 space symbol
+    * ``unIndentWithSpaceAction`` - Unindent all selected lines by 1 space symbol
     * ``moveLineUpAction`` - Move line Up
     * ``moveLineDownAction`` - Move line Down
     * ``deleteLineAction`` - Delete line
@@ -346,8 +348,6 @@ class Qutepart(QPlainTextEdit):
     * ``duplicateLineAction`` - Duplicate line
     * ``invokeCompletionAction`` - Invoke completion
     * ``printAction`` - Print file
-    * ``indentWithSpaceAction`` - Indent all selected lines by 1 space symbol
-    * ``unIndentWithSpaceAction`` - Unindent all selected lines by 1 space symbol
     
     **Text modification and Undo/Redo**
     
@@ -483,7 +483,7 @@ class Qutepart(QPlainTextEdit):
         self.decreaseIndentAction = createAction('Decrease indentation', 'Shift+Tab',
                                                  lambda: self._onChangeSelectedBlocksIndent(increase = False))
         self.autoIndentLineAction = createAction('Autoindent line', 'Ctrl+I',
-                                                  self._onShortcutAutoIndentSelection)
+                                                  self._onAutoIndentTriggered)
         self.moveLineUpAction = createAction('Move line up', 'Alt+Up',
                                              lambda: self._onShortcutMoveLine(down = False), 'up.png')
         self.moveLineDownAction = createAction('Move line down', 'Alt+Down',
@@ -1284,7 +1284,9 @@ class Qutepart(QPlainTextEdit):
         """Tab pressed and no selection. Insert text after cursor
         """
         cursor = self.textCursor()
-        if self._indentUseTabs:
+        if cursor.positionInBlock() == 0:
+            self._onAutoIndentTriggered()
+        elif self._indentUseTabs:
             cursor.insertText('\t')
         else:  # indent to integer count of indents from line start
             charsToInsert = self._indentWidth - (len(self._textBeforeCursor()) % self._indentWidth)
@@ -1452,7 +1454,7 @@ class Qutepart(QPlainTextEdit):
             printer = dialog.printer()
             self.print_(printer)
     
-    def _onShortcutAutoIndentSelection(self):
+    def _onAutoIndentTriggered(self):
         """Indent current line or selected lines
         """
         cursor = self.textCursor()

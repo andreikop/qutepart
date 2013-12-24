@@ -1,17 +1,21 @@
 from qutepart.indenter.base import IndenterBase
 
+
 class IndenterPython(IndenterBase):
     """Indenter for Python language.
     """
-    def computeIndent(self, block, char):
-        prevIndent = self._prevBlockIndent(block)
+    def computeSmartIndent(self, block, char):
+        prevIndent = self._prevNonEmptyBlockIndent(block)
         
         prevLineStripped = block.previous().text().strip()  # empty text from invalid block is ok
         
         """ TODO can detect, what is a code
-        if not document.isCode(end of line) and not prevLineText.endswith('"') and not prevLineText.endswith("'"):
+        if not document.isCode(end of line) and \
+           not prevLineText.endswith('"') and \
+           not prevLineText.endswith("'"):
             return self._lineIndent(prevLineText)
         """
+        
         # for:
         if prevLineStripped.endswith(':'):
             return self._increaseIndent(prevIndent)
@@ -23,7 +27,8 @@ class IndenterPython(IndenterBase):
             'foo': 'bar',
         }
         """
-        if prevLineStripped.endswith('{') or prevLineStripped.endswith('['):
+        if prevLineStripped.endswith('{') or \
+           prevLineStripped.endswith('['):
             return self._increaseIndent(prevIndent)
 
         # finally, a raise, pass, and continue should unindent
@@ -32,4 +37,4 @@ class IndenterPython(IndenterBase):
            prevLineStripped.startswith('return '):
             return self._decreaseIndent(prevIndent)
 
-        return prevIndent
+        return self._prevNonEmptyBlockIndent(block)

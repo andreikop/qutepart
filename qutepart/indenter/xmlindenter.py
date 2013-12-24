@@ -7,7 +7,7 @@ class IndenterXml(IndenterBase):
     """
     TRIGGER_CHARACTERS = "/>"
     
-    def computeIndent(self, block, char):
+    def computeSmartIndent(self, block, char):
         """Compute indent for the block
         """
         lineText = block.text()

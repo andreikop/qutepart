@@ -208,7 +208,7 @@ class IndenterRuby(IndenterBase):
                 else:
                     nested -= 1    
     
-    def computeIndent(self, block, ch):
+    def computeSmartIndent(self, block, ch):
         """indent gets three arguments: line, indentWidth in spaces,
         typed character indent
         """

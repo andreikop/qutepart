@@ -603,6 +603,7 @@ class If(BaseTestClass):
 
         self.setCursorPosition(4,0);
         self.enter();
+        self.tab();
         
         self.verifyExpected(expected)
     

@@ -9,7 +9,7 @@ class IndenterNone:
     def __init__(self, qpart):
         pass
     
-    def computeIndent(self, block, char):
+    def computeSmartIndent(self, block, char):
         return ''
 
 
@@ -26,10 +26,25 @@ class IndenterBase(IndenterNone):
         self._setBlockIndent(block, self.computeIndent(block, ''))
     
     def computeIndent(self, block, char):
-        """Compute indent.
+        """Compute indent for the block.
+        Basic alorightm, which knows nothing about programming languages
+        May be used by child classes
+        """
+        prevBlockText = block.previous().text()  # invalid block returns empty text
+        if char == '\n' and \
+           prevBlockText.strip() == '':  # continue indentation, if no text
+            return self._prevBlockIndent(block)
+        else:  # be smart
+            return self.computeSmartIndent(block, char)
+    
+    def computeSmartIndent(self, block, char):
+        """Compute smart indent.
         Block is current block.
         Char is typed character. \n or one of trigger chars
         Return indentation text, or None, if indentation shall not be modified
+        
+        Implementation might return self._prevNonEmptyBlockIndent(), if doesn't have
+        any ideas, how to indent text better
         """
         raise NotImplemented()
 
@@ -175,6 +190,10 @@ class IndenterBase(IndenterNone):
 
         return cls._lineIndent(prevBlock.text())
     
+    @classmethod
+    def _prevNonEmptyBlockIndent(cls, block):
+        return cls._blockIndent(cls._prevNonEmptyBlock(block))
+    
     @staticmethod
     def _prevNonEmptyBlock(block):
         if not block.isValid():
@@ -227,7 +246,5 @@ class IndenterNormal(IndenterBase):
     """Class automatically computes indentation for lines
     This is basic indenter, which knows nothing about programming languages
     """
-    def computeIndent(self, block, char):
-        """Compute indent for the block
-        """
-        return self._blockIndent(self._prevNonEmptyBlock(block))
+    def computeSmartIndent(self, block, char):
+        return self._prevNonEmptyBlockIndent(block)

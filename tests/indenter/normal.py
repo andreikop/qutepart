@@ -25,7 +25,7 @@ class Test(IndentTest):
         self.type("ok");
         self.verifyExpected(expected)
 
-    """ now not removing trailing whitespaces
+    @unittest.skip('Now empty lines are not removed')
     def test_emptyline3(self):
         origin = [
             "    totally empty line",
@@ -45,23 +45,23 @@ class Test(IndentTest):
         self.enter();
         self.type("ok");
         self.verifyExpected(expected)
-    """
     
     def test_emptyline1(self):
         origin = [
-            "    totally empty line",
+            "      totally empty line",
             "",
             ""]
         expected = [
-            "    totally empty line",
+            "      totally empty line",
             "",
-            "    ok",
+            "      ok",
             ""]
 
         self.setOrigin(origin)
 
         self.setCursorPosition(1,0);
         self.enter();
+        self.tab();
         self.type("ok");
         self.verifyExpected(expected)
 
@@ -167,6 +167,25 @@ class Test(IndentTest):
         self.enter();
         self.type("ok");
         self.verifyExpected(expected)
+
+    def test_newline(self):
+        origin = [
+            "    sadf",
+            "",
+            ""]
+        expected = [
+            "    sadf",
+            "",
+            "ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,0);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
 
 if __name__ == '__main__':
     unittest.main()

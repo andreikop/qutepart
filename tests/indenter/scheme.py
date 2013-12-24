@@ -103,17 +103,18 @@ class Test(BaseTestClass):
 
     def test_7(self):
         origin = [
-            '  a',
+            '   a',
             '']
         expected = [
-            '  a',
+            '   a',
             '',
-            '  x'
+            '   x'
             ]
 
         self.setOrigin(origin)
         self.setCursorPosition(1, 0);
         self.enter();
+        self.tab();
         self.type('x')
         self.verifyExpected(expected)
 
