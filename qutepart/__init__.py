@@ -6,12 +6,12 @@ import os.path
 import logging
 import platform
 
-from PyQt4.QtCore import QPoint, QRect, Qt, pyqtSignal
+from PyQt4.QtCore import QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, QDialog, QFont, \
                         QIcon, QKeyEvent, QKeySequence, QPainter, QPen, QPalette, \
                         QPlainTextEdit, \
-                        QPixmap, QPrintDialog, QShortcut, QTextCharFormat, QTextCursor, \
-                        QTextBlock, QTextEdit, QTextFormat, QWidget
+                        QPrintDialog, QShortcut, QTextCharFormat, QTextCursor, \
+                        QTextBlock, QTextEdit, QTextFormat
 
 from qutepart.syntax import SyntaxManager
 from qutepart.syntaxhlighter import SyntaxHighlighter
@@ -20,6 +20,7 @@ from qutepart.indenter import getIndenter
 from qutepart.completer import Completer
 from qutepart.lines import Lines
 from qutepart.rectangularselection import RectangularSelection
+import qutepart.sideareas
 
 
 VERSION = (1, 3, 0)
@@ -129,120 +130,6 @@ class _Bookmarks:
             if self.isBlockMarked(block):
                 self._qpart.setTextCursor(QTextCursor(block))
                 return
-
-
-class _LineNumberArea(QWidget):
-    """Line number area widget
-    """
-    _LEFT_MARGIN = 5
-    _RIGHT_MARGIN = 3
-    
-    def __init__(self, qpart):
-        QWidget.__init__(self, qpart)
-        self._qpart = qpart
-    
-    def sizeHint(self, ):
-        """QWidget.sizeHint() implementation
-        """
-        return QSize(self.width(), 0)
-
-    def paintEvent(self, event):
-        """QWidget.paintEvent() implementation
-        """
-        painter = QPainter(self)
-        painter.fillRect(event.rect(), self.palette().color(QPalette.Window))
-        painter.setPen(Qt.black)
-
-        block = self._qpart.firstVisibleBlock()
-        blockNumber = block.blockNumber()
-        top = int(self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset()).top())
-        bottom = top + int(self._qpart.blockBoundingRect(block).height())
-        singleBlockHeight = self._qpart.cursorRect().height()
-        
-        width = None
-        wrapMarkerColor = None
-        
-        boundingRect = self._qpart.blockBoundingRect(block)
-        while block.isValid() and top <= event.rect().bottom():
-            if block.isVisible() and bottom >= event.rect().top():
-                number = str(blockNumber + 1)
-                painter.drawText(0, top, self.width() - self._RIGHT_MARGIN, self._qpart.fontMetrics().height(),
-                                 Qt.AlignRight, number)
-                if boundingRect.height() >= singleBlockHeight * 2:  # wrapped block
-                    if width is None:
-                        width = self.width()  # laizy calculation
-                    painter.fillRect(1, top + singleBlockHeight,
-                                     width - 2, boundingRect.height() - singleBlockHeight - 2,
-                                     Qt.darkGreen)
-            
-            block = block.next()
-            boundingRect = self._qpart.blockBoundingRect(block)
-            top = bottom
-            bottom = top + int(boundingRect.height())
-            blockNumber += 1
-
-    def width(self):
-        """Desired width. Includes text and margins
-        """
-        digits = len(str(max(1, self._qpart.blockCount())))
-        return self._LEFT_MARGIN + self._qpart.fontMetrics().width('9') * digits + self._RIGHT_MARGIN
-
-
-class _MarkArea(QWidget):
-    
-    blockClicked = pyqtSignal(QTextBlock)
-    
-    _MARGIN = 1
-    
-    def __init__(self, qpart):
-        QWidget.__init__(self, qpart)
-        self._qpart = qpart
-        
-        qpart.blockCountChanged.connect(self.update)
-        
-        defaultSizePixmap = QPixmap(_getIconPath('bookmark.png'))
-        iconSize = self._qpart.cursorRect().height()
-        self._bookmarkPixmap = defaultSizePixmap.scaled(iconSize, iconSize)
-    
-    def sizeHint(self, ):
-        """QWidget.sizeHint() implementation
-        """
-        return QSize(self.width(), 0)
-
-    def paintEvent(self, event):
-        """QWidget.paintEvent() implementation
-        Draw markers
-        """
-        painter = QPainter(self)
-        painter.fillRect(event.rect(), self.palette().color(QPalette.Window))
-
-        block = self._qpart.firstVisibleBlock()
-        blockBoundingGeometry = self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset())
-        top = blockBoundingGeometry.top()
-        bottom = top + blockBoundingGeometry.height()
-        
-        for block in iterateBlocksFrom(block):
-            if top > event.rect().bottom():
-                break
-            if block.isVisible() and \
-               bottom >= event.rect().top() and \
-               _Bookmarks.isBlockMarked(block):
-                painter.drawPixmap(0, top, self._bookmarkPixmap)
-            
-            top += self._qpart.blockBoundingGeometry(block).height()
-
-    def width(self):
-        """Desired width. Includes text and margins
-        """
-        return self._MARGIN + self._bookmarkPixmap.width() + self._MARGIN
-    
-    def mousePressEvent(self, mouseEvent):
-        cursor = self._qpart.cursorForPosition(QPoint(0, mouseEvent.y()))
-        block = cursor.block()
-        blockRect = self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset())
-        if blockRect.bottom() >= mouseEvent.y():  # clicked not lower, then end of text
-            self.blockClicked.emit(block)
-
 
 
 class Qutepart(QPlainTextEdit):
@@ -427,9 +314,9 @@ class Qutepart(QPlainTextEdit):
         
         self._initActions()
         
-        self._lineNumberArea = _LineNumberArea(self)
+        self._lineNumberArea = qutepart.sideareas.LineNumberArea(self)
         self._countCache = (-1, -1)
-        self._markArea = _MarkArea(self)
+        self._markArea = qutepart.sideareas.MarkArea(self, _getIconPath('bookmark.png'))
         
         self._bookmarks = _Bookmarks(self, self._markArea)
         
