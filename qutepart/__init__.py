@@ -21,6 +21,7 @@ from qutepart.lines import Lines
 from qutepart.rectangularselection import RectangularSelection
 import qutepart.sideareas
 from qutepart.indenter import Indenter
+import qutepart.bookmarks
 
 
 VERSION = (1, 3, 0)
@@ -41,7 +42,7 @@ binaryParserAvailable = qutepart.syntax.loader.binaryParserAvailable
 
 _ICONS_PATH = os.path.join(os.path.dirname(__file__), 'icons')
 
-def _getIconPath(iconFileName):
+def getIconPath(iconFileName):
     return os.path.join(_ICONS_PATH, iconFileName)
 
 
@@ -57,79 +58,6 @@ if not hasattr(QTextCursor, 'setPositionInBlock'):
     def _setPositionInBlock(cursor, positionInBlock, anchor=QTextCursor.MoveAnchor):
         return cursor.setPosition(cursor.block().position() + positionInBlock, anchor)
     QTextCursor.setPositionInBlock = _setPositionInBlock
-
-
-class _Bookmarks:
-    """Bookmarks functionality implementation, grouped in one class
-    """
-    def __init__(self, qpart, markArea):
-        self._qpart = qpart
-        self._markArea = markArea
-        qpart.toggleBookmarkAction = self._createAction(qpart, "bookmark.png", "Toogle bookmark", 'Ctrl+B',
-                                                        self._onToggleBookmark)
-        qpart.prevBookmarkAction = self._createAction(qpart, "up.png", "Previous bookmark", 'Alt+PgUp',
-                                                      self._onPrevBookmark)
-        qpart.nextBookmarkAction = self._createAction(qpart, "down.png", "Next bookmark", 'Alt+PgDown',
-                                                      self._onNextBookmark)
-        
-        markArea.blockClicked.connect(self._toggleBookmark)
-
-    def _createAction(self, widget, iconFileName, text, shortcut, slot):
-        """Create QAction with given parameters and add to the widget
-        """
-        icon = QIcon(_getIconPath(iconFileName))
-        action = QAction(icon, text, widget)
-        action.setShortcut(QKeySequence(shortcut))
-        action.setShortcutContext(Qt.WidgetShortcut)
-        action.triggered.connect(slot)
-        
-        widget.addAction(action)
-        
-        return action
-
-    def clear(self, startBlock, endBlock):
-        """Clear bookmarks on block range including start and end
-        """
-        for block in iterateBlocksFrom(startBlock):
-            self._setBlockMarked(block, False)
-            if block == endBlock:
-                break
-
-    @staticmethod
-    def isBlockMarked(block):
-        """Check if block is bookmarked
-        """
-        return block.userState() == 1
-
-    def _setBlockMarked(self, block, marked):
-        """Set block bookmarked
-        """
-        block.setUserState(1 if marked else -1)
-    
-    def _toggleBookmark(self, block):
-        self._setBlockMarked(block, not self.isBlockMarked(block))
-        self._markArea.update()
-    
-    def _onToggleBookmark(self):
-        """Toogle Bookmark action triggered
-        """
-        self._toggleBookmark(self._qpart.textCursor().block())
-    
-    def _onPrevBookmark(self):
-        """Previous Bookmark action triggered. Move cursor
-        """
-        for block in iterateBlocksBackFrom(self._qpart.textCursor().block().previous()):
-            if self.isBlockMarked(block):
-                self._qpart.setTextCursor(QTextCursor(block))
-                return
-    
-    def _onNextBookmark(self):
-        """Previous Bookmark action triggered. Move cursor
-        """
-        for block in iterateBlocksFrom(self._qpart.textCursor().block().next()):
-            if self.isBlockMarked(block):
-                self._qpart.setTextCursor(QTextCursor(block))
-                return
 
 
 class Qutepart(QPlainTextEdit):
@@ -311,9 +239,9 @@ class Qutepart(QPlainTextEdit):
         
         self._lineNumberArea = qutepart.sideareas.LineNumberArea(self)
         self._countCache = (-1, -1)
-        self._markArea = qutepart.sideareas.MarkArea(self, _getIconPath('bookmark.png'))
+        self._markArea = qutepart.sideareas.MarkArea(self)
         
-        self._bookmarks = _Bookmarks(self, self._markArea)
+        self._bookmarks = qutepart.bookmarks.Bookmarks(self, self._markArea)
         
         self._userExtraSelections = []  # we draw bracket highlighting, current line and extra selections by user
         self._userExtraSelectionFormat = QTextCharFormat()
@@ -342,7 +270,7 @@ class Qutepart(QPlainTextEdit):
             """
             action = QAction(text, self)
             if iconFileName is not None:
-                action.setIcon(QIcon(_getIconPath(iconFileName)))
+                action.setIcon(QIcon(getIconPath(iconFileName)))
             
             action.setShortcut(QKeySequence(shortcut))
             action.setShortcutContext(Qt.WidgetShortcut)

@@ -7,6 +7,7 @@ from PyQt4.QtGui import QPainter, QPalette, \
                         QTextBlock, QWidget
 
 import qutepart
+from qutepart.bookmarks import Bookmarks
 
 
 class LineNumberArea(QWidget):
@@ -72,13 +73,13 @@ class MarkArea(QWidget):
     
     _MARGIN = 1
     
-    def __init__(self, qpart, bookmarkIcon):
+    def __init__(self, qpart):
         QWidget.__init__(self, qpart)
         self._qpart = qpart
         
         qpart.blockCountChanged.connect(self.update)
         
-        defaultSizePixmap = QPixmap(bookmarkIcon)
+        defaultSizePixmap = QPixmap(qutepart.getIconPath('bookmark.png'))
         iconSize = self._qpart.cursorRect().height()
         self._bookmarkPixmap = defaultSizePixmap.scaled(iconSize, iconSize)
     
@@ -104,7 +105,7 @@ class MarkArea(QWidget):
                 break
             if block.isVisible() and \
                bottom >= event.rect().top() and \
-               qutepart._Bookmarks.isBlockMarked(block):
+               Bookmarks.isBlockMarked(block):
                 painter.drawPixmap(0, top, self._bookmarkPixmap)
             
             top += self._qpart.blockBoundingGeometry(block).height()
@@ -120,4 +121,3 @@ class MarkArea(QWidget):
         blockRect = self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset())
         if blockRect.bottom() >= mouseEvent.y():  # clicked not lower, then end of text
             self.blockClicked.emit(block)
-
