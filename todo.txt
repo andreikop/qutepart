@@ -1,5 +1,5 @@
 fixme:
-  bad scala doxygen comments highlighting
+  one indent if no smart indent
 
 todo:
   switch hihglighting language        2

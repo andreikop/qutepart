@@ -1,9 +1,13 @@
 """Module computes indentation for block
 It contains implementation of indenters, which are supported by katepart xml files
 """
+
 import logging
 
-def getIndenter(indenterName, qpart):
+from PyQt4.QtGui import QTextCursor
+
+
+def _getSmartIndenter(indenterName, qpart):
     """Get indenter by name.
     Available indenters are none, normal, cstyle, haskell, lilypond, lisp, python, ruby, xml
     Indenter name is not case sensitive
@@ -40,3 +44,174 @@ def getIndenter(indenterName, qpart):
         raise KeyError("Indenter %s not found" % indenterName)
 
     return indenterClass(qpart)
+
+
+class Indenter:
+    """Qutepart functionality, related to indentation
+    
+    Public attributes:
+        width           Indent width
+        useTabs         Indent uses Tabs (instead of spaces)
+    """
+    _DEFAULT_INDENT_WIDTH = 4
+    _DEFAULT_INDENT_USE_TABS = False
+    
+    def __init__(self, qpart):
+        self._qpart = qpart
+    
+        self.width = self._DEFAULT_INDENT_WIDTH
+        self.useTabs = self._DEFAULT_INDENT_USE_TABS
+        
+        self._smartIndenter = _getSmartIndenter('normal', self)
+
+    def setSyntax(self, syntax):
+        """Choose smart indentation algorithm according to syntax"""
+        self._smartIndenter = self._chooseSmartIndenter(syntax)
+
+    def text(self):
+        """Get indent text as \t or string of spaces
+        """
+        if self.useTabs:
+            return '\t'
+        else:
+            return ' ' * self.width
+    
+    def triggerCharacters(self):
+        """Trigger characters for smart indentation"""
+        return self._smartIndenter.TRIGGER_CHARACTERS
+
+    def autoIndentBlock(self, block, char = '\n'):
+        """Indent block after Enter pressed or trigger character typed
+        """
+        cursor = QTextCursor(block)
+        currentText = block.text()
+        spaceAtStartLen = len(currentText) - len(currentText.lstrip())
+        currentIndent = currentText[:spaceAtStartLen]
+        indent = self._smartIndenter.computeIndent(block, char)
+        if indent is not None and indent != currentIndent:
+            self._qpart.replaceText(block.position(), spaceAtStartLen, indent)
+
+    def onChangeSelectedBlocksIndent(self, increase, withSpace=False):
+        """Tab or Space pressed and few blocks are selected, or Shift+Tab pressed
+        Insert or remove text from the beginning of blocks
+        """
+        def blockIndentation(block):
+            text = block.text()
+            return text[:len(text) - len(text.lstrip())]
+        
+        def cursorAtSpaceEnd(block):
+            cursor = QTextCursor(block)
+            cursor.setPositionInBlock(len(blockIndentation(block)))
+            return cursor
+        
+        def indentBlock(block):
+            cursor = cursorAtSpaceEnd(block)
+            cursor.insertText(' ' if withSpace else self.text())
+        
+        def spacesCount(text):
+            return len(text) - len(text.rstrip(' '))
+        
+        def unIndentBlock(block):
+            currentIndent = blockIndentation(block)
+            
+            if currentIndent.endswith('\t'):
+                charsToRemove = 1
+            elif withSpace:
+                charsToRemove = 1 if currentIndent else 0
+            else:
+                if self.useTabs:
+                    charsToRemove = min(spacesCount(currentIndent), self.width)
+                else:  # spaces
+                    if currentIndent.endswith(self.text()):  # remove indent level
+                        charsToRemove = self.width
+                    else:  # remove all spaces
+                        charsToRemove = min(spacesCount(currentIndent), self.width)
+        
+            if charsToRemove:
+                cursor = cursorAtSpaceEnd(block)
+                cursor.setPosition(cursor.position() - charsToRemove, QTextCursor.KeepAnchor)
+                cursor.removeSelectedText()
+    
+        cursor = self._qpart.textCursor()
+
+        startBlock = self._qpart.document().findBlock(cursor.selectionStart())
+        endBlock = self._qpart.document().findBlock(cursor.selectionEnd())
+        
+        indentFunc = indentBlock if increase else unIndentBlock
+
+        if startBlock != endBlock:  # indent multiply lines
+            stopBlock = endBlock.next()
+            
+            block = startBlock
+            
+            with self._qpart:
+                while block != stopBlock:
+                    indentFunc(block)
+                    block = block.next()
+            
+            newCursor = QTextCursor(startBlock)
+            newCursor.setPosition(endBlock.position() + len(endBlock.text()), QTextCursor.KeepAnchor)
+            self._qpart.setTextCursor(newCursor)
+        else:  # indent 1 line
+            indentFunc(cursor.block())
+
+    def onShortcutIndentAfterCursor(self):
+        """Tab pressed and no selection. Insert text after cursor
+        """
+        cursor = self._qpart.textCursor()
+        if cursor.positionInBlock() == 0:
+            self.onAutoIndentTriggered()
+        elif self.useTabs:
+            cursor.insertText('\t')
+        else:  # indent to integer count of indents from line start
+            charsToInsert = self.width - (len(self._qpart.textBeforeCursor()) % self.width)
+            cursor.insertText(' ' * charsToInsert)
+    
+    def onShortcutUnindentWithBackspace(self):
+        """Backspace pressed, unindent
+        """
+        assert self._qpart.textBeforeCursor().endswith(self.text())
+        
+        charsToRemove = len(self._qpart.textBeforeCursor()) % len(self.text())
+        if charsToRemove == 0:
+            charsToRemove = len(self.text())
+        
+        cursor = self._qpart.textCursor()
+        cursor.setPosition(cursor.position() - charsToRemove, QTextCursor.KeepAnchor)
+        cursor.removeSelectedText()
+    
+    def onAutoIndentTriggered(self):
+        """Indent current line or selected lines
+        """
+        cursor = self._qpart.textCursor()
+        
+        startBlock = self._qpart.document().findBlock(cursor.selectionStart())
+        endBlock = self._qpart.document().findBlock(cursor.selectionEnd())
+
+        if startBlock != endBlock:  # indent multiply lines
+            stopBlock = endBlock.next()
+            
+            block = startBlock
+            
+            with self._qpart:
+                while block != stopBlock:
+                    self.autoIndentBlock(block, '')
+                    block = block.next()
+        else:  # indent 1 line
+            self.autoIndentBlock(startBlock, '')
+
+    def _chooseSmartIndenter(self, syntax):
+        """Get indenter for syntax
+        """
+        if syntax.indenter is not None:
+            try:
+                return _getSmartIndenter(syntax.indenter, self)
+            except KeyError:
+                logger.error("Indenter '%s' not found" % syntax.indenter)
+        
+        try:
+            return _getSmartIndenter(syntax.name, self)
+        except KeyError:
+            pass
+        
+        return _getSmartIndenter('normal', self)
