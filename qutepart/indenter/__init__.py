@@ -159,13 +159,24 @@ class Indenter:
         """Tab pressed and no selection. Insert text after cursor
         """
         cursor = self._qpart.textCursor()
-        if cursor.positionInBlock() == 0:
-            self.onAutoIndentTriggered()
-        elif self.useTabs:
-            cursor.insertText('\t')
-        else:  # indent to integer count of indents from line start
-            charsToInsert = self.width - (len(self._qpart.textBeforeCursor()) % self.width)
-            cursor.insertText(' ' * charsToInsert)
+        
+        def insertIndent():
+            if self.useTabs:
+                cursor.insertText('\t')
+            else:  # indent to integer count of indents from line start
+                charsToInsert = self.width - (len(self._qpart.textBeforeCursor()) % self.width)
+                cursor.insertText(' ' * charsToInsert)
+        
+        if cursor.positionInBlock() == 0:  # if no any indent - indent smartly
+            block = cursor.block()
+            self.autoIndentBlock(block, '')
+            
+            # if no smart indentation - just insert one indent
+            if self._qpart.textBeforeCursor() == '':
+                insertIndent()
+        else:
+            insertIndent()
+
     
     def onShortcutUnindentWithBackspace(self):
         """Backspace pressed, unindent
