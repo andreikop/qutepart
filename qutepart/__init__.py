@@ -141,19 +141,30 @@ class Qutepart(QPlainTextEdit):
     **Actions**
     
     Component contains list of actions (QAction instances).
-    Actions can be insered to some menu, a shortcut and an icon can be configured. List of actions:
+    Actions can be insered to some menu, a shortcut and an icon can be configured.
     
+    Bookmarks:
+
     * ``toggleBookmarkAction`` - Set/Clear bookmark on current block
     * ``nextBookmarkAction`` - Jump to next bookmark
     * ``prevBookmarkAction`` - Jump to previous bookmark
+    
+    Scroll:
+
     * ``scrollUpAction`` - Scroll viewport Up
     * ``scrollDownAction`` - Scroll viewport Down
     * ``selectAndScrollUpAction`` - Select 1 line Up and scroll
     * ``selectAndScrollDownAction`` - Select 1 line Down and scroll
+    
+    Indentation:
+
     * ``decreaseIndentAction`` - Decrease indentation
     * ``autoIndentLineAction`` - Autoindent line
     * ``indentWithSpaceAction`` - Indent all selected lines by 1 space symbol
     * ``unIndentWithSpaceAction`` - Unindent all selected lines by 1 space symbol
+    
+    Lines:
+
     * ``moveLineUpAction`` - Move line Up
     * ``moveLineDownAction`` - Move line Down
     * ``deleteLineAction`` - Delete line
@@ -161,6 +172,9 @@ class Qutepart(QPlainTextEdit):
     * ``pasteLineAction`` - Paste line
     * ``cutLineAction`` - Cut line
     * ``duplicateLineAction`` - Duplicate line
+    
+    Other:
+
     * ``invokeCompletionAction`` - Invoke completion
     * ``printAction`` - Print file
     
