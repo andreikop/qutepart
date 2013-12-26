@@ -7,7 +7,7 @@ import logging
 from PyQt4.QtGui import QTextCursor
 
 
-def _getSmartIndenter(indenterName, qpart):
+def _getSmartIndenter(indenterName, qpart, indenter):
     """Get indenter by name.
     Available indenters are none, normal, cstyle, haskell, lilypond, lisp, python, ruby, xml
     Indenter name is not case sensitive
@@ -43,7 +43,7 @@ def _getSmartIndenter(indenterName, qpart):
     else:
         raise KeyError("Indenter %s not found" % indenterName)
 
-    return indenterClass(qpart)
+    return indenterClass(qpart, indenter)
 
 
 class Indenter:
@@ -62,7 +62,7 @@ class Indenter:
         self.width = self._DEFAULT_INDENT_WIDTH
         self.useTabs = self._DEFAULT_INDENT_USE_TABS
         
-        self._smartIndenter = _getSmartIndenter('normal', self)
+        self._smartIndenter = _getSmartIndenter('normal', self._qpart, self)
 
     def setSyntax(self, syntax):
         """Choose smart indentation algorithm according to syntax"""
@@ -216,13 +216,13 @@ class Indenter:
         """
         if syntax.indenter is not None:
             try:
-                return _getSmartIndenter(syntax.indenter, self)
+                return _getSmartIndenter(syntax.indenter, self._qpart, self)
             except KeyError:
                 logger.error("Indenter '%s' not found" % syntax.indenter)
         
         try:
-            return _getSmartIndenter(syntax.name, self)
+            return _getSmartIndenter(syntax.name, self._qpart, self)
         except KeyError:
             pass
         
-        return _getSmartIndenter('normal', self)
+        return _getSmartIndenter('normal', self._qpart, self)

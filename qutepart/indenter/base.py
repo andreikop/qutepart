@@ -17,8 +17,9 @@ class IndenterBase(IndenterNone):
     """Base class for indenters
     """
     TRIGGER_CHARACTERS = ""  # indenter is called, when user types Enter of one of trigger chars
-    def __init__(self, qpart):
+    def __init__(self, qpart, indenter):
         self._qpart = qpart
+        self._indenter = indenter
     
     def indentBlock(self, block):
         """Indent the block
@@ -52,7 +53,7 @@ class IndenterBase(IndenterNone):
         """Return text previous block, which is non empty (contains something, except spaces)
         Return '', if not found
         """
-        return self._qpart._indentText()
+        return self._indenter.text()
 
     def _increaseIndent(self, indent):
         """Add 1 indentation level
@@ -71,8 +72,8 @@ class IndenterBase(IndenterNone):
         """Make indent text with specified with.
         Contains width count of spaces, or tabs and spaces
         """
-        if self._qpart.indentUseTabs:
-            tabCount, spaceCount = divmod(width, self._qpart.indentWidth)
+        if self._indenter.useTabs:
+            tabCount, spaceCount = divmod(width, self._indenter.width)
             return ('\t' * tabCount) + (' ' * spaceCount)
         else:
             return ' ' * width

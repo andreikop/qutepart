@@ -1,5 +1,5 @@
 fixme:
-  one indent if no smart indent
+  test indenters as part of the system
 
 todo:
   switch hihglighting language        2
