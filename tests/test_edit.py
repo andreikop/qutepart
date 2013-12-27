@@ -16,10 +16,10 @@ class Test(unittest.TestCase):
     """Base class for tests
     """
     app = QApplication(sys.argv)  # app crashes, if created more than once
-    
+
     def setUp(self):
         self.qpart = Qutepart()
-    
+
     def tearDown(self):
         del self.qpart
 

@@ -16,10 +16,10 @@ class Test(unittest.TestCase):
     """Base class for tests
     """
     app = QApplication(sys.argv)  # app crashes, if created more than once
-    
+
     def setUp(self):
         self.qpart = Qutepart()
-    
+
     def tearDown(self):
         del self.qpart
 
@@ -30,12 +30,12 @@ class Test(unittest.TestCase):
         QTest.keyClick(self.qpart, Qt.Key_Down)
         QTest.keyClick(self.qpart, Qt.Key_Tab)
         self.assertEqual(self.qpart.text, 'ab\n\tcd')
-        
+
         self.qpart.indentUseTabs = False
         QTest.keyClick(self.qpart, Qt.Key_Backspace)
         QTest.keyClick(self.qpart, Qt.Key_Tab)
         self.assertEqual(self.qpart.text, 'ab\n    cd')
-    
+
     def test_2(self):
         # Unindent Tab
         self.qpart.indentUseTabs = True
@@ -44,7 +44,7 @@ class Test(unittest.TestCase):
 
         self.qpart.decreaseIndentAction.trigger()
         self.assertEqual(self.qpart.text, 'ab\n\tcd')
-        
+
         self.qpart.decreaseIndentAction.trigger()
         self.assertEqual(self.qpart.text, 'ab\ncd')
 

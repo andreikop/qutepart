@@ -8,7 +8,7 @@ from indenttest import IndentTest
 class Test(IndentTest):
     LANGUAGE = 'Common Lisp'
     INDENT_WIDTH = 2
-    
+
     def test_three_semicolons(self):
         origin = [
             "      ",

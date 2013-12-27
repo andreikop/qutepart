@@ -8,7 +8,7 @@ from indenttest import IndentTest
 class Test(IndentTest):
     LANGUAGE = 'Python'
     INDENT_WIDTH = 2
-    
+
     def test_dedentReturn(self):
         origin = [
             "def some_function():",

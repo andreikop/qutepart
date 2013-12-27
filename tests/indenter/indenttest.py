@@ -20,23 +20,23 @@ import qutepart
 
 class IndentTest(unittest.TestCase):
     app = QApplication(sys.argv)
-    
+
     def setOrigin(self, text):
         self.qpart.text = '\n'.join(text)
-    
+
     def verifyExpected(self, text):
         lines = self.qpart.text.split('\n')
         self.assertEquals(map(str, lines), text)
-    
+
     def setCursorPosition(self, line, col):
         self.qpart.cursorPosition = line, col
-    
+
     def enter(self):
         QTest.keyClick(self.qpart, Qt.Key_Enter)
-    
+
     def tab(self):
         QTest.keyClick(self.qpart, Qt.Key_Tab)
-    
+
     def type(self, text):
         QTest.keyClicks(self.qpart, text)
 
@@ -44,17 +44,17 @@ class IndentTest(unittest.TestCase):
         line, col = self.qpart.cursorPosition
         text = '(%d,%d)' % (line, col)
         self.type(text)
-    
+
     def writeln(self):
         self.qpart.textCursor().insertText('\n')
 
     def alignLine(self, index):
         self.qpart._autoIndentBlock(self.qpart.document().findBlockByNumber(index), '')
-    
+
     def alignAll(self):
         QTest.keyClick(self.qpart, Qt.Key_A, Qt.ControlModifier)
         self.qpart.autoIndentLineAction.trigger()
-    
+
     def setUp(self):
         self.qpart = Qutepart()
         if self.LANGUAGE is not None:

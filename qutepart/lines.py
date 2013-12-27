@@ -17,7 +17,7 @@ class Lines:
     def __init__(self, qpart):
         self._qpart = qpart
         self._doc = qpart.document()
-    
+
     def _atomicModification(func):
         """Decorator
         Make document modification atomic
@@ -27,23 +27,23 @@ class Lines:
             with self._qpart:
                 func(*args, **kwargs)
         return wrapper
-    
+
     def _toList(self):
         """Convert to Python list
         """
         return [block.text() \
                     for block in _iterateBlocksFrom(self._doc.firstBlock())]
-    
+
     def __str__(self):
         """Serialize
         """
         return str(self._toList())
-    
+
     def __len__(self):
         """Get lines count
         """
         return self._doc.blockCount()
-    
+
     def _checkAndConvertIndex(self, index):
         """Check integer index, convert from less than zero notation
         """
@@ -52,7 +52,7 @@ class Lines:
         if index < 0 or index >= self._doc.blockCount():
             raise IndexError('Invalid block index', index)
         return index
-    
+
     def __getitem__(self, index):
         """Get item by index
         """
@@ -80,7 +80,7 @@ class Lines:
             index = self._checkAndConvertIndex(index)
             _setBlockText(index, value)
         elif isinstance(index, slice):
-            """List of indexes is reversed for make sure 
+            """List of indexes is reversed for make sure
             not processed indexes are not shifted during document modification
             """
             start, stop, step = index.indices(self._doc.blockCount())
@@ -88,10 +88,10 @@ class Lines:
                 start, stop, step = stop - 1, start - 1, step * -1
 
             blockIndexes = list(range(start, stop, step))
-            
+
             if len(blockIndexes) != len(value):
                 raise ValueError('Attempt to replace %d lines with %d lines' % (len(blockIndexes), len(value)))
-            
+
             for blockIndex, text in zip(blockIndexes, value[::-1]):
                 _setBlockText(blockIndex, text)
 
@@ -118,7 +118,7 @@ class Lines:
             index = self._checkAndConvertIndex(index)
             _removeBlock(index)
         elif isinstance(index, slice):
-            """List of indexes is reversed for make sure 
+            """List of indexes is reversed for make sure
             not processed indexes are not shifted during document modification
             """
             start, stop, step = index.indices(self._doc.blockCount())
@@ -133,10 +133,10 @@ class Lines:
         """
         def __init__(self, block):
             self._block = block
-        
+
         def __iter__(self):
             return self
-        
+
         def next(self):
             if self._block.isValid():
                 self._block, result = self._block.next(), self._block.text()
@@ -164,7 +164,7 @@ class Lines:
         """
         if index < 0 or index > self._doc.blockCount():
             raise IndexError('Invalid block index', index)
-        
+
         if index == 0:  # first
             cursor = QTextCursor(self._doc.firstBlock())
             cursor.insertText(text)

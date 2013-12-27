@@ -12,7 +12,7 @@ _logger = logging.getLogger('qutepart')
 
 class TextFormat:
     """Text format definition.
-    
+
     Public attributes:
         color          : Font color, #rrggbb or #rgb
         background     : Font background, #rrggbb or #rgb
@@ -22,7 +22,7 @@ class TextFormat:
         underline      : Underlined font, bool
         strikeOut      : Striked out font
         spellChecking  : Text will be spell checked
-        textType       : 'c' for comments, 's' for strings, ' ' for other. 
+        textType       : 'c' for comments, 's' for strings, ' ' for other.
     """
     def __init__(self, color = '#000000',
                        background = '#ffffff',
@@ -32,7 +32,7 @@ class TextFormat:
                        underline = False,
                        strikeOut = False,
                        spellChecking = False):
-        
+
         self.color = color
         self.background = background
         self.selectionColor = selectionColor
@@ -42,14 +42,14 @@ class TextFormat:
         self.strikeOut = strikeOut
         self.spellChecking = spellChecking
         self.textType = ' '  # modified later
-    
+
     def __cmp__(self, other):
         return cmp(self.__dict__, other.__dict__)
 
 
 class Syntax:
     """Syntax. Programming language parser definition
-    
+
     Public attributes:
         name            Name
         section         Section
@@ -61,14 +61,14 @@ class Syntax:
         author          Author
         license         License
         hidden          Shall be hidden in the menu
-        indenter        Indenter for the syntax. Possible values are 
+        indenter        Indenter for the syntax. Possible values are
                             none, normal, cstyle, haskell, lilypond, lisp, python, ruby, xml
                         None, if not set by xml file
     """
     def __init__(self, manager):
         self.manager = manager
         self.parser = None
-    
+
     def __str__(self):
         res = 'Syntax\n'
         res += ' name: %s\n' % self.name
@@ -83,15 +83,15 @@ class Syntax:
         res += ' hidden: %s\n' % self.hidden
         res += ' indenter: %s\n' % self.indenter
         res += unicode(self.parser)
-        
+
         return res
-    
+
     def _setParser(self, parser):
         self.parser = parser
         # performance optimization, avoid 1 function call
         self.highlightBlock = parser.highlightBlock
         self.parseBlock = parser.parseBlock
-    
+
     def highlightBlock(self, text, prevLineData):
         """Parse line of text and return
             (lineData, highlightedSegments)
@@ -101,31 +101,31 @@ class Syntax:
         """
         #self.parser.parseAndPrintBlockTextualResults(text, prevLineData)
         return self.parser.highlightBlock(text, prevLineData)
-        
+
     def parseBlock(self, text, prevLineData):
         """Parse line of text and return
             lineData
         where
             lineData is data, which shall be saved and used for parsing next line
-            
+
         This is quicker version of highlighBlock, which doesn't return results,
         but only parsers the block and produces data, which is necessary for parsing next line.
         Use it for invisible lines
         """
         return self.parser.parseBlock(text, prevLineData)
-    
+
     def _getTextType(self, lineData, column):
         """Get text type (letter)
         """
         if lineData is None:
             return ' '  # default is code
-        
+
         textTypeMap = lineData[1]
         if column >= len(textTypeMap):  # probably, not actual data, not updated yet
             return ' '
-        
+
         return textTypeMap[column]
-        
+
     def isCode(self, lineData, column):
         """Check if text at given position is a code
         """
@@ -161,7 +161,7 @@ class SyntaxManager:
         self._mimeTypeToXmlFileName = syntaxDb['mimeTypeToXmlFileName']
         self._firstLineToXmlFileName = syntaxDb['firstLineToXmlFileName']
         globToXmlFileName = syntaxDb['extensionToXmlFileName']
-        
+
         # Applying glob patterns is really slow. Therefore they are compiled to reg exps
         self._extensionToXmlFileName = \
                 {re.compile(fnmatch.translate(glob)): xmlFileName \
@@ -171,14 +171,14 @@ class SyntaxManager:
         """Get syntax by its xml file name
         """
         import qutepart.syntax.loader  # delayed import for avoid cross-imports problem
-        
+
         with self._loadedSyntaxesLock:
             if not xmlFileName in self._loadedSyntaxes:
                 xmlFilePath = os.path.join(os.path.dirname(__file__), "data", "xml", xmlFileName)
                 syntax = Syntax(self)
                 self._loadedSyntaxes[xmlFileName] = syntax
                 qutepart.syntax.loader.loadSyntax(syntax, xmlFilePath, formatConverterFunction)
-        
+
             return self._loadedSyntaxes[xmlFileName]
 
     def _getSyntaxByLanguageName(self, syntaxName, formatConverterFunction):
@@ -186,7 +186,7 @@ class SyntaxManager:
         """
         xmlFileName = self._syntaxNameToXmlFileName[syntaxName]
         return self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
-    
+
     def _getSyntaxBySourceFileName(self, name, formatConverterFunction):
         """Get syntax by source name of file, which is going to be highlighted
         """
@@ -201,7 +201,7 @@ class SyntaxManager:
         """
         xmlFileName = self._mimeTypeToXmlFileName[mimeType]
         return self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
-    
+
     def _getSyntaxByFirstLine(self, firstLine, formatConverterFunction):
         """Get syntax by first line of the file
         """
@@ -225,32 +225,32 @@ class SyntaxManager:
         First parameter in the list has biggest priority
         """
         syntax = None
-        
+
         if syntax is None and xmlFileName is not None:
             try:
                 syntax = self._getSyntaxByXmlFileName(xmlFileName, formatConverterFunction)
             except KeyError:
                 _logger.warning('No xml definition %s' % xmlFileName)
-        
+
         if syntax is None and mimeType is not None:
             try:
                 syntax = self._getSyntaxByMimeType(mimeType, formatConverterFunction)
             except KeyError:
                 _logger.warning('No syntax for mime type %s' % mimeType)
-        
+
         if syntax is None and languageName is not None:
             try:
                 syntax = self._getSyntaxByLanguageName(languageName, formatConverterFunction)
             except KeyError:
                 _logger.warning('No syntax for language %s' % languageName)
-        
+
         if syntax is None and sourceFilePath is not None:
             baseName = os.path.basename(sourceFilePath)
             try:
                 syntax = self._getSyntaxBySourceFileName(baseName, formatConverterFunction)
             except KeyError:
                 pass
-        
+
         if syntax is None and firstLine is not None:
             try:
                 syntax = self._getSyntaxByFirstLine(firstLine, formatConverterFunction)

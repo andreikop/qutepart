@@ -24,7 +24,7 @@ class If(BaseTestClass):
         self.setCursorPosition(0,8);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_if11(self):
@@ -43,7 +43,7 @@ class If(BaseTestClass):
         self.setCursorPosition(1,8);
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure
@@ -61,7 +61,7 @@ class If(BaseTestClass):
         self.setCursorPosition(0,14);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure
@@ -81,7 +81,7 @@ class If(BaseTestClass):
         self.setCursorPosition(1,8);
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_if22(self):
@@ -98,7 +98,7 @@ class If(BaseTestClass):
         self.setCursorPosition(0,18)
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure
@@ -116,7 +116,7 @@ class If(BaseTestClass):
         self.setCursorPosition(0,24);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure
@@ -134,7 +134,7 @@ class If(BaseTestClass):
         self.setCursorPosition(0,28);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
 
@@ -156,7 +156,7 @@ class Block(BaseTestClass):
         self.setCursorPosition(1,6);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure
@@ -176,7 +176,7 @@ class Block(BaseTestClass):
         self.setCursorPosition(1,8);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
 
@@ -213,7 +213,7 @@ class Basic(BaseTestClass):
         self.type("end");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure
@@ -259,7 +259,7 @@ class Basic(BaseTestClass):
         self.enter();
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_basic3(self):
@@ -283,7 +283,7 @@ class Basic(BaseTestClass):
         self.type("end");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_basic4(self):
@@ -307,7 +307,7 @@ class Basic(BaseTestClass):
         self.type("end");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
 
@@ -337,7 +337,7 @@ class EmptyFile(BaseTestClass):
         self.type("bar");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
 
@@ -356,7 +356,7 @@ class RegExp(BaseTestClass):
         self.setCursorPosition(0,16);
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
 
@@ -377,7 +377,7 @@ class Do(BaseTestClass):
         self.setCursorPosition(1,24);
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_do2(self):
@@ -399,7 +399,7 @@ class Do(BaseTestClass):
         self.type("f << foo");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_do3(self):
@@ -421,7 +421,7 @@ class Do(BaseTestClass):
         self.type("puts \"#{i}: #{obj.inspect}\"");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_do4(self):
@@ -443,7 +443,7 @@ class Do(BaseTestClass):
         self.type("f");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_do5(self):
@@ -462,7 +462,7 @@ class Do(BaseTestClass):
         self.setCursorPosition(1,18);
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_do6(self):
@@ -484,7 +484,7 @@ class Do(BaseTestClass):
         self.type("bar");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_do7(self):
@@ -506,7 +506,7 @@ class Do(BaseTestClass):
         self.type("bar");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
 
@@ -529,7 +529,7 @@ class NoDo(BaseTestClass):
         self.setCursorPosition(2,32);
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_no_do2(self):
@@ -553,7 +553,7 @@ class NoDo(BaseTestClass):
         self.type("f");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_no_do3(self):
@@ -574,7 +574,7 @@ class NoDo(BaseTestClass):
         self.setCursorPosition(2,32);
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_no_do4(self):
@@ -598,7 +598,7 @@ class NoDo(BaseTestClass):
         self.type("f");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
 
@@ -618,7 +618,7 @@ class SingleLine(BaseTestClass):
         self.setCursorPosition(0,18);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure
@@ -636,7 +636,7 @@ class SingleLine(BaseTestClass):
         self.setCursorPosition(0,17);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_singleline03(self):
@@ -653,7 +653,7 @@ class SingleLine(BaseTestClass):
         self.setCursorPosition(0,15);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_singleline04(self):
@@ -672,7 +672,7 @@ class SingleLine(BaseTestClass):
         self.setCursorPosition(1,8);
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
 
@@ -691,7 +691,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(0,24);
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
     def test_array2(self):
@@ -708,7 +708,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(0,11);
         self.enter();
         self.type(":a");
-        
+
         self.verifyExpected(expected)
 
     def test_array3(self):
@@ -727,7 +727,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(1,7);
         self.enter();
         self.type(":b");
-        
+
         self.verifyExpected(expected)
 
     def test_array4(self):
@@ -748,7 +748,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(2,6);
         self.enter();
         self.type("]");
-        
+
         self.verifyExpected(expected)
 
     def test_array5(self):
@@ -771,7 +771,7 @@ class Array(BaseTestClass):
         self.enter();
         self.writeCursorPosition();
         self.writeln();
-        
+
         self.verifyExpected(expected)
 
     def test_array6(self):
@@ -792,7 +792,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(2,14);
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
     def test_array7(self):
@@ -809,7 +809,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(0,14);
         self.enter();
         self.type(":b");
-        
+
         self.verifyExpected(expected)
 
     def test_array8(self):
@@ -828,7 +828,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(1,14);
         self.enter();
         self.type(":c");
-        
+
         self.verifyExpected(expected)
 
     def test_array9(self):
@@ -850,7 +850,7 @@ class Array(BaseTestClass):
         self.type("]");
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
     def test_array10(self):
@@ -871,7 +871,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(2,17);
         self.enter();
         self.type(":bar");
-        
+
         self.verifyExpected(expected)
 
     def test_array11(self):
@@ -894,7 +894,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(3,17);
         self.enter();
         self.type(":baz");
-        
+
         self.verifyExpected(expected)
 
     def test_array12(self):
@@ -917,7 +917,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(3,18);
         self.enter();
         self.type(":baz");
-        
+
         self.verifyExpected(expected)
 
     def test_array16(self):
@@ -938,7 +938,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(2,16);
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
     def test_array17(self):
@@ -955,7 +955,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(0,15);
         self.enter();
         self.type(":b");
-        
+
         self.verifyExpected(expected)
 
     def test_array18(self):
@@ -974,7 +974,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(1,15);
         self.enter();
         self.type(":c");
-        
+
         self.verifyExpected(expected)
 
     def test_array19(self):
@@ -996,7 +996,7 @@ class Array(BaseTestClass):
         self.type(" ]");
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
     def test_array20(self):
@@ -1017,7 +1017,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(2,19);
         self.enter();
         self.type(":bar");
-        
+
         self.verifyExpected(expected)
 
     def test_array21(self):
@@ -1040,7 +1040,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(3,19);
         self.enter();
         self.type(":baz");
-        
+
         self.verifyExpected(expected)
 
     def test_array22(self):
@@ -1063,7 +1063,7 @@ class Array(BaseTestClass):
         self.setCursorPosition(3,21);
         self.enter();
         self.type(":baz");
-        
+
         self.verifyExpected(expected)
 
 
@@ -1084,7 +1084,7 @@ class ArrayComment(BaseTestClass):
         self.setCursorPosition(1,34);
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
     def test_array_comment2(self):
@@ -1101,7 +1101,7 @@ class ArrayComment(BaseTestClass):
         self.setCursorPosition(0,21);
         self.enter();
         self.type(":a");
-        
+
         self.verifyExpected(expected)
 
     def test_array_comment3(self):
@@ -1120,7 +1120,7 @@ class ArrayComment(BaseTestClass):
         self.setCursorPosition(1,21);
         self.enter();
         self.type(":b");
-        
+
         self.verifyExpected(expected)
 
     def test_array_comment4(self):
@@ -1141,7 +1141,7 @@ class ArrayComment(BaseTestClass):
         self.setCursorPosition(2,17);
         self.enter();
         self.type("]");
-        
+
         self.verifyExpected(expected)
 
     def test_array_comment5(self):
@@ -1164,7 +1164,7 @@ class ArrayComment(BaseTestClass):
         self.enter();
         self.writeCursorPosition();
         self.writeln();
-        
+
         self.verifyExpected(expected)
 
 
@@ -1183,7 +1183,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(0,38);
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
     def test_hash2(self):
@@ -1200,7 +1200,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(0,10);
         self.enter();
         self.type(":a => 1");
-        
+
         self.verifyExpected(expected)
 
     def test_hash3(self):
@@ -1219,7 +1219,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(1,12);
         self.enter();
         self.type(":b => 2");
-        
+
         self.verifyExpected(expected)
 
     def test_hash4(self):
@@ -1240,7 +1240,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(2,11);
         self.enter();
         self.type("}");
-        
+
         self.verifyExpected(expected)
 
     def test_hash5(self):
@@ -1263,7 +1263,7 @@ class Hash(BaseTestClass):
         self.enter();
         self.writeCursorPosition();
         self.writeln();
-        
+
         self.verifyExpected(expected)
 
     def test_hash6(self):
@@ -1284,7 +1284,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(2,18);
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
     def test_hash7(self):
@@ -1301,7 +1301,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(0,18);
         self.enter();
         self.type(":b => 2");
-        
+
         self.verifyExpected(expected)
 
     def test_hash8(self):
@@ -1320,7 +1320,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(1,18);
         self.enter();
         self.type(":c => 3");
-        
+
         self.verifyExpected(expected)
 
     def test_hash9(self):
@@ -1342,7 +1342,7 @@ class Hash(BaseTestClass):
         self.type("}");
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
     def test_hash10(self):
@@ -1363,7 +1363,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(2,30);
         self.enter();
         self.type(":bar => /^b/");
-        
+
         self.verifyExpected(expected)
 
     def test_hash11(self):
@@ -1386,7 +1386,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(3,31);
         self.enter();
         self.type(":d => 4");
-        
+
         self.verifyExpected(expected)
 
     def test_hash12(self):
@@ -1409,7 +1409,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(3,30);
         self.enter();
         self.type(":baz => /^b/");
-        
+
         self.verifyExpected(expected)
 
     def test_hash16(self):
@@ -1430,7 +1430,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(2,20);
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
     def test_hash17(self):
@@ -1447,7 +1447,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(0,19);
         self.enter();
         self.type(":b => 2");
-        
+
         self.verifyExpected(expected)
 
     def test_hash18(self):
@@ -1466,7 +1466,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(1,19);
         self.enter();
         self.type(":c => 3");
-        
+
         self.verifyExpected(expected)
 
     def test_hash19(self):
@@ -1488,7 +1488,7 @@ class Hash(BaseTestClass):
         self.type(" }");
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
     def test_hash20(self):
@@ -1509,7 +1509,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(2,32);
         self.enter();
         self.type(":bar => /^b/");
-        
+
         self.verifyExpected(expected)
 
     def test_hash21(self):
@@ -1532,7 +1532,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(3,34);
         self.enter();
         self.type(":d => 4");
-        
+
         self.verifyExpected(expected)
 
     def test_hash22(self):
@@ -1555,7 +1555,7 @@ class Hash(BaseTestClass):
         self.setCursorPosition(3,32);
         self.enter();
         self.type(":baz => /^b/");
-        
+
         self.verifyExpected(expected)
 
 
@@ -1574,7 +1574,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(0,11);
         self.enter();
         self.type("bar()");
-        
+
         self.verifyExpected(expected)
 
     def test_ops2(self):
@@ -1591,7 +1591,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(0,21);
         self.enter();
         self.type("bar()");
-        
+
         self.verifyExpected(expected)
 
     def test_ops3(self):
@@ -1608,7 +1608,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(0,11);
         self.enter();
         self.type("bar()");
-        
+
         self.verifyExpected(expected)
 
     def test_ops4(self):
@@ -1625,7 +1625,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(0,21);
         self.enter();
         self.type("bar()");
-        
+
         self.verifyExpected(expected)
 
     def test_ops5(self):
@@ -1642,7 +1642,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(0,11);
         self.enter();
         self.type("bar()");
-        
+
         self.verifyExpected(expected)
 
     def test_ops6(self):
@@ -1659,7 +1659,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(0,21);
         self.enter();
         self.type("bar()");
-        
+
         self.verifyExpected(expected)
 
     def test_ops7(self):
@@ -1676,7 +1676,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(0,11);
         self.enter();
         self.type("bar()");
-        
+
         self.verifyExpected(expected)
 
     def test_ops8(self):
@@ -1693,7 +1693,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(0,21);
         self.enter();
         self.type("bar()");
-        
+
         self.verifyExpected(expected)
 
     def test_ops11(self):
@@ -1712,7 +1712,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,9);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops12(self):
@@ -1731,7 +1731,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,9);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops13(self):
@@ -1750,7 +1750,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,9);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops14(self):
@@ -1769,7 +1769,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,9);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops15(self):
@@ -1788,7 +1788,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,9);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops16(self):
@@ -1807,7 +1807,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,9);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops17(self):
@@ -1826,7 +1826,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,9);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops18(self):
@@ -1845,7 +1845,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,9);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops21(self):
@@ -1864,7 +1864,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,19);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops22(self):
@@ -1883,7 +1883,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,19);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops23(self):
@@ -1902,7 +1902,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,19);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops24(self):
@@ -1921,7 +1921,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,19);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops25(self):
@@ -1940,7 +1940,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,19);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops26(self):
@@ -1959,7 +1959,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,19);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops27(self):
@@ -1978,7 +1978,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,19);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_ops28(self):
@@ -1997,7 +1997,7 @@ class Ops(BaseTestClass):
         self.setCursorPosition(1,19);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
 
@@ -2016,7 +2016,7 @@ class WordList(BaseTestClass):
         self.setCursorPosition(0,27);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     def test_wordlist02(self):
@@ -2035,7 +2035,7 @@ class WordList(BaseTestClass):
         self.setCursorPosition(1,26);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure
@@ -2053,7 +2053,7 @@ class WordList(BaseTestClass):
         self.setCursorPosition(0,27);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure  # failed by kate
@@ -2073,7 +2073,7 @@ class WordList(BaseTestClass):
         self.setCursorPosition(1,26);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure
@@ -2091,7 +2091,7 @@ class WordList(BaseTestClass):
         self.setCursorPosition(0,27);
         self.enter();
         self.type("foobar");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure  # failed by kate
@@ -2111,7 +2111,7 @@ class WordList(BaseTestClass):
         self.setCursorPosition(1,26);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
 
@@ -2134,7 +2134,7 @@ class Multiline(BaseTestClass):
         self.setCursorPosition(2,17);
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_multiline2(self):
@@ -2158,7 +2158,7 @@ class Multiline(BaseTestClass):
         self.type("puts");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_multiline3(self):
@@ -2180,7 +2180,7 @@ class Multiline(BaseTestClass):
         self.type("\"world\"");
         self.enter();
         self.type("bar");
-        
+
         self.verifyExpected(expected)
 
     def test_multiline4(self):
@@ -2204,7 +2204,7 @@ class Multiline(BaseTestClass):
         self.type("\"world\"");
         self.enter();
         self.type("bar");
-        
+
         self.verifyExpected(expected)
 
     def test_multiline5(self):
@@ -2228,7 +2228,7 @@ class Multiline(BaseTestClass):
         self.type("\"world\"");
         self.enter();
         self.type("bar");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure
@@ -2250,7 +2250,7 @@ class Multiline(BaseTestClass):
         self.enter();
         self.enter();
         self.type("bar");
-        
+
         self.verifyExpected(expected)
 
     def test_multiline7(self):
@@ -2267,7 +2267,7 @@ class Multiline(BaseTestClass):
         self.setCursorPosition(0,13);
         self.enter();
         self.type("\"world\"");
-        
+
         self.verifyExpected(expected)
 
     def test_multiline8(self):
@@ -2291,7 +2291,7 @@ class Multiline(BaseTestClass):
         self.type("bar");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_multiline9(self):
@@ -2312,7 +2312,7 @@ class Multiline(BaseTestClass):
         self.setCursorPosition(2,8);
         self.enter();
         self.type("bar");
-        
+
         self.verifyExpected(expected)
 
     def test_multiline10(self):
@@ -2333,7 +2333,7 @@ class Multiline(BaseTestClass):
         self.setCursorPosition(2,8);
         self.enter();
         self.type("foo");
-        
+
         self.verifyExpected(expected)
 
 
@@ -2352,7 +2352,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(0,13);
         self.enter();
         self.type("bar");
-        
+
         self.verifyExpected(expected)
 
     def test_plist2(self):
@@ -2369,7 +2369,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(0,18);
         self.enter();
         self.type("bar");
-        
+
         self.verifyExpected(expected)
 
     def test_plist3(self):
@@ -2388,7 +2388,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(1,13);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist4(self):
@@ -2407,7 +2407,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(1,13);
         self.enter();
         self.type("baz");
-        
+
         self.verifyExpected(expected)
 
     def test_plist5(self):
@@ -2426,7 +2426,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(1,18);
         self.enter();
         self.type("baz");
-        
+
         self.verifyExpected(expected)
 
     def test_plist6(self):
@@ -2447,7 +2447,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(2,13);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist7(self):
@@ -2464,7 +2464,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(0,17);
         self.enter();
         self.type("baz");
-        
+
         self.verifyExpected(expected)
 
     def test_plist8(self):
@@ -2483,7 +2483,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(1,18);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist9(self):
@@ -2504,7 +2504,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(2,18);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist10(self):
@@ -2525,7 +2525,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(2,14);
         self.enter();
         self.type("foobaz");
-        
+
         self.verifyExpected(expected)
 
     def test_plist11(self):
@@ -2542,7 +2542,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(0,14);
         self.enter();
         self.type("bar");
-        
+
         self.verifyExpected(expected)
 
     def test_plist12(self):
@@ -2559,7 +2559,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(0,19);
         self.enter();
         self.type("bar");
-        
+
         self.verifyExpected(expected)
 
     def test_plist13(self):
@@ -2578,7 +2578,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(1,15);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist14(self):
@@ -2597,7 +2597,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(1,15);
         self.enter();
         self.type("baz");
-        
+
         self.verifyExpected(expected)
 
     def test_plist15(self):
@@ -2616,7 +2616,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(1,20);
         self.enter();
         self.type("baz");
-        
+
         self.verifyExpected(expected)
 
     def test_plist16(self):
@@ -2637,7 +2637,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(2,16);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist17(self):
@@ -2654,7 +2654,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(0,21);
         self.enter();
         self.type("baz");
-        
+
         self.verifyExpected(expected)
 
     def test_plist18(self):
@@ -2673,7 +2673,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(1,23);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist19(self):
@@ -2694,7 +2694,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(2,20);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist20(self):
@@ -2715,7 +2715,7 @@ class Plist(BaseTestClass):
         self.setCursorPosition(2,17);
         self.enter();
         self.type("foobaz");
-        
+
         self.verifyExpected(expected)
 
 
@@ -2734,7 +2734,7 @@ class PlistComment(BaseTestClass):
         self.setCursorPosition(0,23);
         self.enter();
         self.type("bar");
-        
+
         self.verifyExpected(expected)
 
     def test_plist_comment2(self):
@@ -2751,7 +2751,7 @@ class PlistComment(BaseTestClass):
         self.setCursorPosition(0,28);
         self.enter();
         self.type("bar");
-        
+
         self.verifyExpected(expected)
 
     def test_plist_comment3(self):
@@ -2772,7 +2772,7 @@ class PlistComment(BaseTestClass):
         self.setCursorPosition(2,23);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist_comment4(self):
@@ -2793,7 +2793,7 @@ class PlistComment(BaseTestClass):
         self.setCursorPosition(2,18);
         self.enter();
         self.type("baz");
-        
+
         self.verifyExpected(expected)
 
     def test_plist_comment5(self):
@@ -2814,7 +2814,7 @@ class PlistComment(BaseTestClass):
         self.setCursorPosition(2,28);
         self.enter();
         self.type("baz");
-        
+
         self.verifyExpected(expected)
 
     def test_plist_comment6(self):
@@ -2835,7 +2835,7 @@ class PlistComment(BaseTestClass):
         self.setCursorPosition(2,24);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist_comment7(self):
@@ -2854,7 +2854,7 @@ class PlistComment(BaseTestClass):
         self.setCursorPosition(1,27);
         self.enter();
         self.type("baz");
-        
+
         self.verifyExpected(expected)
 
     def test_plist_comment8(self):
@@ -2875,7 +2875,7 @@ class PlistComment(BaseTestClass):
         self.setCursorPosition(2,28);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist_comment9(self):
@@ -2898,7 +2898,7 @@ class PlistComment(BaseTestClass):
         self.setCursorPosition(3,28);
         self.enter();
         self.type("blah");
-        
+
         self.verifyExpected(expected)
 
     def test_plist_comment10(self):
@@ -2923,7 +2923,7 @@ class PlistComment(BaseTestClass):
         self.setCursorPosition(4,16);
         self.enter();
         self.type("foobaz");
-        
+
         self.verifyExpected(expected)
 
 
@@ -2946,7 +2946,7 @@ class Comment(BaseTestClass):
         self.setCursorPosition(2,11);
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_comment2(self):
@@ -2970,7 +2970,7 @@ class Comment(BaseTestClass):
         self.type("bar");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_comment3(self):
@@ -2997,7 +2997,7 @@ class Comment(BaseTestClass):
         self.type("# Another comment");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_comment4(self):
@@ -3021,7 +3021,7 @@ class Comment(BaseTestClass):
         self.type("bar # Another comment");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_comment5(self):
@@ -3045,7 +3045,7 @@ class Comment(BaseTestClass):
         self.type("bar");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
     def test_comment6(self):
@@ -3069,7 +3069,7 @@ class Comment(BaseTestClass):
         self.type("bar");
         self.enter();
         self.type("end");
-        
+
         self.verifyExpected(expected)
 
 
@@ -3088,7 +3088,7 @@ class Heredoc(BaseTestClass):
         self.setCursorPosition(0,11);
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     def test_heredoc2(self):
@@ -3107,7 +3107,7 @@ class Heredoc(BaseTestClass):
         self.enter();
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     def test_heredoc3(self):
@@ -3126,7 +3126,7 @@ class Heredoc(BaseTestClass):
         self.setCursorPosition(1,6);
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     def test_heredoc4(self):
@@ -3147,7 +3147,7 @@ class Heredoc(BaseTestClass):
         self.enter();
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     def test_heredoc5(self):
@@ -3166,7 +3166,7 @@ class Heredoc(BaseTestClass):
         self.setCursorPosition(1,11);
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     def test_heredoc6(self):
@@ -3187,7 +3187,7 @@ class Heredoc(BaseTestClass):
         self.enter();
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
 
@@ -3206,7 +3206,7 @@ class BlockComment(BaseTestClass):
         self.setCursorPosition(0,6);
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     def test_block_comment2(self):
@@ -3225,7 +3225,7 @@ class BlockComment(BaseTestClass):
         self.enter();
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     def test_block_comment3(self):
@@ -3244,7 +3244,7 @@ class BlockComment(BaseTestClass):
         self.setCursorPosition(1,6);
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     def test_block_comment4(self):
@@ -3265,7 +3265,7 @@ class BlockComment(BaseTestClass):
         self.enter();
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     def test_block_comment5(self):
@@ -3284,7 +3284,7 @@ class BlockComment(BaseTestClass):
         self.setCursorPosition(1,6);
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     def test_block_comment6(self):
@@ -3305,7 +3305,7 @@ class BlockComment(BaseTestClass):
         self.enter();
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     def test_block_comment7(self):
@@ -3326,7 +3326,7 @@ class BlockComment(BaseTestClass):
         self.setCursorPosition(2,4);
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
     @unittest.expectedFailure
@@ -3350,7 +3350,7 @@ class BlockComment(BaseTestClass):
         self.enter();
         self.enter();
         self.type("koko");
-        
+
         self.verifyExpected(expected)
 
 

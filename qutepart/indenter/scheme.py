@@ -1,6 +1,6 @@
-"""This indenter works according to    
+"""This indenter works according to
     http://community.schemewiki.org/?scheme-style
-    
+
 TODO support (module
 """
 
@@ -32,15 +32,15 @@ class IndenterScheme(IndenterBase):
                 return text[len(text) - index :]
         else:
             return text
-        
+
     def _findExpressionStart(self, block):
         """Find start of not finished expression
         Raise UserWarning, if not found
         """
-        
+
         # raise expession on next level, if not found
         expEndBlock, expEndColumn = self._findExpressionEnd(block)
-        
+
         text = expEndBlock.text()[:expEndColumn + 1]
         if text.endswith(')'):
             try:
@@ -59,7 +59,7 @@ class IndenterScheme(IndenterBase):
             return ''
         expression = foundBlock.text()[foundColumn:].rstrip()
         beforeExpression = foundBlock.text()[:foundColumn].strip()
-        
+
         if beforeExpression.startswith('(module'):  # special case
             return ''
         elif beforeExpression.endswith('define'):  # special case

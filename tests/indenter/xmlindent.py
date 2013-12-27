@@ -37,7 +37,7 @@ class Split(BaseTestClass):
 
         self.alignLine(0)
         self.verifyExpected(expected)
-    
+
     def test_split3(self):
         origin = [
             '<property name="geometry">',
@@ -56,7 +56,7 @@ class Split(BaseTestClass):
             '  </rect>',
             '</property>'
         ]
-        
+
         self.setOrigin(origin)
         for i in range(8):
             self.alignLine(i)
@@ -91,7 +91,7 @@ class Align(BaseTestClass):
 
         self.alignLine(1)
         self.verifyExpected(expected)
-    
+
     def test_align2(self):
         origin = [
             '    text',
@@ -161,7 +161,7 @@ class Slash(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1,5);
         self.type('/')
         self.verifyExpected(expected)
@@ -179,7 +179,7 @@ class Slash(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1, 15);
         self.type('/')
         self.verifyExpected(expected)
@@ -197,7 +197,7 @@ class Slash(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1, 5);
         self.type('/')
         self.verifyExpected(expected)
@@ -213,7 +213,7 @@ class Slash(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1,5);
         self.type('/')
         self.verifyExpected(expected)
@@ -234,7 +234,7 @@ class Greater(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1, 9);
         self.type('>')
         self.verifyExpected(expected)
@@ -252,7 +252,7 @@ class Greater(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1, 9);
         self.type('>')
         self.verifyExpected(expected)
@@ -270,7 +270,7 @@ class Greater(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1, 4);
         self.type('>')
         self.verifyExpected(expected)
@@ -288,7 +288,7 @@ class Greater(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1, 4);
         self.type('>')
         self.verifyExpected(expected)
@@ -306,7 +306,7 @@ class Greater(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1, 6);
         self.type('>')
         self.verifyExpected(expected)
@@ -324,7 +324,7 @@ class Greater(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1, 6);
         self.type('>')
         self.verifyExpected(expected)
@@ -342,7 +342,7 @@ class Greater(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1, 11);
         self.type('>')
         self.verifyExpected(expected)
@@ -360,7 +360,7 @@ class Enter(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(0, 38);
         self.enter()
         self.verifyExpected(expected)
@@ -377,7 +377,7 @@ class Enter(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(1, 93);
         self.enter()
         self.verifyExpected(expected)
@@ -394,7 +394,7 @@ class Enter(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(0, 17);
         self.enter()
         self.verifyExpected(expected)
@@ -411,7 +411,7 @@ class Enter(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(0, 8);
         self.enter()
         self.verifyExpected(expected)
@@ -428,7 +428,7 @@ class Enter(BaseTestClass):
             '']
 
         self.setOrigin(origin)
-        
+
         self.setCursorPosition(0, 7);
         self.enter()
         self.verifyExpected(expected)

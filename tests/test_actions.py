@@ -16,10 +16,10 @@ class _BaseTest(unittest.TestCase):
     """Base class for tests
     """
     app = QApplication(sys.argv)  # app crashes, if created more than once
-    
+
     def setUp(self):
         self.qpart = Qutepart()
-    
+
     def tearDown(self):
         del self.qpart
 
@@ -33,7 +33,7 @@ class Print(_BaseTest):
 
     def _exists(self):
         return os.path.isfile('print.pdf')
-    
+
     @unittest.skipUnless(sys.platform.startswith("linux"), "Works only on Linux")
     def test_1(self):
         self._rm()
@@ -43,7 +43,7 @@ class Print(_BaseTest):
             QTest.keyClick(self.app.focusWidget(), Qt.Key_Enter, Qt.NoModifier)
         QTimer.singleShot(1000, acceptDialog)
         QTest.keyClick(self.qpart, Qt.Key_P, Qt.ControlModifier)
-        
+
         self.assertTrue(self._exists())
         self._rm()
 

@@ -23,7 +23,7 @@ class ColorTheme:
         self.format['dsFunction'] = textFormatClass(color='#442886')
         self.format['dsRegionMarker'] = textFormatClass(color='#0057ae', background='#e1eaf8')
         self.format['dsError'] = textFormatClass(color='#bf0303', underline=True)
-    
+
     def getFormat(self, styleName):
         """Returns TextFormat for particular style
         """

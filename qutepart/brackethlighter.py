@@ -11,18 +11,18 @@ from PyQt4.QtGui import QTextCursor, QTextEdit
 class BracketHighlighter:
     """Bracket highliter.
     Calculates list of QTextEdit.ExtraSelection
-    
+
     Currently, this class might be just a set of functions.
     Probably, it will contain instance specific selection colors later
     """
     _MAX_SEARCH_TIME_SEC = 0.02
-    
+
     _START_BRACKETS = '({['
     _END_BRACKETS = ')}]'
     _ALL_BRACKETS = _START_BRACKETS + _END_BRACKETS
     _OPOSITE_BRACKET = dict( (bracket, oposite)
                     for (bracket, oposite) in zip(_START_BRACKETS + _END_BRACKETS, _END_BRACKETS + _START_BRACKETS))
-    
+
     def _iterateDocumentCharsForward(self, block, startColumnIndex):
         """Traverse document forward. Yield (block, columnIndex, char)
         Raise UserWarning if time is over
@@ -32,17 +32,17 @@ class BracketHighlighter:
         for columnIndex, char in list(enumerate(block.text()))[startColumnIndex:]:
             yield block, columnIndex, char
         block = block.next()
-        
+
         # Next lines
         while block.isValid():
             for columnIndex, char in enumerate(block.text()):
                 yield block, columnIndex, char
-            
+
             if time.time() > endTime:
                 raise UserWarning('Time is over')
-            
+
             block = block.next()
-    
+
     def _iterateDocumentCharsBackward(self, block, startColumnIndex):
         """Traverse document forward. Yield (block, columnIndex, char)
         Raise UserWarning if time is over
@@ -52,17 +52,17 @@ class BracketHighlighter:
         for columnIndex, char in reversed(list(enumerate(block.text()[:startColumnIndex]))):
             yield block, columnIndex, char
         block = block.previous()
-        
+
         # Next lines
         while block.isValid():
             for columnIndex, char in reversed(list(enumerate(block.text()))):
                 yield block, columnIndex, char
-            
+
             if time.time() > endTime:
                 raise UserWarning('Time is over')
-            
+
             block = block.previous()
-    
+
     def _findMatchingBracket(self, bracket, qpart, block, columnIndex):
         """Find matching bracket for the bracket.
         Return (block, columnIndex) or (None, None)
@@ -85,7 +85,7 @@ class BracketHighlighter:
                     depth += 1
         else:
             return None, None
-    
+
     def _makeMatchSelection(self, block, columnIndex, matched):
         """Make matched or unmatched QTextEdit.ExtraSelection
         """
@@ -95,12 +95,12 @@ class BracketHighlighter:
             bgColor = Qt.green
         else:
             bgColor = Qt.red
-        
+
         selection.format.setBackground(bgColor)
         selection.cursor = QTextCursor(block)
         selection.cursor.setPositionInBlock(columnIndex)
         selection.cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
-        
+
         return selection
 
     def _highlightBracket(self, bracket, qpart, block, columnIndex):
@@ -111,18 +111,18 @@ class BracketHighlighter:
             matchedBlock, matchedColumnIndex = self._findMatchingBracket(bracket, qpart, block, columnIndex)
         except UserWarning:  # not found, time is over
             return[] # highlight nothing
-        
+
         if matchedBlock is not None:
             return [self._makeMatchSelection(block, columnIndex, True),
                     self._makeMatchSelection(matchedBlock, matchedColumnIndex, True)]
         else:
             return [self._makeMatchSelection(block, columnIndex, False)]
-    
+
     def extraSelections(self, qpart, block, columnIndex):
         """List of QTextEdit.ExtraSelection's, which highlighte brackets
         """
         blockText = block.text()
-        
+
         if columnIndex > 0 and \
            blockText[columnIndex - 1] in self._ALL_BRACKETS and \
            qpart.isCode(block, columnIndex - 1):

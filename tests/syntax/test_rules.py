@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         _currentSyntax = SyntaxManager().getSyntax(xmlFileName=syntaxName)
         context = _currentSyntax.parser.contexts[contextName]
         return context.rules[ruleIndex]
-    
+
     def test_DetectChar(self):
         rule = self._getRule('debiancontrol.xml', 'Variable', 0)
         self.assertEqual(tryMatch(rule, 0, '}'), 1)
@@ -92,44 +92,44 @@ class Test(unittest.TestCase):
         rule = self._getRule('qml.xml', 'Normal', 1)
         self.assertEqual(tryMatch(rule, 0, 'import'), 6)
         self.assertEqual(tryMatch(rule, 0, ' import'), None)
-        
+
         self.assertEqual(tryMatch(rule, 1, ' import'), 6)
         self.assertEqual(tryMatch(rule, 1, '.import'), 6)
         self.assertEqual(tryMatch(rule, 1, 'ximport'), None)
 
         self.assertEqual(tryMatch(rule, 1, ' import.'), 6)
         self.assertEqual(tryMatch(rule, 1, '.import '), 6)
-        
+
         self.assertEqual(tryMatch(rule, 1, '-importx'), None)
         self.assertEqual(tryMatch(rule, 1, 'importx'), None)
 
     def test_keyword(self):
         rule = self._getRule("javascript.xml", "Normal", 6)
-        
+
         self.assertEqual(tryMatch(rule, 0, "var"), 3)
         self.assertEqual(tryMatch(rule, 0, "vor"), None)
-        
+
         self.assertEqual(tryMatch(rule, 1, " var "), 3)
         self.assertEqual(tryMatch(rule, 1, " varx "), None)
         self.assertEqual(tryMatch(rule, 2, " xvar "), None)
-    
+
     def test_jsp_keyword(self):
         rule = self._getRule('jsp.xml', "Jsp Scriptlet", 5)
         self.assertEqual(tryMatch(rule, 0, "String"), len("String"))
-    
+
     def test_mup_keyword(self):
         """Test for additionalDeliminator syntax attribute
         """
         rule = self._getRule('mup.xml', "Value", 2)
         text = 'key = 3#minor'
         self.assertEqual(tryMatch(rule, 8, text), 5)
-    
+
     def test_keyword_insensitive(self):
         """Insensitive attribute for particular keyword
         """
         rule = self._getRule("cmake.xml", "Normal Text", 1)
         self.assertEqual(tryMatch(rule, 0, "ADD_definitions()"), len("ADD_definitions"))
-    
+
     def test_keyword_insensitive_syntax(self):
         """Insensitive attribute for whole syntax
         """
@@ -147,23 +147,23 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, '<sadf@example.com> bla bla'), len('<sadf@example.com>'))
         self.assertEqual(tryMatch(rule, 0, '<sadf@example.com bla bla'), None)
         self.assertEqual(tryMatch(rule, 0, '<sadf@example.com bla bla'), None)
-        
+
         rule = self._getRule('debianchangelog.xml', 'INIT', 0)
         self.assertEqual(tryMatch(rule, 0, ' <hlamer@tut.by>'), None)  # must not capture 0 symbols
-        
+
         rule = self._getRule('debiancontrol.xml', 'INIT', -2)
         self.assertEqual(tryMatch(rule, 0, 'Depends: xxx'), len('Depends:'))
-        
+
         rule = self._getRule('fsharp.xml', 'ModuleEnv2', 0)
         if hasattr(rule, 'regExp'):  # only on Python version
             self.assertEqual(rule.regExp.pattern, u"[A-Z][A-Za-z\xc0-\xd6\xd8-\xf6\xf8-\xff0-9_']*")
-    
+
     def test_RegExpr_slashB(self):
         rule = self._getRule('fortran.xml', 'find_numbers', 3)
         self.assertEqual(tryMatch(rule, 5, 'point3d'), None)
         self.assertEqual(tryMatch(rule, 5, 'poin(3)'), 1)
         self.assertEqual(tryMatch(rule, 5, 'poin 3 '), 1)
-    
+
     def test_RegExpr_caret(self):
         rule = self._getRule('fortran.xml', 'find_decls', 7)
         self.assertEqual(tryMatch(rule, 1, ' real'), None)
@@ -173,11 +173,11 @@ class Test(unittest.TestCase):
         rule = self._getRule('apache.xml', 'Integer Directives', 1)
         self.assertEqual(tryMatch(rule, 0, '756 items'), 3)
         self.assertEqual(tryMatch(rule, 0, 'x756 items'), None)
-        
+
         rule = self._getRule('c.xml', 'Normal', 13)
         self.assertEqual(tryMatch(rule, 0, '756LUL'), 6)
         self.assertEqual(tryMatch(rule, 0, '756LOL'), 4)
-        
+
         self.assertEqual(tryMatch(rule, 1, '(756LOL'), 4)
         self.assertEqual(tryMatch(rule, 1, 'i756LOL'), None)
 
@@ -189,10 +189,10 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, '.75x'), 3)
         self.assertEqual(tryMatch(rule, 0, '43.75x'), 5)
         self.assertEqual(tryMatch(rule, 0, '4375..x'), 5)
-        
+
         self.assertEqual(tryMatch(rule, 0, '4375.f'), 6)
         self.assertEqual(tryMatch(rule, 0, '4375.v'), 5)
-        
+
         self.assertEqual(tryMatch(rule, 0, '4E'), None)
         self.assertEqual(tryMatch(rule, 0, '4E+10'), 5)
         self.assertEqual(tryMatch(rule, 0, '4E+10F'), 6)
@@ -201,7 +201,7 @@ class Test(unittest.TestCase):
 
     def test_HlCOct(self):
         rule = self._getRule("commonlisp.xml", "SpecialNumber", 2)
-        
+
         self.assertEqual(tryMatch(rule, 0, 'xxx'), None)
         self.assertEqual(tryMatch(rule, 0, '0765'), 4)
         self.assertEqual(tryMatch(rule, 0, '0865'), None)
@@ -210,7 +210,7 @@ class Test(unittest.TestCase):
 
     def test_HlCHex(self):
         rule = self._getRule("cgis.xml", "Common", 9)
-        
+
         self.assertEqual(tryMatch(rule, 0, 'xxx'), None)
         self.assertEqual(tryMatch(rule, 0, '0x76A'), 5)
         self.assertEqual(tryMatch(rule, 0, '0X0'), 3)
@@ -221,7 +221,7 @@ class Test(unittest.TestCase):
 
     def test_HlCStringChar(self):
         rule = self._getRule("boo.xml", "Tripple A-string", 0)
-        
+
         self.assertEqual(tryMatch(rule, 0, '\\a'), 2)
         self.assertEqual(tryMatch(rule, 0, '\\m'), None)
         self.assertEqual(tryMatch(rule, 0, '\\x56fel'), 6)
@@ -230,7 +230,7 @@ class Test(unittest.TestCase):
 
     def test_HlCChar(self):
         rule = self._getRule("uscript.xml", "Normal", 6)
-        
+
         self.assertEqual(tryMatch(rule, 0, "'A'"), 3)
         self.assertEqual(tryMatch(rule, 0, "A'"), None)
         self.assertEqual(tryMatch(rule, 0, "'A"), None)
@@ -238,7 +238,7 @@ class Test(unittest.TestCase):
 
     def test_RangeDetect(self):
         rule = self._getRule("ini.xml", "ini", 0)
-        
+
         self.assertEqual(tryMatch(rule, 0, "[hello]"), 7)
         self.assertEqual(tryMatch(rule, 0, "[hello] "), 7)
         self.assertEqual(tryMatch(rule, 0, "[hello "), None)
@@ -246,7 +246,7 @@ class Test(unittest.TestCase):
 
     def test_LineContinue(self):
         rule = self._getRule("picsrc.xml", "string", 0)
-        
+
         self.assertEqual(tryMatch(rule, 0, "\\"), 1)
         self.assertEqual(tryMatch(rule, 0, "\\ "), None)
         self.assertEqual(tryMatch(rule, 0, " \\"), None)
@@ -267,7 +267,7 @@ class Test(unittest.TestCase):
 
     def test_DetectIdentifier(self):
         rule = self._getRule("dtd.xml", "Normal", 7)
-        
+
         self.assertEqual(tryMatch(rule, 0, " asdf"), None)
         self.assertEqual(tryMatch(rule, 0, "asdf"), 4)
         self.assertEqual(tryMatch(rule, 0, "asdf+"), 4)
@@ -281,7 +281,7 @@ class Test(unittest.TestCase):
 
     def test_firstNonSpace(self):
         rule = self._getRule("makefile.xml", "Normal", 2)
-        
+
         self.assertEqual(tryMatch(rule, 1, "xall: pre"), None)
         self.assertEqual(tryMatch(rule, 1, " all: pre"), 4)
 

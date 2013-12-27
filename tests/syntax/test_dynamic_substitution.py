@@ -15,7 +15,7 @@ class TestCase(unittest.TestCase):
     def test_StringDetect(self):
         self.assertEqual(StringDetect._makeDynamicSubsctitutions('a%1c%3', ['a', '|']),
                          'a|c%3')
-    
+
     def test_RegExp(self):
         self.assertEqual(RegExpr._makeDynamicSubsctitutions('a%1c%3', ['a', '|']),
                          'a\|c%3')

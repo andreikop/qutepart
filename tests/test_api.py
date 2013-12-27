@@ -19,16 +19,16 @@ class _BaseTest(unittest.TestCase):
     """Base class for tests
     """
     app = QApplication(sys.argv)  # app crashes, if created more than once
-    
+
     def setUp(self):
         self.qpart = Qutepart()
-    
+
     def tearDown(self):
         del self.qpart
 
 
 class Selection(_BaseTest):
-    
+
     def test_resetSelection(self):
         # Reset selection
         self.qpart.text = 'asdf fdsa'
@@ -39,9 +39,9 @@ class Selection(_BaseTest):
 
     def test_setSelection(self):
         self.qpart.text = 'asdf fdsa'
-        
+
         self.qpart.selectedPosition = ((0, 3), (0, 7))
-        
+
         self.assertEquals(self.qpart.selectedText, "f fd")
         self.assertEquals(self.qpart.selectedPosition, ((0, 3), (0, 7)))
 
@@ -141,7 +141,7 @@ class IsCodeOrComment(_BaseTest):
         self.qpart.text = '#'
         self.qpart.detectSyntax(language = 'Python')
         self._wait_highlighting_finished()
-        
+
         self.assertFalse(self.qpart.isCode(0, 0))
         self.assertTrue(self.qpart.isComment(0, 0))
         self.assertFalse(self.qpart.isBlockComment(0, 0))
@@ -150,7 +150,7 @@ class IsCodeOrComment(_BaseTest):
         self.qpart.text = 'if foo\n=begin xxx'
         self.qpart.detectSyntax(language = 'Ruby')
         self._wait_highlighting_finished()
-        
+
         self.assertFalse(self.qpart.isBlockComment(0, 3))
         self.assertTrue(self.qpart.isBlockComment(1, 8))
         self.assertTrue(self.qpart.isComment(1, 8))
@@ -158,9 +158,9 @@ class IsCodeOrComment(_BaseTest):
     def test_here_doc(self):
         self.qpart.text = "doc = <<EOF\nkoko"
         self.qpart.detectSyntax(language = 'Ruby')
-        
+
         self._wait_highlighting_finished()
-        
+
         self.assertFalse(self.qpart.isHereDoc(0, 3))
         self.assertTrue(self.qpart.isHereDoc(1, 2))
         self.assertTrue(self.qpart.isComment(1, 2))
@@ -170,16 +170,16 @@ class DetectSyntax(_BaseTest):
     def test_1(self):
         self.qpart.detectSyntax(xmlFileName='ada.xml')
         self.assertEquals(self.qpart.language(), 'Ada')
-        
+
         self.qpart.detectSyntax(mimeType='text/x-cgsrc')
         self.assertEquals(self.qpart.language(), 'Cg')
-        
+
         self.qpart.detectSyntax(language='CSS')
         self.assertEquals(self.qpart.language(), 'CSS')
-        
+
         self.qpart.detectSyntax(sourceFilePath='/tmp/file.feh')
         self.assertEquals(self.qpart.language(), 'ferite')
-        
+
         self.qpart.detectSyntax(firstLine='<?php hello() ?>')
         self.assertEquals(self.qpart.language(), 'HTML')
 
@@ -190,7 +190,7 @@ class Signals(_BaseTest):
         def setNeVal(val):
             newValue[0] = val
         self.qpart.languageChanged.connect(setNeVal)
-        
+
         self.qpart.detectSyntax(language='Python')
         self.assertEquals(newValue[0], 'Python')
 
@@ -199,7 +199,7 @@ class Signals(_BaseTest):
         def setNeVal(val):
             newValue[0] = val
         self.qpart.indentWidthChanged.connect(setNeVal)
-        
+
         self.qpart.indentWidth = 7
         self.assertEquals(newValue[0], 7)
 
@@ -207,9 +207,9 @@ class Signals(_BaseTest):
         newValue = [None]
         def setNeVal(val):
             newValue[0] = val
-        
+
         self.qpart.indentUseTabsChanged.connect(setNeVal)
-        
+
         self.qpart.indentUseTabs = True
         self.assertEquals(newValue[0], True)
 
@@ -217,9 +217,9 @@ class Signals(_BaseTest):
         newValue = [None]
         def setNeVal(val):
             newValue[0] = val
-        
+
         self.qpart.eolChanged.connect(setNeVal)
-        
+
         self.qpart.eol = '\r\n'
         self.assertEquals(newValue[0], '\r\n')
 
@@ -227,10 +227,10 @@ class Signals(_BaseTest):
 class Completion(_BaseTest):
     def _assertVisible(self):
         self.assertTrue(self.qpart._completer._widget is not None)
-    
+
     def _assertNotVisible(self):
         self.assertTrue(self.qpart._completer._widget is None)
-    
+
     def setUp(self):
         super(Completion, self).setUp()
         self.qpart.text = 'completableWord\n'
@@ -239,26 +239,26 @@ class Completion(_BaseTest):
 
     def test_completion_enabled(self):
         self._assertNotVisible()
-        
+
         self.qpart.completionEnabled = True
         QTest.keyClicks(self.qpart, "comple")
         self._assertVisible()
-        
+
         for i in range(len('comple')):
             QTest.keyClick(self.qpart, Qt.Key_Backspace)
         self._assertNotVisible()
-        
+
         self.qpart.completionEnabled = False
         QTest.keyClicks(self.qpart, "comple")
         self._assertNotVisible()
-    
+
     def test_threshold(self):
         self._assertNotVisible()
-        
+
         self.qpart.completionThreshold = 8
         QTest.keyClicks(self.qpart, "complet")
         self._assertNotVisible()
-        
+
         QTest.keyClicks(self.qpart, "a")
         self._assertVisible()
 
@@ -276,7 +276,7 @@ class Lines(_BaseTest):
     def test_modifyByIndex(self):
         self.qpart.lines[2] = 'new text'
         self.assertEquals(self.qpart.text, 'abcd\nefgh\nnew text\nopqr')
-    
+
     def test_getSlice(self):
         self.assertEquals(self.qpart.lines[0], 'abcd')
         self.assertEquals(self.qpart.lines[1], 'efgh')
@@ -290,7 +290,7 @@ class Lines(_BaseTest):
         self.assertEquals(self.qpart.lines[0:-2], ['abcd', 'efgh'])
         self.assertEquals(self.qpart.lines[-2:], ['klmn', 'opqr'])
         self.assertEquals(self.qpart.lines[-4:-2], ['abcd', 'efgh'])
-        
+
         with self.assertRaises(IndexError):
             self.qpart.lines[4]
         with self.assertRaises(IndexError):
@@ -299,39 +299,39 @@ class Lines(_BaseTest):
     def test_setSlice_1(self):
         self.qpart.lines[0] = 'xyz'
         self.assertEquals(self.qpart.text, 'xyz\nefgh\nklmn\nopqr')
-    
+
     def test_setSlice_2(self):
         self.qpart.lines[1] = 'xyz'
         self.assertEquals(self.qpart.text, 'abcd\nxyz\nklmn\nopqr')
-        
+
     def test_setSlice_3(self):
         self.qpart.lines[-4] = 'xyz'
         self.assertEquals(self.qpart.text, 'xyz\nefgh\nklmn\nopqr')
-    
+
     def test_setSlice_4(self):
         self.qpart.lines[0:4] = ['st', 'uv', 'wx', 'z']
         self.assertEquals(self.qpart.text, 'st\nuv\nwx\nz')
-    
+
     def test_setSlice_5(self):
         self.qpart.lines[0:47] = ['st', 'uv', 'wx', 'z']
         self.assertEquals(self.qpart.text, 'st\nuv\nwx\nz')
-    
+
     def test_setSlice_6(self):
         self.qpart.lines[1:3] = ['st', 'uv']
         self.assertEquals(self.qpart.text, 'abcd\nst\nuv\nopqr')
-    
+
     def test_setSlice_61(self):
         with self.assertRaises(ValueError):
             self.qpart.lines[1:3] = ['st', 'uv', 'wx', 'z']
-    
+
     def test_setSlice_7(self):
         self.qpart.lines[-3:3] = ['st', 'uv']
         self.assertEquals(self.qpart.text, 'abcd\nst\nuv\nopqr')
-    
+
     def test_setSlice_8(self):
         self.qpart.lines[-3:-1] = ['st', 'uv']
         self.assertEquals(self.qpart.text, 'abcd\nst\nuv\nopqr')
-    
+
     def test_setSlice_9(self):
         with self.assertRaises(IndexError):
             self.qpart.lines[4] = 'st'

@@ -15,11 +15,11 @@ class IndenterPython(IndenterBase):
            not prevLineText.endswith("'"):
             return self._lineIndent(prevLineText)
         """
-        
+
         # for:
         if prevLineStripped.endswith(':'):
             return self._increaseIndent(prevIndent)
-        
+
         """ Generally, when a brace is on its own at the end of a regular line
         (i.e a data structure is being started), indent is wanted.
         For example:

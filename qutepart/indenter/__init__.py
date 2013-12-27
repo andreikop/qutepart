@@ -15,7 +15,7 @@ def _getSmartIndenter(indenterName, qpart, indenter):
     indentText is indentation, which shall be used. i.e. '\t' for tabs, '    ' for 4 space symbols
     """
     indenterName = indenterName.lower()
-    
+
     if indenterName in ('haskell', 'lilypond'):  # not supported yet
         logger = logging.getLogger('qutepart')
         logger.warning('Smart indentation for %s not supported yet. But you could be a hero who implemented it' % indenterName)
@@ -48,20 +48,20 @@ def _getSmartIndenter(indenterName, qpart, indenter):
 
 class Indenter:
     """Qutepart functionality, related to indentation
-    
+
     Public attributes:
         width           Indent width
         useTabs         Indent uses Tabs (instead of spaces)
     """
     _DEFAULT_INDENT_WIDTH = 4
     _DEFAULT_INDENT_USE_TABS = False
-    
+
     def __init__(self, qpart):
         self._qpart = qpart
-    
+
         self.width = self._DEFAULT_INDENT_WIDTH
         self.useTabs = self._DEFAULT_INDENT_USE_TABS
-        
+
         self._smartIndenter = _getSmartIndenter('normal', self._qpart, self)
 
     def setSyntax(self, syntax):
@@ -75,7 +75,7 @@ class Indenter:
             return '\t'
         else:
             return ' ' * self.width
-    
+
     def triggerCharacters(self):
         """Trigger characters for smart indentation"""
         return self._smartIndenter.TRIGGER_CHARACTERS
@@ -98,22 +98,22 @@ class Indenter:
         def blockIndentation(block):
             text = block.text()
             return text[:len(text) - len(text.lstrip())]
-        
+
         def cursorAtSpaceEnd(block):
             cursor = QTextCursor(block)
             cursor.setPositionInBlock(len(blockIndentation(block)))
             return cursor
-        
+
         def indentBlock(block):
             cursor = cursorAtSpaceEnd(block)
             cursor.insertText(' ' if withSpace else self.text())
-        
+
         def spacesCount(text):
             return len(text) - len(text.rstrip(' '))
-        
+
         def unIndentBlock(block):
             currentIndent = blockIndentation(block)
-            
+
             if currentIndent.endswith('\t'):
                 charsToRemove = 1
             elif withSpace:
@@ -126,29 +126,29 @@ class Indenter:
                         charsToRemove = self.width
                     else:  # remove all spaces
                         charsToRemove = min(spacesCount(currentIndent), self.width)
-        
+
             if charsToRemove:
                 cursor = cursorAtSpaceEnd(block)
                 cursor.setPosition(cursor.position() - charsToRemove, QTextCursor.KeepAnchor)
                 cursor.removeSelectedText()
-    
+
         cursor = self._qpart.textCursor()
 
         startBlock = self._qpart.document().findBlock(cursor.selectionStart())
         endBlock = self._qpart.document().findBlock(cursor.selectionEnd())
-        
+
         indentFunc = indentBlock if increase else unIndentBlock
 
         if startBlock != endBlock:  # indent multiply lines
             stopBlock = endBlock.next()
-            
+
             block = startBlock
-            
+
             with self._qpart:
                 while block != stopBlock:
                     indentFunc(block)
                     block = block.next()
-            
+
             newCursor = QTextCursor(startBlock)
             newCursor.setPosition(endBlock.position() + len(endBlock.text()), QTextCursor.KeepAnchor)
             self._qpart.setTextCursor(newCursor)
@@ -159,51 +159,51 @@ class Indenter:
         """Tab pressed and no selection. Insert text after cursor
         """
         cursor = self._qpart.textCursor()
-        
+
         def insertIndent():
             if self.useTabs:
                 cursor.insertText('\t')
             else:  # indent to integer count of indents from line start
                 charsToInsert = self.width - (len(self._qpart.textBeforeCursor()) % self.width)
                 cursor.insertText(' ' * charsToInsert)
-        
+
         if cursor.positionInBlock() == 0:  # if no any indent - indent smartly
             block = cursor.block()
             self.autoIndentBlock(block, '')
-            
+
             # if no smart indentation - just insert one indent
             if self._qpart.textBeforeCursor() == '':
                 insertIndent()
         else:
             insertIndent()
 
-    
+
     def onShortcutUnindentWithBackspace(self):
         """Backspace pressed, unindent
         """
         assert self._qpart.textBeforeCursor().endswith(self.text())
-        
+
         charsToRemove = len(self._qpart.textBeforeCursor()) % len(self.text())
         if charsToRemove == 0:
             charsToRemove = len(self.text())
-        
+
         cursor = self._qpart.textCursor()
         cursor.setPosition(cursor.position() - charsToRemove, QTextCursor.KeepAnchor)
         cursor.removeSelectedText()
-    
+
     def onAutoIndentTriggered(self):
         """Indent current line or selected lines
         """
         cursor = self._qpart.textCursor()
-        
+
         startBlock = self._qpart.document().findBlock(cursor.selectionStart())
         endBlock = self._qpart.document().findBlock(cursor.selectionEnd())
 
         if startBlock != endBlock:  # indent multiply lines
             stopBlock = endBlock.next()
-            
+
             block = startBlock
-            
+
             with self._qpart:
                 while block != stopBlock:
                     self.autoIndentBlock(block, '')
@@ -219,10 +219,10 @@ class Indenter:
                 return _getSmartIndenter(syntax.indenter, self._qpart, self)
             except KeyError:
                 logger.error("Indenter '%s' not found" % syntax.indenter)
-        
+
         try:
             return _getSmartIndenter(syntax.name, self._qpart, self)
         except KeyError:
             pass
-        
+
         return _getSmartIndenter('normal', self._qpart, self)

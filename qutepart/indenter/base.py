@@ -8,7 +8,7 @@ class IndenterNone:
     """
     def __init__(self, qpart):
         pass
-    
+
     def computeSmartIndent(self, block, char):
         return ''
 
@@ -20,12 +20,12 @@ class IndenterBase(IndenterNone):
     def __init__(self, qpart, indenter):
         self._qpart = qpart
         self._indenter = indenter
-    
+
     def indentBlock(self, block):
         """Indent the block
         """
         self._setBlockIndent(block, self.computeIndent(block, ''))
-    
+
     def computeIndent(self, block, char):
         """Compute indent for the block.
         Basic alorightm, which knows nothing about programming languages
@@ -37,13 +37,13 @@ class IndenterBase(IndenterNone):
             return self._prevBlockIndent(block)
         else:  # be smart
             return self.computeSmartIndent(block, char)
-    
+
     def computeSmartIndent(self, block, char):
         """Compute smart indent.
         Block is current block.
         Char is typed character. \n or one of trigger chars
         Return indentation text, or None, if indentation shall not be modified
-        
+
         Implementation might return self._prevNonEmptyBlockIndent(), if doesn't have
         any ideas, how to indent text better
         """
@@ -59,7 +59,7 @@ class IndenterBase(IndenterNone):
         """Add 1 indentation level
         """
         return indent + self._qpartIndent()
-    
+
     def _decreaseIndent(self, indent):
         """Remove 1 indentation level
         """
@@ -77,13 +77,13 @@ class IndenterBase(IndenterNone):
             return ('\t' * tabCount) + (' ' * spaceCount)
         else:
             return ' ' * width
-    
+
     def _setBlockIndent(self, block, indent):
         """Set blocks indent. Modify text in qpart
         """
         currentIndent = self._blockIndent(block)
         self._qpart.replaceText((block.blockNumber(), 0), len(currentIndent), indent)
-    
+
     @staticmethod
     def iterateBlocksFrom(block):
         """Generator, which iterates QTextBlocks from block until the End of a document
@@ -94,7 +94,7 @@ class IndenterBase(IndenterNone):
             yield block
             block = block.next()
             count += 1
-    
+
     @staticmethod
     def iterateBlocksBackFrom(block):
         """Generator, which iterates QTextBlocks from block until the Start of a document
@@ -105,7 +105,7 @@ class IndenterBase(IndenterNone):
             yield block
             block = block.previous()
             count += 1
-    
+
     @classmethod
     def iterateCharsBackwardFrom(cls, block, column):
         if column is not None:
@@ -113,11 +113,11 @@ class IndenterBase(IndenterNone):
             for index, char in enumerate(reversed(text)):
                 yield block, len(text) - index - 1, char
             block = block.previous()
-        
+
         for block in cls.iterateBlocksBackFrom(block):
             for index, char in enumerate(reversed(block.text())):
                 yield block, len(block.text()) - index - 1, char
-    
+
     def findBracketBackward(self, block, column, bracket):
         """Search for a needle and return (block, column)
         Raise ValueError, if not found
@@ -133,7 +133,7 @@ class IndenterBase(IndenterNone):
             closing = '}'
         else:
             raise AssertionError('Invalid bracket "%s"' % bracket)
-        
+
         depth = 1
         for foundBlock, foundColumn, char in self.iterateCharsBackwardFrom(block, column):
             if not self._qpart.isComment(foundBlock.blockNumber(), foundColumn):
@@ -141,7 +141,7 @@ class IndenterBase(IndenterNone):
                     depth = depth - 1
                 elif char == closing:
                     depth = depth + 1
-                
+
                 if depth == 0:
                     return foundBlock, foundColumn
         else:
@@ -154,7 +154,7 @@ class IndenterBase(IndenterNone):
             return textStripped[-1]
         else:
             return ''
-    
+
     @staticmethod
     def _firstNonSpaceChar(block):
         textStripped = block.text().lstrip()
@@ -162,7 +162,7 @@ class IndenterBase(IndenterNone):
             return textStripped[0]
         else:
             return ''
-    
+
     @staticmethod
     def _firstNonSpaceColumn(text):
         return len(text) - len(text.lstrip())
@@ -174,49 +174,49 @@ class IndenterBase(IndenterNone):
     @classmethod
     def _lineIndent(cls, text):
         return text[:cls._firstNonSpaceColumn(text)]
-    
+
     @classmethod
     def _blockIndent(cls, block):
         if block.isValid():
             return cls._lineIndent(block.text())
         else:
             return ''
-    
+
     @classmethod
     def _prevBlockIndent(cls, block):
         prevBlock = block.previous()
-        
+
         if not block.isValid():
             return ''
 
         return cls._lineIndent(prevBlock.text())
-    
+
     @classmethod
     def _prevNonEmptyBlockIndent(cls, block):
         return cls._blockIndent(cls._prevNonEmptyBlock(block))
-    
+
     @staticmethod
     def _prevNonEmptyBlock(block):
         if not block.isValid():
             return block
-        
+
         block = block.previous()
         while block.isValid() and \
               len(block.text().strip()) == 0:
             block = block.previous()
         return block
-    
+
     @staticmethod
     def _nextNonEmptyBlock(block):
         if not block.isValid():
             return block
-        
+
         block = block.next()
         while block.isValid() and \
               len(block.text().strip()) == 0:
             block = block.next()
         return block
-    
+
     def _lastColumn(self, block):
         """Returns the last non-whitespace column in the given line.
         If there are only whitespaces in the line, the return value is -1.
@@ -227,12 +227,12 @@ class IndenterBase(IndenterNone):
               (text[index].isspace() or \
                self._qpart.isComment(block.blockNumber(), index)):
             index -= 1
-        
+
         return index
-    
+
     @staticmethod
     def _nextNonSpaceColumn(block, column):
-        """Returns the column with a non-whitespace characters 
+        """Returns the column with a non-whitespace characters
         starting at the given cursor position and searching forwards.
         """
         textAfter = block.text()[column:]

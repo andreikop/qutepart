@@ -19,10 +19,10 @@ class Test(unittest.TestCase):
     """Base class for tests
     """
     app = QApplication(sys.argv)  # app crashes, if created more than once
-    
+
     def setUp(self):
         self.qpart = Qutepart()
-    
+
     def tearDown(self):
         del self.qpart
 
@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
         QTest.keyClick(self.qpart, Qt.Key_Down)
         QTest.keyClick(self.qpart, Qt.Key_B, Qt.ControlModifier)
         self.assertEqual(self._markedBlocks(), [0, 2])
-        
+
         QTest.keyClick(self.qpart, Qt.Key_B, Qt.ControlModifier)
         self.assertEqual(self._markedBlocks(), [0])
 
@@ -48,10 +48,10 @@ class Test(unittest.TestCase):
     @base.in_main_loop
     def test_set_with_mouse(self):
         self.qpart.text = '\n' * 5
-        
+
         secondBlock = self.qpart.document().findBlockByNumber(2)
         geometry = self.qpart.blockBoundingGeometry(secondBlock).translated(self.qpart.contentOffset())
-        
+
         QTest.mouseClick(self.qpart._markArea, Qt.LeftButton, Qt.NoModifier, QPoint(0, geometry.bottom() - 1))
         self.assertEqual(self._markedBlocks(), [1])
 
@@ -68,7 +68,7 @@ class Test(unittest.TestCase):
         self.assertEqual(self._markedBlocks(), [0, 2, 4])
 
         self.qpart.cursorPosition = (0, 0)
-        
+
         QTest.keyClick(self.qpart, Qt.Key_PageDown, Qt.AltModifier)
         self.assertEqual(self.qpart.cursorPosition[0], 2)
         QTest.keyClick(self.qpart, Qt.Key_PageDown, Qt.AltModifier)

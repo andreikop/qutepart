@@ -18,7 +18,7 @@ class Bookmarks:
                                                       self._onPrevBookmark)
         qpart.nextBookmarkAction = self._createAction(qpart, "down.png", "Next bookmark", 'Alt+PgDown',
                                                       self._onNextBookmark)
-        
+
         markArea.blockClicked.connect(self._toggleBookmark)
 
     def _createAction(self, widget, iconFileName, text, shortcut, slot):
@@ -29,9 +29,9 @@ class Bookmarks:
         action.setShortcut(QKeySequence(shortcut))
         action.setShortcutContext(Qt.WidgetShortcut)
         action.triggered.connect(slot)
-        
+
         widget.addAction(action)
-        
+
         return action
 
     def clear(self, startBlock, endBlock):
@@ -52,16 +52,16 @@ class Bookmarks:
         """Set block bookmarked
         """
         block.setUserState(1 if marked else -1)
-    
+
     def _toggleBookmark(self, block):
         self._setBlockMarked(block, not self.isBlockMarked(block))
         self._markArea.update()
-    
+
     def _onToggleBookmark(self):
         """Toogle Bookmark action triggered
         """
         self._toggleBookmark(self._qpart.textCursor().block())
-    
+
     def _onPrevBookmark(self):
         """Previous Bookmark action triggered. Move cursor
         """
@@ -69,7 +69,7 @@ class Bookmarks:
             if self.isBlockMarked(block):
                 self._qpart.setTextCursor(QTextCursor(block))
                 return
-    
+
     def _onNextBookmark(self):
         """Previous Bookmark action triggered. Move cursor
         """

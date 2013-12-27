@@ -17,7 +17,7 @@ class IndenterLisp(IndenterBase):
             nextBlock = self._nextNonEmptyBlock(block)
             if nextBlock.isValid():
                 return self._blockIndent(nextBlock)
-    
+
         try:
             foundBlock, foundColumn = self.findBracketBackward(block, 0, '(')
         except ValueError:

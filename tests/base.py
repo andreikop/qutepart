@@ -30,21 +30,21 @@ def in_main_loop(func, *args):
     """
     def wrapper(*args):
         self = args[0]
-        
+
         def execWithArgs():
             self.qpart.show()
             QTest.qWaitForWindowShown(self.qpart)
             _processPendingEvents(self.app)
-            
+
             try:
                 func(*args)
             finally:
                 _processPendingEvents(self.app)
                 self.app.quit()
-        
+
         QTimer.singleShot(0, execWithArgs)
-        
+
         self.app.exec_()
-    
+
     wrapper.__name__ = func.__name__  # for unittest test runner
     return wrapper

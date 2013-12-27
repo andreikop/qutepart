@@ -167,7 +167,7 @@ class TestAutoindent(BaseTestClass):
         self.setOrigin(origin)
         self.alignAll()
         self.verifyExpected(expected)
-    
+
     def test_2(self):
         origin = [
             '(let ((fnord 5)',

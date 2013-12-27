@@ -38,31 +38,31 @@ class GlobalTimer:
     One global timer is used by all Qutepart instances, because main loop time usage
     must not depend on opened files count
     """
-    
+
     def __init__(self):
         self._timer = QTimer()
         self._timer.setSingleShot(True)
         self._timer.timeout.connect(self._onTimer)
-        
+
         self._scheduledCallbacks = []
-    
+
     def isActive(self):
         return self._timer.isActive()
-    
+
     def scheduleCallback(self, callback):
         if not callback in self._scheduledCallbacks:
             self._scheduledCallbacks.append(callback)
             self._timer.start()
-    
+
     def unScheduleCallback(self, callback):
         if callback in self._scheduledCallbacks:
             self._scheduledCallbacks.remove(callback)
         if not self._scheduledCallbacks:
             self._timer.stop()
-    
+
     def isCallbackScheduled(self, callback):
         return callback in self._scheduledCallbacks
-    
+
     def _onTimer(self):
         if self._scheduledCallbacks:
             callback = self._scheduledCallbacks.pop()
@@ -72,7 +72,7 @@ class GlobalTimer:
 
 
 class SyntaxHighlighter(QObject):
-    
+
     # when initially parsing text, it is better, if highlighted text is drawn without flickering
     _MAX_PARSING_TIME_BIG_CHANGE_SEC = 0.4
     # when user is typing text - response shall be quick
@@ -82,7 +82,7 @@ class SyntaxHighlighter(QObject):
     _lastChangeTime = -777
 
     _globalTimer = GlobalTimer()
-    
+
     def __init__(self, syntax, object):
         if isinstance(object, QTextDocument):
             document = object
@@ -91,15 +91,15 @@ class SyntaxHighlighter(QObject):
             assert document is not None
         else:
             raise TypeError("object must be QTextDocument or QTextEdit")
-        
+
         QObject.__init__(self, document)
         self._syntax = syntax
         self._document = document
-        
+
         # can't store references to block, Qt crashes if block removed
         self._pendingBlockNumber = None
         self._pendingAtLeastUntilBlockNumber = None
-        
+
         document.contentsChange.connect(self._onContentsChange)
 
         charsAdded = document.lastBlock().position() + document.lastBlock().length()
@@ -152,7 +152,7 @@ class SyntaxHighlighter(QObject):
     def formatConverterFunction(format):
         if format == qutepart.syntax.TextFormat():
             return None  # Do not apply default format. Performance optimization
-        
+
         qtFormat = QTextCharFormat()
         qtFormat.setForeground(QBrush(QColor(format.color)))
         qtFormat.setBackground(QBrush(QColor(format.background)))
@@ -170,15 +170,15 @@ class SyntaxHighlighter(QObject):
             return dataObject.data
         else:
             return None
-    
+
     def _wasChangedJustBefore(self):
         """Check if ANY Qutepart instance was changed just before"""
         return time.time() <= SyntaxHighlighter._lastChangeTime + 1
-    
+
     def _onContentsChange(self, from_, charsRemoved, charsAdded, zeroTimeout=False):
         firstBlock = self._document.findBlock(from_)
         untilBlock = self._document.findBlock(from_ + charsAdded)
-        
+
         if self._globalTimer.isCallbackScheduled(self._onContinueHighlighting):  # have not finished task.
             """ Intersect ranges. Might produce a lot of extra highlighting work
             More complicated algorithm might be invented later
@@ -190,7 +190,7 @@ class SyntaxHighlighter(QObject):
                                        self._document.blockCount() - 1)
                 untilBlock = self._document.findBlockByNumber(untilBlockNumber)
             self._globalTimer.unScheduleCallback(self._onContinueHighlighting)
-        
+
         if zeroTimeout:
             timeout = 0  # no parsing, only schedule
         elif charsAdded > 20 and \
@@ -199,9 +199,9 @@ class SyntaxHighlighter(QObject):
             timeout = self._MAX_PARSING_TIME_BIG_CHANGE_SEC
         else:
             timeout = self._MAX_PARSING_TIME_SMALL_CHANGE_SEC
-        
+
         SyntaxHighlighter._lastChangeTime = time.time()
-        
+
         self._highlighBlocks(firstBlock, untilBlock, timeout)
 
     def _onContinueHighlighting(self):
@@ -214,14 +214,14 @@ class SyntaxHighlighter(QObject):
 
         block = fromBlock
         lineData = self._lineData(block.previous())
-        
+
         while block.isValid() and block != atLeastUntilBlock:
             if time.time() >= endTime:  # time is over, schedule parsing later and release event loop
                 self._pendingBlockNumber = block.blockNumber()
                 self._pendingAtLeastUntilBlockNumber = atLeastUntilBlock.blockNumber()
                 self._globalTimer.scheduleCallback(self._onContinueHighlighting)
                 return
-            
+
             contextStack = lineData[0] if lineData is not None else None
             if block.length() < 4096:
                 lineData, highlightedSegments = self._syntax.highlightBlock(block.text(), contextStack)
@@ -234,10 +234,10 @@ class SyntaxHighlighter(QObject):
                 block.setUserData(_TextBlockUserData(lineData))
             else:
                 block.setUserData(None)
-            
+
             self._applyHighlightedSegments(block, highlightedSegments)
             block = block.next()
-        
+
         # reached atLeastUntilBlock, now parse next only while data changed
         prevLineData = self._lineData(block)
         while block.isValid():
@@ -252,14 +252,14 @@ class SyntaxHighlighter(QObject):
                 block.setUserData(_TextBlockUserData(lineData))
             else:
                 block.setUserData(None)
-            
+
             self._applyHighlightedSegments(block, highlightedSegments)
             if prevLineData == lineData:
                 break
-            
+
             block = block.next()
             prevLineData = self._lineData(block)
-        
+
         # sucessfully finished, reset pending tasks
         self._pendingBlockNumber = None
         self._pendingAtLeastUntilBlockNumber = None
@@ -267,7 +267,7 @@ class SyntaxHighlighter(QObject):
     def _applyHighlightedSegments(self, block, highlightedSegments):
         ranges = []
         currentPos = 0
-        
+
         for length, format in highlightedSegments:
             if format is not None:  # might be in incorrect syntax file
                 range = QTextLayout.FormatRange()
@@ -276,7 +276,7 @@ class SyntaxHighlighter(QObject):
                 range.length = length
                 ranges.append(range)
             currentPos += length
-        
+
         if block.layout().additionalFormats() != ranges:
             block.layout().setAdditionalFormats(ranges)
             self._document.markContentsDirty(block.position(), block.length())

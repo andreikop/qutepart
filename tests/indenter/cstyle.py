@@ -9,7 +9,7 @@ class BaseTestClass(IndentTest):
     INDENT_WIDTH = 2
 
 class Top(BaseTestClass):
-    
+
     def test_top1(self):
         origin = [
             "int {",
@@ -227,7 +227,7 @@ class Top(BaseTestClass):
         self.enter();
         self.type("ok");
         self.verifyExpected(expected)
-    
+
     def test_top13(self):
         origin = [
             ":",
@@ -362,7 +362,7 @@ class Top(BaseTestClass):
         self.setCursorPosition(0,62);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
 
@@ -383,7 +383,7 @@ class If(BaseTestClass):
         self.setCursorPosition(1,10);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_if2(self):
@@ -404,7 +404,7 @@ class If(BaseTestClass):
         self.setCursorPosition(2,10);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_if3(self):
@@ -427,7 +427,7 @@ class If(BaseTestClass):
         self.setCursorPosition(3,6);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_if4(self):
@@ -452,7 +452,7 @@ class If(BaseTestClass):
         self.setCursorPosition(4,11);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_if5(self):
@@ -475,7 +475,7 @@ class If(BaseTestClass):
         self.setCursorPosition(3,15);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_if6(self):
@@ -494,7 +494,7 @@ class If(BaseTestClass):
         self.setCursorPosition(1,16);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_if7(self):
@@ -517,7 +517,7 @@ class If(BaseTestClass):
         self.setCursorPosition(3,13);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_if8(self):
@@ -542,7 +542,7 @@ class If(BaseTestClass):
         self.setCursorPosition(4,10);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_if9(self):
@@ -565,7 +565,7 @@ class If(BaseTestClass):
         self.setCursorPosition(3,22);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_if10(self):
@@ -579,7 +579,7 @@ class If(BaseTestClass):
 
         self.setCursorPosition(0,5);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_if11(self):
@@ -604,9 +604,9 @@ class If(BaseTestClass):
         self.setCursorPosition(4,0);
         self.enter();
         self.tab();
-        
+
         self.verifyExpected(expected)
-    
+
     def test_if_qutepart1(self):
         origin = [
             "  if (1)",
@@ -617,12 +617,12 @@ class If(BaseTestClass):
             "  {",
             "     a = 7;",
             "     x"]
-        
+
         self.setOrigin(origin)
         self.setCursorPosition(3, 11)
         self.enter()
         self.type('x')
-        
+
         self.verifyExpected(expected)
 
 
@@ -643,7 +643,7 @@ class While(BaseTestClass):
         self.setCursorPosition(1,13);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_while2(self):
@@ -664,7 +664,7 @@ class While(BaseTestClass):
         self.setCursorPosition(2,8);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_while3(self):
@@ -683,12 +683,12 @@ class While(BaseTestClass):
         self.setCursorPosition(1,18);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
 
 class For(BaseTestClass):
-    
+
     def test_for1(self):
         origin = [
             "int main() {",
@@ -705,7 +705,7 @@ class For(BaseTestClass):
         self.setCursorPosition(1,17);
         self.enter();
         self.type("b");
-        
+
         self.verifyExpected(expected)
 
     def test_for2(self):
@@ -729,7 +729,7 @@ class For(BaseTestClass):
         self.type(" {");
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_for3(self):
@@ -748,7 +748,7 @@ class For(BaseTestClass):
         self.setCursorPosition(1,13);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_for4(self):
@@ -769,7 +769,7 @@ class For(BaseTestClass):
         self.setCursorPosition(2,8);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_for5(self):
@@ -788,7 +788,7 @@ class For(BaseTestClass):
         self.setCursorPosition(1,18);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
 
@@ -809,7 +809,7 @@ class Do(BaseTestClass):
         self.setCursorPosition(1,4);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_do2(self):
@@ -830,7 +830,7 @@ class Do(BaseTestClass):
         self.setCursorPosition(2,8);
         self.enter();
         self.type("while");
-        
+
         self.verifyExpected(expected)
 
     def test_do3(self):
@@ -849,7 +849,7 @@ class Do(BaseTestClass):
         self.setCursorPosition(1,9);
         self.enter();
         self.type("while");
-        
+
         self.verifyExpected(expected)
 
 
@@ -870,7 +870,7 @@ class Switch(BaseTestClass):
         self.setCursorPosition(1,16);
         self.enter();
         self.type("case 0:");
-        
+
         self.verifyExpected(expected)
 
     def test_switch2(self):
@@ -891,7 +891,7 @@ class Switch(BaseTestClass):
         self.setCursorPosition(2,13);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_switch3(self):
@@ -914,7 +914,7 @@ class Switch(BaseTestClass):
         self.setCursorPosition(3,11);
         self.enter();
         self.type("case 1:");
-        
+
         self.verifyExpected(expected)
 
     def test_switch4(self):
@@ -940,7 +940,7 @@ class Switch(BaseTestClass):
         self.type(";");
         self.enter();
         self.type("}");
-        
+
         self.verifyExpected(expected)
 
     def test_switch5(self):
@@ -961,7 +961,7 @@ class Switch(BaseTestClass):
         self.setCursorPosition(2,13);
         self.enter();
         self.type("case 1:");
-        
+
         self.verifyExpected(expected)
 
     def test_switch6(self):
@@ -982,7 +982,7 @@ class Switch(BaseTestClass):
 
         self.setCursorPosition(3,13);
         self.type(" // bla");
-        
+
         self.verifyExpected(expected)
 
     def test_switch7(self):
@@ -1010,7 +1010,7 @@ class Switch(BaseTestClass):
         self.type("default:");
         self.enter();
         self.type(";");
-        
+
         self.verifyExpected(expected)
 
     """ FIXME probably requires understanding, what is text and what is not
@@ -1034,7 +1034,7 @@ class Switch(BaseTestClass):
         self.setCursorPosition(3,11);
         self.enter();
         self.type("case ':'");
-        
+
         self.verifyExpected(expected)
     """
 
@@ -1058,7 +1058,7 @@ class Switch(BaseTestClass):
 
         self.setCursorPosition(4,16);
         self.type(":");
-        
+
         self.verifyExpected(expected)
 
     """ FIXME  AK: I don't understand, why this tests shall pass. kate works like qutepart
@@ -1078,7 +1078,7 @@ class Switch(BaseTestClass):
 
         self.setCursorPosition(2,13);
         self.type(" case '1':");
-        
+
         self.verifyExpected(expected)
 
     def test_switch11(self):
@@ -1097,7 +1097,7 @@ class Switch(BaseTestClass):
 
         self.setCursorPosition(2,23);
         self.type(" case '2':");
-        
+
         self.verifyExpected(expected)
     """
 
@@ -1117,7 +1117,7 @@ class Switch(BaseTestClass):
         self.setCursorPosition(1,12);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     """ FIXME  AK: I don't understand, why this tests shall pass. kate works like qutepart
@@ -1139,7 +1139,7 @@ class Switch(BaseTestClass):
         self.setCursorPosition(2,8);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
     """
 
@@ -1159,7 +1159,7 @@ class Switch(BaseTestClass):
         self.setCursorPosition(1,17);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
 
@@ -1180,7 +1180,7 @@ class Visib(BaseTestClass):
         self.setCursorPosition(1,9);
         self.enter();
         self.type("A()");
-        
+
         self.verifyExpected(expected)
 
     def test_visib2(self):
@@ -1201,7 +1201,7 @@ class Visib(BaseTestClass):
         self.setCursorPosition(2,8);
         self.enter();
         self.type("protected:");
-        
+
         self.verifyExpected(expected)
 
     def test_visib3(self):
@@ -1220,7 +1220,7 @@ class Visib(BaseTestClass):
         self.setCursorPosition(1,9);
         self.enter();
         self.type("protected:");
-        
+
         self.verifyExpected(expected)
 
     def test_visib4(self):
@@ -1237,7 +1237,7 @@ class Visib(BaseTestClass):
 
         self.setCursorPosition(1,20);
         self.type(" // :");
-        
+
         self.verifyExpected(expected)
 
     def test_visib5(self):
@@ -1254,7 +1254,7 @@ class Visib(BaseTestClass):
 
         self.setCursorPosition(1,20);
         self.type(" x(\":\");");
-        
+
         self.verifyExpected(expected)
 
     def test_visib6(self):
@@ -1271,7 +1271,7 @@ class Visib(BaseTestClass):
 
         self.setCursorPosition(1,20);
         self.type(" x(':');");
-        
+
         self.verifyExpected(expected)
 
     def test_visib7(self):
@@ -1288,7 +1288,7 @@ class Visib(BaseTestClass):
 
         self.setCursorPosition(1,20);
         self.type(" X::x();");
-        
+
         self.verifyExpected(expected)
 
     def test_visib8(self):
@@ -1305,7 +1305,7 @@ class Visib(BaseTestClass):
 
         self.setCursorPosition(1,20);
         self.type(" private:");
-        
+
         self.verifyExpected(expected)
 
 
@@ -1328,7 +1328,7 @@ class Comment(BaseTestClass):
         self.setCursorPosition(2,9);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_comment2(self):
@@ -1408,7 +1408,7 @@ class Aplist(BaseTestClass):
         self.type(");");
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_aplist4(self):
@@ -1429,7 +1429,7 @@ class Aplist(BaseTestClass):
         self.setCursorPosition(2,34);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_aplist5(self):
@@ -1453,7 +1453,7 @@ class Aplist(BaseTestClass):
         self.type("),");
         self.enter();
         self.type("argv");
-        
+
         self.verifyExpected(expected)
 
     def test_aplist6(self):
@@ -1477,9 +1477,9 @@ class Aplist(BaseTestClass):
         self.type("));");
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
-    
+
     def test_aplist8(self):
         origin = [
             "int main(int argc, char **argv) {",
@@ -1496,7 +1496,7 @@ class Aplist(BaseTestClass):
         self.setCursorPosition(1,34);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_aplist9(self):
@@ -1518,7 +1518,7 @@ class Aplist(BaseTestClass):
         self.type("),");
         self.enter();
         self.type("var");
-        
+
         self.verifyExpected(expected)
 
     def test_aplist10(self):
@@ -1580,7 +1580,7 @@ class Aplist(BaseTestClass):
         self.type(";");
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_aplist13(self):
@@ -1600,7 +1600,7 @@ class Aplist(BaseTestClass):
 
         self.setCursorPosition(1,24);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_aplist14(self):
@@ -1620,7 +1620,7 @@ class Aplist(BaseTestClass):
 
         self.setCursorPosition(1,24);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_aplist15(self):
@@ -1642,7 +1642,7 @@ class Aplist(BaseTestClass):
 
         self.setCursorPosition(2,24);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_aplist16(self):
@@ -1664,7 +1664,7 @@ class Aplist(BaseTestClass):
 
         self.setCursorPosition(2,24);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_aplist17(self):
@@ -1684,7 +1684,7 @@ class Aplist(BaseTestClass):
 
         self.setCursorPosition(2,34);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_aplist18(self):
@@ -1704,7 +1704,7 @@ class Aplist(BaseTestClass):
 
         self.setCursorPosition(2,34);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_aplist19(self):
@@ -1726,7 +1726,7 @@ class Aplist(BaseTestClass):
 
         self.setCursorPosition(3,35);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_aplist20(self):
@@ -1748,7 +1748,7 @@ class Aplist(BaseTestClass):
 
         self.setCursorPosition(3,35);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
 class OpenPar(BaseTestClass):
@@ -1766,7 +1766,7 @@ class OpenPar(BaseTestClass):
         self.setCursorPosition(0,12);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_openpar2(self):
@@ -1786,7 +1786,7 @@ class OpenPar(BaseTestClass):
         self.type("{");
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_openpar3(self):
@@ -1802,7 +1802,7 @@ class OpenPar(BaseTestClass):
 
         self.setCursorPosition(0,12);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_openpar4(self):
@@ -1818,7 +1818,7 @@ class OpenPar(BaseTestClass):
 
         self.setCursorPosition(0,12);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_openpar5(self):
@@ -1834,7 +1834,7 @@ class OpenPar(BaseTestClass):
 
         self.setCursorPosition(0,12);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_openpar6(self):
@@ -1850,7 +1850,7 @@ class OpenPar(BaseTestClass):
 
         self.setCursorPosition(1,1);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_openpar7(self):
@@ -1868,7 +1868,7 @@ class OpenPar(BaseTestClass):
 
         self.setCursorPosition(1,1);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_openpar8(self):
@@ -1886,7 +1886,7 @@ class OpenPar(BaseTestClass):
 
         self.setCursorPosition(1,1);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_openpar9(self):
@@ -1910,7 +1910,7 @@ class OpenPar(BaseTestClass):
         self.type(" {");
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_openpar10(self):
@@ -1934,7 +1934,7 @@ class OpenPar(BaseTestClass):
         self.type(" {");
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
 class ClosPar(BaseTestClass):
@@ -1954,7 +1954,7 @@ class ClosPar(BaseTestClass):
         self.setCursorPosition(1,5);
         self.enter();
         self.type("}");
-        
+
         self.verifyExpected(expected)
 
     def test_clospar2(self):
@@ -1975,7 +1975,7 @@ class ClosPar(BaseTestClass):
         self.setCursorPosition(2,5);
         self.enter();
         self.type("}");
-        
+
         self.verifyExpected(expected)
 
     def test_clospar3(self):
@@ -1994,7 +1994,7 @@ class ClosPar(BaseTestClass):
 
         self.setCursorPosition(1,5);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_clospar4(self):
@@ -2015,7 +2015,7 @@ class ClosPar(BaseTestClass):
 
         self.setCursorPosition(2,6);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
 class PList(BaseTestClass):
@@ -2033,7 +2033,7 @@ class PList(BaseTestClass):
         self.setCursorPosition(0,14);
         self.enter();
         self.type("short u");
-        
+
         self.verifyExpected(expected)
 
     def test_plist2(self):
@@ -2050,7 +2050,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(1,15);
         self.type(",");
-        
+
         self.verifyExpected(expected)
 
     def test_plist3(self):
@@ -2069,7 +2069,7 @@ class PList(BaseTestClass):
         self.setCursorPosition(1,16);
         self.enter();
         self.type("char c)");
-        
+
         self.verifyExpected(expected)
 
     def test_plist4(self):
@@ -2090,7 +2090,7 @@ class PList(BaseTestClass):
         self.setCursorPosition(2,15);
         self.enter();
         self.type("{");
-        
+
         self.verifyExpected(expected)
 
     def test_plist5(self):
@@ -2128,7 +2128,7 @@ class PList(BaseTestClass):
         # bug:87415
         self.setCursorPosition(0,25);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist7(self):
@@ -2147,7 +2147,7 @@ class PList(BaseTestClass):
         # bug:87415
         self.setCursorPosition(1,25);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist8(self):
@@ -2163,7 +2163,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(0,14);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist9(self):
@@ -2181,7 +2181,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(1,16);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     """ FIXME  AK: I don't understand, why this tests shall pass. kate works like qutepart
@@ -2198,7 +2198,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(0,8);
         self.enter();
-        
+
         self.verifyExpected(expected)
     """
 
@@ -2217,7 +2217,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(1,14);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist12(self):
@@ -2237,7 +2237,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(2,16);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist13(self):
@@ -2259,7 +2259,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(3,14);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     """ FIXME  AK: I don't understand, why this tests shall pass. kate works like qutepart
@@ -2280,7 +2280,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(2,8);
         self.enter();
-        
+
         self.verifyExpected(expected)
     """
 
@@ -2301,7 +2301,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(1,14);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist16(self):
@@ -2319,7 +2319,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(1,14);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist17(self):
@@ -2339,7 +2339,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(1,14);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist18(self):
@@ -2365,7 +2365,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(4,14);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist19(self):
@@ -2389,7 +2389,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(3,14);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist20(self):
@@ -2415,9 +2415,9 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(5,14);
         self.enter();
-        
+
         self.verifyExpected(expected)
-    
+
     def test_plist21(self):
         origin = [
             "int x() {",
@@ -2439,7 +2439,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(4,16);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist22(self):
@@ -2461,7 +2461,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(3,14);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist24(self):
@@ -2483,7 +2483,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(3,31);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_plist25(self):
@@ -2505,7 +2505,7 @@ class PList(BaseTestClass):
 
         self.setCursorPosition(3,8);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
 
@@ -2543,7 +2543,7 @@ class Comma(BaseTestClass):
 
         self.setCursorPosition(1,11);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_comma3(self):
@@ -2579,9 +2579,9 @@ class Comma(BaseTestClass):
 
         self.setCursorPosition(1,8);
         self.enter();
-        
+
         self.verifyExpected(expected)
-    
+
     def test_comma5(self):
         origin = [
             "double x,",
@@ -2596,7 +2596,7 @@ class Comma(BaseTestClass):
         self.setCursorPosition(0,9);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_comma6(self):
@@ -2612,7 +2612,7 @@ class Comma(BaseTestClass):
 
         self.setCursorPosition(0,9);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
 
@@ -2646,7 +2646,7 @@ class Normal(BaseTestClass):
 
         self.setCursorPosition(1,8);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_normal3(self):
@@ -2664,7 +2664,7 @@ class Normal(BaseTestClass):
 
         self.setCursorPosition(1,8);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
 class Using(BaseTestClass):
@@ -2683,7 +2683,7 @@ class Using(BaseTestClass):
         self.setCursorPosition(0,5);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_using2(self):
@@ -2702,10 +2702,10 @@ class Using(BaseTestClass):
         self.setCursorPosition(1,14);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
     """
-    
+
     def test_using3(self):
         origin = [
             "using std::vector;",
@@ -2720,7 +2720,7 @@ class Using(BaseTestClass):
         self.setCursorPosition(0,18);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
 
@@ -2741,7 +2741,7 @@ class Doxygen(BaseTestClass):
         self.setCursorPosition(1,5);
         self.enter();
         self.type("constructor");
-        
+
         self.verifyExpected(expected)
 
     def test_doxygen2(self):
@@ -2762,7 +2762,7 @@ class Doxygen(BaseTestClass):
         self.setCursorPosition(2,16);
         self.enter();
         self.type("@param x foo");
-        
+
         self.verifyExpected(expected)
 
     def test_doxygen3(self):
@@ -2785,7 +2785,7 @@ class Doxygen(BaseTestClass):
         self.setCursorPosition(3,17);
         self.enter();
         self.type("/");
-        
+
         self.verifyExpected(expected)
 
     def test_doxygen4(self):
@@ -2810,7 +2810,7 @@ class Doxygen(BaseTestClass):
         self.setCursorPosition(4,5);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_doxygen5(self):
@@ -2827,7 +2827,7 @@ class Doxygen(BaseTestClass):
 
         self.setCursorPosition(1,5);
         self.type(" constructor */");
-        
+
         self.verifyExpected(expected)
 
     def test_doxygen6(self):
@@ -2846,7 +2846,7 @@ class Doxygen(BaseTestClass):
         self.setCursorPosition(1,20);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_doxygen7(self):
@@ -2865,7 +2865,7 @@ class Doxygen(BaseTestClass):
         self.setCursorPosition(1,46);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_doxygen8(self):
@@ -2882,7 +2882,7 @@ class Doxygen(BaseTestClass):
         self.setCursorPosition(0, 36);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
 
@@ -2904,7 +2904,7 @@ class Prep(BaseTestClass):
         self.enter();
         self.type("#");
         self.type("ifdef FLA");
-        
+
         self.verifyExpected(expected)
 
     def test_prep2(self):
@@ -2925,7 +2925,7 @@ class Prep(BaseTestClass):
         self.setCursorPosition(2,10);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     """FIXME probably, old tests. Now preprocessor is indented
@@ -2945,7 +2945,7 @@ class Prep(BaseTestClass):
         self.setCursorPosition(1,6);
         self.enter();
         self.type("#region FLA");
-        
+
         self.verifyExpected(expected)
 
     def test_prep4(self):
@@ -2964,7 +2964,7 @@ class Prep(BaseTestClass):
         self.setCursorPosition(1,6);
         self.enter();
         self.type("#endregion FLA");
-        
+
         self.verifyExpected(expected)
     """
 
@@ -2984,7 +2984,7 @@ class Prep(BaseTestClass):
 
         self.setCursorPosition(2,14);
         self.type(" // n");
-        
+
         self.verifyExpected(expected)
 
     def test_prep6(self):
@@ -3003,7 +3003,7 @@ class Prep(BaseTestClass):
 
         self.setCursorPosition(2,10);
         self.type(" daten");
-        
+
         self.verifyExpected(expected)
 
 

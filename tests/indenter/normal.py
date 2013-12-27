@@ -8,7 +8,7 @@ from indenttest import IndentTest
 class Test(IndentTest):
     LANGUAGE = None
     INDENT_WIDTH = 4
-    
+
     def test_normal2(self):
         origin = [
             "    bla bla",
@@ -45,7 +45,7 @@ class Test(IndentTest):
         self.enter();
         self.type("ok");
         self.verifyExpected(expected)
-    
+
     def test_emptyline1(self):
         origin = [
             "      totally empty line",
@@ -99,7 +99,7 @@ class Test(IndentTest):
         self.setCursorPosition(1,11);
         self.enter();
         self.type("ok");
-        
+
         self.verifyExpected(expected)
 
     def test_emptyline2(self):
@@ -133,7 +133,7 @@ class Test(IndentTest):
 
         self.setCursorPosition(0,11);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_midbreak2(self):
@@ -149,7 +149,7 @@ class Test(IndentTest):
 
         self.setCursorPosition(0,11);
         self.enter();
-        
+
         self.verifyExpected(expected)
 
     def test_normal1(self):

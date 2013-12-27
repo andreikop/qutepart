@@ -2,11 +2,11 @@
 
 Do not use this module directly. Use 'syntax' module
 
-Read http://kate-editor.org/2005/03/24/writing-a-syntax-highlighting-file/ 
+Read http://kate-editor.org/2005/03/24/writing-a-syntax-highlighting-file/
 if you want to understand something
 
 
-'attribute' property of rules and contexts contains not an original string, 
+'attribute' property of rules and contexts contains not an original string,
 but value from itemDatas section (style name)
 
 'context', 'lineBeginContext', 'lineEndContext', 'fallthroughContext' properties
@@ -30,26 +30,26 @@ class ContextStack:
         """
         self._contexts = contexts
         self._data = data
-    
+
     def pop(self, count):
         """Returns new context stack, which doesn't contain few levels
         """
         if len(self._contexts) - 1 < count:
             _logger.error("#pop value is too big")
             return self
-        
+
         return ContextStack(self._contexts[:-count], self._data[:-count])
-    
+
     def append(self, context, data):
         """Returns new context, which contains current stack and new frame
         """
         return ContextStack(self._contexts + [context], self._data + [data])
-    
+
     def currentContext(self):
         """Get current context
         """
         return self._contexts[-1]
-    
+
     def currentData(self):
         """Get current data
         """
@@ -64,22 +64,22 @@ class ContextSwitcher:
         self._popsCount = popsCount
         self._contextToSwitch = contextToSwitch
         self._contextOperation = contextOperation
-    
+
     def __str__(self):
         return self._contextOperation
-        
+
     def getNextContextStack(self, contextStack, data=None):
         """Apply modification to the contextStack.
         This method never modifies input parameter list
         """
         if self._popsCount:
             contextStack = contextStack.pop(self._popsCount)
-        
+
         if self._contextToSwitch is not None:
             if not self._contextToSwitch.dynamic:
                 data = None
             contextStack = contextStack.append(self._contextToSwitch, data)
-        
+
         return contextStack
 
 
@@ -94,7 +94,7 @@ class TextToMatchObject:
         self.textLen = len(self.text)
 
         self.firstNonSpace = not bool(wholeLineText[:currentColumnIndex].strip())
-        
+
         self.isWordStart = currentColumnIndex == 0 or \
                          wholeLineText[currentColumnIndex - 1].isspace() or \
                          wholeLineText[currentColumnIndex - 1] in deliminatorSet
@@ -108,10 +108,10 @@ class TextToMatchObject:
                     break
             else:
                 wordEndIndex = len(wholeLineText)
-            
+
             if wordEndIndex != 0:
                 self.word = self.text[:wordEndIndex]
-        
+
         self.contextData = contextData
 
 
@@ -120,7 +120,7 @@ class RuleTryMatchResult:
         self.rule = rule
         self.length = length
         self.data = data
-        
+
         if rule.lookAhead:
             self.length = 0
 
@@ -153,7 +153,7 @@ class AbstractRule:
         column          -1 if not set
         dynamic
     """
-    
+
     _seqReplacer = re.compile('%\d+')
 
     def __init__(self, params):
@@ -166,7 +166,7 @@ class AbstractRule:
         self.firstNonSpace = params.firstNonSpace
         self.dynamic = params.dynamic
         self.column = params.column
-    
+
     def __str__(self):
         """Serialize.
         For debug logs
@@ -175,7 +175,7 @@ class AbstractRule:
         res += '\t\t\tstyleName: %s\n' % (self.attribute or 'None')
         res += '\t\t\tcontext: %s\n' % self.context
         return res
-    
+
     def shortId(self):
         """Get short ID string of the rule. Used for logs
         i.e. "DetectChar(x)"
@@ -190,15 +190,15 @@ class AbstractRule:
         if self.column != -1 and \
            self.column != textToMatchObject.currentColumnIndex:
             return None
-        
+
         if self.firstNonSpace and \
            (not textToMatchObject.firstNonSpace):
             return None
-        
+
         ruleTryMatchResult = self._tryMatch(textToMatchObject)
         if ruleTryMatchResult is None:  # no match
             return None
-        
+
         return ruleTryMatchResult
 
 
@@ -210,10 +210,10 @@ class DetectChar(AbstractRule):
         AbstractRule.__init__(self, abstractRuleParams)
         self.char = char
         self.index = index
-    
+
     def shortId(self):
         return 'DetectChar(%s, %d)' % (self.char, self.index)
-    
+
     def _tryMatch(self, textToMatchObject):
         if self.char is None and self.index == 0:
             return None
@@ -223,15 +223,15 @@ class DetectChar(AbstractRule):
             if index >= len(textToMatchObject.contextData):
                 _logger.error('Invalid DetectChar index %d', index)
                 return None
-            
+
             if len(textToMatchObject.contextData[index]) != 1:
                     _logger.error('Too long DetectChar string %s', textToMatchObject.contextData[index])
                     return None
-            
+
             string = textToMatchObject.contextData[index]
         else:
             string = self.char
-        
+
         if textToMatchObject.text[0] == string:
             return RuleTryMatchResult(self, 1)
         return None
@@ -244,17 +244,17 @@ class Detect2Chars(AbstractRule):
     def __init__(self, abstractRuleParams, string):
         AbstractRule.__init__(self, abstractRuleParams)
         self.string = string
-    
+
     def shortId(self):
         return 'Detect2Chars(%s)' % self.string
-    
+
     def _tryMatch(self, textToMatchObject):
         if self.string is None:
             return None
-        
+
         if textToMatchObject.text.startswith(self.string):
             return RuleTryMatchResult(self, len(self.string))
-        
+
         return None
 
 
@@ -265,14 +265,14 @@ class AnyChar(AbstractRule):
     def __init__(self, abstractRuleParams, string):
         AbstractRule.__init__(self, abstractRuleParams)
         self.string = string
-    
+
     def shortId(self):
         return 'AnyChar(%s)' % self.string
-    
+
     def _tryMatch(self, textToMatchObject):
         if textToMatchObject.text[0] in self.string:
             return RuleTryMatchResult(self, 1)
-        
+
         return None
 
 
@@ -283,24 +283,24 @@ class StringDetect(AbstractRule):
     def __init__(self, abstractRuleParams, string):
         AbstractRule.__init__(self, abstractRuleParams)
         self.string = string
-    
+
     def shortId(self):
         return 'StringDetect(%s)' % self.string
 
     def _tryMatch(self, textToMatchObject):
         if self.string is None:
             return None
-        
+
         if self.dynamic:
             string = self._makeDynamicSubsctitutions(self.string, textToMatchObject.contextData)
         else:
             string = self.string
-        
+
         if textToMatchObject.text.startswith(string):
             return RuleTryMatchResult(self, len(string))
-    
+
         return None
-    
+
     @staticmethod
     def _makeDynamicSubsctitutions(string, contextData):
         """For dynamic rules, replace %d patterns with actual strings
@@ -332,13 +332,13 @@ class WordDetect(AbstractRule):
     def _tryMatch(self, textToMatchObject):
         if textToMatchObject.word is None:
             return None
-        
+
         if self.insensitive or \
            (not self.parentContext.parser.keywordsCaseSensitive):
             wordToCheck = textToMatchObject.word.lower()
         else:
             wordToCheck = textToMatchObject.word
-        
+
         if wordToCheck == self.word:
             return RuleTryMatchResult(self, len(wordToCheck))
         else:
@@ -361,13 +361,13 @@ class keyword(AbstractRule):
     def _tryMatch(self, textToMatchObject):
         if textToMatchObject.word is None:
             return None
-        
+
         if self.insensitive or \
            (not self.parentContext.parser.keywordsCaseSensitive):
             wordToCheck = textToMatchObject.word.lower()
         else:
             wordToCheck = textToMatchObject.word
-        
+
         if wordToCheck in self.words:
             return RuleTryMatchResult(self, len(wordToCheck))
         else:
@@ -376,7 +376,7 @@ class keyword(AbstractRule):
 
 class RegExpr(AbstractRule):
     """TODO support "minimal" flag
-    
+
     Public attributes:
         regExp
         wordStart
@@ -389,13 +389,13 @@ class RegExpr(AbstractRule):
         self.insensitive = insensitive
         self.wordStart = wordStart
         self.lineStart = lineStart
-        
+
         if self.dynamic:
             self.regExp = None
         else:
             self.regExp = self._compileRegExp(string, insensitive)
 
-    
+
     def shortId(self):
         return 'RegExpr( %s )' % self.string
 
@@ -407,16 +407,16 @@ class RegExpr(AbstractRule):
             regExp = self._compileRegExp(string, self.insensitive)
         else:
             regExp = self.regExp
-        
+
         if regExp is None:
             return None
-        
+
         # Special case. if pattern starts with \b, we have to check it manually,
         # because string is passed to .match(..) without beginning
         if self.wordStart and \
            (not textToMatchObject.isWordStart):
                 return None
-        
+
         #Special case. If pattern starts with ^ - check column number manually
         if self.lineStart and \
            textToMatchObject.currentColumnIndex > 0:
@@ -453,7 +453,7 @@ class RegExpr(AbstractRule):
         flags = 0
         if insensitive:
             flags = re.IGNORECASE
-        
+
         try:
             return re.compile(string)
         except (re.error, AssertionError) as ex:
@@ -476,27 +476,27 @@ class RegExpr(AbstractRule):
 class AbstractNumberRule(AbstractRule):
     """Base class for Int and Float rules.
     This rules can have child rules
-    
+
     Public attributes:
         childRules
     """
     def __init__(self, abstractRuleParams, childRules):
         AbstractRule.__init__(self, abstractRuleParams)
         self.childRules = childRules
-    
+
     def _tryMatch(self, textToMatchObject):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
         """
-        
+
         # hlamer: This check is not described in kate docs, and I haven't found it in the code
         if not textToMatchObject.isWordStart:
             return None
-        
+
         index = self._tryMatchText(textToMatchObject.text)
         if index is None:
             return None
-        
+
         if textToMatchObject.currentColumnIndex + index < len(textToMatchObject.wholeLineText):
             newTextToMatchObject = TextToMatchObject(textToMatchObject.currentColumnIndex + index,
                                                       textToMatchObject.wholeLineText,
@@ -510,7 +510,7 @@ class AbstractNumberRule(AbstractRule):
                 # child rule context and attribute ignored
 
         return RuleTryMatchResult(self, index)
-    
+
     def _countDigits(self, text):
         """Count digits at start of text
         """
@@ -528,7 +528,7 @@ class Int(AbstractNumberRule):
 
     def _tryMatchText(self, text):
         matchedLength = self._countDigits(text)
-        
+
         if matchedLength:
             return matchedLength
         else:
@@ -540,47 +540,47 @@ class Float(AbstractNumberRule):
         return 'Float()'
 
     def _tryMatchText(self, text):
-        
+
         haveDigit = False
         havePoint = False
-        
+
         matchedLength = 0
-        
+
         digitCount = self._countDigits(text[matchedLength:])
         if digitCount:
             haveDigit = True
             matchedLength += digitCount
-        
+
         if len(text) > matchedLength and text[matchedLength] == '.':
             havePoint = True
             matchedLength += 1
-        
+
         digitCount = self._countDigits(text[matchedLength:])
         if digitCount:
             haveDigit = True
             matchedLength += digitCount
-        
+
         if len(text) > matchedLength and text[matchedLength].lower() == 'e':
             matchedLength += 1
-            
+
             if len(text) > matchedLength and text[matchedLength] in '+-':
                 matchedLength += 1
-            
+
             haveDigitInExponent = False
-            
+
             digitCount = self._countDigits(text[matchedLength:])
             if digitCount:
                 haveDigitInExponent = True
                 matchedLength += digitCount
-            
+
             if not haveDigitInExponent:
                 return None
-            
+
             return matchedLength
         else:
             if not havePoint:
                 return None
-        
+
         if matchedLength and haveDigit:
             return matchedLength
         else:
@@ -594,17 +594,17 @@ class HlCOct(AbstractRule):
     def _tryMatch(self, textToMatchObject):
         if textToMatchObject.text[0] != '0':
             return None
-        
+
         index = 1
         while index < len(textToMatchObject.text) and textToMatchObject.text[index] in '1234567':
             index += 1
-        
+
         if index == 1:
             return None
-        
+
         if index < len(textToMatchObject.text) and textToMatchObject.text[index].upper() in 'LU':
             index += 1
-        
+
         return RuleTryMatchResult(self, index)
 
     def shortId(self):
@@ -618,20 +618,20 @@ class HlCHex(AbstractRule):
     def _tryMatch(self, textToMatchObject):
         if len(textToMatchObject.text) < 3:
             return None
-        
+
         if textToMatchObject.text[:2].upper() != '0X':
             return None
-        
+
         index = 2
         while index < len(textToMatchObject.text) and textToMatchObject.text[index].upper() in '0123456789ABCDEF':
             index += 1
-        
+
         if index == 2:
             return None
-        
+
         if index < len(textToMatchObject.text) and textToMatchObject.text[index].upper() in 'LU':
             index += 1
-        
+
         return RuleTryMatchResult(self, index)
 
     def shortId(self):
@@ -641,7 +641,7 @@ def _checkEscapedChar(text):
     index = 0
     if len(text) > 1 and text[0] == '\\':
         index = 1
-        
+
         if text[index] in "abefnrtv'\"?\\":
             index += 1
         elif text[index] == 'x':  # if it's like \xff, eat the x
@@ -655,9 +655,9 @@ def _checkEscapedChar(text):
                 index += 1
         else:
             return None
-        
+
         return index
-    
+
     return None
 
 
@@ -684,10 +684,10 @@ class HlCChar(AbstractRule):
                 index = 1 + result
             else:  # 1 not escaped character
                 index = 1 + 1
-            
+
             if index < len(textToMatchObject.text) and textToMatchObject.text[index] == "'":
                 return RuleTryMatchResult(self, index + 1)
-        
+
         return None
 
 
@@ -700,16 +700,16 @@ class RangeDetect(AbstractRule):
         AbstractRule.__init__(self, abstractRuleParams)
         self.char = char
         self.char1 = char1
-    
+
     def shortId(self):
         return 'RangeDetect(%s, %s)' % (self.char, self.char1)
-    
+
     def _tryMatch(self, textToMatchObject):
         if textToMatchObject.text.startswith(self.char):
             end = textToMatchObject.text.find(self.char1)
             if end > 0:
                 return RuleTryMatchResult(self, end + 1)
-        
+
         return None
 
 
@@ -720,7 +720,7 @@ class LineContinue(AbstractRule):
     def _tryMatch(self, textToMatchObject):
         if textToMatchObject.text == '\\':
             return RuleTryMatchResult(self, 1)
-        
+
         return None
 
 
@@ -739,7 +739,7 @@ class IncludeRules(AbstractRule):
 
     def shortId(self):
         return "IncludeRules(%s)" % self.context.name
-    
+
     def _tryMatch(self, textToMatchObject):
         """Try to find themselves in the text.
         Returns (count, matchedRule) or (None, None) if doesn't match
@@ -770,18 +770,18 @@ class DetectIdentifier(AbstractRule):
     _regExp = re.compile('[a-zA-Z][a-zA-Z0-9]*')
     def shortId(self):
         return 'DetectIdentifier()'
-    
+
     def _tryMatch(self, textToMatchObject):
         match = DetectIdentifier._regExp.match(textToMatchObject.text)
         if match is not None and match.group(0):
             return RuleTryMatchResult(self, len(match.group(0)))
-        
+
         return None
 
 
 class Context:
     """Highlighting context
-    
+
     Public attributes:
         attribute
         lineEndContext
@@ -795,7 +795,7 @@ class Context:
         # Will be initialized later, after all context has been created
         self.parser = parser
         self.name = name
-    
+
     def setValues(self, attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic, textType):
         self.attribute = attribute
         self.format = format
@@ -804,10 +804,10 @@ class Context:
         self.fallthroughContext = fallthroughContext
         self.dynamic = dynamic
         self.textType = textType
-    
+
     def setRules(self, rules):
         self.rules = rules
-    
+
     def __str__(self):
         """Serialize.
         For debug logs
@@ -819,7 +819,7 @@ class Context:
         if self.fallthroughContext is not None:
             res += '\t\t%s: %s\n' % ('fallthroughContext', self.fallthroughContext)
         res += '\t\t%s: %s\n' % ('dynamic', self.dynamic)
-        
+
         for rule in self.rules:
             res += unicode(rule)
         return res
@@ -848,7 +848,7 @@ class Context:
                         highlightedSegments.append((countOfNotMatchedSymbols, self.format))
                         textTypeMap += [self.textType for i in range(countOfNotMatchedSymbols)]
                         countOfNotMatchedSymbols = 0
-                    
+
                     highlightedSegments.append((ruleTryMatchResult.length,
                                                ruleTryMatchResult.rule.format or self.format))
                     textTypeMap += [(ruleTryMatchResult.rule.textType or self.textType)
@@ -862,7 +862,7 @@ class Context:
                             lineContinue = isinstance(ruleTryMatchResult.rule, LineContinue)
 
                             return currentColumnIndex - startColumnIndex, newContextStack, highlightedSegments, textTypeMap, lineContinue
-                    
+
                     break  # for loop
             else:  # no matched rules
                 if self.fallthroughContext is not None:
@@ -875,7 +875,7 @@ class Context:
 
                 currentColumnIndex += 1
                 countOfNotMatchedSymbols += 1
-        
+
         if countOfNotMatchedSymbols > 0:
             highlightedSegments.append((countOfNotMatchedSymbols, self.format))
             textTypeMap += [self.textType for i in range(countOfNotMatchedSymbols)]
@@ -888,15 +888,15 @@ class Context:
 
 class Parser:
     """Parser implementation
-        
+
         syntax                  Syntax instance
-        
+
         attributeToFormatMap    Map "attribute" : TextFormat
-        
+
         deliminatorSet          Set of deliminator characters
         lists                   Keyword lists as dictionary "list name" : "list value"
         keywordsCaseSensitive   If true, keywords are not case sensitive
-        
+
         contexts                Context list as dictionary "context name" : context
         defaultContext          Default context object
     """
@@ -906,12 +906,12 @@ class Parser:
         self.lists = lists
         self.keywordsCaseSensitive = keywordsCaseSensitive
         # debugOutputEnabled is used only by cParser
-    
+
     def setContexts(self, contexts, defaultContext):
         self.contexts = contexts
         self.defaultContext = defaultContext
         self._defaultContextStack = ContextStack([self.defaultContext], [None])
-    
+
     def __str__(self):
         """Serialize.
         For debug logs
@@ -922,21 +922,21 @@ class Parser:
                not name in ('defaultContext', 'deliminatorSet', 'contexts', 'lists', 'syntax') and \
                not value is None:
                 res += '\t%s: %s\n' % (name, value)
-        
+
         res += '\tDefault context: %s\n' % self.defaultContext.name
 
         for listName, listValue in self.lists.iteritems():
             res += '\tList %s: %s\n' % (listName, listValue)
-        
-        
+
+
         for context in self.contexts.values():
             res += unicode(context)
-        
+
         return res
 
     def highlightBlock(self, text, prevContextStack):
         """Parse block and return ParseBlockFullResult
-        
+
         return (lineData, highlightedSegments)
           where lineData is (contextStack, textTypeMap)
             where textTypeMap is a string of textType characters
@@ -945,7 +945,7 @@ class Parser:
             contextStack = prevContextStack
         else:
             contextStack = self._defaultContextStack
-        
+
         highlightedSegments = []
         lineContinue = False
         currentColumnIndex = 0
@@ -968,11 +968,11 @@ class Parser:
                 contextStack = contextStack.currentContext().lineEndContext.getNextContextStack(contextStack)
                 if oldStack == contextStack:  # avoid infinite while loop if nothing to switch
                     break
-            
+
             # this code is not tested, because lineBeginContext is not defined by any xml file
             if contextStack.currentContext().lineBeginContext is not None:
                 contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
-        
+
         lineData = (contextStack, textTypeMap)
         return lineData, highlightedSegments
 

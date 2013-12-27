@@ -6,16 +6,16 @@ class RectangularSelection:
     """This class does not replresent any object, but is part of Qutepart
     It just groups together Qutepart rectangular selection methods and fields
     """
-    
+
     MIME_TYPE = 'text/rectangular-selection'
-    
+
     # any of this modifiers with mouse select text
     MOUSE_MODIFIERS = (Qt.AltModifier | Qt.ControlModifier,
                        Qt.AltModifier | Qt.ShiftModifier,
                        Qt.AltModifier)
 
     _MAX_SIZE = 256
-        
+
     def __init__(self, qpart):
         self._qpart = qpart
         self._start = None
@@ -30,27 +30,27 @@ class RectangularSelection:
         if self._start is not None:
             self._start = None
             self._qpart._updateExtraSelections()
-    
+
     def isDeleteKeyEvent(self, keyEvent):
         """Check if key event should be handled as Delete command"""
         return self._start is not None and \
                (keyEvent.matches(QKeySequence.Delete) or \
                 (keyEvent.key() == Qt.Key_Backspace and keyEvent.modifiers() == Qt.NoModifier))
-    
+
     def delete(self):
         """Del or Backspace pressed. Delete selection"""
         with self._qpart:
             for cursor in self.cursors():
                 if cursor.hasSelection():
                     cursor.deleteChar()
-    
+
     def isExpandKeyEvent(self, keyEvent):
         """Check if key event should expand rectangular selection"""
         return keyEvent.modifiers() & Qt.ShiftModifier and \
                keyEvent.modifiers() & Qt.AltModifier and \
                keyEvent.key() in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Down, Qt.Key_Up,
                                   Qt.Key_PageUp, Qt.Key_PageDown, Qt.Key_Home, Qt.Key_End)
-    
+
     def onExpandKeyEvent(self, keyEvent):
         """One of expand selection key events"""
         if self._start is None:
@@ -65,7 +65,7 @@ class RectangularSelection:
                              keyEvent.text(),
                              keyEvent.isAutoRepeat(),
                              keyEvent.count())
-        
+
         self._qpart.cursorPositionChanged.disconnect(self._reset)
         self._qpart.selectionChanged.disconnect(self._reset)
         super(self._qpart.__class__, self._qpart).keyPressEvent(newEvent)
@@ -76,7 +76,7 @@ class RectangularSelection:
     def _visibleCharPositionGenerator(self, text):
         currentPos = 0
         yield currentPos
-        
+
         for index, char in enumerate(text):
             if char == '\t':
                 currentPos += self._qpart.indentWidth
@@ -94,7 +94,7 @@ class RectangularSelection:
         for i in range(realColumn):
             val = generator.next()
         return generator.next()
-    
+
     def _visibleToRealColumn(self, text, visiblePos):
         """If \t is used, real position of symbol in block and visible position differs
         This function converts visible to real.
@@ -110,9 +110,9 @@ class RectangularSelection:
                 if currentVisiblePos >= visiblePos:
                     return currentIndex - 1
                 currentIndex += 1
-            
+
             return None
-    
+
     def cursors(self):
         """Cursors for rectangular selection.
         1 cursor for every line
@@ -127,7 +127,7 @@ class RectangularSelection:
                 self._qpart.userWarning.emit('Rectangular selection area is too big')
                 self._start = None
                 return []
-            
+
             currentBlockText = self._qpart.textCursor().block().text()
             currentVisibleCol = self._realToVisibleColumn(currentBlockText, currentCol)
 
@@ -143,7 +143,7 @@ class RectangularSelection:
                     realCurrentCol = block.length()  # out of range value
                 cursor.setPositionInBlock(min(realStartCol, block.length() - 1))
                 cursor.setPositionInBlock(min(realCurrentCol, block.length() - 1), QTextCursor.KeepAnchor)
-                
+
                 cursors.append(cursor)
 
         return cursors
@@ -160,7 +160,7 @@ class RectangularSelection:
                 selection.format.setBackground(background)
                 selection.format.setForeground(foreground)
                 selection.cursor = cursor
-                
+
                 selections.append(selection)
 
         return selections
@@ -168,7 +168,7 @@ class RectangularSelection:
     def isActive(self):
         """Some rectangle is selected"""
         return self._start is not None
-    
+
     def copy(self):
         """Copy to the clipboard"""
         data = QMimeData()
@@ -177,7 +177,7 @@ class RectangularSelection:
         data.setText(text)
         data.setData(self.MIME_TYPE, text.encode('utf8'))
         QApplication.clipboard().setMimeData(data)
-    
+
     def cut(self):
         """Cut action. Copy and delete
         """
@@ -186,11 +186,11 @@ class RectangularSelection:
                    min(self._start[1], cursorPos[1]))
         self.copy()
         self.delete()
-        
+
         """Move cursor to top-left corner of the selection,
         so that if text gets pasted again, original text will be restored"""
         self._qpart.cursorPosition = topLeft
-    
+
     def _indentUpTo(self, text, width):
         """Add space to text, so text width will be at least width.
         Return text, which must be added
@@ -205,7 +205,7 @@ class RectangularSelection:
                    ' ' * (diff % self._qpart.indentWidth)
         else:
             return ' ' * diff
-    
+
     def paste(self, mimeData):
         """Paste recrangular selection.
         Add space at the beginning of line, if necessary
@@ -214,14 +214,14 @@ class RectangularSelection:
             self.delete()
         elif self._qpart.textCursor().hasSelection():
             self._qpart.textCursor().deleteChar()
-        
+
         text = str(mimeData.data(self.MIME_TYPE)).decode('utf8')
         lines = text.splitlines()
         cursorLine, cursorCol = self._qpart.cursorPosition
         if cursorLine + len(lines) > len(self._qpart.lines):
            for i in range(cursorLine + len(lines) - len(self._qpart.lines)):
                self._qpart.lines.append('')
-        
+
         with self._qpart:
             for index, line in enumerate(lines):
                 currentLine = self._qpart.lines[cursorLine + index]

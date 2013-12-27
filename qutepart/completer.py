@@ -22,18 +22,18 @@ class _GlobalUpdateWordSetTimer:
     update set simultaneously
     """
     _IDLE_TIMEOUT_MS = 1000
-    
+
     def __init__(self):
         self._timer = QTimer()
         self._timer.setSingleShot(True)
         self._timer.timeout.connect(self._onTimer)
         self._scheduledMethods = []
-    
+
     def schedule(self, method):
         if not method in self._scheduledMethods:
             self._scheduledMethods.append(method)
         self._timer.start(self._IDLE_TIMEOUT_MS)
-    
+
     def _onTimer(self):
         method = self._scheduledMethods.pop()
         method()
@@ -43,13 +43,13 @@ class _GlobalUpdateWordSetTimer:
 
 class _CompletionModel(QAbstractItemModel):
     """QAbstractItemModel implementation for a list of completion variants
-    
+
     words attribute contains all words
     canCompleteText attribute contains text, which may be inserted with tab
     """
     def __init__(self, wordSet):
         QAbstractItemModel.__init__(self)
-        
+
         self._wordSet = wordSet
 
     def setData(self, wordBeforeCursor, wholeWord):
@@ -59,12 +59,12 @@ class _CompletionModel(QAbstractItemModel):
         self.words = self._makeListOfCompletions(wordBeforeCursor, wholeWord)
         commonStart = self._commonWordStart(self.words)
         self.canCompleteText = commonStart[len(wordBeforeCursor):]
-        
+
         self.layoutChanged.emit()
 
     def hasWords(self):
         return len(self.words) > 0
-    
+
     def data(self, index, role):
         """QAbstractItemModel method implementation
         """
@@ -85,12 +85,12 @@ class _CompletionModel(QAbstractItemModel):
                 return typed + rest
         else:
             return None
-    
+
     def rowCount(self, index = QModelIndex()):
         """QAbstractItemModel method implementation
         """
         return len(self.words)
-    
+
     def typedText(self):
         """Get current typed text
         """
@@ -102,7 +102,7 @@ class _CompletionModel(QAbstractItemModel):
         """
         if not words:
             return ''
-        
+
         length = 0
         firstWord = words[0]
         otherWords = words[1:]
@@ -110,7 +110,7 @@ class _CompletionModel(QAbstractItemModel):
             if not all([word[index] == char for word in otherWords]):
                 break
             length = index + 1
-        
+
         return firstWord[:length]
 
     def _makeListOfCompletions(self, wordBeforeCursor, wholeWord):
@@ -119,9 +119,9 @@ class _CompletionModel(QAbstractItemModel):
         onlySuitable = [word for word in self._wordSet \
                                 if word.startswith(wordBeforeCursor) and \
                                    word != wholeWord]
-        
+
         return sorted(onlySuitable)
-    
+
     """Trivial QAbstractItemModel methods implementation
     """
     def flags(self, index):                                 return Qt.ItemIsEnabled | Qt.ItemIsSelectable
@@ -137,50 +137,50 @@ class _CompletionList(QListView):
     closeMe = pyqtSignal()
     itemSelected = pyqtSignal(int)
     tabPressed = pyqtSignal()
-    
+
     _MAX_VISIBLE_ROWS = 20  # no any technical reason, just for better UI
-    
+
     _ROW_MARGIN = 6
-    
+
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
         self.setItemDelegate(HTMLDelegate(self))
-        
+
         self._qpart = qpart
         self.setFont(qpart.font())
-        
+
         self.setCursor(QCursor(Qt.PointingHandCursor))
         self.setFocusPolicy(Qt.NoFocus)
-        
+
         self.setModel(model)
-        
+
         self._selectedIndex = -1
-        
+
         # if cursor moved, we shall close widget, if its position (and model) hasn't been updated
         self._closeIfNotUpdatedTimer = QTimer()
         self._closeIfNotUpdatedTimer.setInterval(200)
         self._closeIfNotUpdatedTimer.setSingleShot(True)
 
         self._closeIfNotUpdatedTimer.timeout.connect(self._afterCursorPositionChanged)
-        
+
         qpart.installEventFilter(self)
-        
+
         qpart.cursorPositionChanged.connect(self._onCursorPositionChanged)
-        
+
         self.clicked.connect(lambda index: self.itemSelected.emit(index.row()))
-        
+
         self.updateGeometry()
         self.show()
-        
+
         qpart.setFocus()
-    
+
     def __del__(self):
         """Without this empty destructor Qt prints strange trace
             QObject::startTimer: QTimer can only be used with threads started with QThread
         when exiting
         """
         pass
-    
+
     def del_(self):
         """Explicitly called destructor.
         Removes widget from the qpart
@@ -188,21 +188,21 @@ class _CompletionList(QListView):
         self._closeIfNotUpdatedTimer.stop()
         self._qpart.removeEventFilter(self)
         self._qpart.cursorPositionChanged.disconnect(self._onCursorPositionChanged)
-        
+
         # if object is deleted synchronously, Qt crashes after it on events handling
         QTimer.singleShot(0, lambda: self.setParent(None))
 
     def sizeHint(self):
         """QWidget.sizeHint implementation
         Automatically resizes the widget according to rows count
-        
+
         FIXME very bad algorithm. Remove all this margins, if you can
         """
         width = max([self.fontMetrics().width(word) \
                         for word in self.model().words])
         width = width * 1.4  # FIXME bad hack. invent better formula
         width += 30  # margin
-        
+
         # drawn with scrollbar without +2. I don't know why
         rowCount = min(self.model().rowCount(), self._MAX_VISIBLE_ROWS)
         height = (self.sizeHintForRow(0) * rowCount) + self._ROW_MARGIN
@@ -226,17 +226,17 @@ class _CompletionList(QListView):
         """
         WIDGET_BORDER_MARGIN = 5
         SCROLLBAR_WIDTH = 30  # just a guess
-        
+
         sizeHint = self.sizeHint()
         width = sizeHint.width()
         height = sizeHint.height()
 
         cursorRect = self._qpart.cursorRect()
         parentSize = self.parentWidget().size()
-        
+
         spaceBelow = parentSize.height() - cursorRect.bottom() - WIDGET_BORDER_MARGIN
         spaceAbove = cursorRect.top() - WIDGET_BORDER_MARGIN
-        
+
         if height <= spaceBelow or \
            spaceBelow > spaceAbove:
             yPos = cursorRect.bottom()
@@ -252,13 +252,13 @@ class _CompletionList(QListView):
             yPos = max(3, cursorRect.top() - height)
 
         xPos = cursorRect.right() - self._horizontalShift()
-        
+
         if xPos + width + WIDGET_BORDER_MARGIN > parentSize.width():
             xPos = max(3, parentSize.width() - WIDGET_BORDER_MARGIN - width)
-        
+
         self.setGeometry(xPos, yPos, width, height)
         self._closeIfNotUpdatedTimer.stop()
-    
+
     def _onCursorPositionChanged(self):
         """Cursor position changed. Schedule closing.
         Timer will be stopped, if widget position is being updated
@@ -309,21 +309,21 @@ class Completer(QObject):
     """Object listens Qutepart widget events, computes and shows autocompletion lists
     """
     _globalUpdateWordSetTimer = _GlobalUpdateWordSetTimer()
-    
+
     _WORD_SET_UPDATE_MAX_TIME_SEC = 0.4
-    
+
     def __init__(self, qpart):
         QObject.__init__(self, qpart)
-        
+
         self._qpart = qpart
         self._widget = None
         self._completionOpenedManually = False
-        
+
         self._wordSet = None
-        
+
         qpart.installEventFilter(self)
         qpart.textChanged.connect(self._onTextChanged)
-    
+
     def __del__(self):
         """Close completion widget, if exists
         """
@@ -337,9 +337,9 @@ class Completer(QObject):
         """Make a set of words, which shall be completed, from text
         """
         self._wordSet = set()
-        
+
         start = time.time()
-        
+
         for line in self._qpart.lines:
             for match in _wordRegExp.findall(line):
                 self._wordSet.add(match)
@@ -359,12 +359,12 @@ class Completer(QObject):
             text = event.text()
             textTyped = (event.modifiers() in (Qt.NoModifier, Qt.ShiftModifier)) and \
                         (text.isalpha() or text.isdigit() or text == '_')
-            
+
             if textTyped or \
             (event.key() == Qt.Key_Backspace and self._widget is not None):
                 self._invokeCompletionIfAvailable()
                 return False
-        
+
         return False
 
     def _invokeCompletionIfAvailable(self, requestedByUser=False):
@@ -393,7 +393,7 @@ class Completer(QObject):
                         if self._widget.model().hasWords():
                             self._widget.updateGeometry()
                             return True
-        
+
         self._closeCompletion()
         return False
 
@@ -405,7 +405,7 @@ class Completer(QObject):
             self._widget.del_()
             self._widget = None
             self._completionOpenedManually = False
-    
+
     def _wordBeforeCursor(self):
         """Get word, which is located before cursor
         """
@@ -416,7 +416,7 @@ class Completer(QObject):
             return match.group(0)
         else:
             return ''
-    
+
     def _wordAfterCursor(self):
         """Get word, which is located before cursor
         """
@@ -427,7 +427,7 @@ class Completer(QObject):
             return match.group(0)
         else:
             return ''
-    
+
     def _onCompletionListItemSelected(self, index):
         """Item selected. Insert completion to editor
         """

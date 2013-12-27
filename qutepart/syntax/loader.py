@@ -40,7 +40,7 @@ def _processEscapeSequences(replaceText):
         char = escapeMatchObject.group(0)[1]
         if char in _escapeSequences:
             return _escapeSequences[char]
-        
+
         return escapeMatchObject.group(0)  # no any replacements, return original value
 
     return _seqReplacer.sub(_replaceFunc, replaceText)
@@ -124,12 +124,12 @@ def _getContext(contextName, parser, formatConverterFunction, defaultValue):
 def _makeContextSwitcher(contextOperation, parser, formatConverterFunction):
     popsCount = 0
     contextToSwitch = None
-    
+
     rest = contextOperation
     while rest.startswith('#pop'):
         popsCount += 1
         rest = rest[len('#pop'):]
-    
+
     if rest == '#stay':
         if popsCount:
             _logger.warning("Invalid context operation '%s'", contextOperation)
@@ -140,7 +140,7 @@ def _makeContextSwitcher(contextOperation, parser, formatConverterFunction):
         return _parserModule.ContextSwitcher(popsCount, contextToSwitch, contextOperation)
     else:
         return None
-    
+
 
 ################################################################################
 ##                               Rules
@@ -148,7 +148,7 @@ def _makeContextSwitcher(contextOperation, parser, formatConverterFunction):
 
 def _loadIncludeRules(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     contextName = _safeGetRequiredAttribute(xmlElement, "context", None)
-    
+
     context = _getContext(contextName, parentContext.parser, formatConverterFunction, parentContext.parser.defaultContext)
 
     abstractRuleParams = _loadAbstractRuleParams(parentContext,
@@ -194,7 +194,7 @@ def _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, for
     else:
         format = None
         textType = None
-    
+
     # context
     contextText = xmlElement.attrib.get("context", '#stay')
     context = _makeContextSwitcher(contextText, parentContext.parser, formatConverterFunction)
@@ -202,25 +202,25 @@ def _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, for
     lookAhead = _parseBoolAttribute(xmlElement.attrib.get("lookAhead", "false"))
     firstNonSpace = _parseBoolAttribute(xmlElement.attrib.get("firstNonSpace", "false"))
     dynamic = _parseBoolAttribute(xmlElement.attrib.get("dynamic", "false"))
-    
+
     # TODO beginRegion
     # TODO endRegion
-    
+
     column = xmlElement.attrib.get("column", None)
     if column is not None:
         column = int(column)
     else:
         column = -1
-    
+
     return _parserModule.AbstractRuleParams(parentContext, format, textType, attribute, context, lookAhead, firstNonSpace, dynamic, column)
 
 def _loadDetectChar(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
-    
+
     char = _safeGetRequiredAttribute(xmlElement, "char", None)
     if char is not None:
         char = _processEscapeSequences(char)
-    
+
     index = 0
     if abstractRuleParams.dynamic:
         try:
@@ -242,7 +242,7 @@ def _loadDetect2Chars(parentContext, xmlElement, attributeToFormatMap, formatCon
         string = None
     else:
         string = _processEscapeSequences(char) + _processEscapeSequences(char1)
-    
+
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
     return _parserModule.Detect2Chars(abstractRuleParams, string)
 
@@ -253,7 +253,7 @@ def _loadAnyChar(parentContext, xmlElement, attributeToFormatMap, formatConverte
 
 def _loadStringDetect(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)
-    
+
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
     return _parserModule.StringDetect(abstractRuleParams,
                                       string)
@@ -261,9 +261,9 @@ def _loadStringDetect(parentContext, xmlElement, attributeToFormatMap, formatCon
 def _loadWordDetect(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     word = _safeGetRequiredAttribute(xmlElement, "String", "")
     insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
-    
+
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
-    
+
     return _parserModule.WordDetect(abstractRuleParams, word, insensitive)
 
 def _loadKeyword(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
@@ -272,11 +272,11 @@ def _loadKeyword(parentContext, xmlElement, attributeToFormatMap, formatConverte
         words = parentContext.parser.lists[string]
     except KeyError:
         _logger.warning("List '%s' not found", string)
-        
+
         words = list()
-    
+
     insensitive = _parseBoolAttribute(xmlElement.attrib.get("insensitive", "false"))
-    
+
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
     return _parserModule.keyword(abstractRuleParams, words, insensitive)
 
@@ -294,17 +294,17 @@ def _loadRegExpr(parentContext, xmlElement, attributeToFormatMap, formatConverte
         return re.sub(r"\\0\d\d\d", replFunc, text)
 
     insensitive = _parseBoolAttribute(xmlElement.attrib.get('insensitive', 'false'))
-    string = _safeGetRequiredAttribute(xmlElement, 'String', None)        
+    string = _safeGetRequiredAttribute(xmlElement, 'String', None)
 
     if string is not None:
         string = _processCraracterCodes(string)
-        
+
         wordStart = string.strip('(').startswith('\\b')
         lineStart = string.strip('(').startswith('^')
     else:
         wordStart = False
         lineStart = False
-    
+
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
     return _parserModule.RegExpr(abstractRuleParams,
                                  string, insensitive, wordStart, lineStart)
@@ -326,7 +326,7 @@ def _loadFloat(parentContext, xmlElement, attributeToFormatMap, formatConverterF
 def _loadRangeDetect(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction):
     char = _safeGetRequiredAttribute(xmlElement, "char", 'char is not set')
     char1 = _safeGetRequiredAttribute(xmlElement, "char1", 'char1 is not set')
-    
+
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
     return _parserModule.RangeDetect(abstractRuleParams, char, char1)
 
@@ -360,7 +360,7 @@ _ruleClassDict = \
 
 def _loadContexts(highlightingElement, parser, attributeToFormatMap, formatConverterFunction):
     contextsElement = highlightingElement.find('contexts')
-    
+
     xmlElementList = contextsElement.findall('context')
     contextList = []
     for xmlElement in xmlElementList:
@@ -371,18 +371,18 @@ def _loadContexts(highlightingElement, parser, attributeToFormatMap, formatConve
         contextList.append(context)
 
     defaultContext = contextList[0]
-    
+
     contextDict = {}
     for context in contextList:
         contextDict[context.name] = context
-    
+
     parser.setContexts(contextDict, defaultContext)
-    
+
     # parse contexts stage 2: load contexts
     for xmlElement, context in zip(xmlElementList, contextList):
         _loadContext(context, xmlElement, attributeToFormatMap, formatConverterFunction)
 
-    
+
 def _loadContext(context, xmlElement, attributeToFormatMap, formatConverterFunction):
     """Construct context from XML element
     Contexts are at first constructed, and only then loaded, because when loading context,
@@ -397,26 +397,26 @@ def _loadContext(context, xmlElement, attributeToFormatMap, formatConverterFunct
             format = TextFormat()
     else:
         format = None
-    
+
     textType = format.textType if format is not None else ' '
     if formatConverterFunction is not None and format is not None:
         format = formatConverterFunction(format)
-    
+
     lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
     lineEndContext = _makeContextSwitcher(lineEndContextText,  context.parser, formatConverterFunction)
     lineBeginContextText = xmlElement.attrib.get('lineEndContext', '#stay')
     lineBeginContext = _makeContextSwitcher(lineBeginContextText, context.parser, formatConverterFunction)
-    
+
     if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
         fallthroughContextText = _safeGetRequiredAttribute(xmlElement, 'fallthroughContext', '#stay')
         fallthroughContext = _makeContextSwitcher(fallthroughContextText, context.parser, formatConverterFunction)
     else:
         fallthroughContext = None
-    
+
     dynamic = _parseBoolAttribute(xmlElement.attrib.get('dynamic', 'false'))
-    
+
     context.setValues(attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic, textType)
-    
+
     # load rules
     rules = _loadChildRules(context, xmlElement, attributeToFormatMap, formatConverterFunction)
     context.setRules(rules)
@@ -445,12 +445,12 @@ def _makeFormat(defaultTheme, defaultStyleName, textType, item=None):
     format = copy.copy(defaultTheme.format[defaultStyleName])
 
     format.textType = textType
-    
+
     if item is not None:
         caseInsensitiveAttributes = {}
         for key, value in item.attrib.iteritems():
             caseInsensitiveAttributes[key.lower()] = value.lower()
-        
+
         if 'color' in caseInsensitiveAttributes:
             format.color = caseInsensitiveAttributes['color']
         if 'selColor' in caseInsensitiveAttributes:
@@ -465,27 +465,27 @@ def _makeFormat(defaultTheme, defaultStyleName, textType, item=None):
             format.strikeOut = _parseBoolAttribute(caseInsensitiveAttributes['strikeout'])
         if 'spellChecking' in caseInsensitiveAttributes:
             format.spellChecking = _parseBoolAttribute(caseInsensitiveAttributes['spellChecking'])
-        
+
     return format
 
 def _loadAttributeToFormatMap(highlightingElement):
     defaultTheme = ColorTheme(TextFormat)
     attributeToFormatMap = {}
-    
+
     itemDatasElement = highlightingElement.find('itemDatas')
     for item in itemDatasElement.findall('itemData'):
         attribute = item.get('name').lower()
         defaultStyleName = item.get('defStyleNum')
-        
+
         if not defaultStyleName in defaultTheme.format:
             _logger.warning("Unknown default style '%s'", defaultStyleName)
             defaultStyleName = 'dsNormal'
-            
+
         format = _makeFormat(defaultTheme,
                              defaultStyleName,
                              _textTypeForDefStyleName(attribute, defaultStyleName),
                              item)
-        
+
         attributeToFormatMap[attribute] = format
 
     # HACK not documented, but 'normal' attribute is used by some parsers without declaration
@@ -497,7 +497,7 @@ def _loadAttributeToFormatMap(highlightingElement):
                                                      _textTypeForDefStyleName('string', 'dsString'))
 
     return attributeToFormatMap
-    
+
 def _loadLists(root, highlightingElement):
     lists = {}  # list name: list
     for listElement in highlightingElement.findall('list'):
@@ -507,7 +507,7 @@ def _loadLists(root, highlightingElement):
                         if item.text is not None]
         name = _safeGetRequiredAttribute(listElement, 'name', 'Error: list name is not set!!!')
         lists[name] = items
-    
+
     return lists
 
 def _makeKeywordsLowerCase(listDict):
@@ -528,7 +528,7 @@ def _loadSyntaxDescription(root, syntax):
     syntax.author = root.attrib.get('author', None)
     syntax.license = root.attrib.get('license', None)
     syntax.hidden = _parseBoolAttribute(root.attrib.get('hidden', 'false'))
-    
+
     # not documented
     syntax.indenter = root.attrib.get('indenter', None)
 
@@ -542,37 +542,37 @@ def loadSyntax(syntax, filePath, formatConverterFunction = None):
             raise
 
     highlightingElement = root.find('highlighting')
-    
+
     _loadSyntaxDescription(root, syntax)
-    
+
     deliminatorSet = set(_DEFAULT_DELIMINATOR)
-    
+
     # parse lists
     lists = _loadLists(root, highlightingElement)
-    
+
     # parse itemData
     keywordsCaseSensitive = True
-    
+
     generalElement = root.find('general')
     if generalElement is not None:
         keywordsElement = generalElement.find('keywords')
-        
+
         if keywordsElement is not None:
             keywordsCaseSensitive = _parseBoolAttribute(keywordsElement.get('casesensitive', "true"))
-            
+
             if not keywordsCaseSensitive:
                 _makeKeywordsLowerCase(lists)
 
             if 'weakDeliminator' in keywordsElement.attrib:
                 weakSet = keywordsElement.attrib['weakDeliminator']
                 deliminatorSet.difference_update(weakSet)
-            
+
             if 'additionalDeliminator' in keywordsElement.attrib:
                 additionalSet = keywordsElement.attrib['additionalDeliminator']
                 deliminatorSet.update(additionalSet)
-        
+
         indentationElement = generalElement.find('indentation')
-        
+
         if indentationElement is not None and \
            'mode' in indentationElement.attrib:
             syntax.indenter = indentationElement.attrib['mode']
@@ -582,7 +582,7 @@ def loadSyntax(syntax, filePath, formatConverterFunction = None):
     parser = _parserModule.Parser(syntax, deliminatorSetAsString, lists, keywordsCaseSensitive, debugOutputEnabled)
     syntax._setParser(parser)
     attributeToFormatMap = _loadAttributeToFormatMap(highlightingElement)
-    
+
     # parse contexts
     _loadContexts(highlightingElement, syntax.parser, attributeToFormatMap, formatConverterFunction)
 

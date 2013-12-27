@@ -15,7 +15,7 @@ def main():
     xmlFilesPath = os.path.join(syntaxDataPath, 'xml')
     xmlFileNames = [fileName for fileName in os.listdir(xmlFilesPath) \
                         if fileName.endswith('.xml')]
-    
+
     syntaxNameToXmlFileName = {}
     mimeTypeToXmlFileName = {}
     extensionToXmlFileName = {}
@@ -28,25 +28,25 @@ def main():
         if not syntax.name in syntaxNameToXmlFileName or \
            syntaxNameToXmlFileName[syntax.name][0] < syntax.priority:
             syntaxNameToXmlFileName[syntax.name] = (syntax.priority, xmlFileName)
-        
+
         if syntax.mimetype:
             for mimetype in syntax.mimetype:
                 if not mimetype in mimeTypeToXmlFileName or \
                    mimeTypeToXmlFileName[mimetype][0] < syntax.priority:
                     mimeTypeToXmlFileName[mimetype] = (syntax.priority, xmlFileName)
-        
+
         if syntax.extensions:
             for extension in syntax.extensions:
                 if not extension in extensionToXmlFileName or \
                    extensionToXmlFileName[extension][0] < syntax.priority:
                     extensionToXmlFileName[extension] = (syntax.priority, xmlFileName)
-        
+
         if syntax.firstLineGlobs:
             for glob in syntax.firstLineGlobs:
                 if not glob in firstLineToXmlFileName or \
                    firstLineToXmlFileName[glob][0] < syntax.priority:
                     firstLineToXmlFileName[glob] = (syntax.priority, xmlFileName)
-            
+
     # remove priority, leave only xml file names
     for dictionary in (syntaxNameToXmlFileName,
                        mimeTypeToXmlFileName,
@@ -57,7 +57,7 @@ def main():
             newDictionary[key] = item[1]
         dictionary.clear()
         dictionary.update(newDictionary)
-    
+
     result = {}
     result['syntaxNameToXmlFileName'] = syntaxNameToXmlFileName
     result['mimeTypeToXmlFileName'] = mimeTypeToXmlFileName
@@ -66,7 +66,7 @@ def main():
 
     with open(os.path.join(syntaxDataPath, 'syntax_db.json'), 'w') as syntaxDbFile:
         json.dump(result, syntaxDbFile, sort_keys=True, indent=4)
-    
+
     print 'Done. Do not forget to commit the changes'
 
 if __name__ == '__main__':

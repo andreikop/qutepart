@@ -16,10 +16,10 @@ class Test(unittest.TestCase):
     """Base class for tests
     """
     app = QApplication(sys.argv)  # app crashes, if created more than once
-    
+
     def setUp(self):
         self.qpart = Qutepart()
-    
+
     def tearDown(self):
         del self.qpart
 
@@ -35,23 +35,23 @@ class Test(unittest.TestCase):
             start = item.cursor.selectionStart()
             end = item.cursor.selectionEnd()
             converted.append((start, end, matched))
-        
+
         self.assertEqual(converted, expected)
 
     def test_1(self):
         self.qpart.lines = \
         [ 'func(param,',
           '     "text ( param"))']
-        
+
         self.qpart.detectSyntax(language = 'Python')
         firstBlock = self.qpart.document().firstBlock()
         secondBlock = firstBlock.next()
-        
+
         bh = BracketHighlighter()
-        
+
         self._verify(bh.extraSelections(self.qpart, firstBlock, 1),
                      [])
-        
+
         self._verify(bh.extraSelections(self.qpart, firstBlock, 4),
                      [(4, 5, True), (31, 32, True)])
         self._verify(bh.extraSelections(self.qpart, firstBlock, 5),

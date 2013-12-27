@@ -6,27 +6,27 @@ class IndenterXml(IndenterBase):
     """Indenter for XML files
     """
     TRIGGER_CHARACTERS = "/>"
-    
+
     def computeSmartIndent(self, block, char):
         """Compute indent for the block
         """
         lineText = block.text()
         prevLineText = self._prevNonEmptyBlock(block).text()
-        
+
         alignOnly = char == ''
-        
+
         if alignOnly:
             # XML might be all in one line, in which case we want to break that up.
             tokens = re.split(r'>\s*<', lineText)
-            
+
             if len(tokens) > 1:
-                
+
                 prevIndent = self._lineIndent(prevLineText)
-                
+
                 for index, newLine in enumerate(tokens):
                     if index > 0:
                         newLine = '<' + newLine
-                    
+
                     if index < len(tokens) - 1:
                         newLine = newLine + '>'
                     if re.match(r'^\s*</', newLine):
@@ -35,10 +35,10 @@ class IndenterXml(IndenterBase):
                         char = '>'
                     else:
                         char = '\n'
-                    
+
                     indentation = self.processChar(newLine, prevLineText, char)
                     newLine = indentation + newLine
-                    
+
                     tokens[index] = newLine
                     prevLineText = newLine;
 
@@ -51,9 +51,9 @@ class IndenterXml(IndenterBase):
                     char = '>'
                 else:
                     char = '\n'
-    
+
         return self.processChar(lineText, prevLineText, char)
-    
+
     def processChar(self, lineText, prevLineText, char):
         prevIndent = self._lineIndent(prevLineText)
         if char == '/':
@@ -92,5 +92,5 @@ class IndenterXml(IndenterBase):
             elif re.search(r'<([^/!]|[^/!][^>]*[^/])>[^<>]*$', prevLineText):
                 # increase indent when prev line opened a tag (but not for comments)
                 return self._increaseIndent(prevIndent)
-    
+
         return prevIndent

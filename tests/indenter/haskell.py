@@ -32,7 +32,7 @@ class Test(IndentTest):
         self.setCursorPosition(4,0);
         self.enter();
         self.type("foo bar");
-        
+
         self.verifyExpected(expected)
 
     @unittest.skip("Haskell not supported yet")
@@ -50,7 +50,7 @@ class Test(IndentTest):
         self.setCursorPosition(1,16);
         self.enter();
         self.type("else 2");
-        
+
         self.verifyExpected(expected)
 
     @unittest.skip("Haskell not supported yet")
@@ -68,7 +68,7 @@ class Test(IndentTest):
         self.setCursorPosition(0,39);
         self.enter();
         self.type("(\"-\", numericBinop (-)),");
-        
+
         self.verifyExpected(expected)
 
     @unittest.skip("Haskell not supported yet")
@@ -88,7 +88,7 @@ class Test(IndentTest):
         self.setCursorPosition(1,24);
         self.enter();
         self.type("<|> parseAtom");
-        
+
         self.verifyExpected(expected)
 
     @unittest.skip("Haskell not supported yet")
@@ -106,7 +106,7 @@ class Test(IndentTest):
         self.setCursorPosition(0,13);
         self.enter();
         self.type("then");
-        
+
         self.verifyExpected(expected)
 
 

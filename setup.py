@@ -18,13 +18,13 @@ def parse_arg_list(param_start):
     values = [arg[len(param_start):] \
                 for arg in sys.argv \
                 if arg.startswith(param_start)]
-    
+
     # remove recognized arguments from the sys.argv
     otherArgs = [arg \
                     for arg in sys.argv \
                     if not arg.startswith(param_start)]
     sys.argv = otherArgs
-    
+
     return values
 
 
@@ -64,7 +64,7 @@ def _checkDependencies():
     if not compiler.has_function('rand', includes = ['stdlib.h']):
         print "It seems like C compiler is not installed or not operable."
         return False
-    
+
     if not compiler.has_function('rand',
                                  includes = ['stdlib.h', 'Python.h'],
                                  include_dirs=[distutils.sysconfig.get_python_inc()],
@@ -75,7 +75,7 @@ def _checkDependencies():
         print "\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include"
         print "--lib-dir= and --include-dir= may be used multiple times"
         return False
-    
+
     if not compiler.has_function('pcre_version',
                                  includes = ['pcre.h'],
                                  libraries = ['pcre'],
@@ -87,7 +87,7 @@ def _checkDependencies():
         print "\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include"
         print "--lib-dir= and --include-dir= may be used multiple times"
         return False
-    
+
     return True
 
 
