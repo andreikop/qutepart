@@ -109,6 +109,18 @@ class Test(unittest.TestCase):
         self.qpart.decreaseIndentAction.trigger()
         self.assertEqual(self.qpart.text, 'ab')
 
+    def test_7(self):
+        """Smartly indent python"""
+        self.qpart.detectSyntax(language='Python')
+
+        QTest.keyClicks(self.qpart, "def main():")
+        QTest.keyClick(self.qpart, Qt.Key_Enter)
+        self.assertEqual(self.qpart.cursorPosition, (1, 4))
+
+        QTest.keyClicks(self.qpart, "return 7")
+        QTest.keyClick(self.qpart, Qt.Key_Enter)
+        self.assertEqual(self.qpart.cursorPosition, (2, 0))
+
 
 if __name__ == '__main__':
     unittest.main()

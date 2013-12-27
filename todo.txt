@@ -1,6 +1,4 @@
 fixme:
-  test indenters as part of the system
-  redraw line on lines modify
 
 todo:
   switch hihglighting language        2
