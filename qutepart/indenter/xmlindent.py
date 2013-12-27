@@ -1,8 +1,8 @@
 import re
 
-from qutepart.indenter.base import IndenterBase
+from qutepart.indenter.base import IndentAlgBase
 
-class IndenterXml(IndenterBase):
+class IndentAlgXml(IndentAlgBase):
     """Indenter for XML files
     """
     TRIGGER_CHARACTERS = "/>"

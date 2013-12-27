@@ -1,7 +1,7 @@
-from qutepart.indenter.base import IndenterBase
+from qutepart.indenter.base import IndentAlgBase
 
 
-class IndenterPython(IndenterBase):
+class IndentAlgPython(IndentAlgBase):
     """Indenter for Python language.
     """
     def computeSmartIndent(self, block, char):

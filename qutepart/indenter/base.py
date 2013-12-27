@@ -3,7 +3,7 @@
 MAX_SEARCH_OFFSET_LINES = 128
 
 
-class IndenterNone:
+class IndentAlgNone:
     """No any indentation
     """
     def __init__(self, qpart):
@@ -13,7 +13,7 @@ class IndenterNone:
         return ''
 
 
-class IndenterBase(IndenterNone):
+class IndentAlgBase(IndentAlgNone):
     """Base class for indenters
     """
     TRIGGER_CHARACTERS = ""  # indenter is called, when user types Enter of one of trigger chars
@@ -243,7 +243,7 @@ class IndenterBase(IndenterNone):
             return -1
 
 
-class IndenterNormal(IndenterBase):
+class IndentAlgNormal(IndentAlgBase):
     """Class automatically computes indentation for lines
     This is basic indenter, which knows nothing about programming languages
     """

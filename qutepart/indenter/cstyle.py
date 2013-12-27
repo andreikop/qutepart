@@ -1,6 +1,6 @@
 import re
 
-from qutepart.indenter.base import IndenterBase
+from qutepart.indenter.base import IndentAlgBase
 
 # User configuration
 CFG_INDENT_CASE = True  # indent 'case' and 'default' in a switch?
@@ -28,7 +28,7 @@ INDENT_WIDTH = 4
 MODE = "C"
 
 
-class IndenterCStyle(IndenterBase):
+class IndentAlgCStyle(IndentAlgBase):
     TRIGGER_CHARACTERS = "{})/:;#"
 
     @staticmethod

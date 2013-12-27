@@ -1,8 +1,8 @@
 import re
 
-from qutepart.indenter.base import IndenterBase
+from qutepart.indenter.base import IndentAlgBase
 
-class IndenterLisp(IndenterBase):
+class IndentAlgLisp(IndentAlgBase):
     TRIGGER_CHARACTERS = ";"
 
     def computeSmartIndent(self, block, ch):

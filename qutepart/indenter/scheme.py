@@ -4,10 +4,10 @@
 TODO support (module
 """
 
-from qutepart.indenter.base import IndenterBase
+from qutepart.indenter.base import IndentAlgBase
 
 
-class IndenterScheme(IndenterBase):
+class IndentAlgScheme(IndentAlgBase):
     """Indenter for Scheme files
     """
     TRIGGER_CHARACTERS = ""

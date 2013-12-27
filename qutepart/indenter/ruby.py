@@ -1,4 +1,4 @@
-from qutepart.indenter.base import IndenterBase
+from qutepart.indenter.base import IndentAlgBase
 
 import re
 
@@ -42,7 +42,7 @@ class Statement:
 
     def indent(self):
         # Return the indent at the beginning of the statement
-        return IndenterRuby._blockIndent(self.startBlock)
+        return IndentAlgRuby._blockIndent(self.startBlock)
 
     def content(self):
         # Return the content of the statement from the document
@@ -59,7 +59,7 @@ class Statement:
         return cnt
 
 
-class IndenterRuby(IndenterBase):
+class IndentAlgRuby(IndentAlgBase):
     """Indenter for Ruby
     """
     TRIGGER_CHARACTERS = "cdefhilnrsuw}]"
