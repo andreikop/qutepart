@@ -6,9 +6,9 @@ class IndenterPython(IndenterBase):
     """
     def computeSmartIndent(self, block, char):
         prevIndent = self._prevNonEmptyBlockIndent(block)
-        
-        prevLineStripped = block.previous().text().strip()  # empty text from invalid block is ok
-        
+
+        prevLineStripped = self._prevNonEmptyBlock(block).text().strip()  # empty text from invalid block is ok
+
         """ TODO can detect, what is a code
         if not document.isCode(end of line) and \
            not prevLineText.endswith('"') and \
@@ -32,7 +32,7 @@ class IndenterPython(IndenterBase):
             return self._increaseIndent(prevIndent)
 
         # finally, a raise, pass, and continue should unindent
-        if prevLineStripped in ('continue', 'pass', 'raise', 'return') or \
+        if prevLineStripped in ('continue', 'break', 'pass', 'raise', 'return') or \
            prevLineStripped.startswith('raise ') or \
            prevLineStripped.startswith('return '):
             return self._decreaseIndent(prevIndent)
