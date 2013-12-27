@@ -49,7 +49,7 @@ class IndentTest(unittest.TestCase):
         self.qpart.textCursor().insertText('\n')
 
     def alignLine(self, index):
-        self.qpart._autoIndentBlock(self.qpart.document().findBlockByNumber(index), '')
+        self.qpart._indenter.autoIndentBlock(self.qpart.document().findBlockByNumber(index), '')
 
     def alignAll(self):
         QTest.keyClick(self.qpart, Qt.Key_A, Qt.ControlModifier)
