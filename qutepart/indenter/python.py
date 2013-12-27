@@ -7,14 +7,8 @@ class IndentAlgPython(IndentAlgBase):
     def computeSmartIndent(self, block, char):
         prevIndent = self._prevNonEmptyBlockIndent(block)
 
-        prevLineStripped = self._prevNonEmptyBlock(block).text().strip()  # empty text from invalid block is ok
-
-        """ TODO can detect, what is a code
-        if not document.isCode(end of line) and \
-           not prevLineText.endswith('"') and \
-           not prevLineText.endswith("'"):
-            return self._lineIndent(prevLineText)
-        """
+        prevNonEmptyBlock = self._prevNonEmptyBlock(block)
+        prevLineStripped = prevNonEmptyBlock.text().strip()  # empty text from invalid block is ok
 
         # for:
         if prevLineStripped.endswith(':'):
@@ -29,6 +23,7 @@ class IndentAlgPython(IndentAlgBase):
         """
         if prevLineStripped.endswith('{') or \
            prevLineStripped.endswith('['):
+            print 'case 2'
             return self._increaseIndent(prevIndent)
 
         # finally, a raise, pass, and continue should unindent
@@ -37,4 +32,15 @@ class IndentAlgPython(IndentAlgBase):
            prevLineStripped.startswith('return '):
             return self._decreaseIndent(prevIndent)
 
-        return self._prevNonEmptyBlockIndent(block)
+        if prevLineStripped and \
+           prevLineStripped[-1] in ')]}':
+            try:
+                foundBlock, foundColumn = self.findBracketBackward(prevNonEmptyBlock,
+                                                                   len(prevNonEmptyBlock.text().rstrip()) - 1,
+                                                                   prevLineStripped[-1])
+            except ValueError:
+                pass
+            else:
+                prevIndent = self._blockIndent(foundBlock)
+
+        return prevIndent

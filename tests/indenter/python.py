@@ -199,6 +199,24 @@ class Test(IndentTest):
         self.type("x");
         self.verifyExpected(expected)
 
+    def test_autoIndentAfterEmpty(self):
+        origin = [
+            "     func (something,",
+            "              something)"
+        ]
+        expected = [
+            "     func (something,",
+            "              something)",
+            "     x",
+            ]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1, 24);
+        self.enter();
+        self.type("x");
+        self.verifyExpected(expected)
+
 
 if __name__ == '__main__':
     unittest.main()
