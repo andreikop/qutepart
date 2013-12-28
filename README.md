@@ -39,7 +39,7 @@ It will probably be gcc
 ## Building and installation on Windows
 
 * Download and install the [CMake binary](http://www.cmake.org/). Tested with 2.8.12.
-* Download and install Microsoft Visual Studio Express Edition (or the full version).
+* Download and install Microsoft Visual Studio Express Edition 2008 (or the full version). This version MUST be used for Python < 3.3 on Windows. Use MSVC 2010 for Python >= 3.3.
 * Create a root directory and place the following as subdirectories in it:
     - Download the [pcre source](http://www.pcre.org/). Tested with v. 8.33.
     - Download the latest Qutepart [release](https://github.com/hlamer/qutepart/releases).
@@ -48,9 +48,8 @@ It will probably be gcc
     cd <pcre-8.33 source>
     mkdir build
     cd build
-    cmake .. -DBUILD_SHARED_LIBS:BOOL=OFF -DPCRE_SUPPORT_UTF:BOOL=ON -DPCRE_SUPPORT_JIT:BOOL=ON
-    cmake --build
-Then open the resulting `pcre-8.33-bin/PCRE.sln` in Visual Studio 2008, choose the release build configuration, then build `pcre`.
+    cmake .. -DBUILD_SHARED_LIBS:BOOL=OFF -DPCRE_SUPPORT_UTF:BOOL=ON -DPCRE_SUPPORT_JIT:BOOL=ON -G "Visual Studio 9 2008"
+    cmake --build . --config Release
 
 #### Build/install Python modules
     cd qutepart
