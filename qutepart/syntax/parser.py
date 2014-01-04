@@ -849,10 +849,12 @@ class Context:
                         textTypeMap += [self.textType for i in range(countOfNotMatchedSymbols)]
                         countOfNotMatchedSymbols = 0
 
+                    format = ruleTryMatchResult.rule.format if ruleTryMatchResult.rule.attribute else self.format
+                    textType = ruleTryMatchResult.rule.textType or self.textType
+
                     highlightedSegments.append((ruleTryMatchResult.length,
-                                               ruleTryMatchResult.rule.format or self.format))
-                    textTypeMap += [(ruleTryMatchResult.rule.textType or self.textType)
-                                        for i in range(ruleTryMatchResult.length)]
+                                                format))
+                    textTypeMap += textType * ruleTryMatchResult.length
 
                     currentColumnIndex += ruleTryMatchResult.length
                     if ruleTryMatchResult.rule.context is not None:

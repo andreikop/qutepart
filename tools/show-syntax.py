@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import sys
-sys.path.append('.')
-sys.path.append('..')
+sys.path.insert(0, '.')
+sys.path.insert(0, '..')
 
 import sip
 sip.setapi('QString', 2)
@@ -15,4 +15,3 @@ if __name__ == '__main__':
     else:
         syntax = SyntaxManager().getSyntax(xmlFileName = sys.argv[1])
         print unicode(syntax)
-

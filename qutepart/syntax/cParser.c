@@ -2816,7 +2816,7 @@ Context_parseBlock(Context* self,
                 countOfNotMatchedSymbols = 0;
             }
 
-            if (Py_None != result.rule->abstractRuleParams->format)
+            if (Py_None != result.rule->abstractRuleParams->attribute)
                 format = result.rule->abstractRuleParams->format;
             else
                 format = self->format;
