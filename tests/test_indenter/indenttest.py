@@ -4,7 +4,6 @@ import sip
 sip.setapi('QString', 2)
 
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
 
 import sys
@@ -16,10 +15,11 @@ sys.path.insert(0, os.path.join(topLevelPath, 'build/lib.linux-x86_64-2.7/'))
 
 from qutepart import Qutepart
 import qutepart
+import base
 
 
 class IndentTest(unittest.TestCase):
-    app = QApplication(sys.argv)
+    app = base.papp
 
     def setOrigin(self, text):
         self.qpart.text = '\n'.join(text)

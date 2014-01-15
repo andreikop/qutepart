@@ -7,7 +7,6 @@ import unittest
 import base
 
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication
 
 from qutepart import Qutepart
 from qutepart.brackethlighter import BracketHighlighter
@@ -15,7 +14,7 @@ from qutepart.brackethlighter import BracketHighlighter
 class Test(unittest.TestCase):
     """Base class for tests
     """
-    app = QApplication(sys.argv)  # app crashes, if created more than once
+    app = base.papp  # app crashes, if created more than once
 
     def setUp(self):
         self.qpart = Qutepart()
