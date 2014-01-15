@@ -105,6 +105,8 @@ class SyntaxHighlighter(QObject):
         charsAdded = document.lastBlock().position() + document.lastBlock().length()
         self._onContentsChange(0, 0, charsAdded, zeroTimeout=self._wasChangedJustBefore())
 
+        self.destroyed.connect(self._onDestroyed)
+
     def del_(self):
         self._document.contentsChange.disconnect(self._onContentsChange)
         self._globalTimer.unScheduleCallback(self._onContinueHighlighting)
@@ -114,6 +116,12 @@ class SyntaxHighlighter(QObject):
             block.setUserData(None)
             self._document.markContentsDirty(block.position(), block.length())
             block = block.next()
+
+    def _onDestroyed(self):
+        """After C++ object was deleted, timer callback might crash the application
+        Unschedule it
+        """
+        self._globalTimer.unScheduleCallback(self._onContinueHighlighting)
 
     def syntax(self):
         """Return own syntax
