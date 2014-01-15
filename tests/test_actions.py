@@ -8,14 +8,13 @@ import base
 
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt, QTimer
-from PyQt4.QtGui import QApplication
 
 from qutepart import Qutepart
 
 class _BaseTest(unittest.TestCase):
     """Base class for tests
     """
-    app = QApplication(sys.argv)  # app crashes, if created more than once
+    app = base.papp  # app crashes, if created more than once
 
     def setUp(self):
         self.qpart = Qutepart()

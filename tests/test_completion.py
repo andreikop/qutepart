@@ -7,7 +7,7 @@ import unittest
 import base
 
 from PyQt4.QtCore import Qt, QPoint
-from PyQt4.QtGui import QApplication, QMainWindow
+from PyQt4.QtGui import QMainWindow
 from PyQt4.QtTest import QTest
 
 from qutepart import Qutepart
@@ -18,7 +18,7 @@ qutepart.completer._GlobalUpdateWordSetTimer._IDLE_TIMEOUT_MS = 0
 class Test(unittest.TestCase):
     """Base class for tests
     """
-    app = QApplication(sys.argv)  # app crashes, if created more than once
+    app = base.papp  # app crashes, if created more than once
 
     def setUp(self):
         self._window = QMainWindow()
@@ -32,8 +32,8 @@ class Test(unittest.TestCase):
     def test_down_selects_first(self):
         self.qpart.text = 'aaaa\nbbbb\ncccX\ndddd\ncccY'
 
-        while QApplication.hasPendingEvents():
-            QApplication.processEvents()
+        while self.app.hasPendingEvents():
+            self.app.processEvents()
 
         QTest.keyClicks(self.qpart, "ccc")
         QTest.keyClick(self.qpart, Qt.Key_Down)

@@ -9,7 +9,6 @@ import unittest
 import base
 
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
 
 from qutepart import Qutepart
@@ -18,7 +17,7 @@ from qutepart import Qutepart
 class Test(unittest.TestCase):
     """Base class for tests
     """
-    app = QApplication(sys.argv)  # app crashes, if created more than once
+    app = base.papp  # app crashes, if created more than once
 
     def setUp(self):
         self.qpart = Qutepart()

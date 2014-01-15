@@ -8,11 +8,15 @@ import sip
 sip.setapi('QString', 2)
 
 from PyQt4.QtCore import Qt, QTimer
+from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
 
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.insert(0, os.path.abspath('.'))
+
+# Create a single, persistent QApplication for use in all tests.
+papp = QApplication(sys.argv)
 
 def _processPendingEvents(app):
     """Process pending application events.
