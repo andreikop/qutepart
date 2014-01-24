@@ -34,6 +34,15 @@ class _GlobalUpdateWordSetTimer:
             self._scheduledMethods.append(method)
         self._timer.start(self._IDLE_TIMEOUT_MS)
 
+    def cancel(self, method):
+        """Cancel scheduled method
+        Safe method, may be called with not-scheduled method"""
+        if method in self._scheduledMethods:
+            self._scheduledMethods.remove(method)
+
+        if not self._scheduledMethods:
+            self._timer.stop()
+
     def _onTimer(self):
         method = self._scheduledMethods.pop()
         method()
@@ -157,7 +166,7 @@ class _CompletionList(QListView):
         self._selectedIndex = -1
 
         # if cursor moved, we shall close widget, if its position (and model) hasn't been updated
-        self._closeIfNotUpdatedTimer = QTimer()
+        self._closeIfNotUpdatedTimer = QTimer(self)
         self._closeIfNotUpdatedTimer.setInterval(200)
         self._closeIfNotUpdatedTimer.setSingleShot(True)
 
@@ -324,10 +333,14 @@ class Completer(QObject):
         qpart.installEventFilter(self)
         qpart.textChanged.connect(self._onTextChanged)
 
-    def __del__(self):
+        self.destroyed.connect(self.del_)
+
+    def del_(self):
         """Close completion widget, if exists
+        Cancel timer
         """
         self._closeCompletion()
+        self._globalUpdateWordSetTimer.cancel(self._updateWordSet)
 
     def _onTextChanged(self):
         """Text in the qpart changed. Update word set"""
