@@ -8,6 +8,12 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QTextCursor, QTextEdit
 
 
+class _TimeoutException(UserWarning):
+    """Operation timeout happened
+    """
+    pass
+
+
 class BracketHighlighter:
     """Bracket highliter.
     Calculates list of QTextEdit.ExtraSelection
@@ -25,7 +31,7 @@ class BracketHighlighter:
 
     def _iterateDocumentCharsForward(self, block, startColumnIndex):
         """Traverse document forward. Yield (block, columnIndex, char)
-        Raise UserWarning if time is over
+        Raise _TimeoutException if time is over
         """
         # Chars in the start line
         endTime = time.time() + self._MAX_SEARCH_TIME_SEC
@@ -39,13 +45,13 @@ class BracketHighlighter:
                 yield block, columnIndex, char
 
             if time.time() > endTime:
-                raise UserWarning('Time is over')
+                raise _TimeoutException('Time is over')
 
             block = block.next()
 
     def _iterateDocumentCharsBackward(self, block, startColumnIndex):
         """Traverse document forward. Yield (block, columnIndex, char)
-        Raise UserWarning if time is over
+        Raise _TimeoutException if time is over
         """
         # Chars in the start line
         endTime = time.time() + self._MAX_SEARCH_TIME_SEC
@@ -59,14 +65,14 @@ class BracketHighlighter:
                 yield block, columnIndex, char
 
             if time.time() > endTime:
-                raise UserWarning('Time is over')
+                raise _TimeoutException('Time is over')
 
             block = block.previous()
 
     def _findMatchingBracket(self, bracket, qpart, block, columnIndex):
         """Find matching bracket for the bracket.
         Return (block, columnIndex) or (None, None)
-        Raise UserWarning, if time is over
+        Raise _TimeoutException, if time is over
         """
         if bracket in self._START_BRACKETS:
             charsGenerator = self._iterateDocumentCharsForward(block, columnIndex + 1)
@@ -109,7 +115,7 @@ class BracketHighlighter:
         """
         try:
             matchedBlock, matchedColumnIndex = self._findMatchingBracket(bracket, qpart, block, columnIndex)
-        except UserWarning:  # not found, time is over
+        except _TimeoutException:  # not found, time is over
             return[] # highlight nothing
 
         if matchedBlock is not None:
