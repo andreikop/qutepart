@@ -153,6 +153,9 @@ class _CompletionList(QListView):
 
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
+
+        self.setAttribute(Qt.WA_DeleteOnClose)
+
         self.setItemDelegate(HTMLDelegate(self))
 
         self._qpart = qpart
@@ -190,7 +193,7 @@ class _CompletionList(QListView):
         """
         pass
 
-    def del_(self):
+    def close(self):
         """Explicitly called destructor.
         Removes widget from the qpart
         """
@@ -198,8 +201,7 @@ class _CompletionList(QListView):
         self._qpart.removeEventFilter(self)
         self._qpart.cursorPositionChanged.disconnect(self._onCursorPositionChanged)
 
-        # if object is deleted synchronously, Qt crashes after it on events handling
-        QTimer.singleShot(0, lambda: self.setParent(None))
+        QListView.close(self)
 
     def sizeHint(self):
         """QWidget.sizeHint implementation
@@ -336,10 +338,8 @@ class Completer(QObject):
         self.destroyed.connect(self.del_)
 
     def del_(self):
-        """Close completion widget, if exists
-        Cancel timer
+        """Object deleted. Cancel timer
         """
-        self._closeCompletion()
         self._globalUpdateWordSetTimer.cancel(self._updateWordSet)
 
     def _onTextChanged(self):
@@ -415,7 +415,7 @@ class Completer(QObject):
         Delete widget
         """
         if self._widget is not None:
-            self._widget.del_()
+            self._widget.close()
             self._widget = None
             self._completionOpenedManually = False
 
