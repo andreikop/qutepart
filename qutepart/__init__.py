@@ -601,6 +601,12 @@ class Qutepart(QPlainTextEdit):
         else:
             return self._highlighter.syntax().name
 
+    def isHighlightingInProgress(self):
+        """Check if text highlighting is still in progress
+        """
+        return self._highlighter is not None and \
+               self._highlighter.isInProgress()
+
     def isCode(self, blockOrBlockNumber, column):
         """Check if text at given position is a code.
 

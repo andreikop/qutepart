@@ -128,6 +128,11 @@ class SyntaxHighlighter(QObject):
         """
         return self._syntax
 
+    def isInProgress(self):
+        """Highlighting is in progress
+        """
+        return self._globalTimer.isCallbackScheduled(self._onContinueHighlighting)
+
     def isCode(self, block, column):
         """Check if character at column is a a code
         """

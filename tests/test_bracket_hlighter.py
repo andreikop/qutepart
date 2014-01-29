@@ -7,9 +7,11 @@ import unittest
 import base
 
 from PyQt4.QtCore import Qt
+from PyQt4.QtTest import QTest
 
 from qutepart import Qutepart
 from qutepart.brackethlighter import BracketHighlighter
+
 
 class Test(unittest.TestCase):
     """Base class for tests
@@ -43,6 +45,10 @@ class Test(unittest.TestCase):
           '     "text ( param"))']
 
         self.qpart.detectSyntax(language = 'Python')
+
+        while self.qpart.isHighlightingInProgress():
+            QTest.qWait(20)
+
         firstBlock = self.qpart.document().firstBlock()
         secondBlock = firstBlock.next()
 
