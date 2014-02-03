@@ -4,3 +4,5 @@ build/
 MANIFEST
 a.out
 dist
+*.obj
+a.out.exe*
