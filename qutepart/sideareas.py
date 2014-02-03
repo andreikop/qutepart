@@ -101,14 +101,16 @@ class MarkArea(QWidget):
         bottom = top + blockBoundingGeometry.height()
 
         for block in qutepart.iterateBlocksFrom(block):
+            height = self._qpart.blockBoundingGeometry(block).height()
             if top > event.rect().bottom():
                 break
             if block.isVisible() and \
                bottom >= event.rect().top() and \
                Bookmarks.isBlockMarked(block):
-                painter.drawPixmap(0, top, self._bookmarkPixmap)
+                yPos = top + ((height - self._bookmarkPixmap.height()) / 2)  # centered
+                painter.drawPixmap(0, yPos, self._bookmarkPixmap)
 
-            top += self._qpart.blockBoundingGeometry(block).height()
+            top += height
 
     def width(self):
         """Desired width. Includes text and margins
