@@ -149,8 +149,6 @@ class _CompletionList(QListView):
 
     _MAX_VISIBLE_ROWS = 20  # no any technical reason, just for better UI
 
-    _ROW_MARGIN = 6
-
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
 
@@ -216,14 +214,14 @@ class _CompletionList(QListView):
 
         # drawn with scrollbar without +2. I don't know why
         rowCount = min(self.model().rowCount(), self._MAX_VISIBLE_ROWS)
-        height = (self.sizeHintForRow(0) * rowCount) + self._ROW_MARGIN
+        height = self.sizeHintForRow(0) * (rowCount + 0.5)  # + 0.5 row margin
 
         return QSize(width, height)
 
     def minimumHeight(self):
         """QWidget.minimumSizeHint implementation
         """
-        return self.sizeHintForRow(0) + self._ROW_MARGIN
+        return self.sizeHintForRow(0) * 1.5  # + 0.5 row margin
 
     def _horizontalShift(self):
         """List should be plased such way, that typed text in the list is under
