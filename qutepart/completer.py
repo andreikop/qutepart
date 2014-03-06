@@ -77,7 +77,8 @@ class _CompletionModel(QAbstractItemModel):
     def data(self, index, role):
         """QAbstractItemModel method implementation
         """
-        if role == Qt.DisplayRole:
+        if role == Qt.DisplayRole and \
+           index.row() < len(self.words):
             text = self.words[index.row()]
             typed = text[:len(self._typedText)]
             canComplete = text[len(self._typedText):len(self._typedText) + len(self.canCompleteText)]
