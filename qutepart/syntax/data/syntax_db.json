@@ -226,6 +226,7 @@
         "*.menu": "ample.xml", 
         "*.mf": "metafont.xml", 
         "*.mi": "modula-2.xml", 
+        "*.mk": "makefile.xml", 
         "*.ml": "ocaml.xml", 
         "*.mli": "ocaml.xml", 
         "*.mm": "objectivecpp.xml", 
