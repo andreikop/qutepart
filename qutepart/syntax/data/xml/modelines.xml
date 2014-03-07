@@ -10,7 +10,7 @@
   Homepage: http://kde-files.org/content/show.php?content=90660
   -->
 <language name="Modelines"
-          version="0.3"
+          version="1.0"
           kateversion="2.4"
           section="Other"
           extensions=""
@@ -33,7 +33,8 @@
   </list>
 
   <list name="Booleans">
-    <item> auto-brackets </item>
+    <!-- NOTE Deprecated since KDE 4.10 -->
+    <!-- <item> auto-brackets </item> -->
     <item> auto-insert-doxygen </item>
     <item> backspace-indents </item>
     <item> block-selection </item>
@@ -41,12 +42,16 @@
     <item> byte-order-marker </item>
     <item> folding-markers </item>
     <item> icon-border </item>
+    <!-- Since KDE 4.11 -->
+    <item> indent-pasted-text </item>
     <item> keep-extra-spaces </item>
     <item> line-numbers </item>
-    <item> newline-at-eof </item>                           <!-- Since KDE 4.9 -->
+    <!-- Since KDE 4.9 -->
+    <item> newline-at-eof </item>
     <item> overwrite-mode </item>
     <item> persistent-selection </item>
-    <item> remove-trailing-space </item>
+    <!-- NOTE Deprecated since KDE 4.10 -->
+    <!-- <item> remove-trailing-space </item> -->
     <item> replace-tabs-save </item>
     <item> replace-tabs </item>
     <item> replace-trailing-space-save </item>
@@ -96,6 +101,25 @@
     <item> word-wrap-marker-color </item>
   </list>
 
+  <list name="RemoveSpaces">
+    <item> remove-trailing-spaces </item>
+  </list>
+
+  <list name="RemoveSpacesOptions">
+    <item> 0 </item>
+    <item> - </item>
+    <item> none </item>
+
+    <item> modified </item>
+    <item> mod </item>
+    <item> + </item>
+    <item> 1 </item>
+
+    <item> all </item>
+    <item> * </item>
+    <item> 2 </item>
+  </list>
+
   <contexts>
     <context name="Normal" attribute="Comment" lineEndContext="#pop">
       <DetectSpaces />
@@ -108,13 +132,14 @@
       <keyword String="Booleans" context="Booleans" attribute="Variable" />
       <keyword String="Integrals" context="Integrals" attribute="Variable" />
       <keyword String="Strings" context="Strings" attribute="Variable" />
+      <keyword String="RemoveSpaces" context="RemoveSpaces" attribute="Variable" />
       <LineContinue context="#pop" />
     </context>
 
     <context name="Booleans" attribute="Comment" lineEndContext="#pop">
       <DetectSpaces />
-      <keyword String="True" attribute="Boolean True" context="#stay" />
-      <keyword String="False" attribute="Boolean False" context="#stay" />
+      <keyword String="True" attribute="Option ON" context="#stay" />
+      <keyword String="False" attribute="Option OFF" context="#stay" />
       <DetectChar char="&end;" context="#pop" attribute="Variable" />
       <LineContinue context="#pop" />
     </context>
@@ -133,16 +158,24 @@
       <LineContinue context="#pop" />
     </context>
 
+    <context name="RemoveSpaces" attribute="Comment" lineEndContext="#pop">
+      <DetectSpaces />
+      <keyword String="RemoveSpacesOptions" attribute="Value" context="#pop" />
+      <DetectChar char="&end;" context="#pop" attribute="Variable" />
+      <LineContinue context="#pop" />
+    </context>
+
   </contexts>
 
   <itemDatas>
     <itemData name="Comment" defStyleNum="dsComment" spellChecking="true" />
     <itemData name="Keyword" defStyleNum="dsKeyword" spellChecking="false" />
     <itemData name="Variable" defStyleNum="dsFunction" spellChecking="false" />
-    <itemData name="Boolean True" defStyleNum="dsOthers" spellChecking="false" />
-    <itemData name="Boolean False" defStyleNum="dsOthers" spellChecking="false" />
     <itemData name="Number" defStyleNum="dsDecVal" spellChecking="false" />
     <itemData name="String" defStyleNum="dsString" spellChecking="false" />
+    <itemData name="Value" defStyleNum="dsOthers" spellChecking="false" />
+    <itemData name="Option ON" defStyleNum="dsOthers" spellChecking="false" />
+    <itemData name="Option OFF" defStyleNum="dsOthers" spellChecking="false" />
   </itemDatas>
 
 </highlighting>

@@ -104,7 +104,7 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 1, 'importx'), None)
 
     def test_keyword(self):
-        rule = self._getRule("javascript.xml", "Normal", 6)
+        rule = self._getRule("javascript.xml", "Normal", 8)
 
         self.assertEqual(tryMatch(rule, 0, "var"), 3)
         self.assertEqual(tryMatch(rule, 0, "vor"), None)
@@ -127,7 +127,7 @@ class Test(unittest.TestCase):
     def test_keyword_insensitive(self):
         """Insensitive attribute for particular keyword
         """
-        rule = self._getRule("cmake.xml", "Normal Text", 1)
+        rule = self._getRule("cmake.xml", "Normal Text", 11)
         self.assertEqual(tryMatch(rule, 0, "ADD_definitions()"), len("ADD_definitions"))
 
     def test_keyword_insensitive_syntax(self):
@@ -174,7 +174,8 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, '756 items'), 3)
         self.assertEqual(tryMatch(rule, 0, 'x756 items'), None)
 
-        rule = self._getRule('c.xml', 'Normal', 13)
+        rule = self._getRule('c.xml', 'Normal', 14)
+        self.assertEqual(tryMatch(rule, 0, '756LUL'), 6)
         self.assertEqual(tryMatch(rule, 0, '756LUL'), 6)
         self.assertEqual(tryMatch(rule, 0, '756LOL'), 4)
 
@@ -257,7 +258,7 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, '/* xxx */'), 2)
 
     def test_IncludeRulesExternal(self):
-        rule = self._getRule('javascript.xml', 'Comment', 1)  # external context ##Alerts
+        rule = self._getRule('javascript.xml', 'Comment', 0)  # external context ##Alerts
         self.assertEqual(tryMatch(rule, 1, ' NOTE hello, world'), 4)
         self.assertEqual(tryMatch(rule, 1, ' NOET hello, world'), None)
 
@@ -275,15 +276,15 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 0, "7asdf7"), None)
 
     def test_lookahead(self):
-        rule = self._getRule("javascript.xml", "ObjectMember", 3)
-        text = 'g.r( /dooh/ )'
-        self.assertEqual(tryMatch(rule, 3, text), 0)
+        rule = self._getRule("javascript.xml", "NoRegExp", 0)
+        text = '//'
+        self.assertEqual(tryMatch(rule, 0, text), 0)
 
     def test_firstNonSpace(self):
-        rule = self._getRule("makefile.xml", "Normal", 2)
+        rule = self._getRule("d.xml", "DdocBlock", 3)
 
-        self.assertEqual(tryMatch(rule, 1, "xall: pre"), None)
-        self.assertEqual(tryMatch(rule, 1, " all: pre"), 4)
+        self.assertEqual(tryMatch(rule, 1, "x*"), None)
+        self.assertEqual(tryMatch(rule, 1, " *"), 1)
 
     def test_dynamic_reg_exp(self):
         """RegExpr rule, dynamic=true
@@ -296,7 +297,7 @@ class Test(unittest.TestCase):
     def test_dynamic_string_detect(self):
         """StringDetect rule, dynamic=true
         """
-        rule = self._getRule("php.xml", "phpsource", 29)  # heredoc
+        rule = self._getRule("php.xml", "phpsource", 34)  # heredoc
         text = "<<<myheredoc"
 
         count = tryMatchWithData(rule, (u'myheredoc',), 0, text)

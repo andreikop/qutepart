@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Haskell" version="2.0.4" kateversion="2.3" section="Sources" extensions="*.hs" mimetype="text/x-haskell" author="Nicolas Wu (zenzike@gmail.com)" license="LGPL" indenter="haskell">
+<language name="Haskell" version="2.2" kateversion="2.3" section="Sources" extensions="*.hs;*.chs" mimetype="text/x-haskell" author="Nicolas Wu (zenzike@gmail.com)" license="LGPL" indenter="haskell">
   <highlighting>
   <list name="keywords">
-    <item> as </item>
     <item> case </item>
     <item> class </item>
     <item> data </item>
     <item> deriving </item>
     <item> do </item>
     <item> else </item>
-    <item> hiding </item>
     <item> if </item>
-    <item> import </item>
     <item> in </item>
     <item> infixl </item>
     <item> infixr </item>
@@ -22,7 +19,6 @@
     <item> newtype </item>
     <item> of </item>
     <item> primitive </item>
-    <item> qualified </item>
     <item> then </item>
     <item> type </item>
     <item> where </item>
@@ -303,11 +299,34 @@
     <item> Foldable </item>
     <item> Traversable </item>
   </list>
+  <list name="c2hs_keywords">
+    <item> qualified </item>
+    <item> lib </item>
+    <item> prefix </item>
+    <item> as </item>
+    <item> with </item>
+    <item> call </item>
+    <item> pure </item>
+    <item> unsafe </item>
+    <item> get </item>
+    <item> set </item>
+    <item> foreign </item>
+    <item> stable </item>
+    <item> nocode </item>
+  </list>
+  <list name="import_keywords">
+    <item> as </item>
+    <item> qualified </item>
+    <item> hiding </item>
+  </list>
   <contexts>
     <context attribute="Normal" lineEndContext="#stay" name="code">
       <RegExpr attribute="Pragma"  context="#stay" String="\{-#.*#-\}"/>
       <RegExpr attribute="Comment" context="comments" String="\{-[^#]?" />
       <RegExpr attribute="Comment" context="comment"  String="--[^\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:].*$" />
+      <RegExpr attribute="Keyword" context="import"   String="import\s+" />
+      <RegExpr attribute="C2HS Directive"  context="c2hs directive" String="\{#"/>
+      <RegExpr attribute="C2HS Directive"  context="c2hs include" String="#"/>
 
       <keyword attribute="Keyword"          context="#stay" String="keywords" />
       <keyword attribute="Function Prelude" context="#stay" String="prelude function" />
@@ -348,6 +367,51 @@
     <context attribute="Function Infix" lineEndContext="#stay" name="infix">
       <DetectChar attribute="Function Infix" context="#pop" char="`"/>
     </context>
+    <context attribute="Import Statement" lineEndContext="#pop" name="import">
+      <keyword attribute="Keyword"          context="#stay" String="import_keywords" />
+      <RegExpr attribute="Function"         context="#stay" String="([A-Z][a-zA-Z0-9_']*\.)*[a-z][a-zA-Z0-9_']*" />
+      <RegExpr attribute="Type"             context="#stay" String="([A-Z][a-zA-Z0-9_']*\.)*[A-Z][a-zA-Z0-9_']*" />
+
+      <RegExpr attribute="Pragma"  context="#stay" String="\{-#.*#-\}"/>
+      <RegExpr attribute="Comment" context="comments" String="\{-[^#]?" />
+      <RegExpr attribute="Comment" context="comment"  String="--[^\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:].*$" />
+    </context>
+
+    <context attribute="C2HS Directive" lineEndContext="#stay" name="c2hs directive">
+      <Detect2Chars attribute="C2HS Directive" context="#pop" char="#" char1="}" />
+      <keyword attribute="Keyword" context="#stay"          String="c2hs_keywords" />
+      <RegExpr attribute="Keyword" context="#stay"          String="context" />
+      <RegExpr attribute="Keyword" context="#stay"          String="call" />
+      <RegExpr attribute="Keyword" context="#stay"          String="sizeof" />
+      <RegExpr attribute="Keyword" context="#stay"          String="alignof" />
+      <RegExpr attribute="Keyword" context="c2hs fun"       String="fun" />
+      <RegExpr attribute="Keyword" context="c2hs pointer"   String="pointer" />
+      <RegExpr attribute="Keyword" context="c2hs enum"      String="enum" />
+      <RegExpr attribute="Keyword" context="c2hs import"    String="import" />
+    </context>
+    <context attribute="C2HS Directive" lineEndContext="#stay" name="c2hs import">
+      <RegExpr attribute="Type"    context="#stay" String="([A-Z][a-zA-Z0-9_']*\.)*[A-Z][a-zA-Z0-9_']*" />
+      <Detect2Chars attribute="C2HS Directive" context="#pop#pop" char="#" char1="}" />
+    </context>
+    <context attribute="C2HS Directive" lineEndContext="#pop" name="c2hs include">
+      <RegExpr attribute="Keyword" context="#stay" String="include" />
+      <RegExpr                     context="#stay" String=".*>$" />
+    </context>
+    <context attribute="C2HS Directive" lineEndContext="#stay" name="c2hs pointer">
+      <keyword attribute="Keyword" context="#stay" String="c2hs_keywords" />
+      <RegExpr attribute="Keyword" context="#stay" String="newtype" />
+      <RegExpr attribute="Type"    context="#stay" String="([A-Z][a-zA-Z0-9_']*\.)*[A-Z][a-zA-Z0-9_']*" />
+      <Detect2Chars attribute="C2HS Directive" context="#pop#pop" char="#" char1="}" />
+    </context>
+    <context attribute="C2HS Directive" lineEndContext="#stay" name="c2hs fun">
+      <keyword attribute="Keyword" context="#stay" String="c2hs_keywords" />
+      <RegExpr attribute="Type" context="#stay" String="`[^']*'" />
+      <Detect2Chars attribute="C2HS Directive" context="#pop#pop" char="#" char1="}" />
+    </context>
+    <context attribute="C2HS Directive" lineEndContext="#stay" name="c2hs enum">
+      <RegExpr attribute="Type"             context="#stay" String="([A-Z][a-zA-Z0-9_']*\.)*[A-Z][a-zA-Z0-9_']*" />
+      <Detect2Chars attribute="C2HS Directive" context="#pop#pop" char="#" char1="}" />
+    </context>
   </contexts>
   <itemDatas>
     <itemData name="Normal"           defStyleNum="dsNormal"   spellChecking="false" />
@@ -373,6 +437,8 @@
 
     <itemData name="Function Infix"   defStyleNum="dsOthers"   spellChecking="false" />
     <itemData name="EnumFromTo"       defStyleNum="dsOthers"   spellChecking="false" />
+
+    <itemData name="C2HS Directive"   defStyleNum="dsString"   spellChecking="false" />
   </itemDatas>
   </highlighting>
   <general>

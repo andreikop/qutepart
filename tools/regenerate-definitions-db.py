@@ -6,9 +6,12 @@ import json
 import sys
 sys.path.append('.')
 sys.path.append('..')
+sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
+
 
 from qutepart.syntax.loader import loadSyntax
 from qutepart.syntax import SyntaxManager, Syntax
+
 
 def main():
     syntaxDataPath = os.path.join(os.path.dirname(__file__), '..', 'qutepart', 'syntax', 'data')
@@ -37,9 +40,10 @@ def main():
 
         if syntax.extensions:
             for extension in syntax.extensions:
-                if not extension in extensionToXmlFileName or \
+                if extension not in extensionToXmlFileName or \
                    extensionToXmlFileName[extension][0] < syntax.priority:
                     extensionToXmlFileName[extension] = (syntax.priority, xmlFileName)
+                elif extension in extensionToXmlFileName:
 
         if syntax.firstLineGlobs:
             for glob in syntax.firstLineGlobs:

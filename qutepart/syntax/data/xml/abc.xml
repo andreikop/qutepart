@@ -16,26 +16,26 @@
 	    <RegExpr attribute="Header" context="Header" String="\[[ABCGHILMNOQRSTUVZ]:" />
 <!-- detects single header line inside a song without [] - ends at EOL-->
 	    <RegExpr attribute="Header" context="Header2" String="[ABCGHILMNOPQRSTUVZ]:" />
-<!-- detect beginning of header zone with X: and sends to Header context -->	    
+<!-- detect beginning of header zone with X: and sends to Header context -->
 	    <Detect2Chars attribute="Header" context="Header" char="X" char1=":" beginRegion="header" column="0"/>
 <!-- detects bar beginning (or chord) symbols and sends to Bar context -->
 	    <AnyChar attribute="Bar" context="Bar" String="|:[" />
-<!-- detects ] if used to close chords -->	    
+<!-- detects ] if used to close chords -->
 	    <DetectChar attribute="Bar" context="#stay" char="]" />
 <!-- detects () for slurs -->
 	    <AnyChar attribute="Slur" context="#stay" String="()" />
 <!-- detects {} for gracings -->
 	    <AnyChar attribute="Slur" context="#stay" String="{}" />
-<!-- detects W: and w: lyric lines -->	    
+<!-- detects W: and w: lyric lines -->
 	    <Detect2Chars attribute="Lyrics" context="Lyrics" char="W" char1=":" />
 	    <Detect2Chars attribute="Lyrics" context="Lyrics" char="w" char1=":" />
-<!-- detects %% preprocessor lines and % comment lines-->	    
+<!-- detects %% preprocessor lines and % comment lines-->
 	    <Detect2Chars attribute="Preprocessor" context="Preprocessor" char="%" char1="%"/>
 	    <DetectChar attribute="Comment" context="Comment" char="%" />
 <!-- detects ^ _ = symbols before a note -->
 	    <RegExpr attribute="Sharp" context="#stay" String="[_|\^]?[_|=|\^][A-Ga-g]" />
 	   </context>
-<!-- returns to Normal context at the end of line -->	   
+<!-- returns to Normal context at the end of line -->
 	   <context name="Preprocessor" attribute="Preprocessor" lineEndContext="#pop" />
 	   <context name="Lyrics" attribute="Lyrics" lineEndContext="#pop" />
 	   <context name="Part" attribute="Header" lineEndContext="#pop" />

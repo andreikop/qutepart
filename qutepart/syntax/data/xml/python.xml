@@ -13,7 +13,7 @@
 <!-- v2.06 decorator names can (and often do) contain periods -->
 <!-- v2.07 add support for %prog and co, see bug 142832 -->
 <!-- v2.08 add missing overloaders, new Python 3 statements, builtins, and keywords -->
-<language name="Python" version="2.11" kateversion="2.4" section="Scripts" extensions="*.py;*.pyw;SConstruct;SConscript" firstLineGlobs="*python*" mimetype="application/x-python;text/x-python" casesensitive="1" author="Michael Bueker" license="">
+<language name="Python" version="2.22" style="python" kateversion="2.4" section="Scripts" extensions="*.py;*.pyw;SConstruct;SConscript" mimetype="application/x-python;text/x-python" casesensitive="1" author="Michael Bueker" license="" firstLineGlobs="*python*">
 	<highlighting>
 		<list name="prep">
 			<item> import </item>
@@ -35,10 +35,6 @@
 			<item> not </item>
 			<item> or </item>
 		</list>
-		<list name="commands">
-			<item> exec </item>
-			<item> print </item>
-		</list>
 		<list name="flow">
 			<item> assert </item>
 			<item> break </item>
@@ -58,17 +54,18 @@
 			<item> yield </item>
 		</list>
 		<list name="builtinfuncs">
-			<item> __future__ </item>
 			<item> __import__ </item>
-			<item> __name__ </item>
 			<item> abs </item>
 			<item> all </item>
 			<item> any </item>
 			<item> apply </item>
+			<item> ascii </item>
 			<item> basestring </item>
 			<item> bin </item>
 			<item> bool </item>
 			<item> buffer </item>
+			<item> bytearray </item>
+			<item> bytes </item>
 			<item> callable </item>
 			<item> chr </item>
 			<item> classmethod </item>
@@ -82,6 +79,7 @@
 			<item> divmod </item>
 			<item> enumerate </item>
 			<item> eval </item>
+			<item> exec </item>
 			<item> execfile </item>
 			<item> file </item>
 			<item> filter </item>
@@ -107,6 +105,7 @@
 			<item> long </item>
 			<item> map </item>
 			<item> max </item>
+			<item> memoryview </item>
 			<item> min </item>
 			<item> next </item>
 			<item> object </item>
@@ -114,6 +113,7 @@
 			<item> open </item>
 			<item> ord </item>
 			<item> pow </item>
+			<item> print </item>
 			<item> property </item>
 			<item> range </item>
 			<item> raw_input </item>
@@ -147,6 +147,7 @@
 			<item> Ellipsis </item>
 			<item> __debug__ </item>
 			<item> __file__ </item>
+			<item> __name__ </item>
 		</list>
 		<list name="bindings">
 			<item> SIGNAL </item>
@@ -243,33 +244,60 @@
 			<item>__coerce__</item>
 			<item>__enter__</item>
 			<item>__exit__</item>
+			<item>__bytes__</item>
+			<item>__format__</item>
+			<item>__next__</item>
+			<item>__dir__</item>
 		</list>
 		<list name="exceptions">
+			<!--
+				Exceptions list resources used:
+				- http://docs.python.org/2.7/library/exceptions.html#exception-hierarchy
+				- http://docs.python.org/3.4/library/exceptions.html#exception-hierarchy
+			-->
 			<item>ArithmeticError</item>
 			<item>AssertionError</item>
 			<item>AttributeError</item>
 			<item>BaseException</item>
+			<item>BlockingIOError</item>
+			<item>BrokenPipeError</item>
+			<item>BufferError</item>
+			<item>BytesWarning</item>
+			<item>ChildProcessError</item>
+			<item>ConnectionAbortedError</item>
+			<item>ConnectionError</item>
+			<item>ConnectionRefusedError</item>
+			<item>ConnectionResetError</item>
 			<item>DeprecationWarning</item>
 			<item>EnvironmentError</item>
 			<item>EOFError</item>
 			<item>Exception</item>
+			<item>FileExistsError</item>
+			<item>FileNotFoundError</item>
 			<item>FloatingPointError</item>
 			<item>FutureWarning</item>
 			<item>GeneratorExit</item>
-			<item>IOError</item>
 			<item>ImportError</item>
 			<item>ImportWarning</item>
+			<item>IndentationError</item>
 			<item>IndexError</item>
-			<item>KeyError</item>
+			<item>InterruptedError</item>
+			<item>IOError</item>
+			<item>IsADirectoryError</item>
 			<item>KeyboardInterrupt</item>
+			<item>KeyError</item>
 			<item>LookupError</item>
 			<item>MemoryError</item>
 			<item>NameError</item>
+			<item>NotADirectoryError</item>
 			<item>NotImplementedError</item>
 			<item>OSError</item>
 			<item>OverflowError</item>
 			<item>PendingDeprecationWarning</item>
+			<item>PermissionError</item>
+			<item>ProcessLookupError</item>
 			<item>ReferenceError</item>
+			<item>ResourceWarning</item>
 			<item>RuntimeError</item>
 			<item>RuntimeWarning</item>
 			<item>StandardError</item>
@@ -278,14 +306,16 @@
 			<item>SyntaxWarning</item>
 			<item>SystemError</item>
 			<item>SystemExit</item>
+			<item>TabError</item>
+			<item>TimeoutError</item>
 			<item>TypeError</item>
 			<item>UnboundLocalError</item>
-			<item>UserWarning</item>
-			<item>UnicodeError</item>
-			<item>UnicodeWarning</item>
-			<item>UnicodeEncodeError</item>
 			<item>UnicodeDecodeError</item>
+			<item>UnicodeEncodeError</item>
+			<item>UnicodeError</item>
 			<item>UnicodeTranslateError</item>
+			<item>UnicodeWarning</item>
+			<item>UserWarning</item>
 			<item>ValueError</item>
 			<item>Warning</item>
 			<item>WindowsError</item>
@@ -293,7 +323,6 @@
 		</list>
 		<contexts>
 			<context name="Normal" attribute="Normal Text" lineEndContext="#stay">
-				<LineContinue context="CheckForString" attribute="Normal Text"/>
 				<keyword attribute="Preprocessor" String="prep" context="#stay"/>
 				<keyword attribute="Definition Keyword" String="defs" context="#stay"/>
 				<keyword attribute="Operator" String="operators" context="#stay"/>
@@ -304,7 +333,7 @@
 				<keyword attribute="Extensions" String="bindings" context="#stay"/>
 				<keyword attribute="Exceptions" String="exceptions" context="#stay"/>
 				<keyword attribute="Overloaders" String="overloaders" context="#stay"/>
-				<RegExpr attribute="Normal" String="[a-zA-Z_][a-zA-Z_0-9]+" context="#stay"/>
+				<RegExpr attribute="Normal" String="[a-zA-Z_][a-zA-Z_0-9]{2,}" context="#stay"/>
 
 				<RegExpr attribute="Complex" String=" ((([0-9]*\.[0-9]+|[0-9]+\.)|([0-9]+|([0-9]*\.[0-9]+|[0-9]+\.))[eE](\+|-)?[0-9]+)|[0-9]+)[jJ]" context="#stay"/>
 				<Float attribute="Float" context="#stay" />
@@ -314,54 +343,115 @@
 					<StringDetect attribute="Int" String="L" insensitive="true" context="#stay"/>
 				</Int>
 
-				<StringDetect attribute="Raw String" String="r'''" insensitive="true" context="Raw Tripple A-string"/>
-				<StringDetect attribute="Raw String" String="r&quot;&quot;&quot;" insensitive="true" context="Raw Tripple Q-string"/>
+				<DetectChar attribute="Normal Text" char="{" context="Dictionary" beginRegion="Dictionary"/>
+				<DetectChar attribute="Normal Text" char="[" context="List" beginRegion="List"/>
+				<DetectChar attribute="Normal Text" char="(" context="Tuple" beginRegion="Tuple"/>
 
-				<StringDetect attribute="Raw String" String="r'" insensitive="true" context="Raw A-string"/>
-				<StringDetect attribute="Raw String" String="r&quot;" insensitive="true" context="Raw Q-string"/>
+				<IncludeRules context="CommentVariants" />
 
 				<DetectChar attribute="Comment" char="#" context="Hash comment"/>
-                                <RegExpr attribute="Comment" String="u?'''" firstNonSpace="true" context="Tripple A-comment" beginRegion="Tripple A-region"/>
-                                <RegExpr attribute="Comment" String="u?&quot;&quot;&quot;" firstNonSpace="true" context="Tripple Q-comment" beginRegion="Tripple Q-region"/>
 
-				<!-- ''' -->
-				<StringDetect attribute="String" String="'''" context="Tripple A-string" beginRegion="Tripple A-region"/>
-				<StringDetect attribute="String" String="u'''" context="Tripple A-string" beginRegion="Tripple A-region"/>
-				<!-- """ -->
-				<StringDetect attribute="String" String="&quot;&quot;&quot;" context="Tripple Q-string" beginRegion="Tripple Q-region"/>
-				<StringDetect attribute="String" String="u&quot;&quot;&quot;" context="Tripple Q-string" beginRegion="Tripple Q-region"/>
-				<!-- ' -->
-				<DetectChar attribute="String" char="'" context="Single A-string"/>
-				<Detect2Chars attribute="String" char="u" char1="'" context="Single A-string"/>
-				<!-- " -->
-				<DetectChar attribute="String" char="&quot;" context="Single Q-string"/>
-				<Detect2Chars attribute="String" char="u" char1="&quot;" context="Single Q-string"/>
-
-				<DetectChar attribute="Normal" char="(" context="parenthesised" beginRegion="parenthesis"/>
-				<DetectChar attribute="Normal" char=")" context="#pop" endRegion="parenthesis"/>
+				<IncludeRules context="StringVariants" />
 
 				<AnyChar attribute="Operator" String="+*/%\|=;\!&lt;&gt;!^&amp;~-" context="#stay"/>
 				<RegExpr attribute="Decorator" String="@[_a-zA-Z][\._a-zA-Z0-9]*" firstNonSpace="true"/>
 			</context>
-			<!-- The context CheckForString only exists to catch LineContinue with \ at end of previous line. So that we don't interpret it as comment.  -->
-			<context name="CheckForString" attribute="Normal Text" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
+
+			<context name="#CheckForString" attribute="Normal Text" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
 				<DetectSpaces/>
-				<StringDetect attribute="String" String="'''" context="Tripple A-string" beginRegion="Tripple A-region"/>
-				<StringDetect attribute="String" String="u'''" context="Tripple A-string" beginRegion="Tripple A-region"/>
-				<!-- """ -->
-				<StringDetect attribute="String" String="&quot;&quot;&quot;" context="Tripple Q-string" beginRegion="Tripple Q-region"/>
-				<StringDetect attribute="String" String="u&quot;&quot;&quot;" context="Tripple Q-string" beginRegion="Tripple Q-region"/>
+				<LineContinue attribute="Normal Text" context="CheckForStringNext"/>
+			</context>
+			
+			<context name="CheckForStringNext" attribute="Normal Text" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
+				<DetectSpaces/>
+				<LineContinue attribute="Normal Text" context="CheckForStringNext"/>
+				<IncludeRules context="StringVariants"/>
 			</context>
 
+			<context name="StringVariants" attribute="Normal Text" lineEndContext="#stay">
+				<DetectSpaces/>
+				<!-- ''' -->
+				<StringDetect attribute="String" String="'''" context="Tripple A-string" beginRegion="Tripple A-region"/>
+				<StringDetect attribute="String" String="u'''" insensitive="true" context="Tripple A-string" beginRegion="Tripple A-region"/>
+				<!-- """ -->
+				<StringDetect attribute="String" String="&quot;&quot;&quot;" context="Tripple Q-string" beginRegion="Tripple Q-region"/>
+				<StringDetect attribute="String" String="u&quot;&quot;&quot;" insensitive="true" context="Tripple Q-string" beginRegion="Tripple Q-region"/>
+				<!-- ' -->
+				<DetectChar attribute="String" char="'" context="Single A-string"/>
+				<Detect2Chars attribute="String" char="u" char1="'" insensitive="true" context="Single A-string"/>
+				<!-- " -->
+				<DetectChar attribute="String" char="&quot;" context="Single Q-string"/>
+				<Detect2Chars attribute="String" char="u" char1="&quot;" insensitive="true" context="Single Q-string"/>
 
-			<context name="parenthesised" attribute="Normal Text" lineEndContext="#stay" noIndentationBasedFolding="true">
+				<!-- ''' -->
+				<StringDetect attribute="Raw String" String="r'''" insensitive="true" context="Raw Tripple A-string" beginRegion="Tripple A-region"/>
+				<StringDetect attribute="Raw String" String="ur'''" insensitive="true" context="Raw Tripple A-string" beginRegion="Tripple A-region"/>
+				<!-- """ -->
+				<StringDetect attribute="Raw String" String="r&quot;&quot;&quot;" insensitive="true" context="Raw Tripple Q-string" beginRegion="Tripple Q-region"/>
+				<StringDetect attribute="Raw String" String="ur&quot;&quot;&quot;" insensitive="true" context="Raw Tripple Q-string" beginRegion="Tripple Q-region"/>
+				<!-- ' -->
+				<StringDetect attribute="Raw String" String="r'" insensitive="true" context="Raw A-string"/>
+				<StringDetect attribute="Raw String" String="ur'" insensitive="true" context="Raw A-string"/>
+				<!-- " -->
+				<StringDetect attribute="Raw String" String="r&quot;" insensitive="true" context="Raw Q-string"/>
+				<StringDetect attribute="Raw String" String="ur&quot;" insensitive="true" context="Raw Q-string"/>
+			</context>
+
+			<context name="CommentVariants" attribute="Normal Text" lineEndContext="#stay">
+				<DetectSpaces/>
+				<!-- ''' -->
+				<StringDetect attribute="Comment" String="'''" firstNonSpace="true" context="Tripple A-comment" beginRegion="Tripple A-region"/>
+				<StringDetect attribute="Comment" String="u'''" insensitive="true" firstNonSpace="true" context="Tripple A-comment" beginRegion="Tripple A-region"/>
+				<!-- """ -->
+				<StringDetect attribute="Comment" String="&quot;&quot;&quot;" firstNonSpace="true" context="Tripple Q-comment" beginRegion="Tripple Q-region"/>
+				<StringDetect attribute="Comment" String="u&quot;&quot;&quot;" insensitive="true" firstNonSpace="true" context="Tripple Q-comment" beginRegion="Tripple Q-region"/>
+				<!-- ' -->
+				<DetectChar attribute="Comment" char="'" firstNonSpace="true" context="Single A-comment"/>
+				<Detect2Chars attribute="Comment" char="u" char1="'" insensitive="true" firstNonSpace="true" context="Single A-comment"/>
+				<!-- " -->
+				<DetectChar attribute="Comment" char="&quot;" firstNonSpace="true" context="Single Q-comment"/>
+				<Detect2Chars attribute="Comment" char="u" char1="&quot;" insensitive="true" firstNonSpace="true" context="Single Q-comment"/>
+
+				<!-- ''' -->
+				<StringDetect attribute="Comment" String="r'''" insensitive="true" firstNonSpace="true" context="Tripple A-comment" beginRegion="Tripple A-region"/>
+				<StringDetect attribute="Comment" String="ur'''" insensitive="true" firstNonSpace="true" context="Tripple A-comment" beginRegion="Tripple A-region"/>
+				<!-- """ -->
+				<StringDetect attribute="Comment" String="r&quot;&quot;&quot;" insensitive="true" firstNonSpace="true" context="Tripple Q-comment" beginRegion="Tripple Q-region"/>
+				<StringDetect attribute="Comment" String="ur&quot;&quot;&quot;" insensitive="true" firstNonSpace="true" context="Tripple Q-comment" beginRegion="Tripple Q-region"/>
+				<!-- ' -->
+				<StringDetect attribute="Comment" String="r'" insensitive="true" firstNonSpace="true" context="Single A-comment"/>
+				<StringDetect attribute="Comment" String="ur'" insensitive="true" firstNonSpace="true" context="Single A-comment"/>
+				<!-- " -->
+				<StringDetect attribute="Comment" String="r&quot;" insensitive="true" firstNonSpace="true" context="Single Q-comment"/>
+				<StringDetect attribute="Comment" String="ur&quot;" insensitive="true" firstNonSpace="true" context="Single Q-comment"/>
+			</context>
+
+			<context name="Dictionary" attribute="Normal Text" lineEndContext="#stay" noIndentationBasedFolding="true">
+				<DetectSpaces/>
+				<DetectChar attribute="Normal Text" char="}" context="#pop" endRegion="Dictionary"/>
+				<IncludeRules context="StringVariants" />
+				<IncludeRules context="Normal" />
+			</context>
+			
+			<context name="List" attribute="Normal Text" lineEndContext="#stay" noIndentationBasedFolding="true">
+				<DetectSpaces/>
+				<DetectChar attribute="Normal Text" char="]" context="#pop" endRegion="List"/>
+				<IncludeRules context="StringVariants" />
+				<IncludeRules context="Normal" />
+			</context>
+			
+			<context name="Tuple" attribute="Normal Text" lineEndContext="#stay" noIndentationBasedFolding="true">
+				<DetectSpaces/>
+				<DetectChar attribute="Normal Text" char=")" context="#pop" endRegion="Tuple"/>
+				<IncludeRules context="StringVariants" />
 				<IncludeRules context="Normal" />
 			</context>
 
 			<!-- Comments -->
 
 			<context name="Hash comment" attribute="Comment" lineEndContext="#pop">
-				<IncludeRules context="##Alerts_indent" />
+				<IncludeRules context="##Alerts" />
+				<IncludeRules context="##Modelines" />
 			</context>
 
 			<context name="Tripple A-comment" attribute="Comment" lineEndContext="#stay" noIndentationBasedFolding="true">
@@ -402,71 +492,88 @@
 				     [Special cases: %prog and %default - see http://docs.python.org/library/optparse.html]
 				-->
 				<RegExpr attribute="String Substitution" String="%((\([a-zA-Z0-9_]+\))?[#0\- +]?([1-9][0-9]*|\*)?(\.([1-9][0-9]*|\*))?[hlL]?[crsdiouxXeEfFgG%]|prog|default)" context="#stay"/>
+				<!-- http://docs.python.org/2/library/string.html#format-string-syntax:
+				     replacement_field ::= "{" field_name ["!" conversion] [":" format_spec] "}"
+				     field_name ::= (identifier | integer) ("." attribute_name | "[" element_index "]")*
+				     attribute_name ::= identifier
+				     element_index ::= integer | index_string
+				     index_string ::= <any source character except "]"> +
+				     conversion ::= "r" | "s"
+				     format_spec ::= [[fill]align][sign][#][0][width][.precision][type]
+				     fill ::= <a character other than '}'>
+				     align ::= "<" | ">" | "=" | "^"
+				     sign ::= "+" | "-" | " "
+				     width ::= integer
+				     precision ::= integer
+				     type ::= "b" | "c" | "d" | "e" | "E" | "f" | "F" | "g" | "G" | "n" | "o" | "s" | "x" | "X" | "%"
+				-->
+				<RegExpr attribute="String Substitution" String="\{([a-zA-Z0-9_]+|[0-9]+)(\.[a-zA-Z0-9_]+|\[[^ \]]+\])*(![rs])?(:([^}]?[&lt;&gt;=^])?[ +-]?#?0?[0-9]*(\.[0-9]+)?[bcdeEfFgGnosxX%]?)?\}" context="#stay"/>
+				<Detect2Chars attribute="String Substitution" char="{" char1="{" context="#stay" />
+				<Detect2Chars attribute="String Substitution" char="}" char1="}" context="#stay" />
 			</context>
 
 			<context name="Tripple A-string" attribute="String" lineEndContext="#stay" noIndentationBasedFolding="true">
 				<HlCStringChar attribute="String Char" context="#stay"/>
 				<IncludeRules context="stringformat"/>
-				<StringDetect attribute="String" String="'''" context="#pop" endRegion="Tripple A-region"/>
+				<StringDetect attribute="String" String="'''" context="#pop#CheckForString" endRegion="Tripple A-region"/>
 			</context>
 
 			<context name="Raw Tripple A-string" attribute="Raw String" lineEndContext="#stay" noIndentationBasedFolding="true">
 				<HlCStringChar attribute="Raw String" context="#stay"/>
 				<IncludeRules context="stringformat"/>
-				<StringDetect attribute="String" String="'''" context="#pop" endRegion="Tripple A-region"/>
+				<StringDetect attribute="String" String="'''" context="#pop#CheckForString" endRegion="Tripple A-region"/>
 			</context>
 
 			<context name="Tripple Q-string" attribute="String" lineEndContext="#stay" noIndentationBasedFolding="true">
 				<HlCStringChar attribute="String Char" context="#stay"/>
 				<IncludeRules context="stringformat"/>
-				<StringDetect attribute="String" String="&quot;&quot;&quot;" context="#pop" endRegion="Tripple Q-region"/>
+				<StringDetect attribute="String" String="&quot;&quot;&quot;" context="#pop#CheckForString" endRegion="Tripple Q-region"/>
 			</context>
 
 			<context name="Raw Tripple Q-string" attribute="Raw String" lineEndContext="#stay" noIndentationBasedFolding="true">
 				<HlCStringChar attribute="Raw String" context="#stay"/>
 				<IncludeRules context="stringformat"/>
-				<StringDetect attribute="String" String="&quot;&quot;&quot;" context="#pop" endRegion="Tripple Q-region"/>
+				<StringDetect attribute="String" String="&quot;&quot;&quot;" context="#pop#CheckForString" endRegion="Tripple Q-region"/>
 			</context>
 
 
 			<context name="Single A-string" attribute="String" lineEndContext="#stay">
 				<HlCStringChar attribute="String Char" context="#stay"/>
 				<IncludeRules context="stringformat"/>
-				<DetectChar attribute="String" char="'" context="#pop"/>
+				<DetectChar attribute="String" char="'" context="#pop#CheckForString"/>
 			</context>
 
 			<context name="Single Q-string" attribute="String" lineEndContext="#stay">
 				<HlCStringChar attribute="String Char" context="#stay"/>
 				<IncludeRules context="stringformat"/>
-				<DetectChar attribute="String" char="&quot;" context="#pop"/>
+				<DetectChar attribute="String" char="&quot;" context="#pop#CheckForString"/>
 			</context>
 
 			<context name="Raw A-string" attribute="Raw String" lineEndContext="#stay">
 				<HlCStringChar attribute="Raw String" context="#stay"/>
 				<IncludeRules context="stringformat"/>
-				<DetectChar attribute="Raw String" char="'" context="#pop"/>
+				<DetectChar attribute="Raw String" char="'" context="#pop#CheckForString"/>
 			</context>
 
 			<context name="Raw Q-string" attribute="Raw String" lineEndContext="#stay">
 				<HlCStringChar attribute="Raw String" context="#stay"/>
 				<IncludeRules context="stringformat"/>
-				<DetectChar attribute="Raw String" char="&quot;" context="#pop"/>
+				<DetectChar attribute="Raw String" char="&quot;" context="#pop#CheckForString"/>
 			</context>
-
-
 		</contexts>
+
 		<itemDatas>
 			<itemData name="Normal Text" defStyleNum="dsNormal" spellChecking="false"/>
 			<itemData name="Definition Keyword" defStyleNum="dsKeyword" spellChecking="false"/>
 			<itemData name="Operator" defStyleNum="dsNormal" bold="1" spellChecking="false"/>
-			<itemData name="String Substitution" defStyleNum="dsOthers" color="#0057ae" selColor="#ffffff"  spellChecking="false"/>
+			<itemData name="String Substitution" defStyleNum="dsOthers" color="#0057ae" selColor="#0057ae"  spellChecking="false"/>
 			<itemData name="Command Keyword" defStyleNum="dsKeyword" spellChecking="false"/>
 			<itemData name="Flow Control Keyword" defStyleNum="dsKeyword" spellChecking="false"/>
 			<itemData name="Builtin Function" defStyleNum="dsDataType" spellChecking="false"/>
 			<itemData name="Special Variable" defStyleNum="dsOthers" spellChecking="false"/>
-			<itemData name="Extensions" defStyleNum="dsOthers" color="#0095ff" selColor="#ffffff" bold="1" italic="0" spellChecking="false"/>
-			<itemData name="Exceptions" defStyleNum="dsOthers" color="#054d00" selColor="#ffffff" bold="1" italic="0" spellChecking="false"/>
-			<itemData name="Overloaders" defStyleNum="dsOthers" color="#000e52" selColor="#ffffff" bold="1" italic="0" spellChecking="false"/>
+			<itemData name="Extensions" defStyleNum="dsOthers" color="#0095ff" selColor="#0095ff" bold="1" italic="0" spellChecking="false"/>
+			<itemData name="Exceptions" defStyleNum="dsOthers" color="#054d00" selColor="#054d00" bold="1" italic="0" spellChecking="false"/>
+			<itemData name="Overloaders" defStyleNum="dsOthers" color="#000e52" selColor="#000e52" bold="1" italic="0" spellChecking="false"/>
 			<itemData name="Preprocessor" defStyleNum="dsChar" spellChecking="false"/>
 			<itemData name="String Char" defStyleNum="dsChar" spellChecking="false"/>
 			<itemData name="Float" defStyleNum="dsFloat" spellChecking="false"/>
@@ -477,7 +584,7 @@
 			<itemData name="Comment" defStyleNum="dsComment"/>
 			<itemData name="String" defStyleNum="dsString"/>
 			<itemData name="Raw String" defStyleNum="dsString"/>
-			<itemData name="Decorator" defStyleNum="dsOthers" color="#8f6b32" selColor="#ffffff" italic="0" spellChecking="false"/>
+			<itemData name="Decorator" defStyleNum="dsOthers" color="#8f6b32" selColor="#8f6b32" italic="0" spellChecking="false"/>
 		</itemDatas>
 	</highlighting>
 	<general>
@@ -488,6 +595,9 @@
 		<comments>
 			<comment name="singleLine" start="#" position="afterwhitespace"/>
 		</comments>
+		<indentation mode="python" />
 		<keywords casesensitive="1" additionalDeliminator="#'"/>
 	</general>
 </language>
+
+<!-- kate: space-indent off; indent-width 4; -->

@@ -180,7 +180,7 @@ class DetectSyntax(_BaseTest):
         self.assertEquals(self.qpart.language(), 'ferite')
 
         self.qpart.detectSyntax(firstLine='<?php hello() ?>')
-        self.assertEquals(self.qpart.language(), 'HTML')
+        self.assertEquals(self.qpart.language(), 'PHP (HTML)')
 
 
 class Signals(_BaseTest):

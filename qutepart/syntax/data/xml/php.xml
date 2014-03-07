@@ -2,6 +2,9 @@
 <!--
 
 Changes:
+[ Version 1.43 (2013-10-11) ]
+- added missing constants for sorting
+
 [ Version 1.42 (2010-05-09) ]
 - fix handling of paamayim nekudotayim in ternary / case context, which used to
   lead to improper region starts
@@ -61,7 +64,7 @@ Changes:
   <!ENTITY types "int|integer|bool|boolean|float|double|real|string|array|object">
 ]>
 
-<language name="PHP/PHP" indenter="cstyle" version="1.42" kateversion="2.4" section="Scripts" extensions="*.php" priority="5" mimetype="" hidden="true">
+<language name="PHP/PHP" indenter="cstyle" version="1.44" kateversion="2.4" section="Scripts" extensions="" priority="5" mimetype="" hidden="true">
   <highlighting>
     <list name="control structures">
       <item>as</item>
@@ -91,6 +94,7 @@ Changes:
     </list>
     <list name="keywords">
       <item> abstract </item>
+      <item> callable </item>
       <item> catch </item>
       <item> class </item>
       <item> clone </item>
@@ -102,6 +106,7 @@ Changes:
       <item> global </item>
       <item> implements </item>
       <item> instanceof </item>
+      <item> insteadof </item>
       <item> interface </item>
       <item> new </item>
       <item> self </item>
@@ -112,6 +117,7 @@ Changes:
       <item> public </item>
       <item> throw </item>
       <item> try </item>
+      <item> trait </item>
       <item> and </item>
       <item> or </item>
       <item> xor </item>
@@ -128,6 +134,7 @@ Changes:
       <item> __CLASS__ </item>
       <item> __METHOD__ </item>
       <item> __NAMESPACE__ </item>
+      <item> __TRAIT__ </item>
       <item> __COMPILER_HALT_OFFSET__ </item>
 
       <item> ABDAY_1 </item>
@@ -1452,7 +1459,9 @@ Changes:
       <item> SORTTO </item>
       <item> SORT_ASC </item>
       <item> SORT_DESC </item>
+      <item> SORT_FLAG_CASE </item>
       <item> SORT_LOCALE_STRING </item>
+      <item> SORT_NATURAL </item>
       <item> SORT_NUMERIC </item>
       <item> SORT_REGULAR </item>
       <item> SORT_STRING </item>
@@ -5455,11 +5464,21 @@ Changes:
         <DetectChar attribute="String" context="doublequotestring" char="&quot;" />
         <DetectChar attribute="String" context="backquotestring" char="`" />
         <DetectChar attribute="String" context="singlequotestring" char="'" />
+        <RegExpr attribute="Backslash Code" context="htmlheredoc" String="&lt;&lt;&lt;&quot;((EO)?HTML)&quot;" beginRegion="Heredoc" />
+        <RegExpr attribute="Backslash Code" context="cssheredoc" String="&lt;&lt;&lt;&quot;((EO)?CSS)&quot;" beginRegion="Heredoc" />
+        <RegExpr attribute="Backslash Code" context="javascriptheredoc" String="&lt;&lt;&lt;&quot;((EO)?JAVASCRIPT)&quot;" beginRegion="Heredoc" />
+        <RegExpr attribute="Backslash Code" context="mysqlheredoc" String="&lt;&lt;&lt;&quot;((EO)?MYSQL)&quot;" beginRegion="Heredoc" />
+        <RegExpr attribute="Backslash Code" context="heredoc" String="&lt;&lt;&lt;&quot;([A-Za-z_][A-Za-z0-9_]*)&quot;" beginRegion="Heredoc" />
         <RegExpr attribute="Backslash Code" context="htmlheredoc" String="&lt;&lt;&lt;((EO)?HTML)\b" beginRegion="Heredoc" />
         <RegExpr attribute="Backslash Code" context="cssheredoc" String="&lt;&lt;&lt;((EO)?CSS)\b" beginRegion="Heredoc" />
         <RegExpr attribute="Backslash Code" context="javascriptheredoc" String="&lt;&lt;&lt;((EO)?JAVASCRIPT)\b" beginRegion="Heredoc" />
         <RegExpr attribute="Backslash Code" context="mysqlheredoc" String="&lt;&lt;&lt;((EO)?MYSQL)\b" beginRegion="Heredoc" />
         <RegExpr attribute="Backslash Code" context="heredoc" String="&lt;&lt;&lt;([A-Za-z_][A-Za-z0-9_]*)" beginRegion="Heredoc" />
+        <RegExpr attribute="Backslash Code" context="htmlnowdoc" String="&lt;&lt;&lt;'((EO)?HTML)'" beginRegion="Nowdoc" />
+        <RegExpr attribute="Backslash Code" context="cssnowdoc" String="&lt;&lt;&lt;'((EO)?CSS)'" beginRegion="Nowdoc" />
+        <RegExpr attribute="Backslash Code" context="javascriptnowdoc" String="&lt;&lt;&lt;'((EO)?JAVASCRIPT)'" beginRegion="Nowdoc" />
+        <RegExpr attribute="Backslash Code" context="mysqlnowdoc" String="&lt;&lt;&lt;'((EO)?MYSQL)'" beginRegion="Nowdoc" />
+        <RegExpr attribute="Backslash Code" context="nowdoc" String="&lt;&lt;&lt;'([A-Za-z_][A-Za-z0-9_]*)'" beginRegion="Nowdoc" />
         <keyword attribute="Special Variable" context="#stay" String="special-variables"/>
         <RegExpr attribute="Variable" context="#stay" String="\$+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*" />
         <RegExpr attribute="String" context="#stay" String="[0123456789]*\.\.\.[0123456789]*" />
@@ -5550,6 +5569,32 @@ Changes:
         <RegExpr attribute="Variable" context="#stay" String="\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\[[a-zA-Z0-9_]*\])*" />
         <RegExpr attribute="Variable" context="#stay" String="\$\{[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\[[a-zA-Z0-9_]*\])*\}" />
         <RegExpr attribute="Variable" context="#stay" String="\{\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\[([0-9]*|&quot;[a-zA-Z_]*&quot;)|'[a-zA-Z_]*'|\])*(-&gt;[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\[[a-zA-Z0-9_]*\])*(\[([0-9]*|&quot;[a-zA-Z_]*&quot;)|'[a-zA-Z_]*'|\])*)*\}" />
+      </context>
+      <context name="htmlnowdoc" attribute="Normal Text" lineEndContext="#stay" dynamic="true">
+        <RegExpr attribute="Backslash Code" context="#pop" String="^%1;?$" dynamic="true" endRegion="Heredoc" />
+        <IncludeRules context="commonnowdoc" />
+        <IncludeRules context="##HTML" />
+      </context>
+      <context name="cssnowdoc" attribute="Normal Text" lineEndContext="#stay" dynamic="true">
+        <RegExpr attribute="Backslash Code" context="#pop" String="^%1;?$" dynamic="true" endRegion="Heredoc" />
+        <IncludeRules context="commonnowdoc" />
+        <IncludeRules context="##CSS" />
+      </context>
+      <context name="mysqlnowdoc" attribute="Normal Text" lineEndContext="#stay" dynamic="true">
+        <RegExpr attribute="Backslash Code" context="#pop" String="^%1;?$" dynamic="true" endRegion="Heredoc" />
+        <IncludeRules context="commonnowdoc" />
+        <IncludeRules context="##SQL (MySQL)" />
+      </context>
+      <context name="javascriptnowdoc" attribute="Normal Text" lineEndContext="#stay" dynamic="true">
+        <RegExpr attribute="Backslash Code" context="#pop" String="^%1;?$" dynamic="true" endRegion="Heredoc" />
+        <IncludeRules context="commonnowdoc" />
+        <IncludeRules context="##JavaScript" />
+      </context>
+      <context name="nowdoc" attribute="String" lineEndContext="#stay" dynamic="true">
+        <RegExpr attribute="Backslash Code" context="#pop" String="^%1;?$" dynamic="true" endRegion="Heredoc" />
+        <IncludeRules context="commonnowdoc" />
+      </context>
+      <context name="commonnowdoc" attribute="String" lineEndContext="#stay">
       </context>
     </contexts>
     <itemDatas>

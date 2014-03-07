@@ -8,8 +8,8 @@
         
             <context attribute="Normal Text" lineEndContext="#stay" name="Normal">
                 <RegExpr attribute="Keyword" context="#stay" String="\B\.\w+" />
-                <Float attribute="Number" context="#stay"/>
                 <Int attribute="Number" context="#stay"/>
+                <Float attribute="Number" context="#stay"/>
                 <AnyChar attribute="Comment" String="$*" context="Commentar 1" />
                 <DetectChar attribute="String" context="String" char="&quot;"/>
                 <DetectChar attribute="String" context="String" char="'"/>

@@ -170,7 +170,7 @@
       <item> ifdef </item>
       <item> ifndef </item>
     </list>
-    
+
 
     <list name="mupmacrodirectives_end">
       <item> @ </item>
@@ -718,29 +718,29 @@
 	<IncludeRules context="Macro" />
       </context>
 
-      
+
       <context attribute="Note Attribute" lineEndContext="#pop" name="Bracket Hs"
       		fallthrough="true" fallthroughContext="#pop">
 	<DetectChar attribute="String" context="String" char="&quot;" />
 	<IncludeRules context="Macro" />
       </context>
-	
+
 
       <context attribute="Note" lineEndContext="#pop" name="Note Probably"
 		fallthrough="true" fallthroughContext="#pop">
 	<RegExpr attribute="Note" context="#pop" String="[a-grs]*" />
       </context>
 
-  
+
       <context attribute="Tuplet" lineEndContext="#pop" name="Tuplet"
 		fallthrough="true" fallthroughContext="#pop">
-	<RegExpr attribute="Tuplet" context="#pop" String="\s*(above|below)?\s*[0-9]{1,2}(y|num|n)?(\s*,\s*[0-9]{1,2}\.?([+][0-9]{1,2}\.?)*)?" />
+	<RegExpr attribute="Tuplet" context="#pop" String="\s*(above|below)?\s*[0-9]{1,2}(y|n|num)?(\s*,\s*[0-9]{1,2}\.?([+][0-9]{1,2}\.?)*)?" />
       </context>
 
 
       <context attribute="Normal Text" lineEndContext="#pop" name="Location"
 		fallthrough="true" fallthroughContext="#pop">
-	<RegExpr attribute="Normal Text" context="#stay" String="[+-\s]+" />
+	<RegExpr attribute="Normal Text" context="#stay" String="[\s+-]+" />
 	<Float attribute="Normal Text" context="#stay" />
 	<RegExpr attribute="Location" context="#stay" String="\btime\b" />
 	<IncludeRules context="Macro" />
@@ -752,7 +752,7 @@
 	<RegExpr attribute="Location Probably" context="#pop" String="[h-qt-z]|_[a-z][a-z_0-9]*" />
       </context>
 
-  
+
       <context attribute="Comment" lineEndContext="#pop" name="Comment">
 	<IncludeRules context="##Alerts" />
       </context>
@@ -822,12 +822,12 @@
 	<DetectChar attribute="Macro" context="#stay" char="@" endRegion="macro" />
       </context>
 
-      
+
       <context attribute="Location" lineEndContext="#pop" name="Macro Location"
 		fallthrough="true" fallthroughContext="#pop">
 	<RegExpr attribute="Location Probably" context="#pop" String=".." />
       </context>
-      
+
     </contexts>
 
     <itemDatas>

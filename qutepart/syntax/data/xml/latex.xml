@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="LaTeX" version="1.48" section="Markup" kateversion="2.3" priority="10" extensions="*.tex;*.ltx;*.dtx;*.sty;*.cls;*.bbx;*.cbx;*.lbx;" firstLineGlobs="\\documentclass" mimetype="text/x-tex" casesensitive="1" author="Jeroen Wijnhout (Jeroen.Wijnhout@kdemail.net)+Holger Danielsson (holger.danielsson@versanet.de)+Michel Ludwig (michel.ludwig@kdemail.net)+Thomas Braun (thomas.braun@virtuell-zuhause.de)" license="LGPL" >
+<language name="LaTeX" version="1.55" section="Markup" kateversion="2.3" priority="10" extensions="*.tex;*.ltx;*.dtx;*.sty;*.cls;*.bbx;*.cbx;*.lbx;*.tikz" mimetype="text/x-tex" casesensitive="1" author="Jeroen Wijnhout (Jeroen.Wijnhout@kdemail.net)+Holger Danielsson (holger.danielsson@versanet.de)+Michel Ludwig (michel.ludwig@kdemail.net)+Thomas Braun (thomas.braun@virtuell-zuhause.de)" license="LGPL" firstLineGlobs="\\documentclass">
   <highlighting>
     <contexts>
       <!-- Normal text -->
       <context name="Normal Text" attribute="Normal Text" lineEndContext="#stay">
         <RegExpr String="\\begin(?=[^a-zA-Z])" attribute="Structure" context="FindBeginEnvironment" beginRegion="block" />
         <RegExpr String="\\end(?=[^a-zA-Z])" attribute="Structure" context="FindEndEnvironment" />
-	<RegExpr String="\\(cite|parencite|autocite|Autocite|citetitle)\*(?=[^a-zA-Z])" attribute="Structure" context="Label"/>
+	<RegExpr String="\\(cite|citet|citep|parencite|autocite|Autocite|citetitle)\*(?=[^a-zA-Z])" attribute="Structure" context="Label"/>
+	<RegExpr String="\\(documentclass|includegraphics|include|usepackage|bibliography|bibliographystyle)(?=[^a-zA-Z])" attribute="Structure Keyword" context="FancyLabel"/>
 	<RegExpr String="\\(cites|Cites|parencites|Parencites|autocites|Autocites|supercites|footcites|Footcites)(?=[^a-zA-Z])" attribute="Structure" context="FancyLabel"/>
-	<RegExpr String="\\(cite|nocite|Cite|parencite|Parencite|footcite|Footcite|textcite|Textcite|supercite|autocite|Autocite|citeauthor|Citeauthor|citetitle|citeyear|citeurl|nocite|fullcite|footfullcite)(?=[^a-zA-Z])" attribute="Structure" context="Label"/>
+	<RegExpr String="\\(cite|citet|citep|nocite|Cite|parencite|Parencite|footcite|Footcite|textcite|Textcite|supercite|autocite|Autocite|citeauthor|Citeauthor|citetitle|citeyear|citeurl|nocite|fullcite|footfullcite)(?=[^a-zA-Z])" attribute="Structure" context="Label"/>
 	<RegExpr String="\\(subref\*?|cref\*?|label|pageref|autoref|ref|vpageref|vref|pagecite|eqref)(?=[^a-zA-Z])" attribute="Structure" context="Label"/>
         <RegExpr String="\\(part|chapter|section|subsection|subsubsection|paragraph|subparagraph)\*?\s*(?=[\{\[])" attribute="Structure" context="Sectioning"/>
+	<RegExpr String="\\(input|hspace|hspace\*|vspace|vspace\*|rule|special|setlength|newboolean|setboolean|setcounter|geometry|textcolor|definecolor|column)(?=[^a-zA-Z])" attribute="Keyword" context="SpecialCommand"/>
         <RegExpr String="\\(footnote)\*?\s*(?=[\{\[])" attribute="Keyword" context="Footnoting"/>
 	<RegExpr String="\\(renewcommand|providenewcommand|newcommand)\*?(?=[^a-zA-Z])" attribute="Keyword" context="NewCommand"/>
         <RegExpr String="\\(e|g|x)?def(?=[^a-zA-Z])" attribute="Keyword" context="DefCommand"/>
@@ -96,7 +98,8 @@
 
       <!-- LaTeX commands \newcommand and \renewcommand -->
       <context name="NewCommand" attribute="Normal Text" lineEndContext="#stay" fallthrough="true" fallthroughContext="#pop">
-        <RegExpr String="\s*\{\s*\\[a-zA-Z]+\s*\}(\[\d\](\[[^\]]*\])?)?\{" attribute="Normal Text" context="CommandParameterStart"/>
+          <RegExpr String="\s*\{\s*" attribute="Normal Text" context="LabelParameter"/>
+          <RegExpr String="\s*(\[\d\](\[[^\]]*\])?)?\{" attribute="Normal Text" context="LabelParameter"/>
         <DetectChar char="}" attribute="Error" context="#pop"/>
       </context>
 
@@ -123,12 +126,21 @@
       <!-- LaTeX command in text mode -->
       <context name="ContrSeq" attribute="Keyword" lineEndContext="#pop">
         <StringDetect String="verb*" attribute="Keyword" context="Verb"/>
-        <RegExpr String="(Verb|verb|lstinline)(?=[^a-zA-Z])" attribute="Keyword" context="Verb"/>
+        <RegExpr String="(Verb|verb)(?=[^a-zA-Z])" attribute="Keyword" context="Verb"/>
+        <RegExpr String="(lstinline)(?=[^a-zA-Z])" attribute="Keyword" context="Lstinline"/>
+        <RegExpr String="mint(?=[^a-zA-Z])" attribute="Keyword" context="MintParam"/>
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
         <RegExpr String="[a-zA-Z@]+(\+?|\*{0,3})" attribute="Keyword" context="#pop"/>
         <RegExpr String="[^a-zA-Z]" attribute="Keyword" context="#pop" />
       </context>
       <context name="ToEndOfLine" attribute="Normal Text" lineEndContext="#pop">
+      </context>
+
+      <!-- \mint command with parameter-->
+      <context name="MintParam" attribute="Normal Text" lineEndContext="#stay">
+        <Detect2Chars char="}" char1="[" attribute="Normal Text" context="#stay"/>
+        <DetectChar char="}" attribute="Normal Text" context="Verb"/>
+        <DetectChar char="]" attribute="Normal Text" context="Verb"/>
       </context>
 
       <!-- verb command -->
@@ -139,6 +151,21 @@
         <StringDetect String="%1" attribute="Normal Text" context="#pop#pop#pop" dynamic="true" />
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
         <RegExpr String="[^%1\xd7]*" attribute="Verbatim" context="#stay" dynamic="true" />
+      </context>
+
+      <!-- lstinline command, different from verb as it takes options -->
+      <context name="Lstinline" attribute="Verbatim" lineEndContext="#pop#pop" >
+        <RegExpr String="\s*\[\s*" attribute="Normal Text" context="FancyLabelOption"/>
+        <RegExpr String="\s*\{\s*" attribute="Normal Text" context="LstinlineParameter"/>
+        <RegExpr String="(.)" attribute="Normal Text" dynamic="true" context="LstinlineEnd" />
+      </context>
+      <context name="LstinlineEnd" attribute="Verbatim" lineEndContext="#pop#pop#pop" dynamic="true" >
+        <StringDetect String="%1" attribute="Normal Text" context="#pop#pop#pop" dynamic="true" />
+        <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
+        <RegExpr String="[^%1\xd7]*" attribute="Verbatim" context="#stay" dynamic="true" />
+      </context>
+      <context name="LstinlineParameter" attribute="Verbatim" lineEndContext="#stay">
+        <RegExpr String="\s*\}\s*" attribute="Normal Text" context="#pop#pop#pop"/>
       </context>
 
       <!-- label -->
@@ -165,15 +192,28 @@
       <!-- labels from biblatex commands -->
       <context name="FancyLabel" attribute="Normal Text" lineEndContext="#stay" fallthrough="true" fallthroughContext="#pop">
 	      <RegExpr String="\s*\{\s*" attribute="Normal Text" context="FancyLabelParameter"/>
-	      <RegExpr String="\s*\[\s*" attribute="Normal Text" context="LabelOption"/>
+	      <RegExpr String="\s*\[\s*" attribute="Normal Text" context="FancyLabelOption"/>
 	      <RegExpr String="\s*\(\s*" attribute="Normal Text" context="FancyLabelRoundBrackets"/>
       </context>
 
       <context name="FancyLabelParameter" attribute="Environment" lineEndContext="#stay">
-	      <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
-	      <RegExpr String="\s*\}\s*" attribute="Normal Text" context="#pop"/>
+        <StringDetect String="\(" attribute="Math" context="MathMode" />
+        <DetectChar char="\" attribute="Keyword" context="ContrSeq"/>
+        <DetectChar char="$" attribute="Math" context="MathMode" />
+        <DetectChar char="%" attribute="Comment" context="Comment"/>
+        <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
+        <RegExpr String="\s*\}\s*" attribute="Normal Text" context="#pop"/>
       </context>
 
+      <context name="FancyLabelOption" attribute="Option Text" lineEndContext="#stay">
+        <StringDetect String="\(" attribute="Math" context="MathMode" />
+        <DetectChar char="\" attribute="Keyword" context="ContrSeq"/>
+        <DetectChar char="$" attribute="Math" context="MathMode" />
+        <DetectChar char="%" attribute="Comment" context="Comment"/>
+        <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
+        <RegExpr String="\s*\]\s*" attribute="Normal Text" context="#pop"/>
+      </context>
+      
       <context name="FancyLabelRoundBrackets" attribute="Normal Text" lineEndContext="#stay">
 	      <StringDetect String="\(" attribute="Math" context="MathMode" />
 	      <DetectChar char="\" attribute="Keyword" context="ContrSeq"/>
@@ -181,6 +221,20 @@
 	      <DetectChar char="%" attribute="Comment" context="Comment"/>
 	      <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
 	      <RegExpr String="\s*\)\s*" attribute="Normal Text" context="#pop"/>
+      </context>
+
+      <!-- Special commands -->
+      <context name="SpecialCommand" attribute="Normal Text" lineEndContext="#stay" fallthrough="true" fallthroughContext="#pop">
+	      <RegExpr String="\s*\{\s*" attribute="Normal Text" context="SpecialCommandParameterOption"/>
+      </context>
+
+      <context name="SpecialCommandParameterOption" attribute="Option Text" lineEndContext="#stay">
+        <StringDetect String="\(" attribute="Math" context="MathMode" />
+        <DetectChar char="\" attribute="Keyword" context="ContrSeq"/>
+        <DetectChar char="$" attribute="Math" context="MathMode" />
+        <DetectChar char="%" attribute="Comment" context="Comment"/>
+        <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
+        <RegExpr String="\s*\}\s*" attribute="Normal Text" context="#pop"/>
       </context>
 
       <!-- end of an environment -->
@@ -210,11 +264,13 @@
 
       <!-- filter the environment name and check the type -->
       <context name="BeginEnvironment" attribute="Environment" lineEndContext="#stay">
-        <RegExpr String="(lstlisting|(B|L)?Verbatim)" attribute="Environment" context="VerbatimEnvParam"/>
+        <StringDetect String="lstlisting" attribute="Environment" context="ListingsEnvParam"/>
+        <StringDetect String="minted" attribute="Environment" context="MintedEnvParam"/>
+        <RegExpr String="((B|L)?Verbatim)" attribute="Environment" context="VerbatimEnvParam"/>
         <RegExpr String="(verbatim|boxedverbatim)" attribute="Environment" context="VerbatimEnv"/>
         <RegExpr String="comment" attribute="Environment" context="CommentEnv"/>
         <RegExpr String="(alignat|xalignat|xxalignat)" attribute="Environment" context="MathEnvParam"/>
-        <RegExpr String="(equation|displaymath|eqnarray|subeqnarray|math|multline|gather|align|flalign|IEEEeqnarray|IEEEeqnarraybox|smallmatrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix)" attribute="Environment" context="MathEnv"/>
+        <RegExpr String="(equation|displaymath|eqnarray|subeqnarray|math|multline|gather|align|flalign|IEEEeqnarray|IEEEeqnarraybox|smallmatrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases)" attribute="Environment" context="MathEnv"/>
         <RegExpr String="(tabularx|tabular|supertabular|mpsupertabular|xtabular|mpxtabular|longtable)" attribute="Environment" context="TabEnv"/>
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
         <RegExpr String="[a-zA-Z]" attribute="Environment" context="LatexEnv"/>
@@ -244,16 +300,62 @@
         <DetectChar char="]" attribute="Normal Text" context="Verbatim"/>
       </context>
 
+      <!-- environment type 4: listings environment with optional parameter and HL switching-->
+      <context name="ListingsEnvParam" attribute="Normal Text" fallthrough="true" fallthroughContext="Verbatim" lineEndContext="#stay">
+        <Detect2Chars char="}" char1="[" attribute="Normal Text" context="#stay" />
+        <RegExpr String="language\s*=\s*(?=[^,]+)" minimal="true" attribute="Normal Text" context="HighlightningSelector"/>
+        <DetectChar char="}" attribute="Normal Text" context="Verbatim"/>
+        <DetectChar char="]" attribute="Normal Text" context="Verbatim"/>
+      </context>
+
+      <!-- environment type 5: minted environment with optional and HL switching -->
+      <context name="MintedEnvParam" attribute="Normal Text" lineEndContext="#stay">
+        <Detect2Chars char="}" char1="[" attribute="Normal Text" context="#stay" />
+        <Detect2Chars char="}" char1="{" attribute="Normal Text" context="HighlightningSelector"/>
+        <Detect2Chars char="]" char1="{" attribute="Normal Text" context="HighlightningSelector"/>
+        <DetectChar char="}" attribute="Normal Text" context="Verbatim"/>
+      </context>
+
+      <!-- Selector for different highlightning schemes, in case the language is not implemented we pop and thus fallback to verbatim -->
+      <context name="HighlightningSelector" attribute="Normal Text" lineEndContext="#stay">
+        <StringDetect String="C++" insensitive="true" context="HighlightningBeginC++"/>
+        <StringDetect String="Python" insensitive="true" context="HighlightningBeginPython"/>
+        <RegExpr String=".*(?=\}|\])" context="#pop"/>
+      </context>
+
+      <context name="HighlightningCommon" attribute="Normal Text" lineEndContext="#stay">
+        <RegExpr String="\\end\s*\{(lstlisting|minted)\*?\}" attribute="Structure" lookAhead="true" context="#pop#pop#pop#pop#pop#pop"/>
+      </context>
+
+      <context name="HighlightningBeginC++" attribute="Normal Text" lineEndContext="#stay">
+       <!-- Eat the trailing characters including } or ] after the language specification -->
+        <RegExpr String=".*(\}|\])" context="HighlightningC++"/>
+      </context>
+
+      <context name="HighlightningC++" attribute="Normal Text" lineEndContext="#stay">
+        <IncludeRules context="HighlightningCommon"/>
+        <IncludeRules context="##C++" includeAttrib="true"/>
+      </context>
+
+      <context name="HighlightningBeginPython" attribute="Normal Text" lineEndContext="#stay">
+        <RegExpr String=".*(\}|\])" context="HighlightningPython"/>
+      </context>
+
+      <context name="HighlightningPython" attribute="Normal Text" lineEndContext="#stay">
+        <IncludeRules context="HighlightningCommon"/>
+        <IncludeRules context="##Python"/>
+      </context>
+
       <!-- parse verbatim text -->
       <context name="Verbatim" attribute="Verbatim" lineEndContext="#stay">
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
-        <RegExpr String="\\end(?=\s*\{(verbatim|lstlisting|boxedverbatim|(B|L)?Verbatim)\*?\})" attribute="Structure"  context="VerbFindEnd"/>
+        <RegExpr String="\\end(?=\s*\{(verbatim|lstlisting|boxedverbatim|(B|L)?Verbatim|minted)\*?\})" attribute="Structure"  context="VerbFindEnd"/>
       </context>
 
       <!-- end of verbatim environment -->
       <context name="VerbFindEnd" attribute="Normal Text" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
         <RegExpr String="\s*\{" attribute="Normal Text" context="#stay"/>
-        <RegExpr String="(verbatim|lstlisting|boxedverbatim|(B|L)?Verbatim)\*?" attribute="Environment" context="#stay"/>
+        <RegExpr String="(verbatim|lstlisting|boxedverbatim|(B|L)?Verbatim|minted)\*?" attribute="Environment" context="#stay"/>
         <DetectChar char="}" attribute="Normal Text" context="#pop#pop#pop#pop#pop" endRegion="block"/>
       </context>
 
@@ -321,7 +423,7 @@
       <!-- end of math environment -->
       <context name="MathFindEnd" attribute="Normal Text" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
         <RegExpr String="\s*\{" attribute="Normal Text" context="#stay"/>
-        <RegExpr String="(equation|displaymath|eqnarray|subeqnarray|math|multline|gather|align|flalign|alignat|xalignat|xxalignat|IEEEeqnarray|IEEEeqnarraybox|smallmatrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix)\*?" attribute="Environment" context="#stay"/>
+        <RegExpr String="(equation|displaymath|eqnarray|subeqnarray|math|multline|gather|align|flalign|alignat|xalignat|xxalignat|IEEEeqnarray|IEEEeqnarraybox|smallmatrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases)\*?" attribute="Environment" context="#stay"/>
         <DetectChar char="}" attribute="Normal Text" context="#pop#pop#pop#pop#pop"  endRegion="block"/>
       </context>
 
@@ -446,8 +548,9 @@
 
     <itemDatas>
       <itemData name="Normal Text" defStyleNum="dsNormal"/>
+      <itemData name="Option Text" defStyleNum="dsNormal" spellChecking="false"/>
       <itemData name="Keyword" defStyleNum="dsNormal" color="#800000" selColor="#60FFFF" bold="0" italic="0" spellChecking="false"/>
-      <itemData name="Comment" defStyleNum="dsComment"/>
+      <itemData name="Comment" defStyleNum="dsComment" spellChecking="false"/>
       <itemData name="Error" defStyleNum="dsAlert" spellChecking="false"/>
       <itemData name="Math" defStyleNum="dsNormal" color="#00A000" selColor="#FF40FF"  bold="0" italic="0" spellChecking="false"/>
       <itemData name="Structure" defStyleNum="dsNormal" color="#F00000" selColor="#80FFD0" bold="0" italic="0" spellChecking="false"/>

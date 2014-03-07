@@ -473,20 +473,21 @@ def _loadAttributeToFormatMap(highlightingElement):
     attributeToFormatMap = {}
 
     itemDatasElement = highlightingElement.find('itemDatas')
-    for item in itemDatasElement.findall('itemData'):
-        attribute = item.get('name').lower()
-        defaultStyleName = item.get('defStyleNum')
+    if itemDatasElement is not None:
+        for item in itemDatasElement.findall('itemData'):
+            attribute = item.get('name').lower()
+            defaultStyleName = item.get('defStyleNum')
 
-        if not defaultStyleName in defaultTheme.format:
-            _logger.warning("Unknown default style '%s'", defaultStyleName)
-            defaultStyleName = 'dsNormal'
+            if not defaultStyleName in defaultTheme.format:
+                _logger.warning("Unknown default style '%s'", defaultStyleName)
+                defaultStyleName = 'dsNormal'
 
-        format = _makeFormat(defaultTheme,
-                             defaultStyleName,
-                             _textTypeForDefStyleName(attribute, defaultStyleName),
-                             item)
+            format = _makeFormat(defaultTheme,
+                                 defaultStyleName,
+                                 _textTypeForDefStyleName(attribute, defaultStyleName),
+                                 item)
 
-        attributeToFormatMap[attribute] = format
+            attributeToFormatMap[attribute] = format
 
     # HACK not documented, but 'normal' attribute is used by some parsers without declaration
     if not 'normal' in attributeToFormatMap:
@@ -524,7 +525,7 @@ def _loadSyntaxDescription(root, syntax):
     syntax.mimetype = filter(None, root.attrib.get('mimetype', '').split(';'))
     syntax.version = root.attrib.get('version', None)
     syntax.kateversion = root.attrib.get('kateversion', None)
-    syntax.priority = root.attrib.get('priority', None)
+    syntax.priority = int(root.attrib.get('priority', '0'))
     syntax.author = root.attrib.get('author', None)
     syntax.license = root.attrib.get('license', None)
     syntax.hidden = _parseBoolAttribute(root.attrib.get('hidden', 'false'))

@@ -15,7 +15,7 @@
     2008-02-13: 1.11 Eduardo Robles Elvira <edulix AT gmail DOT com>
      Fixed folding.
 -->
-<language name="Diff" version="1.11" kateversion="2.1" section="Other" extensions="*.diff;*patch" firstLineGlobs="Index: *" mimetype="text/x-patch">
+<language name="Diff" version="1.11" kateversion="2.1" section="Other" extensions="*.diff;*patch" mimetype="text/x-patch" firstLineGlobs="Index: *">
 
   <highlighting>
 

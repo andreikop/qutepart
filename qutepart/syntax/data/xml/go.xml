@@ -26,7 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 -->
 
 
-<language name="Go" version="1.01" kateversion="2.4" section="Sources" indenter="cstyle" extensions="*.go" author="Miquel Sabaté (mikisabate@gmail.com)" license="GPL">
+<language name="Go" version="1.04" kateversion="2.4" section="Sources" indenter="cstyle" extensions="*.go" author="Miquel Sabaté (mikisabate@gmail.com)" license="GPL">
     <highlighting>
     <list name="keywords">
 <!-- Keywords have been taken from The Go Programming Language Specification -> Keywords section -->
@@ -62,7 +62,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
       <item>complex64</item>
       <item>complex128</item>
       <item>error</item>
-      <item>float</item>
       <item>float32</item>
       <item>float64</item>
       <item>int</item>
@@ -73,26 +72,28 @@ with this program; if not, write to the Free Software Foundation, Inc.,
       <item>rune</item>
       <item>string</item>
       <item>uint</item>
+      <item>uintptr</item>
       <item>uint8</item>
       <item>uint16</item>
       <item>uint32</item>
       <item>uint64</item>
     </list>
     <list name="builtin">
-      <item> append </item>
-      <item> cap </item>
-      <item> close </item>
-      <item> complex </item>
-      <item> copy </item>
-      <item> imag </item>
-      <item> len </item>
-      <item> make </item>
-      <item> new </item>
-      <item> panic </item>
-      <item> print </item>
-      <item> println </item>
-      <item> real </item>
-      <item> recover </item>
+      <item>append</item>
+      <item>cap</item>
+      <item>close</item>
+      <item>complex</item>
+      <item>copy</item>
+      <item>delete</item>
+      <item>imag</item>
+      <item>len</item>
+      <item>make</item>
+      <item>new</item>
+      <item>panic</item>
+      <item>print</item>
+      <item>println</item>
+      <item>real</item>
+      <item>recover</item>
     </list>
     <list name="predeclared">
       <item>false</item>
@@ -114,7 +115,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
       <HlCHex attribute="Hex" context="#stay"/>
       <HlCChar attribute="Char" context="#stay" />
       <DetectChar attribute="String" context="String" char="&quot;" />
-      <DetectChar attribute="Multiline String" context="Multiline String" char="`"/>
+      <DetectChar attribute="String" context="Multiline String" char="`"/>
       <AnyChar attribute="Symbol" context="#stay" String=":!%&amp;()+,-/.*&lt;=&gt;?[]|~^&#59;"/>
       </context>
 

@@ -582,6 +582,8 @@ class Qutepart(QPlainTextEdit):
         if oldLanguage != newLanguage:
             self.languageChanged.emit(newLanguage)
 
+        return syntax is not None
+
     def clearSyntax(self):
         """Clear syntax. Disables syntax highlighting
 
