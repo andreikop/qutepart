@@ -10,8 +10,7 @@ import sys
 import os
 topLevelPath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, topLevelPath)
-sys.path.insert(0, os.path.join(topLevelPath, 'build/lib.linux-x86_64-2.6/'))
-sys.path.insert(0, os.path.join(topLevelPath, 'build/lib.linux-x86_64-2.7/'))
+sys.path.insert(0, os.path.join(topLevelPath, 'tests'))
 
 from qutepart import Qutepart
 import qutepart

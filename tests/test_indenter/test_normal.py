@@ -187,5 +187,29 @@ class Test(IndentTest):
         self.verifyExpected(expected)
 
 
+
+class Test(IndentTest):
+    """Lua uses normal indenter. Check it doesn't crash at least
+    """
+    LANGUAGE = 'Lua'
+    INDENT_WIDTH = 4
+
+    def test_normal2(self):
+        origin = [
+            "    bla bla",
+            ""]
+        expected = [
+            "    bla bla",
+            "    ok",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(0,11);
+        self.enter();
+        self.type("ok");
+        self.verifyExpected(expected)
+
+
 if __name__ == '__main__':
     unittest.main()
