@@ -4,6 +4,9 @@ It contains implementation of indenters, which are supported by katepart xml fil
 
 import logging
 
+logger = logging.getLogger('qutepart')
+
+
 from PyQt4.QtGui import QTextCursor
 
 
@@ -17,7 +20,6 @@ def _getSmartIndenter(indenterName, qpart, indenter):
     indenterName = indenterName.lower()
 
     if indenterName in ('haskell', 'lilypond'):  # not supported yet
-        logger = logging.getLogger('qutepart')
         logger.warning('Smart indentation for %s not supported yet. But you could be a hero who implemented it' % indenterName)
         from qutepart.indenter.base import IndentAlgNormal as indenterClass
     elif 'none' == indenterName:
@@ -218,7 +220,7 @@ class Indenter:
             try:
                 return _getSmartIndenter(syntax.indenter, self._qpart, self)
             except KeyError:
-                logger.error("Indenter '%s' not found" % syntax.indenter)
+                logger.error("Indenter '%s' is not finished yet. But you can do it!" % syntax.indenter)
 
         try:
             return _getSmartIndenter(syntax.name, self._qpart, self)
