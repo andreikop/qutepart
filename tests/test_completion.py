@@ -91,6 +91,27 @@ class Test(unittest.TestCase):
         QTest.keyClick(self.qpart, Qt.Key_Tab)
         self.assertEqual(self.qpart.text, 'aaaaa\naaaaaXXXXX\naaaaa')
 
+    @base.in_main_loop
+    def test_too_long_list(self):
+        self._window.show()
+
+        self.qpart.text = '\n'.join(['asdf' + str(i) \
+                                        for i in range(100)]) + '\n'
+        base._processPendingEvents(self.app)
+        self.qpart.cursorPosition = (100, 0)
+        QTest.keyClicks(self.qpart, "asdf")
+        self.assertIsNotNone(self.qpart._completer._widget)
+
+        self.qpart.text = '\n'.join(['asdf' + str(i) \
+                                        for i in range(1000)]) + '\n'
+        base._processPendingEvents(self.app)
+        self.qpart.cursorPosition = (1000, 0)
+        QTest.keyClicks(self.qpart, "asdf")
+        self.assertIsNone(self.qpart._completer._widget)
+
+        QTest.keyPress(self.qpart, Qt.Key_Space, Qt.ControlModifier, 100)
+        self.assertIsNotNone(self.qpart._completer._widget)
+
 
 if __name__ == '__main__':
     unittest.main()

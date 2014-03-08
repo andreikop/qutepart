@@ -16,6 +16,10 @@ _wordAtEndRegExp = re.compile(_wordPattern + '$')
 _wordAtStartRegExp = re.compile('^' + _wordPattern)
 
 
+# Maximum count of words, for which completion will be shown. Ignored, if completion invoked manually.
+MAX_VISIBLE_WORD_COUNT = 256
+
+
 class _GlobalUpdateWordSetTimer:
     """Timer updates word set, when editor is idle. (5 sec. after last change)
     Timer is global, for avoid situation, when all instances
@@ -73,6 +77,9 @@ class _CompletionModel(QAbstractItemModel):
 
     def hasWords(self):
         return len(self.words) > 0
+
+    def tooManyWords(self):
+        return len(self.words) > MAX_VISIBLE_WORD_COUNT
 
     def data(self, index, role):
         """QAbstractItemModel method implementation
@@ -379,6 +386,19 @@ class Completer(QObject):
 
         return False
 
+    def _shouldShowModel(self, model, forceShow):
+        if not model.hasWords():
+            return False
+
+        return forceShow or \
+               (not model.tooManyWords())
+
+    def _createWidget(self, model):
+        self._widget = _CompletionList(self._qpart, model)
+        self._widget.closeMe.connect(self._closeCompletion)
+        self._widget.itemSelected.connect(self._onCompletionListItemSelected)
+        self._widget.tabPressed.connect(self._onCompletionListTabPressed)
+
     def _invokeCompletionIfAvailable(self, requestedByUser=False):
         """Invoke completion, if available. Called after text has been typed in qpart
         Returns True, if invoked
@@ -387,23 +407,20 @@ class Completer(QObject):
             wordBeforeCursor = self._wordBeforeCursor()
             wholeWord = wordBeforeCursor + self._wordAfterCursor()
 
+            forceShow = requestedByUser or self._completionOpenedManually
             if wordBeforeCursor:
-                if len(wordBeforeCursor) >= self._qpart.completionThreshold or \
-                   self._completionOpenedManually or \
-                   requestedByUser:
+                if len(wordBeforeCursor) >= self._qpart.completionThreshold or forceShow:
                     if self._widget is None:
                         model = _CompletionModel(self._wordSet)
                         model.setData(wordBeforeCursor, wholeWord)
-                        if model.hasWords():
-                            self._widget = _CompletionList(self._qpart, model)
-                            self._widget.closeMe.connect(self._closeCompletion)
-                            self._widget.itemSelected.connect(self._onCompletionListItemSelected)
-                            self._widget.tabPressed.connect(self._onCompletionListTabPressed)
+                        if self._shouldShowModel(model, forceShow):
+                            self._createWidget(model)
                             return True
                     else:
                         self._widget.model().setData(wordBeforeCursor, wholeWord)
-                        if self._widget.model().hasWords():
+                        if self._shouldShowModel(self._widget.model(), forceShow):
                             self._widget.updateGeometry()
+
                             return True
 
         self._closeCompletion()
