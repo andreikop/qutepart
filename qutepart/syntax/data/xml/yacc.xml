@@ -92,7 +92,7 @@ This code is released under the LGPL as part of kdelibs/kate.
     <IncludeRules context="Comment" />
     <RegExpr attribute="Normal Text" context="Percent Command In" String="\W" lookAhead="true" />
   </context>
-  <context name="Percent Command In" attribute="NormalText" lineEndContext="#pop#pop">
+  <context name="Percent Command In" attribute="Normal Text" lineEndContext="#pop#pop">
     <IncludeRules context="StringOrChar" />
     <DetectChar attribute="Data Type" context="PC type" char="&lt;" />
   </context>
@@ -112,7 +112,7 @@ This code is released under the LGPL as part of kdelibs/kate.
     <RegExpr attribute="Comment" context="#pop" String="[^\\]$" />
   </context>
 
-  <context name="StringOrChar" attribute="NormalText">
+  <context name="StringOrChar" attribute="Normal Text">
     <DetectChar attribute="String Char" context="Char" char="'" />
     <DetectChar attribute="String" context="String" char="&quot;" />
   </context>
@@ -128,8 +128,8 @@ This code is released under the LGPL as part of kdelibs/kate.
   <context name="Normal C Bloc" attribute="Normal Text" lineEndContext="#stay">
     <DetectChar attribute="Normal Text" context="Normal C Bloc" char="{" beginRegion="bloc" />
     <DetectChar attribute="Normal Text" context="#pop" char="}" endRegion="bloc" />
-    <IncludeRules context="##C++" />
     <DetectChar attribute="Directive" context="Dol" char="$" />
+    <IncludeRules context="##C++" />
   </context>
   <context name="Dol" attribute="Normal Text" fallthrough="true" fallthroughContext="DolEnd">
     <RegExpr attribute="Data Type" context="DolEnd" String="&lt;[^&gt;]+&gt;" />

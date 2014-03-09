@@ -747,8 +747,11 @@ class IncludeRules(AbstractRule):
         for rule in self.context.rules:
             ruleTryMatchResult = rule.tryMatch(textToMatchObject)
             if ruleTryMatchResult is not None:
-                _logger.debug('\tmatched rule %s(%d) at %d in included context %s',
-                              rule.__class__.__name__, self.context.rules.index(rule), textToMatchObject.currentColumnIndex, self.context.name)
+                _logger.debug('\tmatched rule %s at %d in included context %s/%s',
+                              rule.shortId(),
+                              textToMatchObject.currentColumnIndex,
+                              self.context.parser.syntax.name,
+                              self.context.name)
                 return ruleTryMatchResult
         else:
             return None
@@ -842,8 +845,9 @@ class Context:
             for rule in self.rules:
                 ruleTryMatchResult = rule.tryMatch(textToMatchObject)
                 if ruleTryMatchResult is not None:
-                    _logger.debug('\tmatched rule %s(%d) at %d',
-                                  rule.__class__.__name__, self.rules.index(rule), currentColumnIndex)
+                    _logger.debug('\tmatched rule %s at %d',
+                                  rule.shortId(),
+                                  currentColumnIndex)
                     if countOfNotMatchedSymbols > 0:
                         highlightedSegments.append((countOfNotMatchedSymbols, self.format))
                         textTypeMap += [self.textType for i in range(countOfNotMatchedSymbols)]

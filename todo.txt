@@ -1,7 +1,4 @@
 fixme:
-  sed # excess characters
-  *.y   $$ = new var;
-  crash on mp makefile
 
 todo:
   switch hihglighting language        2
