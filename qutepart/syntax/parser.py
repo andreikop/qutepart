@@ -35,8 +35,8 @@ class ContextStack:
         """Returns new context stack, which doesn't contain few levels
         """
         if len(self._contexts) - 1 < count:
-            _logger.error("#pop value is too big")
-            return self
+            _logger.error("#pop value is too big %d", len(self._contexts))
+            return ContextStack(self._contexts[:1], self._data[:1])
 
         return ContextStack(self._contexts[:-count], self._data[:-count])
 

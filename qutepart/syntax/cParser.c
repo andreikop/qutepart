@@ -2586,7 +2586,7 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* context
         fprintf(stderr, "Attempt to pop the last context\n");
         return ContextStack_new(contextStack->_contexts,
                                 contextStack->_data,
-                                contextStack->_size);
+                                1);
     }
 
     newContextStack = ContextStack_new(contextStack->_contexts,
