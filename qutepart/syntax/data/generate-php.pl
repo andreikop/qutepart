@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+
 # This perl script read stdin and write on stdout. It shall be an XML language file.
 #
 # * If the name of the language is 'HTML', then it creates the language 'PHP (HTML)'
@@ -48,7 +50,7 @@ else
 
 $findphp = "<context name=\"FindPHP\">\n<RegExpr context=\"##PHP/PHP\" String=\"&lt;\\?(?:=|php)?\" lookAhead=\"true\" />\n</context>\n";
 
-$file =~ s/<IncludeRules\s([^>]*)context="##(?!Alerts)([^"]+)"/<IncludeRules $1context="##$2\/PHP"/g;
+$file =~ s/<IncludeRules\s([^>]*)context="##(?!Alerts|Doxygen|Modelines)([^"]+)"/<IncludeRules $1context="##$2\/PHP"/g;
 $file =~ s/(<context\s[^>]*>)/$1\n<IncludeRules context="FindPHP" \/>/g;
 $file =~ s/(?=<\/contexts\s*>)/$findphp/;
 

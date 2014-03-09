@@ -1,5 +1,4 @@
 fixme:
-  .php not highlighted
   sed # excess characters
   *.y   $$ = new var;
   crash on mp makefile

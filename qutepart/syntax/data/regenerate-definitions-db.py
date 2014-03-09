@@ -4,18 +4,26 @@ import os.path
 import json
 
 import sys
-sys.path.append('.')
-sys.path.append('..')
-sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
+
+_MY_PATH = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(_MY_PATH, '..', '..', '..'))
 
 
 from qutepart.syntax.loader import loadSyntax
 from qutepart.syntax import SyntaxManager, Syntax
 
 
+def _add_php(targetFileName, srcFileName):
+    os.system("./generate-php.pl > xml/{} < xml/{}".format(targetFileName, srcFileName))
+
+
 def main():
-    syntaxDataPath = os.path.join(os.path.dirname(__file__), '..', 'qutepart', 'syntax', 'data')
-    xmlFilesPath = os.path.join(syntaxDataPath, 'xml')
+    os.chdir(_MY_PATH)
+    _add_php('javascript-php.xml', 'javascript.xml')
+    _add_php('css-php.xml', 'css.xml')
+    _add_php('html-php.xml', 'html.xml')
+
+    xmlFilesPath = os.path.join(_MY_PATH, 'xml')
     xmlFileNames = [fileName for fileName in os.listdir(xmlFilesPath) \
                         if fileName.endswith('.xml')]
 
@@ -43,7 +51,6 @@ def main():
                 if extension not in extensionToXmlFileName or \
                    extensionToXmlFileName[extension][0] < syntax.priority:
                     extensionToXmlFileName[extension] = (syntax.priority, xmlFileName)
-                elif extension in extensionToXmlFileName:
 
         if syntax.firstLineGlobs:
             for glob in syntax.firstLineGlobs:
@@ -68,7 +75,7 @@ def main():
     result['extensionToXmlFileName'] = extensionToXmlFileName
     result['firstLineToXmlFileName'] = firstLineToXmlFileName
 
-    with open(os.path.join(syntaxDataPath, 'syntax_db.json'), 'w') as syntaxDbFile:
+    with open('syntax_db.json', 'w') as syntaxDbFile:
         json.dump(result, syntaxDbFile, sort_keys=True, indent=4)
 
     print 'Done. Do not forget to commit the changes'
