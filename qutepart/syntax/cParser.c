@@ -2097,7 +2097,7 @@ DECLARE_RULE_METHODS_AND_TYPE(HlCHex);
 static bool
 _charInString(Py_UNICODE character, const char* string)
 {
-    char charToSearch = character;
+    char charToSearch = (char)character;
 
     for( ; *string != '\0'; string++)
         if (*string == charToSearch)
