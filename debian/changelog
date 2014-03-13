@@ -1,3 +1,11 @@
+python-qutepart (1.3.0-1~ubuntuseries1) ubuntuseries; urgency=low
+
+  * API: Added binaryParserAvailable flag
+  * API: Added indentWithSpaceAction, unIndentWithSpaceAction
+  * Bugfixes and improvements
+
+ -- Andrei Kopats <hlamer@tut.by>  Thu, 13 Mar 2014 08:52:06 +0300
+
 python-qutepart (1.1.1-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Highlight XXX alerts

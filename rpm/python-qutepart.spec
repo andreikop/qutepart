@@ -1,5 +1,5 @@
 Name:           python-qutepart
-Version:        1.1.1
+Version:        1.3.0
 Release:        1%{?dist}
 Summary:        Code editor widget for PyQt
 Group:          Development/Libraries/Python
@@ -57,6 +57,11 @@ Qutepart is a code editor widget for PyQt. Features:
 
 
 %changelog
+* Thu Mar 14 2014 Andrei Kopats <hlamer@tut.by>  1.3.0-3
+- Bugfixes and improvements
+- API: Added binaryParserAvailable flag
+- API: Added indentWithSpaceAction, unIndentWithSpaceAction
+
 * Wed Nov 20 2013 Andrei Kopats <hlamer@tut.by>  1.1.1-2
 - RPM release for Suse
 - Highlight XXX alert
