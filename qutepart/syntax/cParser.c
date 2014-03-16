@@ -2583,7 +2583,9 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* context
         (contextStack->_size - self->_popsCount == 0 &&
          ( ! haveContextToSwitch)))
     {
+#if 0  // Trace disabled because happens to often. It seems like it is normal behavior.
         fprintf(stderr, "Attempt to pop the last context\n");
+#endif
         return ContextStack_new(contextStack->_contexts,
                                 contextStack->_data,
                                 1);
