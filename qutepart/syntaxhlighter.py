@@ -21,7 +21,9 @@ def _cmpFormatRanges(a, b):
         return 0
     else:
         return cmp(id(a), id(b))
-QTextLayout.FormatRange.__cmp__ = _cmpFormatRanges
+
+if hasattr(QTextLayout, 'FormatRange'):  # doesn't have on Mocks for rtfd.org
+    QTextLayout.FormatRange.__cmp__ = _cmpFormatRanges
 
 
 class _TextBlockUserData(QTextBlockUserData):
