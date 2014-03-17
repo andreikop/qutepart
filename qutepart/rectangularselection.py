@@ -10,9 +10,10 @@ class RectangularSelection:
     MIME_TYPE = 'text/rectangular-selection'
 
     # any of this modifiers with mouse select text
+    # if hasattr(Qt, 'AltModifier') to make the docs buildable on rtfd.org
     MOUSE_MODIFIERS = (Qt.AltModifier | Qt.ControlModifier,
                        Qt.AltModifier | Qt.ShiftModifier,
-                       Qt.AltModifier)
+                       Qt.AltModifier) if hasattr(Qt, 'AltModifier') else None
 
     _MAX_SIZE = 256
 
