@@ -2473,7 +2473,8 @@ DetectIdentifier_tryMatch(DetectIdentifier* self, TextToMatchObject_internal* te
         unsigned int index = 1;
         while(index < textToMatchObject->textLen &&
               (Py_UNICODE_ISALPHA(textToMatchObject->unicodeText[index]) ||
-               Py_UNICODE_ISDIGIT(textToMatchObject->unicodeText[index])))
+               Py_UNICODE_ISDIGIT(textToMatchObject->unicodeText[index]) ||
+              textToMatchObject->unicodeText[index] == '_'))
             index ++;
 
         return MakeTryMatchResult(self, index, NULL);

@@ -770,7 +770,7 @@ class DetectSpaces(AbstractRule):
 
 
 class DetectIdentifier(AbstractRule):
-    _regExp = re.compile('[a-zA-Z][a-zA-Z0-9]*')
+    _regExp = re.compile('[a-zA-Z][a-zA-Z0-9_]*')
     def shortId(self):
         return 'DetectIdentifier()'
 
