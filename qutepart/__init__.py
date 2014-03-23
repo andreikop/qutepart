@@ -24,7 +24,7 @@ from qutepart.indenter import Indenter
 import qutepart.bookmarks
 
 
-VERSION = (1, 4, 0)
+VERSION = (1, 5, 0)
 
 
 logger = logging.getLogger('qutepart')
@@ -175,7 +175,8 @@ class Qutepart(QPlainTextEdit):
     * ``duplicateLineAction`` - Duplicate line
 
     Other:
-
+    * ``undoAction`` - Undo
+    * ``redoAction`` - Redo
     * ``invokeCompletionAction`` - Invoke completion
     * ``printAction`` - Print file
 
@@ -287,7 +288,8 @@ class Qutepart(QPlainTextEdit):
             if iconFileName is not None:
                 action.setIcon(QIcon(getIconPath(iconFileName)))
 
-            action.setShortcut(QKeySequence(shortcut))
+            keySeq = shortcut if isinstance(shortcut, QKeySequence) else QKeySequence(shortcut)
+            action.setShortcut(keySeq)
             action.setShortcutContext(Qt.WidgetShortcut)
             action.triggered.connect(slot)
 
@@ -295,6 +297,7 @@ class Qutepart(QPlainTextEdit):
 
             return action
 
+        # scrolling
         self.scrollUpAction = createAction('Scroll up', 'Ctrl+Up',
                                            lambda: self._onShortcutScroll(down = False),
                                            'up.png')
@@ -305,6 +308,8 @@ class Qutepart(QPlainTextEdit):
                                                     lambda: self._onShortcutSelectAndScroll(down = False))
         self.selectAndScrollDownAction = createAction('Select and scroll Down', 'Ctrl+Shift+Down',
                                                       lambda: self._onShortcutSelectAndScroll(down = True))
+
+        # indentation
         self.increaseIndentAction = createAction('Increase indentation', 'Tab',
                                                  self._onShortcutIndent,
                                                  'indent.png')
@@ -313,6 +318,19 @@ class Qutepart(QPlainTextEdit):
                             'unindent.png')
         self.autoIndentLineAction = createAction('Autoindent line', 'Ctrl+I',
                                                   self._indenter.onAutoIndentTriggered)
+        self.indentWithSpaceAction = createAction('Indent with 1 space', 'Shift+Space',
+                        lambda: self._indenter.onChangeSelectedBlocksIndent(increase=True,
+                                                                              withSpace=True))
+        self.unIndentWithSpaceAction = createAction('Unindent with 1 space', 'Shift+Backspace',
+                            lambda: self._indenter.onChangeSelectedBlocksIndent(increase=False,
+                                                                                  withSpace=True))
+
+        # editing
+        self.undoAction = createAction('Undo', QKeySequence.Undo,
+                                       self.undo, 'undo.png')
+        self.redoAction = createAction('Redo', QKeySequence.Redo,
+                                       self.redo, 'redo.png')
+
         self.moveLineUpAction = createAction('Move line up', 'Alt+Up',
                                              lambda: self._onShortcutMoveLine(down = False), 'up.png')
         self.moveLineDownAction = createAction('Move line down', 'Alt+Down',
@@ -323,13 +341,9 @@ class Qutepart(QPlainTextEdit):
         self.cutLineAction = createAction('Cut line', 'Alt+X', self._onShortcutCutLine, 'cut.png')
         self.duplicateLineAction = createAction('Duplicate line', 'Alt+D', self._onShortcutDuplicateLine)
         self.invokeCompletionAction = createAction('Invoke completion', 'Ctrl+Space', self._completer.invokeCompletion)
+
+        # other
         self.printAction = createAction('Print', 'Ctrl+P', self._onShortcutPrint, 'print.png')
-        self.indentWithSpaceAction = createAction('Indent with 1 space', 'Shift+Space',
-                        lambda: self._indenter.onChangeSelectedBlocksIndent(increase=True,
-                                                                              withSpace=True))
-        self.unIndentWithSpaceAction = createAction('Unindent with 1 space', 'Shift+Backspace',
-                            lambda: self._indenter.onChangeSelectedBlocksIndent(increase=False,
-                                                                                  withSpace=True))
 
     def __enter__(self):
         """Context management method.

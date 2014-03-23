@@ -63,7 +63,8 @@ def main():
 
     qpart.setWindowTitle(ns.file)
 
-    menu = {'Bookmarks': ('toggleBookmarkAction',
+    menu = {'File':      ('printAction',),
+            'Bookmarks': ('toggleBookmarkAction',
                           'nextBookmarkAction',
                           'prevBookmarkAction'),
             'Navigation':('scrollUpAction',
@@ -71,19 +72,21 @@ def main():
                           'selectAndScrollUpAction',
                           'selectAndScrollDownAction',
                           ),
-            'Edit'      : ('increaseIndentAction',
+            'Indentation':('increaseIndentAction',
                            'decreaseIndentAction',
                            'autoIndentLineAction',
-                           'moveLineUpAction',
+                           'indentWithSpaceAction',
+                           'unIndentWithSpaceAction'),
+            'Lines':      ('moveLineUpAction',
                            'moveLineDownAction',
                            'deleteLineAction',
                            'copyLineAction',
                            'pasteLineAction',
                            'cutLineAction',
-                           'duplicateLineAction',
-                           'invokeCompletionAction',
-                           'indentWithSpaceAction',
-                           'unIndentWithSpaceAction'
+                           'duplicateLineAction'),
+            'Edit'      : ('invokeCompletionAction',
+                           'undoAction',
+                           'redoAction'
                            )
     }
     for k, v in menu.items():
