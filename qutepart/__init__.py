@@ -158,7 +158,8 @@ class Qutepart(QPlainTextEdit):
 
     Indentation:
 
-    * ``decreaseIndentAction`` - Decrease indentation
+    * ``increaseIndentAction`` - Increase indentation by 1 level
+    * ``decreaseIndentAction`` - Decrease indentation by 1 level
     * ``autoIndentLineAction`` - Autoindent line
     * ``indentWithSpaceAction`` - Indent all selected lines by 1 space symbol
     * ``unIndentWithSpaceAction`` - Unindent all selected lines by 1 space symbol
@@ -304,8 +305,12 @@ class Qutepart(QPlainTextEdit):
                                                     lambda: self._onShortcutSelectAndScroll(down = False))
         self.selectAndScrollDownAction = createAction('Select and scroll Down', 'Ctrl+Shift+Down',
                                                       lambda: self._onShortcutSelectAndScroll(down = True))
+        self.increaseIndentAction = createAction('Increase indentation', 'Tab',
+                                                 self._onShortcutIndent,
+                                                 'indent.png')
         self.decreaseIndentAction = createAction('Decrease indentation', 'Shift+Tab',
-                            lambda: self._indenter.onChangeSelectedBlocksIndent(increase = False))
+                            lambda: self._indenter.onChangeSelectedBlocksIndent(increase = False),
+                            'unindent.png')
         self.autoIndentLineAction = createAction('Autoindent line', 'Ctrl+I',
                                                   self._indenter.onAutoIndentTriggered)
         self.moveLineUpAction = createAction('Move line up', 'Alt+Up',
@@ -792,11 +797,6 @@ class Qutepart(QPlainTextEdit):
             self._rectangularSelection.delete()
         elif event.key() == Qt.Key_Insert and event.modifiers() == Qt.NoModifier:
             self.setOverwriteMode(not self.overwriteMode())
-        elif event.key() == Qt.Key_Tab and event.modifiers() == Qt.NoModifier:
-            if cursor.hasSelection():
-                self._indenter.onChangeSelectedBlocksIndent(increase=True)
-            else:
-                self._indenter.onShortcutIndentAfterCursor()
         elif event.key() == Qt.Key_Backspace and \
              shouldUnindentWithBackspace():
             self._indenter.onShortcutUnindentWithBackspace()
@@ -994,6 +994,12 @@ class Qutepart(QPlainTextEdit):
                         self._userExtraSelections
 
         QPlainTextEdit.setExtraSelections(self, allSelections)
+
+    def _onShortcutIndent(self):
+        if self.textCursor().hasSelection():
+            self._indenter.onChangeSelectedBlocksIndent(increase=True)
+        else:
+            self._indenter.onShortcutIndentAfterCursor()
 
     def _onShortcutScroll(self, down):
         """Ctrl+Up/Down pressed, scroll viewport
