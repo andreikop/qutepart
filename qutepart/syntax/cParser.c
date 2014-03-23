@@ -614,9 +614,10 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
     Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(self->wholeLineUnicodeText);
     Py_UNICODE* wholeLineUnicodeBufferLower = PyUnicode_AS_UNICODE(self->wholeLineUnicodeTextLower);
 
-   // update text and textLen
+   // update text, textLen, column
     self->unicodeText = wholeLineUnicodeBuffer + currentColumnIndex;
     self->unicodeTextLower = wholeLineUnicodeBufferLower + currentColumnIndex;
+    self->currentColumnIndex = currentColumnIndex;
 
     prevTextLen = self->textLen;
     self->textLen = self->wholeLineLen - currentColumnIndex;
