@@ -1,3 +1,7 @@
+2.0.0   Mar 29 2014
+    API: drawWhiteSpaceTrailing -> drawIncorrectIndentation
+         drawWhiteSpaceAnyIndentation -> drawAnyWhitespace
+
 1.5.0   Mar 23 2014
     API: increaseIndentAction, undoAction, redoAction
 

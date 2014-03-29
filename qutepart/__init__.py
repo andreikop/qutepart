@@ -24,7 +24,7 @@ from qutepart.indenter import Indenter
 import qutepart.bookmarks
 
 
-VERSION = (1, 5, 0)
+VERSION = (2, 0, 0)
 
 
 logger = logging.getLogger('qutepart')
@@ -129,8 +129,8 @@ class Qutepart(QPlainTextEdit):
 
     **Visible white spaces**
 
-    * ``drawWhiteSpaceTrailing`` - Draw trailing whitespaces. Default is ``True``.
-    * ``drawWhiteSpaceAnyIndentation`` - Draw trailing and other whitespaces, used as indentation. Default is ``False``.
+    * ``drawIncorrectIndentation`` - Draw trailing whitespaces, tabs if text is indented with spaces, spaces if text is indented with tabs. Default is ``True``. Doesn't have any effect if ``drawAnyWhitespace`` is ``True``.
+    * ``drawAnyWhitespace`` - Draw trailing and other whitespaces, used as indentation. Default is ``False``.
 
     **Autocompletion**
 
@@ -228,8 +228,8 @@ class Qutepart(QPlainTextEdit):
         self.lineLengthEdgeColor = Qt.red
         self._atomicModificationDepth = 0
 
-        self.drawWhiteSpaceTrailing = True
-        self.drawWhiteSpaceAnyIndentation = False
+        self.drawIncorrectIndentation = True
+        self.drawAnyWhitespace = False
 
         self._rectangularSelection = RectangularSelection(self)
 
@@ -861,6 +861,52 @@ class Qutepart(QPlainTextEdit):
         else:
             super(Qutepart, self).mouseMoveEvent(mouseEvent)
 
+    def _chooseVisibleWhitespace(self, text):
+        result = [False for _ in range(len(text))]
+
+        lastNonSpaceColumn = len(text.rstrip()) - 1
+
+        # Draw not trailing whitespace
+        if self.drawAnyWhitespace:
+            # Any
+            for column, char in enumerate(text[:lastNonSpaceColumn]):
+                if char.isspace() and \
+                   (char == '\t' or \
+                    column == 0 or \
+                    text[column - 1].isspace()):
+                    result[column] = True
+        elif self.drawIncorrectIndentation:
+            # Only incorrect
+            if self.indentUseTabs:
+                # Find big space groups
+                bigSpaceGroup = ' ' * self.indentWidth
+                column = 0
+                while column != -1:
+                    column = text.find(bigSpaceGroup, column, lastNonSpaceColumn)
+                    if column != -1:
+                        for index in range(column, column + self.indentWidth):
+                            result[index] = True
+                        while index < lastNonSpaceColumn and \
+                              text[index] == ' ':
+                                result[index] = True
+                                index += 1
+                        column = index
+            else:
+                # Find tabs:
+                column = 0
+                while column != -1:
+                    column = text.find('\t', column, lastNonSpaceColumn)
+                    if column != -1:
+                        result[column] = True
+                        column += 1
+
+        # Draw trailing whitespace
+        if self.drawIncorrectIndentation or self.drawAnyWhitespace:
+            for column in range(lastNonSpaceColumn + 1, len(text)):
+                result[column] = True
+
+        return result
+
     def _drawIndentMarkersAndEdge(self, paintEventRect):
         """Draw indentation markers
         """
@@ -931,9 +977,10 @@ class Qutepart(QPlainTextEdit):
                 break
 
             if block.isVisible() and blockGeometry.toRect().intersects(paintEventRect):
+
+                # Draw indent markers, if good indentation is not drawn
                 text = block.text()
-                if not self.drawWhiteSpaceAnyIndentation:
-                    # Draw indent markers
+                if not self.drawAnyWhitespace:
                     column = indentWidthChars
                     while text.startswith(self._indenter.text()) and \
                           len(text) > indentWidthChars and \
@@ -953,18 +1000,12 @@ class Qutepart(QPlainTextEdit):
                 if edgePos != -1 and edgePos != cursorPos[1]:
                     drawEdgeLine(block, edgePos)
 
-                text = block.text()
-                lastNonSpaceColumn = len(text.rstrip()) - 1
-                if self.drawWhiteSpaceTrailing or self.drawWhiteSpaceAnyIndentation:
-                    # Draw whitespace symbols
+                if self.drawAnyWhitespace or \
+                   self.drawIncorrectIndentation:
                     text = block.text()
-                    for column, char in enumerate(text):
-                        if char.isspace():
-                            if (char == '\t' or column == 0 or text[column - 1].isspace()) and \
-                               self.drawWhiteSpaceAnyIndentation:
-                                drawWhiteSpace(block, column, char)
-                            elif column > lastNonSpaceColumn and self.drawWhiteSpaceTrailing:
-                                drawWhiteSpace(block, column, char)
+                    for column, draw in enumerate(self._chooseVisibleWhitespace(text)):
+                        if draw:
+                            drawWhiteSpace(block, column, text[column])
 
     def paintEvent(self, event):
         pass # suppress dockstring for non-public method
