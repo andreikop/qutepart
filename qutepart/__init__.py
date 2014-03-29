@@ -873,7 +873,9 @@ class Qutepart(QPlainTextEdit):
                 if char.isspace() and \
                    (char == '\t' or \
                     column == 0 or \
-                    text[column - 1].isspace()):
+                    text[column - 1].isspace() or \
+                    ((column + 1) < lastNonSpaceColumn and \
+                     text[column + 1].isspace())):
                     result[column] = True
         elif self.drawIncorrectIndentation:
             # Only incorrect

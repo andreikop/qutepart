@@ -88,7 +88,7 @@ class Test(unittest.TestCase):
     def test_4(self):
         # Draw any
         self._ws_test(' 1 1  2   3     5\t',
-                      '1000010 110 111101',
+                      '100011011101111101',
                       drawAny=[True],
                       indentWidth=[2, 3, 4, 8])
 
