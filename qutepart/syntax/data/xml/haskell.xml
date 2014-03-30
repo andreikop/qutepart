@@ -376,7 +376,7 @@
       <RegExpr attribute="Comment" context="comments" String="\{-[^#]?" />
       <RegExpr attribute="Comment" context="comment"  String="--[^\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:].*$" />
     </context>
-
+    
     <context attribute="C2HS Directive" lineEndContext="#stay" name="c2hs directive">
       <Detect2Chars attribute="C2HS Directive" context="#pop" char="#" char1="}" />
       <keyword attribute="Keyword" context="#stay"          String="c2hs_keywords" />
@@ -437,7 +437,7 @@
 
     <itemData name="Function Infix"   defStyleNum="dsOthers"   spellChecking="false" />
     <itemData name="EnumFromTo"       defStyleNum="dsOthers"   spellChecking="false" />
-
+    
     <itemData name="C2HS Directive"   defStyleNum="dsString"   spellChecking="false" />
   </itemDatas>
   </highlighting>
