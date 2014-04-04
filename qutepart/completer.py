@@ -160,6 +160,11 @@ class _CompletionList(QListView):
     def __init__(self, qpart, model):
         QListView.__init__(self, qpart.viewport())
 
+        # ensure good selected item background on Windows
+        palette = self.palette()
+        palette.setColor(palette.Inactive, palette.Highlight, palette.color(palette.Active, palette.Highlight))
+        self.setPalette(palette)
+
         self.setAttribute(Qt.WA_DeleteOnClose)
 
         self.setItemDelegate(HTMLDelegate(self))
