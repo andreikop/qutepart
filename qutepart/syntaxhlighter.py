@@ -279,6 +279,9 @@ class SyntaxHighlighter(QObject):
         self._pendingBlockNumber = None
         self._pendingAtLeastUntilBlockNumber = None
 
+        documentLayout = self._textEdit.document().documentLayout()
+        documentLayout.documentSizeChanged.emit(documentLayout.documentSize())
+
     def _applyHighlightedSegments(self, block, highlightedSegments):
         ranges = []
         currentPos = 0
