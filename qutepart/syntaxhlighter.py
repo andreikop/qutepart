@@ -85,29 +85,23 @@ class SyntaxHighlighter(QObject):
 
     _globalTimer = GlobalTimer()
 
-    def __init__(self, syntax, object):
-        if isinstance(object, QTextDocument):
-            document = object
-        elif isinstance(object, QTextEdit):
-            document = object.document()
-            assert document is not None
-        else:
-            raise TypeError("object must be QTextDocument or QTextEdit")
+    def __init__(self, syntax, textEdit):
+        QObject.__init__(self, textEdit.document())
 
-        QObject.__init__(self, document)
         self._syntax = syntax
-        self._document = document
+        self._textEdit = textEdit
+        self._document = textEdit.document()
 
         # can't store references to block, Qt crashes if block removed
         self._pendingBlockNumber = None
         self._pendingAtLeastUntilBlockNumber = None
 
-        document.contentsChange.connect(self._onContentsChange)
+        self._document.contentsChange.connect(self._onContentsChange)
 
-        charsAdded = document.lastBlock().position() + document.lastBlock().length()
+        charsAdded = self._document.lastBlock().position() + self._document.lastBlock().length()
         self._onContentsChange(0, 0, charsAdded, zeroTimeout=self._wasChangedJustBefore())
 
-        document.destroyed.connect(self._onDocumentDestroyed)
+        self._document.destroyed.connect(self._onDocumentDestroyed)
 
     def del_(self):
         self._document.contentsChange.disconnect(self._onContentsChange)
@@ -279,6 +273,9 @@ class SyntaxHighlighter(QObject):
         self._pendingBlockNumber = None
         self._pendingAtLeastUntilBlockNumber = None
 
+        """Emit sizeChanged when highlighting finished, because document size might change.
+        See hlamer/enki issue #191
+        """
         documentLayout = self._textEdit.document().documentLayout()
         documentLayout.documentSizeChanged.emit(documentLayout.documentSize())
 

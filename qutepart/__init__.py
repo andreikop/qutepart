@@ -594,7 +594,7 @@ class Qutepart(QPlainTextEdit):
                                                      firstLine=firstLine)
 
         if syntax is not None:
-            self._highlighter = SyntaxHighlighter(syntax, self.document())
+            self._highlighter = SyntaxHighlighter(syntax, self)
             self._indenter.setSyntax(syntax)
 
         newLanguage = self.language()
