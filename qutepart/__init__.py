@@ -7,7 +7,8 @@ import logging
 import platform
 
 from PyQt4.QtCore import QRect, Qt, pyqtSignal
-from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, QDialog, QFont, \
+from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, \
+                        QDialog, QFont, \
                         QIcon, QKeyEvent, QKeySequence, QPainter, QPen, QPalette, \
                         QPlainTextEdit, \
                         QPrintDialog, QShortcut, QTextCharFormat, QTextCursor, \
@@ -24,7 +25,7 @@ from qutepart.indenter import Indenter
 import qutepart.bookmarks
 
 
-VERSION = (2, 0, 0)
+VERSION = (2, 1, 0)
 
 
 logger = logging.getLogger('qutepart')
@@ -138,6 +139,9 @@ class Qutepart(QPlainTextEdit):
     It is enabled, if ``completionEnabled`` is ``True``.
     ``completionThreshold`` is count of typed symbols, after which completion is shown.
 
+    ** Linters support **
+    * ``lintMarks`` Linter messages as {lineNumber: (type, text)} dictionary. Cleared on any edit operation. Type is one of `Qutepart.LINT_ERROR, Qutepart.LINT_WARNING, Qutepart.LINT_NOTE)
+
     **Actions**
 
     Component contains list of actions (QAction instances).
@@ -209,6 +213,10 @@ class Qutepart(QPlainTextEdit):
     indentUseTabsChanged = pyqtSignal(bool)
     eolChanged = pyqtSignal(unicode)
 
+    LINT_ERROR = 'e'
+    LINT_WARNING = 'w'
+    LINT_NOTE = 'n'
+
     _DEFAULT_EOL = '\n'
 
     _DEFAULT_COMPLETION_THRESHOLD = 3
@@ -263,11 +271,14 @@ class Qutepart(QPlainTextEdit):
         self._userExtraSelectionFormat = QTextCharFormat()
         self._userExtraSelectionFormat.setBackground(QBrush(QColor('#ffee00')))
 
+        self._lintMarks = {}
+
         self.blockCountChanged.connect(self._updateLineNumberAreaWidth)
         self.updateRequest.connect(self._updateSideAreas)
         self.cursorPositionChanged.connect(self._updateExtraSelections)
         self.textChanged.connect(self._dropUserExtraSelections)
         self.textChanged.connect(self._resetCachedText)
+        self.textChanged.connect(self._clearLintMarks)
 
         fontFamilies = {'Windows':'Courier New',
                         'Darwin': 'Menlo'}
@@ -533,6 +544,21 @@ class Qutepart(QPlainTextEdit):
         if use != self._indenter.useTabs:
             self._indenter.useTabs = use
             self.indentUseTabsChanged.emit(use)
+
+    @property
+    def lintMarks(self):
+        return self._lintMarks
+
+    @lintMarks.setter
+    def lintMarks(self, marks):
+        if self._lintMarks != marks:
+            self._lintMarks = marks
+            self.update()
+
+    def _clearLintMarks(self):
+        if self._lintMarks != {}:
+            self._lintMarks = {}
+            self.update()
 
     def replaceText(self, pos, length, text):
         """Replace length symbols from ``pos`` with new text.

@@ -1,10 +1,10 @@
 """Line numbers and bookmarks areas
 """
 
-from PyQt4.QtCore import QPoint, Qt, pyqtSignal
+from PyQt4.QtCore import QEvent, QPoint, Qt, pyqtSignal
 from PyQt4.QtGui import QPainter, QPalette, \
                         QPixmap, \
-                        QTextBlock, QWidget
+                        QTextBlock, QToolTip, QWidget
 
 import qutepart
 from qutepart.bookmarks import Bookmarks
@@ -79,9 +79,18 @@ class MarkArea(QWidget):
 
         qpart.blockCountChanged.connect(self.update)
 
-        defaultSizePixmap = QPixmap(qutepart.getIconPath('bookmark.png'))
+        self.setMouseTracking(True)
+
+        self._bookmarkPixmap = self._loadIcon('bookmark.png')
+        self._lintPixmaps = {qpart.LINT_ERROR: self._loadIcon('lint-error.png'),
+                             qpart.LINT_WARNING: self._loadIcon('lint-warning.png'),
+                             qpart.LINT_NOTE: self._loadIcon('lint-note.png')}
+
+    def _loadIcon(self, fileName):
+        defaultSizePixmap = QPixmap(qutepart.getIconPath(fileName))
         iconSize = self._qpart.cursorRect().height()
-        self._bookmarkPixmap = defaultSizePixmap.scaled(iconSize, iconSize)
+        return defaultSizePixmap.scaled(iconSize, iconSize, transformMode=Qt.SmoothTransformation)
+
 
     def sizeHint(self, ):
         """QWidget.sizeHint() implementation
@@ -105,10 +114,15 @@ class MarkArea(QWidget):
             if top > event.rect().bottom():
                 break
             if block.isVisible() and \
-               bottom >= event.rect().top() and \
-               Bookmarks.isBlockMarked(block):
-                yPos = top + ((height - self._bookmarkPixmap.height()) / 2)  # centered
-                painter.drawPixmap(0, yPos, self._bookmarkPixmap)
+               bottom >= event.rect().top():
+                if block.blockNumber() in self._qpart.lintMarks:
+                    msgType, msgText = self._qpart.lintMarks[block.blockNumber()]
+                    pixMap = self._lintPixmaps[msgType]
+                    yPos = top + ((height - pixMap.height()) / 2)  # centered
+                    painter.drawPixmap(0, yPos, pixMap)
+                elif Bookmarks.isBlockMarked(block):
+                    yPos = top + ((height - self._bookmarkPixmap.height()) / 2)  # centered
+                    painter.drawPixmap(0, yPos, self._bookmarkPixmap)
 
             top += height
 
@@ -123,3 +137,13 @@ class MarkArea(QWidget):
         blockRect = self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset())
         if blockRect.bottom() >= mouseEvent.y():  # clicked not lower, then end of text
             self.blockClicked.emit(block)
+
+    def mouseMoveEvent(self, event):
+        blockNumber = self._qpart.cursorForPosition(event.pos()).blockNumber()
+        if blockNumber in self._qpart._lintMarks:
+            msgType, msgText = self._qpart._lintMarks[blockNumber]
+            QToolTip.showText(event.globalPos(), msgText)
+        else:
+            QToolTip.hideText()
+
+        return QWidget.mouseMoveEvent(self, event)

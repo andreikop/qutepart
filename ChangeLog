@@ -1,3 +1,6 @@
+2.1.0   May 30 2014
+    Linter marks
+
 2.0.0   Mar 29 2014
     API: drawWhiteSpaceTrailing -> drawIncorrectIndentation
          drawWhiteSpaceAnyIndentation -> drawAnyWhitespace
