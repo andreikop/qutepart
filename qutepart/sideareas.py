@@ -120,7 +120,8 @@ class MarkArea(QWidget):
                     pixMap = self._lintPixmaps[msgType]
                     yPos = top + ((height - pixMap.height()) / 2)  # centered
                     painter.drawPixmap(0, yPos, pixMap)
-                elif Bookmarks.isBlockMarked(block):
+
+                if Bookmarks.isBlockMarked(block):
                     yPos = top + ((height - self._bookmarkPixmap.height()) / 2)  # centered
                     painter.drawPixmap(0, yPos, self._bookmarkPixmap)
 
