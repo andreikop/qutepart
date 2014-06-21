@@ -98,6 +98,7 @@ class Test(unittest.TestCase):
         QTest.keyClick(self.qpart, Qt.Key_Down, Qt.AltModifier | Qt.ShiftModifier)
         QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
         QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
         QTest.keyClick(self.qpart, Qt.Key_Delete)
         self.assertEqual(self.qpart.text, 'abcdefhh\n\tkl\n\t\tz')
 
@@ -142,7 +143,6 @@ class Test(unittest.TestCase):
     def test_copy_paste_utf8(self):
         self.qpart.show()
         self.qpart.text = u'фыва'
-        #self.app.exec_()
         for i in range(3):
             QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
         QTest.keyClick(self.qpart, Qt.Key_C, Qt.ControlModifier)
