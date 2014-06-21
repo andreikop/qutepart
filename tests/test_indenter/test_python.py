@@ -217,6 +217,22 @@ class Test(IndentTest):
         self.type("x");
         self.verifyExpected(expected)
 
+    def test_hangingIndentation(self):
+        origin = [
+            "     func (something,",
+        ]
+        expected = [
+            "     func (something,",
+            "           x",
+            ]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(0, 21);
+        self.enter();
+        self.type("x");
+        self.verifyExpected(expected)
+
 
 if __name__ == '__main__':
     unittest.main()

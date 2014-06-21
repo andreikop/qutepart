@@ -23,7 +23,6 @@ class IndentAlgPython(IndentAlgBase):
         """
         if prevLineStripped.endswith('{') or \
            prevLineStripped.endswith('['):
-            print 'case 2'
             return self._increaseIndent(prevIndent)
 
         # finally, a raise, pass, and continue should unindent
@@ -41,6 +40,19 @@ class IndentAlgPython(IndentAlgBase):
             except ValueError:
                 pass
             else:
-                prevIndent = self._blockIndent(foundBlock)
+                return self._blockIndent(foundBlock)
+
+        """Check hanging indentation
+        call_func(x,
+                  y,
+                  z
+        """
+        try:
+            foundBlock, foundColumn = self.findAnyBracketBackward(prevNonEmptyBlock,
+                                                                  prevNonEmptyBlock.length())
+        except ValueError:
+            pass
+        else:
+            return self._makeIndentFromWidth(foundColumn + 1)
 
         return prevIndent

@@ -147,6 +147,28 @@ class IndentAlgBase(IndentAlgNone):
         else:
             raise ValueError('Not found')
 
+    def findAnyBracketBackward(self, block, column):
+        """Search for a needle and return (block, column)
+        Raise ValueError, if not found
+        """
+        depth = {'()': 1,
+                 '[]': 1,
+                 '{}': 1
+                }
+
+        for foundBlock, foundColumn, char in self.iterateCharsBackwardFrom(block, column):
+            if not self._qpart.isComment(foundBlock.blockNumber(), foundColumn):
+                for brackets, curDepth in depth.items():
+                    opening, closing = brackets
+                    if char == opening:
+                        depth[brackets] -= 1
+                        if depth[brackets] == 0:
+                            return foundBlock, foundColumn
+                    elif char == closing:
+                        depth[brackets] += 1
+        else:
+            raise ValueError('Not found')
+
     @staticmethod
     def _lastNonSpaceChar(block):
         textStripped = block.text().rstrip()
