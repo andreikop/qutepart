@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -41,50 +41,50 @@ class Selection(_BaseTest):
 
         self.qpart.selectedPosition = ((0, 3), (0, 7))
 
-        self.assertEquals(self.qpart.selectedText, "f fd")
-        self.assertEquals(self.qpart.selectedPosition, ((0, 3), (0, 7)))
+        self.assertEqual(self.qpart.selectedText, "f fd")
+        self.assertEqual(self.qpart.selectedPosition, ((0, 3), (0, 7)))
 
     def test_selected_multiline_text(self):
         self.qpart.text = "a\nb"
         self.qpart.selectedPosition = ((0, 0), (1, 1))
-        self.assertEquals(self.qpart.selectedText, "a\nb")
+        self.assertEqual(self.qpart.selectedText, "a\nb")
 
 class ReplaceText(_BaseTest):
     def test_replaceText1(self):
         # Basic case
         self.qpart.text = '123456789'
         self.qpart.replaceText(3, 4, 'xyz')
-        self.assertEquals(self.qpart.text, '123xyz89')
+        self.assertEqual(self.qpart.text, '123xyz89')
 
     def test_replaceText2(self):
         # Replace uses (line, col) position
         self.qpart.text = '12345\n67890\nabcde'
         self.qpart.replaceText((1, 4), 3, 'Z')
-        self.assertEquals(self.qpart.text, '12345\n6789Zbcde')
+        self.assertEqual(self.qpart.text, '12345\n6789Zbcde')
 
     def test_replaceText3(self):
         # Edge cases
         self.qpart.text = '12345\n67890\nabcde'
         self.qpart.replaceText((0, 0), 3, 'Z')
-        self.assertEquals(self.qpart.text, 'Z45\n67890\nabcde')
+        self.assertEqual(self.qpart.text, 'Z45\n67890\nabcde')
 
         self.qpart.text = '12345\n67890\nabcde'
         self.qpart.replaceText((2, 4), 1, 'Z')
-        self.assertEquals(self.qpart.text, '12345\n67890\nabcdZ')
+        self.assertEqual(self.qpart.text, '12345\n67890\nabcdZ')
 
         self.qpart.text = '12345\n67890\nabcde'
         self.qpart.replaceText((0, 0), 0, 'Z')
-        self.assertEquals(self.qpart.text, 'Z12345\n67890\nabcde')
+        self.assertEqual(self.qpart.text, 'Z12345\n67890\nabcde')
 
         self.qpart.text = '12345\n67890\nabcde'
         self.qpart.replaceText((2, 5), 0, 'Z')
-        self.assertEquals(self.qpart.text, '12345\n67890\nabcdeZ')
+        self.assertEqual(self.qpart.text, '12345\n67890\nabcdeZ')
 
     def test_replaceText4(self):
         # Replace nothing with something
         self.qpart.text = '12345\n67890\nabcde'
         self.qpart.replaceText(2, 0, 'XYZ')
-        self.assertEquals(self.qpart.text, '12XYZ345\n67890\nabcde')
+        self.assertEqual(self.qpart.text, '12XYZ345\n67890\nabcde')
 
     def test_replaceText5(self):
         # Make sure exceptions are raised for invalid params
@@ -101,23 +101,23 @@ class InsertText(_BaseTest):
         # Basic case
         self.qpart.text = '123456789'
         self.qpart.insertText(3, 'xyz')
-        self.assertEquals(self.qpart.text, '123xyz456789')
+        self.assertEqual(self.qpart.text, '123xyz456789')
 
     def test_2(self):
         # (line, col) position
         self.qpart.text = '12345\n67890\nabcde'
         self.qpart.insertText((1, 4), 'Z')
-        self.assertEquals(self.qpart.text, '12345\n6789Z0\nabcde')
+        self.assertEqual(self.qpart.text, '12345\n6789Z0\nabcde')
 
     def test_3(self):
         # Edge cases
         self.qpart.text = '12345\n67890\nabcde'
         self.qpart.insertText((0, 0), 'Z')
-        self.assertEquals(self.qpart.text, 'Z12345\n67890\nabcde')
+        self.assertEqual(self.qpart.text, 'Z12345\n67890\nabcde')
 
         self.qpart.text = '12345\n67890\nabcde'
         self.qpart.insertText((2, 5), 'Z')
-        self.assertEquals(self.qpart.text, '12345\n67890\nabcdeZ')
+        self.assertEqual(self.qpart.text, '12345\n67890\nabcdeZ')
 
 
 class IsCodeOrComment(_BaseTest):
@@ -129,10 +129,10 @@ class IsCodeOrComment(_BaseTest):
         self.qpart.text = 'a + b # comment'
         self.qpart.detectSyntax(language = 'Python')
         self._wait_highlighting_finished()
-        self.assertEquals([self.qpart.isCode(0, i) for i in range(len(self.qpart.text))],
+        self.assertEqual([self.qpart.isCode(0, i) for i in range(len(self.qpart.text))],
                           [True, True, True, True, True, True, False, False, False, False, \
                            False, False, False, False, False])
-        self.assertEquals([self.qpart.isComment(0, i) for i in range(len(self.qpart.text))],
+        self.assertEqual([self.qpart.isComment(0, i) for i in range(len(self.qpart.text))],
                           [False, False, False, False, False, False, True, True, True, True, \
                           True, True, True, True, True])
 
@@ -168,19 +168,19 @@ class IsCodeOrComment(_BaseTest):
 class DetectSyntax(_BaseTest):
     def test_1(self):
         self.qpart.detectSyntax(xmlFileName='ada.xml')
-        self.assertEquals(self.qpart.language(), 'Ada')
+        self.assertEqual(self.qpart.language(), 'Ada')
 
         self.qpart.detectSyntax(mimeType='text/x-cgsrc')
-        self.assertEquals(self.qpart.language(), 'Cg')
+        self.assertEqual(self.qpart.language(), 'Cg')
 
         self.qpart.detectSyntax(language='CSS')
-        self.assertEquals(self.qpart.language(), 'CSS')
+        self.assertEqual(self.qpart.language(), 'CSS')
 
         self.qpart.detectSyntax(sourceFilePath='/tmp/file.feh')
-        self.assertEquals(self.qpart.language(), 'ferite')
+        self.assertEqual(self.qpart.language(), 'ferite')
 
         self.qpart.detectSyntax(firstLine='<?php hello() ?>')
-        self.assertEquals(self.qpart.language(), 'PHP (HTML)')
+        self.assertEqual(self.qpart.language(), 'PHP (HTML)')
 
 
 class Signals(_BaseTest):
@@ -191,7 +191,7 @@ class Signals(_BaseTest):
         self.qpart.languageChanged.connect(setNeVal)
 
         self.qpart.detectSyntax(language='Python')
-        self.assertEquals(newValue[0], 'Python')
+        self.assertEqual(newValue[0], 'Python')
 
     def test_indent_width_changed(self):
         newValue = [None]
@@ -200,7 +200,7 @@ class Signals(_BaseTest):
         self.qpart.indentWidthChanged.connect(setNeVal)
 
         self.qpart.indentWidth = 7
-        self.assertEquals(newValue[0], 7)
+        self.assertEqual(newValue[0], 7)
 
     def test_use_tabs_changed(self):
         newValue = [None]
@@ -210,7 +210,7 @@ class Signals(_BaseTest):
         self.qpart.indentUseTabsChanged.connect(setNeVal)
 
         self.qpart.indentUseTabs = True
-        self.assertEquals(newValue[0], True)
+        self.assertEqual(newValue[0], True)
 
     def test_eol_changed(self):
         newValue = [None]
@@ -220,7 +220,7 @@ class Signals(_BaseTest):
         self.qpart.eolChanged.connect(setNeVal)
 
         self.qpart.eol = '\r\n'
-        self.assertEquals(newValue[0], '\r\n')
+        self.assertEqual(newValue[0], '\r\n')
 
 
 class Completion(_BaseTest):
@@ -268,27 +268,27 @@ class Lines(_BaseTest):
         self.qpart.text = 'abcd\nefgh\nklmn\nopqr'
 
     def test_accessByIndex(self):
-        self.assertEquals(self.qpart.lines[0], 'abcd')
-        self.assertEquals(self.qpart.lines[1], 'efgh')
-        self.assertEquals(self.qpart.lines[-1], 'opqr')
+        self.assertEqual(self.qpart.lines[0], 'abcd')
+        self.assertEqual(self.qpart.lines[1], 'efgh')
+        self.assertEqual(self.qpart.lines[-1], 'opqr')
 
     def test_modifyByIndex(self):
         self.qpart.lines[2] = 'new text'
-        self.assertEquals(self.qpart.text, 'abcd\nefgh\nnew text\nopqr')
+        self.assertEqual(self.qpart.text, 'abcd\nefgh\nnew text\nopqr')
 
     def test_getSlice(self):
-        self.assertEquals(self.qpart.lines[0], 'abcd')
-        self.assertEquals(self.qpart.lines[1], 'efgh')
-        self.assertEquals(self.qpart.lines[3], 'opqr')
-        self.assertEquals(self.qpart.lines[-4], 'abcd')
-        self.assertEquals(self.qpart.lines[1:4], ['efgh', 'klmn', 'opqr'])
-        self.assertEquals(self.qpart.lines[1:7], ['efgh', 'klmn', 'opqr'])  # Python list behaves this way
-        self.assertEquals(self.qpart.lines[0:0], [])
-        self.assertEquals(self.qpart.lines[0:1], ['abcd'])
-        self.assertEquals(self.qpart.lines[:2], ['abcd', 'efgh'])
-        self.assertEquals(self.qpart.lines[0:-2], ['abcd', 'efgh'])
-        self.assertEquals(self.qpart.lines[-2:], ['klmn', 'opqr'])
-        self.assertEquals(self.qpart.lines[-4:-2], ['abcd', 'efgh'])
+        self.assertEqual(self.qpart.lines[0], 'abcd')
+        self.assertEqual(self.qpart.lines[1], 'efgh')
+        self.assertEqual(self.qpart.lines[3], 'opqr')
+        self.assertEqual(self.qpart.lines[-4], 'abcd')
+        self.assertEqual(self.qpart.lines[1:4], ['efgh', 'klmn', 'opqr'])
+        self.assertEqual(self.qpart.lines[1:7], ['efgh', 'klmn', 'opqr'])  # Python list behaves this way
+        self.assertEqual(self.qpart.lines[0:0], [])
+        self.assertEqual(self.qpart.lines[0:1], ['abcd'])
+        self.assertEqual(self.qpart.lines[:2], ['abcd', 'efgh'])
+        self.assertEqual(self.qpart.lines[0:-2], ['abcd', 'efgh'])
+        self.assertEqual(self.qpart.lines[-2:], ['klmn', 'opqr'])
+        self.assertEqual(self.qpart.lines[-4:-2], ['abcd', 'efgh'])
 
         with self.assertRaises(IndexError):
             self.qpart.lines[4]
@@ -297,27 +297,27 @@ class Lines(_BaseTest):
 
     def test_setSlice_1(self):
         self.qpart.lines[0] = 'xyz'
-        self.assertEquals(self.qpart.text, 'xyz\nefgh\nklmn\nopqr')
+        self.assertEqual(self.qpart.text, 'xyz\nefgh\nklmn\nopqr')
 
     def test_setSlice_2(self):
         self.qpart.lines[1] = 'xyz'
-        self.assertEquals(self.qpart.text, 'abcd\nxyz\nklmn\nopqr')
+        self.assertEqual(self.qpart.text, 'abcd\nxyz\nklmn\nopqr')
 
     def test_setSlice_3(self):
         self.qpart.lines[-4] = 'xyz'
-        self.assertEquals(self.qpart.text, 'xyz\nefgh\nklmn\nopqr')
+        self.assertEqual(self.qpart.text, 'xyz\nefgh\nklmn\nopqr')
 
     def test_setSlice_4(self):
         self.qpart.lines[0:4] = ['st', 'uv', 'wx', 'z']
-        self.assertEquals(self.qpart.text, 'st\nuv\nwx\nz')
+        self.assertEqual(self.qpart.text, 'st\nuv\nwx\nz')
 
     def test_setSlice_5(self):
         self.qpart.lines[0:47] = ['st', 'uv', 'wx', 'z']
-        self.assertEquals(self.qpart.text, 'st\nuv\nwx\nz')
+        self.assertEqual(self.qpart.text, 'st\nuv\nwx\nz')
 
     def test_setSlice_6(self):
         self.qpart.lines[1:3] = ['st', 'uv']
-        self.assertEquals(self.qpart.text, 'abcd\nst\nuv\nopqr')
+        self.assertEqual(self.qpart.text, 'abcd\nst\nuv\nopqr')
 
     def test_setSlice_61(self):
         with self.assertRaises(ValueError):
@@ -325,11 +325,11 @@ class Lines(_BaseTest):
 
     def test_setSlice_7(self):
         self.qpart.lines[-3:3] = ['st', 'uv']
-        self.assertEquals(self.qpart.text, 'abcd\nst\nuv\nopqr')
+        self.assertEqual(self.qpart.text, 'abcd\nst\nuv\nopqr')
 
     def test_setSlice_8(self):
         self.qpart.lines[-3:-1] = ['st', 'uv']
-        self.assertEquals(self.qpart.text, 'abcd\nst\nuv\nopqr')
+        self.assertEqual(self.qpart.text, 'abcd\nst\nuv\nopqr')
 
     def test_setSlice_9(self):
         with self.assertRaises(IndexError):

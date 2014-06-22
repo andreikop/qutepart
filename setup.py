@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -63,19 +63,19 @@ def _checkDependencies():
     There should be better way to check, if C compiler is installed
     """
     if not compiler.has_function('rand', includes = ['stdlib.h']):
-        print "It seems like C compiler is not installed or not operable."
+        print("It seems like C compiler is not installed or not operable.")
         return False
 
     if not compiler.has_function('rand',
                                  includes = ['stdlib.h', 'Python.h'],
                                  include_dirs=[distutils.sysconfig.get_python_inc()],
                                  library_dirs=[os.path.join(os.path.dirname(sys.executable), 'libs')]):
-        print "Failed to find Python headers."
-        print "Try to install python-dev package"
-        print "If not standard directories are used, pass parameters"
-        print "\tpython setup.py install --lib-dir=c://github/pcre-8.32/build/Release --include-dir=c://github/pcre-8.32/build"
-        print "\tpython setup.py install --lib-dir=/usr/local/lib --include-dir=/usr/local/include"
-        print "--lib-dir= and --include-dir= may be used multiple times"
+        print("Failed to find Python headers.")
+        print("Try to install python-dev package")
+        print("If not standard directories are used, pass parameters")
+        print("\tpython setup.py install --lib-dir=c://github/pcre-8.32/build/Release --include-dir=c://github/pcre-8.32/build")
+        print("\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include")
+        print("--lib-dir= and --include-dir= may be used multiple times")
         return False
 
     if not compiler.has_function('pcre_version',
@@ -83,13 +83,12 @@ def _checkDependencies():
                                  libraries = ['pcre'],
                                  include_dirs=include_dirs,
                                  library_dirs=library_dirs):
-        print "Failed to find pcre library."
-        print "Try to install libpcre{version}-dev package, or go to http://pcre.org"
-        print "If not standard directories are used, pass parameters:"
-        print "\tpython setup.py install --lib-dir=c://github/pcre-8.32/build/Release --include-dir=c://github/pcre-8.32/build"
-        print "or"
-        print "\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include"
-        print "--lib-dir= and --include-dir= may be used multiple times"
+        print("Failed to find pcre library.")
+        print("Try to install libpcre{version}-dev package, or go to http://pcre.org")
+        print("If not standard directories are used, pass parameters:")
+        print("\tpython setup.py install --lib-dir=c://github/pcre-8.32/build/Release --include-dir=c://github/pcre-8.32/build")
+        print("\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include")
+        print("--lib-dir= and --include-dir= may be used multiple times")
         return False
 
     return True

@@ -233,12 +233,12 @@ class Qutepart(QPlainTextEdit):
     **Public methods**
     '''
 
-    userWarning = pyqtSignal(unicode)
-    languageChanged = pyqtSignal(unicode)
+    userWarning = pyqtSignal(str)
+    languageChanged = pyqtSignal(str)
     indentWidthChanged = pyqtSignal(int)
     indentUseTabsChanged = pyqtSignal(bool)
-    eolChanged = pyqtSignal(unicode)
-    vimModeIndicationChanged = pyqtSignal(QColor, unicode)
+    eolChanged = pyqtSignal(str)
+    vimModeIndicationChanged = pyqtSignal(QColor, str)
     vimModeEnabledChanged = pyqtSignal(bool)
 
     LINT_ERROR = 'e'
@@ -446,7 +446,7 @@ class Qutepart(QPlainTextEdit):
     @lines.setter
     def lines(self, value):
         if not isinstance(value, (list, tuple)) or \
-           not all([isinstance(item, basestring) for item in value]):
+           not all([isinstance(item, str) for item in value]):
             raise TypeError('Invalid new value of "lines" attribute')
         self.setPlainText('\n'.join(value))
 
@@ -479,7 +479,7 @@ class Qutepart(QPlainTextEdit):
         text = self.textCursor().selectedText()
 
         # replace unicode paragraph separator with habitual \n
-        text = text.replace(u'\u2029', '\n')
+        text = text.replace('\u2029', '\n')
 
         return text
 

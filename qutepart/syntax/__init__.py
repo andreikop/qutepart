@@ -82,7 +82,7 @@ class Syntax:
         res += ' license: %s\n' % self.license
         res += ' hidden: %s\n' % self.hidden
         res += ' indenter: %s\n' % self.indenter
-        res += unicode(self.parser)
+        res += str(self.parser)
 
         return res
 

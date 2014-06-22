@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import time
@@ -17,7 +17,7 @@ app = QApplication(sys.argv)
 
 q = qutepart.Qutepart()
 q.detectSyntax(sourceFilePath=sys.argv[1])
-print 'Language:', q.language()
+print('Language:', q.language())
 
 q.showMaximized()
 
@@ -29,7 +29,7 @@ clickTimes = {}
 def click(key):
     clockBefore = time.clock()
 
-    if isinstance(key, basestring):
+    if isinstance(key, str):
         QTest.keyClicks(q, key)
     else:
         QTest.keyClick(q, key)
@@ -56,11 +56,11 @@ def doTest():
 
     clockAfter = time.clock()
     typingTime = clockAfter - clockBefore
-    print 'Typed {} chars in {} sec. {} ms per character'.format(len(text), typingTime, typingTime * 1000 / len(text))
-    print 'Time per click: count of clicks'
+    print('Typed {} chars in {} sec. {} ms per character'.format(len(text), typingTime, typingTime * 1000 / len(text)))
+    print('Time per click: count of clicks')
     clickTimeKeys = sorted(clickTimes.keys())
     for ckt in clickTimeKeys:
-        print '       %5dms:            %4d' % (ckt, clickTimes[ckt])
+        print('       %5dms:            %4d' % (ckt, clickTimes[ckt]))
 
     app.quit()
 

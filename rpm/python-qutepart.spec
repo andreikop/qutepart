@@ -1,4 +1,4 @@
-Name:           python-qutepart
+Name:           python3-qutepart
 Version:        2.2.3
 Release:        1%{?dist}
 Summary:        Code editor widget for PyQt
@@ -10,18 +10,18 @@ URL:            https://github.com/hlamer/qutepart
 Source0:        https://github.com/hlamer/qutepart/archive/v%{version}.tar.gz#/qutepart-%{version}.tar.gz
 
 BuildRequires:  pcre-devel
-BuildRequires:  python-devel
-BuildRequires:  python-setuptools
-Requires:       python >= 2.7
+BuildRequires:  python3-devel
+BuildRequires:  python3-setuptools
+Requires:       python3
 Requires:       pcre
 
 
 %if 0%{?fedora_version}
-BuildRequires:  PyQt4
-Requires:       PyQt4
+BuildRequires:  python3-PyQt4
+Requires:       python3-PyQt4
 %else
-BuildRequires:  python-qt4
-Requires:       python-qt4
+BuildRequires:  python3-qt4
+Requires:       python3-qt4
 %endif
 
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -38,7 +38,7 @@ def main():
     import qutepart  # after correct sys.path has been set
 
     with open(ns.file) as file:
-        text = unicode(file.read(), 'utf8')
+        text = file.read()
 
     if ns.debug:
         logging.getLogger('qutepart').setLevel(logging.DEBUG)

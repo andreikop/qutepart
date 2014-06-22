@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import unittest
 
@@ -24,7 +24,7 @@ def tryMatch(rule, column, text):
     return tryMatchWithData(rule, None, column, text)
 
 def tryMatchWithData(rule, contextData, column, text):
-    textToMatchObject = parser.TextToMatchObject(column, unicode(text), _currentSyntax.parser.deliminatorSet, contextData)
+    textToMatchObject = parser.TextToMatchObject(column, str(text), _currentSyntax.parser.deliminatorSet, contextData)
     ruleTryMatchResult = rule.tryMatch(textToMatchObject)
     if ruleTryMatchResult is not None:
         return ruleTryMatchResult.length
@@ -50,17 +50,17 @@ class Test(unittest.TestCase):
         rule = self._getRule("perl.xml", "ip_string_6", 1)
         text = "a"
 
-        self.assertEqual(tryMatchWithData(rule, (u'a', u'b', u'c'), 0, text), 1)
-        self.assertEqual(tryMatchWithData(rule, (u'x', u'y', u'z'), 0, text), None)
+        self.assertEqual(tryMatchWithData(rule, ('a', 'b', 'c'), 0, text), 1)
+        self.assertEqual(tryMatchWithData(rule, ('x', 'y', 'z'), 0, text), None)
 
     def test_DetectChar_dynamic2(self):
         rule = self._getRule("perl.xml", "string_6", 3)
         text = "abcdXefg"
 
-        count = tryMatchWithData(rule, (u'X', u'Y', u'Z',), 0, text)
+        count = tryMatchWithData(rule, ('X', 'Y', 'Z',), 0, text)
         self.assertEqual(count, None)
 
-        count = tryMatchWithData(rule, (u'X', u'Y', u'Z',), 4, text)
+        count = tryMatchWithData(rule, ('X', 'Y', 'Z',), 4, text)
         self.assertEqual(count, 1)
 
     def test_Detect2Chars(self):
@@ -156,7 +156,7 @@ class Test(unittest.TestCase):
 
         rule = self._getRule('fsharp.xml', 'ModuleEnv2', 0)
         if hasattr(rule, 'regExp'):  # only on Python version
-            self.assertEqual(rule.regExp.pattern, u"[A-Z][A-Za-z\xc0-\xd6\xd8-\xf6\xf8-\xff0-9_']*")
+            self.assertEqual(rule.regExp.pattern, "[A-Z][A-Za-z\xc0-\xd6\xd8-\xf6\xf8-\xff0-9_']*")
 
     def test_RegExpr_slashB(self):
         rule = self._getRule('fortran.xml', 'find_numbers', 3)
@@ -291,7 +291,7 @@ class Test(unittest.TestCase):
         """
         rule = self._getRule("ruby.xml", "gdl_dq_string_5", 2)  # "\s*%1"
         text = '%|a| x'
-        count = tryMatchWithData(rule, (u'blabla|', u'|', ), 3, text)
+        count = tryMatchWithData(rule, ('blabla|', '|', ), 3, text)
         self.assertEqual(count, 1)
 
     def test_dynamic_string_detect(self):
@@ -300,7 +300,7 @@ class Test(unittest.TestCase):
         rule = self._getRule("php.xml", "phpsource", 34)  # heredoc
         text = "<<<myheredoc"
 
-        count = tryMatchWithData(rule, (u'myheredoc',), 0, text)
+        count = tryMatchWithData(rule, ('myheredoc',), 0, text)
         self.assertEqual(count, len(text))
 
 

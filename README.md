@@ -20,7 +20,7 @@ Component has been created for [Enki editor](http://enki-editor.org) as replacem
 
 Qutepart depends on:
 
-* Python 2.7
+* Python 3
 * PyQt4 (see *Known problems* section)
 * pcre
 
@@ -29,7 +29,7 @@ On Debian, Ubuntu and other Linuxes install package `libpcreX-dev`, where `X` is
 For other OSes - see instructions on pcre website
 
 #### 2. Install Python development files
-On Debian, Ubuntu and other Linuxes install package `python-dev`, on other systems - see Python website
+On Debian, Ubuntu and other Linuxes install package `python3-dev`, on other systems - see Python website
 
 #### 3. Install C compiler
 It will probably be gcc

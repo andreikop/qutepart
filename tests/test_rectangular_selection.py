@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf8
 
 
@@ -145,7 +145,7 @@ class Test(unittest.TestCase):
 
     def test_copy_paste_utf8(self):
         self.qpart.show()
-        self.qpart.text = u'фыва'
+        self.qpart.text = 'фыва'
         for i in range(3):
             QTest.keyClick(self.qpart, Qt.Key_Right, Qt.AltModifier | Qt.ShiftModifier)
         QTest.keyClick(self.qpart, Qt.Key_C, Qt.ControlModifier)
@@ -155,7 +155,7 @@ class Test(unittest.TestCase):
         QTest.keyClick(self.qpart, Qt.Key_V, Qt.ControlModifier)
 
         self.assertEqual(self.qpart.text,
-                         u'фыва фыв')
+                         'фыва фыв')
 
     def test_paste_replace_selection(self):
         self.qpart.show()

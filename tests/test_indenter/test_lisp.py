@@ -1,7 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import unittest
 
+import os.path
+import sys
+sys.path.append(os.path.abspath(os.path.join(__file__, '..')))
 from indenttest import IndentTest
 
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf8
 
 
@@ -36,7 +36,7 @@ class _Test(unittest.TestCase):
         self.vimMode = mode
 
     def click(self, keys):
-        if isinstance(keys, basestring):
+        if isinstance(keys, str):
             for key in keys:
                 if key.isupper() or key in '$%^<>':
                     QTest.keyClick(self.qpart, key, Qt.ShiftModifier)

@@ -137,7 +137,7 @@ class Lines:
         def __iter__(self):
             return self
 
-        def next(self):
+        def __next__(self):
             if self._block.isValid():
                 self._block, result = self._block.next(), self._block.text()
                 return result

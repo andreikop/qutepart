@@ -76,7 +76,7 @@ class Vim(QObject):
     """Vim mode implementation.
     Listens events and does actions
     """
-    modeIndicationChanged = pyqtSignal(QColor, unicode)
+    modeIndicationChanged = pyqtSignal(QColor, str)
 
     internalClipboard = ''  # delete commands save text to this clipboard
 
@@ -266,7 +266,7 @@ class BaseCommandMode(Mode):
 
     def _reset(self):
         self._processCharCoroutine = self._processChar()
-        self._processCharCoroutine.next()  # run until the first yield
+        next(self._processCharCoroutine)  # run until the first yield
         self._typedText = ''
 
     _MOTIONS = (_0, _Home,
@@ -684,7 +684,7 @@ class BaseVisual(BaseCommandMode):
             else:
                 cursor.removeSelectedText()
 
-            if isinstance(Vim.internalClipboard, basestring):
+            if isinstance(Vim.internalClipboard, str):
                 self._qpart.textCursor().insertText(Vim.internalClipboard)
             elif isinstance(Vim.internalClipboard, list):
                 currentLineIndex = self._qpart.cursorPosition[0]
@@ -1020,7 +1020,7 @@ class Normal(BaseCommandMode):
         if not Vim.internalClipboard:
             return
 
-        if isinstance(Vim.internalClipboard, basestring):
+        if isinstance(Vim.internalClipboard, str):
             cursor = self._qpart.textCursor()
             if cmd == _p:
                 cursor.movePosition(QTextCursor.Right)

@@ -20,7 +20,7 @@ DEBUG_MODE = False
 
 def dbg(*args):
     if (DEBUG_MODE):
-        print args
+        print(args)
 
 #global variables and functions
 
