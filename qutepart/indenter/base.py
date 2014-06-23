@@ -158,7 +158,7 @@ class IndentAlgBase(IndentAlgNone):
 
         for foundBlock, foundColumn, char in self.iterateCharsBackwardFrom(block, column):
             if not self._qpart.isComment(foundBlock.blockNumber(), foundColumn):
-                for brackets, curDepth in depth.items():
+                for brackets in depth.keys():
                     opening, closing = brackets
                     if char == opening:
                         depth[brackets] -= 1

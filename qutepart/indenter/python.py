@@ -25,23 +25,6 @@ class IndentAlgPython(IndentAlgBase):
            prevLineStripped.endswith('['):
             return self._increaseIndent(prevIndent)
 
-        # finally, a raise, pass, and continue should unindent
-        if prevLineStripped in ('continue', 'break', 'pass', 'raise', 'return') or \
-           prevLineStripped.startswith('raise ') or \
-           prevLineStripped.startswith('return '):
-            return self._decreaseIndent(prevIndent)
-
-        if prevLineStripped and \
-           prevLineStripped[-1] in ')]}':
-            try:
-                foundBlock, foundColumn = self.findBracketBackward(prevNonEmptyBlock,
-                                                                   len(prevNonEmptyBlock.text().rstrip()) - 1,
-                                                                   prevLineStripped[-1])
-            except ValueError:
-                pass
-            else:
-                return self._blockIndent(foundBlock)
-
         """Check hanging indentation
         call_func(x,
                   y,
@@ -54,5 +37,24 @@ class IndentAlgPython(IndentAlgBase):
             pass
         else:
             return self._makeIndentFromWidth(foundColumn + 1)
+
+        """Unindent if hanging indentation finished
+        """
+        if prevLineStripped and \
+           prevLineStripped[-1] in ')]}':
+            try:
+                foundBlock, foundColumn = self.findBracketBackward(prevNonEmptyBlock,
+                                                                   len(prevNonEmptyBlock.text().rstrip()) - 1,
+                                                                   prevLineStripped[-1])
+            except ValueError:
+                pass
+            else:
+                return self._blockIndent(foundBlock)
+
+        # finally, a raise, pass, and continue should unindent
+        if prevLineStripped in ('continue', 'break', 'pass', 'raise', 'return') or \
+           prevLineStripped.startswith('raise ') or \
+           prevLineStripped.startswith('return '):
+            return self._decreaseIndent(prevIndent)
 
         return prevIndent
