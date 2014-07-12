@@ -75,6 +75,8 @@ class GlobalTimer:
             self._timer.start()
 
 
+_lastChangeTime = -777.  # Pyside crashes, if this variable is a class field
+
 class SyntaxHighlighter(QObject):
 
     # when initially parsing text, it is better, if highlighted text is drawn without flickering
@@ -83,7 +85,6 @@ class SyntaxHighlighter(QObject):
     _MAX_PARSING_TIME_SMALL_CHANGE_SEC = 0.02
 
     # Global var, because main loop time usage shall not depend on Qutepart instances count
-    _lastChangeTime = -777
 
     _globalTimer = GlobalTimer()
 
@@ -184,7 +185,7 @@ class SyntaxHighlighter(QObject):
 
     def _wasChangedJustBefore(self):
         """Check if ANY Qutepart instance was changed just before"""
-        return time.time() <= SyntaxHighlighter._lastChangeTime + 1
+        return time.time() <= _lastChangeTime + 1
 
     def _onContentsChange(self, from_, charsRemoved, charsAdded, zeroTimeout=False):
         firstBlock = self._document.findBlock(from_)
@@ -211,7 +212,7 @@ class SyntaxHighlighter(QObject):
         else:
             timeout = self._MAX_PARSING_TIME_SMALL_CHANGE_SEC
 
-        SyntaxHighlighter._lastChangeTime = time.time()
+        _lastChangeTime = time.time()
 
         self._highlighBlocks(firstBlock, untilBlock, timeout)
 
