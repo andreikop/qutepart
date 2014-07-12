@@ -59,6 +59,7 @@ class GlobalTimer:
     def unScheduleCallback(self, callback):
         if callback in self._scheduledCallbacks:
             self._scheduledCallbacks.remove(callback)
+
         if not self._scheduledCallbacks:
             self._timer.stop()
 

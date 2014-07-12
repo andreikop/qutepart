@@ -103,7 +103,7 @@ class Indenter:
 
         def cursorAtSpaceEnd(block):
             cursor = QTextCursor(block)
-            cursor.setPositionInBlock(len(blockIndentation(block)))
+            cursor.setPosition(block.position() + len(blockIndentation(block)))
             return cursor
 
         def indentBlock(block):

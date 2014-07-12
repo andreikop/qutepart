@@ -53,12 +53,9 @@ if not hasattr(QTextCursor, 'positionInBlock'):
         return cursor.position() - cursor.block().position()
     QTextCursor.positionInBlock = _positionInBlock
 
-if not hasattr(QTextCursor, 'setPositionInBlock'):
-    if not hasattr(QTextCursor, 'MoveAnchor'):  # using a mock, avoiding crash. See doc/source/conf.py
-        QTextCursor.MoveAnchor = None
-    def _setPositionInBlock(cursor, positionInBlock, anchor=QTextCursor.MoveAnchor):
-        return cursor.setPosition(cursor.block().position() + positionInBlock, anchor)
-    QTextCursor.setPositionInBlock = _setPositionInBlock
+
+def setPositionInBlock(cursor, positionInBlock, anchor=QTextCursor.MoveAnchor):
+    return cursor.setPosition(cursor.block().position() + positionInBlock, anchor)
 
 
 class Qutepart(QPlainTextEdit):
@@ -453,7 +450,7 @@ class Qutepart(QPlainTextEdit):
             col = len(lineText) - len(lineText.lstrip())
 
         cursor = QTextCursor(self.document().findBlockByNumber(line))
-        cursor.setPositionInBlock(col)
+        setPositionInBlock(cursor, col)
         self.setTextCursor(cursor)
 
     @property
@@ -483,11 +480,11 @@ class Qutepart(QPlainTextEdit):
         cursorLine, cursorCol = cursorPos
 
         anchorCursor = QTextCursor(self.document().findBlockByNumber(anchorLine))
-        anchorCursor.setPositionInBlock(anchorCol)
+        setPositionInBlock(anchorCursor, anchorCol)
 
         # just get absolute position
         cursor = QTextCursor(self.document().findBlockByNumber(cursorLine))
-        cursor.setPositionInBlock(cursorCol)
+        setPositionInBlock(cursor, cursorCol)
 
         anchorCursor.setPosition(cursor.position(), QTextCursor.KeepAnchor)
         self.setTextCursor(anchorCursor)
@@ -816,7 +813,7 @@ class Qutepart(QPlainTextEdit):
             with self:
                 cursor.deletePreviousChar()
                 cursor.insertText(' ')
-                cursor.setPositionInBlock(cursor.positionInBlock() - 1)
+                setPositionInBlock(cursor, cursor.positionInBlock() - 1)
                 self.setTextCursor(cursor)
 
         def typeOverwrite(text):
@@ -942,7 +939,7 @@ class Qutepart(QPlainTextEdit):
 
         def cursorRect(block, column, offset):
             cursor = QTextCursor(block)
-            cursor.setPositionInBlock(column)
+            setPositionInBlock(cursor, column)
             return self.cursorRect(cursor).translated(offset, 0)
 
         def drawWhiteSpace(block, column, char):
@@ -1111,9 +1108,9 @@ class Qutepart(QPlainTextEdit):
         text = cursor.block().text()
         spaceAtStartLen = len(text) - len(text.lstrip())
         if cursor.positionInBlock() == spaceAtStartLen:  # if at start of text
-            cursor.setPositionInBlock(0, anchor)
+            setPositionInBlock(cursor, 0, anchor)
         else:
-            cursor.setPositionInBlock(spaceAtStartLen, anchor)
+            setPositionInBlock(cursor, spaceAtStartLen, anchor)
         self.setTextCursor(cursor)
 
     def _selectLines(self, startBlockNumber, endBlockNumber):

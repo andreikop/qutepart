@@ -104,7 +104,7 @@ class BracketHighlighter:
 
         selection.format.setBackground(bgColor)
         selection.cursor = QTextCursor(block)
-        selection.cursor.setPositionInBlock(columnIndex)
+        selection.cursor.setPosition(block.position() + columnIndex)
         selection.cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
 
         return selection

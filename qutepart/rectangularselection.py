@@ -142,9 +142,10 @@ class RectangularSelection:
                     realStartCol = block.length()  # out of range value
                 if realCurrentCol is None:
                     realCurrentCol = block.length()  # out of range value
-                cursor.setPositionInBlock(min(realStartCol, block.length() - 1))
-                cursor.setPositionInBlock(min(realCurrentCol, block.length() - 1), QTextCursor.KeepAnchor)
 
+                cursor.setPosition(cursor.block().position() + min(realStartCol, block.length() - 1))
+                cursor.setPosition(cursor.block().position() + min(realCurrentCol, block.length() - 1),
+                                   QTextCursor.KeepAnchor)
                 cursors.append(cursor)
 
         return cursors
