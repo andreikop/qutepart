@@ -4,8 +4,9 @@ Uses syntax module for doing the job
 
 import time
 
+
 from PyQt4.QtCore import Qt, QObject, QTimer
-from PyQt4.QtGui import QBrush, QColor, QFont, \
+from PyQt4.QtGui import QApplication, QBrush, QColor, QFont, \
                         QTextBlockUserData, QTextCharFormat, QTextDocument, QTextLayout
 
 import qutepart.syntax
@@ -42,7 +43,7 @@ class GlobalTimer:
     """
 
     def __init__(self):
-        self._timer = QTimer()
+        self._timer = QTimer(QApplication.instance())
         self._timer.setSingleShot(True)
         self._timer.timeout.connect(self._onTimer)
 
