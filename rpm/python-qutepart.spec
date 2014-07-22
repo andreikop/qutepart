@@ -1,5 +1,5 @@
 Name:           python-qutepart
-Version:        1.3.0
+Version:        2.1.0
 Release:        1%{?dist}
 Summary:        Code editor widget for PyQt
 Group:          Development/Libraries/Python
@@ -36,6 +36,7 @@ Qutepart is a code editor widget for PyQt. Features:
     - Autocompletion based on document content
     - Marking too long lines with red line
     - Rectangular selection and copy-paste
+    - Linter marks support
 
 
 %prep
@@ -57,6 +58,13 @@ Qutepart is a code editor widget for PyQt. Features:
 
 
 %changelog
+* Tue Jul 22 2014 Andrei Kopats <hlamer@tut.by>  2.1.0-4
+- API: Linter marks
+- API: drawWhiteSpaceTrailing -> drawIncorrectIndentation, drawWhiteSpaceAnyIndentation -> drawAnyWhitespace
+- API: increaseIndentAction, undoAction, redoAction
+- API: Updated XML parsers. More languages are supported.
+- Better autoindentation for Python
+
 * Thu Mar 14 2014 Andrei Kopats <hlamer@tut.by>  1.3.0-3
 - Bugfixes and improvements
 - API: Added binaryParserAvailable flag
