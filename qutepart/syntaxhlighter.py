@@ -23,8 +23,15 @@ def _cmpFormatRanges(a, b):
     else:
         return cmp(id(a), id(b))
 
-if hasattr(QTextLayout, 'FormatRange'):  # doesn't have on Mocks for rtfd.org
-    QTextLayout.FormatRange.__cmp__ = _cmpFormatRanges
+def _formatRangeListsEqual(a, b):
+    if len(a) != len(b):
+        return False
+
+    for a_item, b_item in zip(a, b):
+        if a_item != b_item:
+            return False
+
+    return True
 
 
 class _TextBlockUserData(QTextBlockUserData):
@@ -295,6 +302,6 @@ class SyntaxHighlighter(QObject):
                 ranges.append(range)
             currentPos += length
 
-        if block.layout().additionalFormats() != ranges:
+        if not _formatRangeListsEqual(block.layout().additionalFormats(), ranges):
             block.layout().setAdditionalFormats(ranges)
             self._document.markContentsDirty(block.position(), block.length())
