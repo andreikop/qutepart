@@ -5,9 +5,9 @@ Uses syntax module for doing the job
 import time
 
 
-from PyQt4.QtCore import Qt, QObject, QTimer
+from PyQt4.QtCore import QObject, QTimer
 from PyQt4.QtGui import QApplication, QBrush, QColor, QFont, \
-                        QTextBlockUserData, QTextCharFormat, QTextDocument, QTextLayout
+                        QTextBlockUserData, QTextCharFormat, QTextLayout
 
 import qutepart.syntax
 
@@ -82,7 +82,11 @@ class GlobalTimer:
             self._timer.start()
 
 
-_lastChangeTime = -777.  # Pyside crashes, if this variable is a class field
+"""Global var, because main loop time usage shall not depend on Qutepart instances count
+
+Pyside crashes, if this variable is a class field
+"""
+_gLastChangeTime = -777.
 
 class SyntaxHighlighter(QObject):
 
@@ -90,8 +94,6 @@ class SyntaxHighlighter(QObject):
     _MAX_PARSING_TIME_BIG_CHANGE_SEC = 0.4
     # when user is typing text - response shall be quick
     _MAX_PARSING_TIME_SMALL_CHANGE_SEC = 0.02
-
-    # Global var, because main loop time usage shall not depend on Qutepart instances count
 
     _globalTimer = GlobalTimer()
 
@@ -192,9 +194,10 @@ class SyntaxHighlighter(QObject):
 
     def _wasChangedJustBefore(self):
         """Check if ANY Qutepart instance was changed just before"""
-        return time.time() <= _lastChangeTime + 1
+        return time.time() <= _gLastChangeTime + 1
 
     def _onContentsChange(self, from_, charsRemoved, charsAdded, zeroTimeout=False):
+        global _gLastChangeTime
         firstBlock = self._document.findBlock(from_)
         untilBlock = self._document.findBlock(from_ + charsAdded)
 
@@ -219,7 +222,7 @@ class SyntaxHighlighter(QObject):
         else:
             timeout = self._MAX_PARSING_TIME_SMALL_CHANGE_SEC
 
-        _lastChangeTime = time.time()
+        _gLastChangeTime = time.time()
 
         self._highlighBlocks(firstBlock, untilBlock, timeout)
 

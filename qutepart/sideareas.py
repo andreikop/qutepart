@@ -1,7 +1,7 @@
 """Line numbers and bookmarks areas
 """
 
-from PyQt4.QtCore import QEvent, QPoint, Qt, pyqtSignal
+from PyQt4.QtCore import QPoint, Qt, pyqtSignal
 from PyQt4.QtGui import QPainter, QPalette, \
                         QPixmap, \
                         QTextBlock, QToolTip, QWidget
@@ -20,11 +20,6 @@ class LineNumberArea(QWidget):
         QWidget.__init__(self, qpart)
         self._qpart = qpart
 
-    def sizeHint(self, ):
-        """QWidget.sizeHint() implementation
-        """
-        return QSize(self.width(), 0)
-
     def paintEvent(self, event):
         """QWidget.paintEvent() implementation
         """
@@ -39,7 +34,6 @@ class LineNumberArea(QWidget):
         singleBlockHeight = self._qpart.cursorRect().height()
 
         width = None
-        wrapMarkerColor = None
 
         boundingRect = self._qpart.blockBoundingRect(block)
         while block.isValid() and top <= event.rect().bottom():

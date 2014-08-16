@@ -607,9 +607,6 @@ class HlCOct(AbstractRule):
 
         return RuleTryMatchResult(self, index)
 
-    def shortId(self):
-        return 'HlCOct()'
-
 
 class HlCHex(AbstractRule):
     def shortId(self):
@@ -634,8 +631,6 @@ class HlCHex(AbstractRule):
 
         return RuleTryMatchResult(self, index)
 
-    def shortId(self):
-        return 'HlCHex()'
 
 def _checkEscapedChar(text):
     index = 0

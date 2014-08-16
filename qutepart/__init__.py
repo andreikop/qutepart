@@ -9,9 +9,9 @@ import platform
 from PyQt4.QtCore import QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, \
                         QDialog, QFont, \
-                        QIcon, QKeyEvent, QKeySequence, QPainter, QPen, QPalette, \
+                        QIcon, QKeySequence, QPainter, QPen, QPalette, \
                         QPlainTextEdit, \
-                        QPrintDialog, QShortcut, QTextCharFormat, QTextCursor, \
+                        QPrintDialog, QTextCharFormat, QTextCursor, \
                         QTextBlock, QTextEdit, QTextFormat
 
 from qutepart.syntax import SyntaxManager
