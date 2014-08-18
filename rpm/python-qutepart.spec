@@ -1,5 +1,5 @@
 Name:           python-qutepart
-Version:        2.1.1
+Version:        2.1.2
 Release:        1%{?dist}
 Summary:        Code editor widget for PyQt
 Group:          Development/Libraries/Python
@@ -58,6 +58,9 @@ Qutepart is a code editor widget for PyQt. Features:
 
 
 %changelog
+* Mon Aug 18 2014 Andrei Kopats <hlamer@tut.by>  2.1.2-6
+- Fix CPU load management
+
 * Tue Aug 04 2014 Andrei Kopats <hlamer@tut.by>  2.1.1-5
 - Crash fix
 

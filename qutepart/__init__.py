@@ -25,7 +25,7 @@ from qutepart.indenter import Indenter
 import qutepart.bookmarks
 
 
-VERSION = (2, 1, 1)
+VERSION = (2, 1, 2)
 
 
 logger = logging.getLogger('qutepart')
