@@ -121,6 +121,8 @@ class IndentAlgBase(IndentAlgNone):
     def findBracketBackward(self, block, column, bracket):
         """Search for a needle and return (block, column)
         Raise ValueError, if not found
+
+        NOTE this method ignores comments
         """
         if bracket in ('(', ')'):
             opening = '('
@@ -150,6 +152,8 @@ class IndentAlgBase(IndentAlgNone):
     def findAnyBracketBackward(self, block, column):
         """Search for a needle and return (block, column)
         Raise ValueError, if not found
+
+        NOTE this methods ignores strings and comments
         """
         depth = {'()': 1,
                  '[]': 1,
@@ -157,7 +161,7 @@ class IndentAlgBase(IndentAlgNone):
                 }
 
         for foundBlock, foundColumn, char in self.iterateCharsBackwardFrom(block, column):
-            if not self._qpart.isComment(foundBlock.blockNumber(), foundColumn):
+            if self._qpart.isCode(foundBlock.blockNumber(), foundColumn):
                 for brackets in depth.keys():
                     opening, closing = brackets
                     if char == opening:
