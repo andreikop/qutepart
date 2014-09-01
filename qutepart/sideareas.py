@@ -1,10 +1,11 @@
 """Line numbers and bookmarks areas
 """
 
-from PyQt4.QtCore import QPoint, Qt, pyqtSignal
-from PyQt4.QtGui import QPainter, QPalette, \
+from qutepart.qt import QPoint, Qt, pyqtSignal
+from qutepart.qt import QWidget
+from qutepart.qt import QPainter, QPalette, \
                         QPixmap, \
-                        QTextBlock, QToolTip, QWidget
+                        QTextBlock, QToolTip
 
 import qutepart
 from qutepart.bookmarks import Bookmarks

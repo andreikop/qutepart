@@ -6,13 +6,14 @@ import os.path
 import logging
 import platform
 
-from PyQt4.QtCore import QRect, Qt, pyqtSignal
-from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, \
+from qutepart.qt import QRect, Qt, pyqtSignal
+from qutepart.qt import QApplication, QPlainTextEdit, QTextEdit
+from qutepart.qt import QAction, QColor, QBrush, \
                         QDialog, QFont, \
                         QIcon, QKeySequence, QPainter, QPen, QPalette, \
-                        QPlainTextEdit, \
-                        QPrintDialog, QTextCharFormat, QTextCursor, \
-                        QTextBlock, QTextEdit, QTextFormat
+                        QTextCharFormat, QTextCursor, \
+                        QTextBlock, QTextFormat
+from qutepart.qt import QPrintDialog
 
 from qutepart.syntax import SyntaxManager
 from qutepart.syntaxhlighter import SyntaxHighlighter

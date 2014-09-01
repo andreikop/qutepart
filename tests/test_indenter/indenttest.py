@@ -1,10 +1,7 @@
 import unittest
 
-import sip
-sip.setapi('QString', 2)
-
-from PyQt4.QtCore import Qt
-from PyQt4.QtTest import QTest
+from qutepart.qt import Qt
+from qutepart.qt import QTest
 
 import sys
 import os

@@ -1,5 +1,6 @@
-from PyQt4.QtCore import Qt, QMimeData
-from PyQt4.QtGui import QApplication, QKeyEvent, QKeySequence, QPalette, QTextCursor, QTextEdit, QWidget
+from qutepart.qt import Qt, QMimeData
+from qutepart.qt import QApplication, QTextEdit, QWidget
+from qutepart.qt import QKeyEvent, QKeySequence, QPalette, QTextCursor
 
 
 class RectangularSelection:
