@@ -887,7 +887,7 @@ class Qutepart(QPlainTextEdit):
     def _chooseVisibleWhitespace(self, text):
         result = [False for _ in range(len(text))]
 
-        lastNonSpaceColumn = len(text.rstrip()) - 1
+        lastNonSpaceColumn = len(str(text).rstrip()) - 1
 
         # Draw not trailing whitespace
         if self.drawAnyWhitespace:
@@ -920,7 +920,7 @@ class Qutepart(QPlainTextEdit):
                 # Find tabs:
                 column = 0
                 while column != -1:
-                    column = text.find('\t', column, lastNonSpaceColumn)
+                    column = str(text).find('\t', column, lastNonSpaceColumn)
                     if column != -1:
                         result[column] = True
                         column += 1
@@ -1007,7 +1007,7 @@ class Qutepart(QPlainTextEdit):
                 text = block.text()
                 if not self.drawAnyWhitespace:
                     column = indentWidthChars
-                    while text.startswith(self._indenter.text()) and \
+                    while text.startsWith(self._indenter.text()) and \
                           len(text) > indentWidthChars and \
                           text[indentWidthChars].isspace():
 
