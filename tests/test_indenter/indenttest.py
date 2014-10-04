@@ -25,7 +25,7 @@ class IndentTest(unittest.TestCase):
 
     def verifyExpected(self, text):
         lines = self.qpart.text.split('\n')
-        self.assertEquals(map(str, lines), text)
+        self.assertEquals(text, map(str, lines))
 
     def setCursorPosition(self, line, col):
         self.qpart.cursorPosition = line, col

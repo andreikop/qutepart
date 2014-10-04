@@ -61,7 +61,7 @@ def main():
     qpart.drawIncorrectIndentation = True
     qpart.drawAnyWhitespace = False
 
-    qpart.indentUseTabs = True
+    qpart.indentUseTabs = False
 
     qpart.text = text
 

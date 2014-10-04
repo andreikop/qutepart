@@ -96,7 +96,7 @@ class Test(IndentTest):
         self.type("except:");
         self.verifyExpected(expected)
 
-    def test_indentColon(self):
+    def test_indentColon1(self):
         origin = [
             "def some_function(param, param2):"]
         expected = [
@@ -108,6 +108,42 @@ class Test(IndentTest):
         self.setCursorPosition(0,34);
         self.enter();
         self.type("pass");
+        self.verifyExpected(expected)
+
+    def test_indentColon2(self):
+        origin = [
+            "def some_function(1,",
+            "                  2):"
+        ]
+        expected = [
+            "def some_function(1,",
+            "                  2):",
+            "  pass"
+        ]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1,21);
+        self.enter();
+        self.type("pass");
+        self.verifyExpected(expected)
+
+    def test_indentColon3(self):
+        """Do not indent colon if hanging indentation used
+        """
+        origin = [
+            "     a = {1:"
+            ]
+        expected = [
+            "     a = {1:",
+            "          x"
+            ]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(0, 12);
+        self.enter();
+        self.type("x");
         self.verifyExpected(expected)
 
     def test_dedentPass(self):
@@ -199,24 +235,6 @@ class Test(IndentTest):
         self.type("x");
         self.verifyExpected(expected)
 
-    def test_autoIndentAfterEmpty(self):
-        origin = [
-            "     func (something,",
-            "              something)"
-        ]
-        expected = [
-            "     func (something,",
-            "              something)",
-            "     x",
-            ]
-
-        self.setOrigin(origin)
-
-        self.setCursorPosition(1, 24);
-        self.enter();
-        self.type("x");
-        self.verifyExpected(expected)
-
     def test_hangingIndentation(self):
         origin = [
             "     return func (something,",
@@ -250,6 +268,63 @@ class Test(IndentTest):
         self.enter();
         self.type("x");
         self.verifyExpected(expected)
+
+    def test_hangingIndentation3(self):
+        origin = [
+            "     a = func (",
+            "         something)",
+        ]
+        expected = [
+            "     a = func (",
+            "         something)",
+            "     x",
+            ]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(1, 19);
+        self.enter();
+        self.type("x");
+        self.verifyExpected(expected)
+
+    def test_hangingIndentation4(self):
+        origin = [
+            "     return func(a,",
+            "                 another_func(1,",
+            "                              2),",
+        ]
+        expected = [
+            "     return func(a,",
+            "                 another_func(1,",
+            "                              2),",
+            "                 x"
+            ]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2, 33);
+        self.enter();
+        self.type("x");
+        self.verifyExpected(expected)
+
+    def test_hangingIndentation5(self):
+        origin = [
+            "     return func(another_func(1,",
+            "                              2),",
+        ]
+        expected = [
+            "     return func(another_func(1,",
+            "                              2),",
+            "                 x"
+            ]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(2, 33);
+        self.enter();
+        self.type("x");
+        self.verifyExpected(expected)
+
 
 
 
