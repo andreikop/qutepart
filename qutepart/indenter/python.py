@@ -29,6 +29,10 @@ class IndentAlgPython(IndentAlgBase):
         call_func(x,
                   y,
                   z
+        But
+        call_func(x,
+            y,
+            z
         """
         try:
             foundBlock, foundColumn = self.findAnyBracketBackward(prevNonEmptyBlock,
@@ -36,7 +40,9 @@ class IndentAlgPython(IndentAlgBase):
         except ValueError:
             pass
         else:
-            return self._makeIndentFromWidth(foundColumn + 1)
+            # indent this way only line, which contains 'y', not 'z'
+            if foundBlock.blockNumber() == prevNonEmptyBlock.blockNumber():
+                return self._makeIndentFromWidth(foundColumn + 1)
 
         """Unindent if hanging indentation finished
         """
