@@ -8,7 +8,7 @@ import argparse
 import sip
 sip.setapi('QString', 2)
 
-from PyQt4.QtGui import QApplication, QMainWindow
+from PyQt4.QtGui import QApplication, QLabel, QMainWindow, QPalette, QVBoxLayout, QWidget
 
 
 def _parseCommandLine():
@@ -31,9 +31,6 @@ def _fixSysPath(binaryQutepart):
             sys.path.insert(0, qutepartDir + '/build/lib.linux-x86_64-2.7/')  # use built modules
 
 
-
-
-
 def main():
     ns = _parseCommandLine()
     _fixSysPath(ns.binary)
@@ -50,8 +47,24 @@ def main():
 
     window = QMainWindow()
 
+    widget = QWidget()
+    layout = QVBoxLayout(widget)
+    window.setCentralWidget(widget)
+
+    vimModeIndication = QLabel()
+    vimModeIndication.setAutoFillBackground(True)
+    layout.addWidget(vimModeIndication)
+
     qpart = qutepart.Qutepart()
-    window.setCentralWidget(qpart)
+    layout.addWidget(qpart)
+
+    def onVimModeChanged(color, text):
+        palette = vimModeIndication.palette()
+        palette.setColor(QPalette.Window, color)
+        vimModeIndication.setPalette(palette)
+        vimModeIndication.setText(text)
+    qpart.vimModeIndicationChanged.connect(onVimModeChanged)
+    onVimModeChanged(*qpart.vimModeIndication)
 
     firstLine = text.splitlines()[0] if text else None
     qpart.detectSyntax(sourceFilePath=ns.file, firstLine=firstLine)

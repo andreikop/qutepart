@@ -22,6 +22,7 @@ from qutepart.lines import Lines
 from qutepart.rectangularselection import RectangularSelection
 import qutepart.sideareas
 from qutepart.indenter import Indenter
+from qutepart.vim import Vim
 import qutepart.bookmarks
 
 
@@ -139,6 +140,9 @@ class Qutepart(QPlainTextEdit):
     ** Linters support **
     * ``lintMarks`` Linter messages as {lineNumber: (type, text)} dictionary. Cleared on any edit operation. Type is one of `Qutepart.LINT_ERROR, Qutepart.LINT_WARNING, Qutepart.LINT_NOTE)
 
+    ** Vim mode**
+    ``vimModeIndication`` - An application shall display a label, which shows current Vim mode. This read-only property contains (QColor, str) to be displayed on the label. See also ``vimModeIndicationChanged``
+
     **Actions**
 
     Component contains list of actions (QAction instances).
@@ -196,10 +200,11 @@ class Qutepart(QPlainTextEdit):
     **Signals**
 
     * ``userWarning(text)``` Warning, which shall be shown to the user on status bar. I.e. 'Rectangular selection area is too big'
-    * ``languageChanged(langName)``` Language has changed. See also ``language()``
-    * ``indentWidthChanged(int)`` Indentation width changed. See also ``indentWidth``
-    * ``indentUseTabsChanged(bool)`` Indentation uses tab property changed. See also ``indentUseTabs``
-    * ``eolChanged(eol)`` EOL mode changed. See also ``eol``.
+    * ``languageChanged(langName)```              Language has changed. See also ``language()``
+    * ``indentWidthChanged(int)``                 Indentation width changed. See also ``indentWidth``
+    * ``indentUseTabsChanged(bool)``              Indentation uses tab property changed. See also ``indentUseTabs``
+    * ``eolChanged(eol)``                         EOL mode changed. See also ``eol``.
+    * ``vimModeIndicationChanged(color, text)``   Vim mode changed. Parameters contain color and text to be displayed on an indicator. See also ``vimModeIndication``
 
     **Public methods**
     '''
@@ -209,6 +214,7 @@ class Qutepart(QPlainTextEdit):
     indentWidthChanged = pyqtSignal(int)
     indentUseTabsChanged = pyqtSignal(bool)
     eolChanged = pyqtSignal(unicode)
+    vimModeIndicationChanged = pyqtSignal(QColor, unicode)
 
     LINT_ERROR = 'e'
     LINT_WARNING = 'w'
@@ -255,6 +261,9 @@ class Qutepart(QPlainTextEdit):
         self.completionThreshold = self._DEFAULT_COMPLETION_THRESHOLD
         self.completionEnabled = self._DEFAULT_COMPLETION_ENABLED
         self._completer = Completer(self)
+
+        self._vim = Vim(self)
+        self._vim.modeIndicationChanged.connect(self.vimModeIndicationChanged)
 
         self._initActions()
 
@@ -569,6 +578,10 @@ class Qutepart(QPlainTextEdit):
             self._lintMarks = {}
             self.update()
 
+    @property
+    def vimModeIndication(self):
+        return self._vim.indication()
+
     def replaceText(self, pos, length, text):
         """Replace length symbols from ``pos`` with new text.
 
@@ -871,6 +884,10 @@ class Qutepart(QPlainTextEdit):
                     super(Qutepart, self).keyPressEvent(event)
                     self._indenter.autoIndentBlock(cursor.block(), event.text())
         else:
+            if self._vim.isActive():
+                if self._vim.keyPressEvent(event):
+                    return
+
             # make action shortcuts override keyboard events (non-default Qt behaviour)
             for action in self.actions():
                 seq = action.shortcut()
