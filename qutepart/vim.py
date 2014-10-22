@@ -18,6 +18,7 @@ class Vim(QObject):
         QObject.__init__(self)
         self._qpart = qpart
         self._mode = NORMAL
+        self._pendingCmd = None
 
     def isActive(self):
         return True
@@ -31,44 +32,69 @@ class Vim(QObject):
         simpleCommands = self._COMMANDS[self._mode]['simple']
         compositeCommands = self._COMMANDS[self._mode]['composite']
 
-        if event.text() in simpleCommands:
+        if self._pendingCmd:
+            cmdFunc = self._COMMANDS[self._mode]['composite'][self._pendingCmd]
+            cmdFunc(self, self._pendingCmd, event.text())
+            self._pendingCmd = None
+            return True
+        elif event.text() in simpleCommands:
             cmdFunc = simpleCommands[event.text()]
-            cmdFunc(self)
+            cmdFunc(self, event.text())
+            return True
+        elif event.text() in compositeCommands:
+            self._pendingCmd = event.text()
             return True
         else:
             return False
 
-    def _move(self, direction):
+    def _moveCursor(self, motion, select=False):
         cursor = self._qpart.textCursor()
-        cursor.movePosition(direction)
+
+        moveMode = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
+
+        if motion == 'j':
+            cursor.movePosition(QTextCursor.Down, moveMode)
+        elif motion == 'k':
+            cursor.movePosition(QTextCursor.Up, moveMode)
+        elif motion == 'h':
+            cursor.movePosition(QTextCursor.Left, moveMode)
+        elif motion == 'l':
+            cursor.movePosition(QTextCursor.Right, moveMode)
+
         self._qpart.setTextCursor(cursor)
 
-    def cmdDown(self):  self._move(QTextCursor.Down)
-    def cmdUp(self):    self._move(QTextCursor.Up)
-    def cmdLeft(self):  self._move(QTextCursor.Left)
-    def cmdRight(self): self._move(QTextCursor.Right)
+    #
+    # Simple commands
+    #
+    def cmdMove(self, cmd):
+        self._moveCursor(cmd, select=False)
 
     def _setMode(self, mode):
         self._mode = mode
         self.modeIndicationChanged.emit(MODE_COLORS[mode], mode)
 
-    def cmdInsertMode(self): self._setMode(INSERT)
-    def cmdNormalMode(self): self._setMode(NORMAL)
+    def cmdInsertMode(self, cmd): self._setMode(INSERT)
+    def cmdNormalMode(self, cmd): self._setMode(NORMAL)
 
-    def cmdDelete(self):
+    def cmdDelete(self, cmd):
         self._qpart.textCursor().deleteChar()
 
-    def cmdWaitDelete(self):
-        self._pendingCmd = 'd'
+    #
+    # Composite commands
+    #
+
+    def cmdCompositeDelete(self, cmd, motion):
+        self._moveCursor(motion, select=True)
+        self._qpart.textCursor().removeSelectedText()
 
     _COMMANDS = {NORMAL: {'simple': {'i': cmdInsertMode,
-                                     'j': cmdDown,
-                                     'k': cmdUp,
-                                     'h': cmdLeft,
-                                     'l': cmdRight,
+                                     'j': cmdMove,
+                                     'k': cmdMove,
+                                     'h': cmdMove,
+                                     'l': cmdMove,
                                      'x': cmdDelete,
                                     },
-                          'composite': {
+                          'composite': {'d': cmdCompositeDelete,
                                        }
                          },
 
@@ -77,4 +103,3 @@ class Vim(QObject):
                           'composite': {}
                          }
                 }
-
