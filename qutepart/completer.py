@@ -347,6 +347,7 @@ class Completer(QObject):
         qpart.textChanged.connect(self._onTextChanged)
 
         self.destroyed.connect(self.del_)
+        self._qpart.destroyed.connect(self.del_)
 
     def del_(self):
         """Object deleted. Cancel timer
