@@ -20,8 +20,6 @@ _wordAtStartRegExp = re.compile('^' + _wordPattern)
 MAX_VISIBLE_WORD_COUNT = 256
 
 
-TIMER_DEL = False
-import traceback
 class _GlobalUpdateWordSetTimer:
     """Timer updates word set, when editor is idle. (5 sec. after last change)
     Timer is global, for avoid situation, when all instances
@@ -36,12 +34,9 @@ class _GlobalUpdateWordSetTimer:
         self._scheduledMethods = []
 
     def schedule(self, method):
-        print("sch")
-        traceback.print_stack()
         if not method in self._scheduledMethods:
             self._scheduledMethods.append(method)
         self._timer.start(self._IDLE_TIMEOUT_MS)
-        assert not TIMER_DEL
 
     def cancel(self, method):
         """Cancel scheduled method
@@ -54,12 +49,9 @@ class _GlobalUpdateWordSetTimer:
 
     def _onTimer(self):
         method = self._scheduledMethods.pop()
-        print("tick")
-        traceback.print_stack()
         method()
         if self._scheduledMethods:
             self._timer.start(self._IDLE_TIMEOUT_MS)
-            assert not TIMER_DEL
 
 
 class _CompletionModel(QAbstractItemModel):
@@ -354,16 +346,10 @@ class Completer(QObject):
         qpart.installEventFilter(self)
         qpart.textChanged.connect(self._onTextChanged)
 
-        self.destroyed.connect(self.del_)
-        self._qpart.destroyed.connect(self.del_)
-        print("ini")
-
     def del_(self):
         """Object deleted. Cancel timer
         """
         self._globalUpdateWordSetTimer.cancel(self._updateWordSet)
-        print("del")
-        TIMER_DEL = True
 
     def _onTextChanged(self):
         """Text in the qpart changed. Update word set"""
@@ -372,14 +358,11 @@ class Completer(QObject):
     def _updateWordSet(self):
         """Make a set of words, which shall be completed, from text
         """
-        print('uws')
         self._wordSet = set()
 
         start = time.time()
 
-        print('1')
         for line in self._qpart.lines:
-            print('2')
             for match in _wordRegExp.findall(line):
                 self._wordSet.add(match)
             if time.time() - start > self._WORD_SET_UPDATE_MAX_TIME_SEC:
