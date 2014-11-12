@@ -1256,6 +1256,8 @@ class Qutepart(QPlainTextEdit):
         else:
             super(Qutepart, self).insertFromMimeData(source)
 
+    def del_(self):
+        self._completer.del_()
 
 def iterateBlocksFrom(block):
     """Generator, which iterates QTextBlocks from block until the End of a document
