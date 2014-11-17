@@ -79,6 +79,12 @@ class Vim(QObject):
     def cmdDelete(self, cmd):
         self._qpart.textCursor().deleteChar()
 
+    def cmdAppend(self, cmd):
+        cursor = self._qpart.textCursor()
+        cursor.movePosition(QTextCursor.EndOfLine)
+        self._qpart.setTextCursor(cursor)
+        self._setMode(INSERT)
+
     #
     # Composite commands
     #
@@ -93,6 +99,7 @@ class Vim(QObject):
                                      'h': cmdMove,
                                      'l': cmdMove,
                                      'x': cmdDelete,
+                                     'A': cmdAppend,
                                     },
                           'composite': {'d': cmdCompositeDelete,
                                        }
