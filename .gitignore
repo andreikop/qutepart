@@ -6,3 +6,5 @@ a.out
 dist
 *.obj
 a.out.exe*
+.lazydog.txt.swp
+lazydog.txt

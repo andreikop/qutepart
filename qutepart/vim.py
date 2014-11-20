@@ -90,8 +90,24 @@ class Vim(QObject):
     #
 
     def cmdCompositeDelete(self, cmd, motion):
-        self._moveCursor(motion, select=True)
-        self._qpart.textCursor().removeSelectedText()
+        if motion in 'hl':  # left, right
+            self._moveCursor(motion, select=True)
+            self._qpart.textCursor().removeSelectedText()
+        elif motion == 'j':  # down
+            lineIndex = self._qpart.cursorPosition[0]
+            if lineIndex == len(self._qpart.lines) - 1:  # last line
+                return
+
+            del self._qpart.lines[lineIndex:lineIndex + 2]
+
+        elif motion == 'k':  # up
+            lineIndex = self._qpart.cursorPosition[0]
+            if lineIndex == 0:  # first line
+                return
+
+            del self._qpart.lines[lineIndex - 1:lineIndex + 1]
+
+
 
     _COMMANDS = {NORMAL: {'simple': {'i': cmdInsertMode,
                                      'j': cmdMove,
