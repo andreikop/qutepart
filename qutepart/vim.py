@@ -36,6 +36,7 @@ class Vim(QObject):
             cmdFunc = self._COMMANDS[self._mode]['composite'][self._pendingCmd]
             cmdFunc(self, self._pendingCmd, event.text())
             self._pendingCmd = None
+            self.modeIndicationChanged.emit(MODE_COLORS[self._mode], self._mode)
             return True
         elif event.text() in simpleCommands:
             cmdFunc = simpleCommands[event.text()]
@@ -43,6 +44,7 @@ class Vim(QObject):
             return True
         elif event.text() in compositeCommands:
             self._pendingCmd = event.text()
+            self.modeIndicationChanged.emit(MODE_COLORS[self._mode], self._pendingCmd)
             return True
         else:
             return False

@@ -2,8 +2,6 @@
 # encoding: utf8
 
 
-import os
-import sys
 import unittest
 
 import base
@@ -25,19 +23,29 @@ class _Test(unittest.TestCase):
                             'jumps over the',
                             'lazy dog',
                             'back']
+        self.qpart.vimModeIndicationChanged.connect(self._onVimModeChanged)
+
+        self.vimMode = 'normal'
 
     def tearDown(self):
         self.qpart.hide()
         del self.qpart
 
+    def _onVimModeChanged(self, color, mode):
+        self.vimMode = mode
 
-class Test(_Test):
+
+class Modes(_Test):
     def test_01(self):
         """Switch modes insert/normal
         """
+        self.assertEqual(self.vimMode, 'normal')
         QTest.keyClicks(self.qpart, "i123")
+        self.assertEqual(self.vimMode, 'insert')
         QTest.keyClick(self.qpart, Qt.Key_Escape)
+        self.assertEqual(self.vimMode, 'normal')
         QTest.keyClicks(self.qpart, "i4")
+        self.assertEqual(self.vimMode, 'insert')
         self.assertEqual(self.qpart.lines[0],
                          '1234The quick brown fox')
 
@@ -46,10 +54,21 @@ class Test(_Test):
         """
         self.qpart.cursorPosition = (2, 0)
         QTest.keyClicks(self.qpart, "A")
+        self.assertEqual(self.vimMode, 'insert')
         QTest.keyClicks(self.qpart, "XY")
 
         self.assertEqual(self.qpart.lines[2],
                          'lazy dogXY')
+
+    def test_03(self):
+        """Mode line shows composite command start
+        """
+        self.assertEqual(self.vimMode, 'normal')
+        QTest.keyClick(self.qpart, 'd')
+        self.assertEqual(self.vimMode, 'd')
+        QTest.keyClick(self.qpart, 'w')
+        self.assertEqual(self.vimMode, 'normal')
+
 
 
 class Move(_Test):
