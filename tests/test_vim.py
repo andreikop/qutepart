@@ -88,6 +88,8 @@ class Move(_Test):
         self.assertEqual(self.qpart.cursorPosition, (2, 1))
 
     def test_02(self):
+        """w
+        """
         self.qpart.lines[0] = 'word, comma, word'
         self.qpart.cursorPosition = (0, 0)
         for column in (4, 6, 11, 13, 17, 0):
@@ -95,6 +97,14 @@ class Move(_Test):
             self.assertEqual(self.qpart.cursorPosition[1], column)
 
         self.assertEqual(self.qpart.cursorPosition, (1, 0))
+
+    def test_03(self):
+        """$
+        """
+        QTest.keyClick(self.qpart, '$')
+        self.assertEqual(self.qpart.cursorPosition, (0, 19))
+        QTest.keyClick(self.qpart, '$')
+        self.assertEqual(self.qpart.cursorPosition, (0, 19))
 
 
 class Del(_Test):

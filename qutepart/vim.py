@@ -29,6 +29,9 @@ class Vim(QObject):
     def keyPressEvent(self, event):
         """Check the event. Return True if processed and False otherwise
         """
+        if not event.text():
+            return
+
         simpleCommands = self._COMMANDS[self._mode]['simple']
         compositeCommands = self._COMMANDS[self._mode]['composite']
 
@@ -59,6 +62,7 @@ class Vim(QObject):
                          'h': QTextCursor.Left,
                          'l': QTextCursor.Right,
                          'w': QTextCursor.WordRight,
+                         '$': QTextCursor.EndOfLine,
                         }
 
         cursor.movePosition(moveOperation[motion], moveMode)
@@ -105,7 +109,7 @@ class Vim(QObject):
                 return
 
             del self._qpart.lines[lineIndex - 1:lineIndex + 1]
-        else:
+        elif motion in 'hlw$':
             self._moveCursor(motion, select=True)
             self._qpart.textCursor().removeSelectedText()
 
@@ -117,6 +121,7 @@ class Vim(QObject):
                                      'h': cmdMove,
                                      'l': cmdMove,
                                      'w': cmdMove,
+                                     '$': cmdMove,
                                      'x': cmdDelete,
                                      'A': cmdAppend,
                                     },
