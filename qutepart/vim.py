@@ -65,7 +65,14 @@ class Vim(QObject):
                          '$': QTextCursor.EndOfLine,
                         }
 
-        cursor.movePosition(moveOperation[motion], moveMode)
+        if motion in moveOperation:
+            cursor.movePosition(moveOperation[motion], moveMode)
+        elif motion == 'e':
+            oldPos = cursor.position()
+            cursor.movePosition(QTextCursor.EndOfWord, moveMode)
+            if cursor.position() == oldPos:
+                cursor.movePosition(QTextCursor.Right, moveMode)
+                cursor.movePosition(QTextCursor.EndOfWord, moveMode)
 
         self._qpart.setTextCursor(cursor)
 
@@ -109,7 +116,7 @@ class Vim(QObject):
                 return
 
             del self._qpart.lines[lineIndex - 1:lineIndex + 1]
-        elif motion in 'hlw$':
+        elif motion in 'hlwe$':
             self._moveCursor(motion, select=True)
             self._qpart.textCursor().removeSelectedText()
 
@@ -121,6 +128,7 @@ class Vim(QObject):
                                      'h': cmdMove,
                                      'l': cmdMove,
                                      'w': cmdMove,
+                                     'e': cmdMove,
                                      '$': cmdMove,
                                      'x': cmdDelete,
                                      'A': cmdAppend,
