@@ -52,14 +52,14 @@ class Vim(QObject):
 
         moveMode = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
 
-        if motion == 'j':
-            cursor.movePosition(QTextCursor.Down, moveMode)
-        elif motion == 'k':
-            cursor.movePosition(QTextCursor.Up, moveMode)
-        elif motion == 'h':
-            cursor.movePosition(QTextCursor.Left, moveMode)
-        elif motion == 'l':
-            cursor.movePosition(QTextCursor.Right, moveMode)
+        moveOperation = {'j': QTextCursor.Down,
+                         'k': QTextCursor.Up,
+                         'h': QTextCursor.Left,
+                         'l': QTextCursor.Right,
+                         'w': QTextCursor.WordRight,
+                        }
+
+        cursor.movePosition(moveOperation[motion], moveMode)
 
         self._qpart.setTextCursor(cursor)
 
@@ -90,10 +90,7 @@ class Vim(QObject):
     #
 
     def cmdCompositeDelete(self, cmd, motion):
-        if motion in 'hl':  # left, right
-            self._moveCursor(motion, select=True)
-            self._qpart.textCursor().removeSelectedText()
-        elif motion == 'j':  # down
+        if motion == 'j':  # down
             lineIndex = self._qpart.cursorPosition[0]
             if lineIndex == len(self._qpart.lines) - 1:  # last line
                 return
@@ -106,6 +103,9 @@ class Vim(QObject):
                 return
 
             del self._qpart.lines[lineIndex - 1:lineIndex + 1]
+        else:
+            self._moveCursor(motion, select=True)
+            self._qpart.textCursor().removeSelectedText()
 
 
 
@@ -114,6 +114,7 @@ class Vim(QObject):
                                      'k': cmdMove,
                                      'h': cmdMove,
                                      'l': cmdMove,
+                                     'w': cmdMove,
                                      'x': cmdDelete,
                                      'A': cmdAppend,
                                     },
