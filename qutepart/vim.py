@@ -63,6 +63,7 @@ class Vim(QObject):
                          'l': QTextCursor.Right,
                          'w': QTextCursor.WordRight,
                          '$': QTextCursor.EndOfLine,
+                         '0': QTextCursor.StartOfLine,
                         }
 
         if motion in moveOperation:
@@ -116,7 +117,7 @@ class Vim(QObject):
                 return
 
             del self._qpart.lines[lineIndex - 1:lineIndex + 1]
-        elif motion in 'hlwe$':
+        elif motion in 'hlwe$0':
             self._moveCursor(motion, select=True)
             self._qpart.textCursor().removeSelectedText()
 
@@ -130,6 +131,7 @@ class Vim(QObject):
                                      'w': cmdMove,
                                      'e': cmdMove,
                                      '$': cmdMove,
+                                     '0': cmdMove,
                                      'x': cmdDelete,
                                      'A': cmdAppend,
                                     },

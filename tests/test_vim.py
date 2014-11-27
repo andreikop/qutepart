@@ -107,7 +107,7 @@ class Move(_Test):
             QTest.keyClick(self.qpart, 'e')
             self.assertEqual(self.qpart.cursorPosition[1], column)
 
-        self.assertEqual(self.qpart.cursorPosition, (1, 0))
+        self.assertEqual(self.qpart.cursorPosition, (1, 5))
 
     def test_04(self):
         """$
@@ -116,6 +116,14 @@ class Move(_Test):
         self.assertEqual(self.qpart.cursorPosition, (0, 19))
         QTest.keyClick(self.qpart, '$')
         self.assertEqual(self.qpart.cursorPosition, (0, 19))
+
+    def test_05(self):
+        """0
+        """
+        self.qpart.cursorPosition = (0, 10)
+        QTest.keyClick(self.qpart, '0')
+        self.assertEqual(self.qpart.cursorPosition, (0, 0))
+
 
 
 class Del(_Test):
