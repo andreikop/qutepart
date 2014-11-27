@@ -8,6 +8,7 @@ INSERT = 'insert'
 MODE_COLORS = {NORMAL: QColor('#33cc33'),
                INSERT: QColor('#ff9900')}
 
+
 class Vim(QObject):
     """Vim mode implementation.
     Listens events and does actions
@@ -18,36 +19,70 @@ class Vim(QObject):
         QObject.__init__(self)
         self._qpart = qpart
         self._mode = NORMAL
-        self._pendingCmd = None
+        self._pendingOperator = None
+        self._pendingCount = 0
 
     def isActive(self):
         return True
 
     def indication(self):
-        return MODE_COLORS[self._mode], self._mode
+        color = MODE_COLORS[self._mode]
+        text = ''
+
+        if self._pendingCount:
+            text += str(self._pendingCount)
+
+        if self._pendingOperator:
+            text += self._pendingOperator
+
+        if not text:
+            text = self._mode
+
+        return color, text
+
+    def _updateIndication(self):
+        self.modeIndicationChanged.emit(*self.indication())
 
     def keyPressEvent(self, event):
         """Check the event. Return True if processed and False otherwise
         """
-        if not event.text():
+        text = event.text()
+
+        if not text:
             return
 
         simpleCommands = self._COMMANDS[self._mode]['simple']
         compositeCommands = self._COMMANDS[self._mode]['composite']
 
-        if self._pendingCmd:
-            cmdFunc = self._COMMANDS[self._mode]['composite'][self._pendingCmd]
-            cmdFunc(self, self._pendingCmd, event.text())
-            self._pendingCmd = None
-            self.modeIndicationChanged.emit(MODE_COLORS[self._mode], self._mode)
+        def runFunc(cmdFunc, *args):
+            if self._pendingCount:
+                with self._qpart:
+                    for _ in range(self._pendingCount):
+                        cmdFunc(self, *args)
+            else:
+                cmdFunc(self, *args)
+
+        if self._pendingOperator:
+            cmdFunc = self._COMMANDS[self._mode]['composite'][self._pendingOperator]
+            runFunc(cmdFunc, self._pendingOperator, text)
+            self._pendingOperator = None
+            self._pendingCount = 0
+            self._updateIndication()
             return True
-        elif event.text() in simpleCommands:
-            cmdFunc = simpleCommands[event.text()]
-            cmdFunc(self, event.text())
+        elif text in simpleCommands:
+            cmdFunc = simpleCommands[text]
+            runFunc(cmdFunc, text)
+            self._pendingCount = 0
+            self._updateIndication()
             return True
-        elif event.text() in compositeCommands:
-            self._pendingCmd = event.text()
-            self.modeIndicationChanged.emit(MODE_COLORS[self._mode], self._pendingCmd)
+        elif self._mode == NORMAL and text.isdigit():
+            digit = int(text)
+            self._pendingCount = (self._pendingCount * 10)+ digit
+            self._updateIndication()
+            return True
+        elif text in compositeCommands:
+            self._pendingOperator = text
+            self._updateIndication()
             return True
         else:
             return False
@@ -85,7 +120,7 @@ class Vim(QObject):
 
     def _setMode(self, mode):
         self._mode = mode
-        self.modeIndicationChanged.emit(MODE_COLORS[mode], mode)
+        self._updateIndication()
 
     def cmdInsertMode(self, cmd): self._setMode(INSERT)
     def cmdNormalMode(self, cmd): self._setMode(NORMAL)

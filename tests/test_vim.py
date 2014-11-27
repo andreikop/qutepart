@@ -127,7 +127,7 @@ class Move(_Test):
 
 
 class Del(_Test):
-    def test_03(self):
+    def test_01(self):
         """Delete with x
         """
         self.qpart.cursorPosition = (0, 4)
@@ -136,7 +136,7 @@ class Del(_Test):
         self.assertEqual(self.qpart.lines[0],
                          'The  brown fox')
 
-    def test_05(self):
+    def test_02(self):
         """Composite delete with d. Left and right
         """
         self.qpart.cursorPosition = (1, 1)
@@ -148,7 +148,7 @@ class Del(_Test):
         self.assertEqual(self.qpart.lines[1],
                          'mps over the')
 
-    def test_06(self):
+    def test_03(self):
         """Composite delete with d. Down
         """
         self.qpart.cursorPosition = (0, 2)
@@ -169,7 +169,7 @@ class Del(_Test):
         self.assertEqual(self.qpart.lines[:],
                          [''])
 
-    def test_07(self):
+    def test_04(self):
         """Composite delete with d. Up
         """
         self.qpart.cursorPosition = (0, 2)
@@ -183,6 +183,11 @@ class Del(_Test):
                           'back'])
         self.assertEqual(self.qpart.cursorPosition[1], 0)
 
+    def test_05(self):
+        """Delete Count times
+        """
+        QTest.keyClicks(self.qpart, '3dw')
+        self.assertEqual(self.qpart.lines[0], 'fox')
 
 if __name__ == '__main__':
     unittest.main()
