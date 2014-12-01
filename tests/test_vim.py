@@ -200,5 +200,15 @@ class Del(_Test):
                           'lazy dog',
                           'back'])
 
+
+class Edit(_Test):
+    def test_01(self):
+        """Undo
+        """
+        oldText = self.qpart.text
+        QTest.keyClicks(self.qpart, 'ddu')
+        self.assertEqual(self.qpart.text, oldText)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -134,6 +134,9 @@ class Vim(QObject):
         self._qpart.setTextCursor(cursor)
         self._setMode(INSERT)
 
+    def cmdUndo(self, cmd):
+        self._qpart.undo()
+
     #
     # Composite commands
     #
@@ -168,6 +171,7 @@ class Vim(QObject):
                                      '0': cmdMove,
                                      'x': cmdDelete,
                                      'A': cmdAppend,
+                                     'u': cmdUndo,
                                     },
                           'composite': {'d': cmdCompositeDelete,
                                        }
