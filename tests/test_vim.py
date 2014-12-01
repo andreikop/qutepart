@@ -189,5 +189,16 @@ class Del(_Test):
         QTest.keyClicks(self.qpart, '3dw')
         self.assertEqual(self.qpart.lines[0], 'fox')
 
+    def test_06(self):
+        """Delete line
+        dd
+        """
+        self.qpart.cursorPosition = (1, 0)
+        QTest.keyClicks(self.qpart, 'dd')
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'lazy dog',
+                          'back'])
+
 if __name__ == '__main__':
     unittest.main()

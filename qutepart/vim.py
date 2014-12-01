@@ -143,15 +143,14 @@ class Vim(QObject):
             lineIndex = self._qpart.cursorPosition[0]
             if lineIndex == len(self._qpart.lines) - 1:  # last line
                 return
-
             del self._qpart.lines[lineIndex:lineIndex + 2]
-
         elif motion == 'k':  # up
             lineIndex = self._qpart.cursorPosition[0]
             if lineIndex == 0:  # first line
                 return
-
             del self._qpart.lines[lineIndex - 1:lineIndex + 1]
+        elif motion == 'd':  # delete whole line
+            del self._qpart.lines[self._qpart.cursorPosition[0]]
         elif motion in 'hlwe$0':
             self._moveCursor(motion, select=True)
             self._qpart.textCursor().removeSelectedText()
