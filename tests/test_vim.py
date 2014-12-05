@@ -127,7 +127,7 @@ class Move(_Test):
 
 
 class Del(_Test):
-    def test_01(self):
+    def test_01a(self):
         """Delete with x
         """
         self.qpart.cursorPosition = (0, 4)
@@ -135,6 +135,17 @@ class Del(_Test):
 
         self.assertEqual(self.qpart.lines[0],
                          'The  brown fox')
+        self.assertEqual(self.qpart._vim._internalClipboard, 'k')
+
+    def test_01b(self):
+        """Delete with x
+        """
+        self.qpart.cursorPosition = (0, 4)
+        QTest.keyClicks(self.qpart, "5x")
+
+        self.assertEqual(self.qpart.lines[0],
+                         'The  brown fox')
+        self.assertEqual(self.qpart._vim._internalClipboard, 'quick')
 
     def test_02(self):
         """Composite delete with d. Left and right
@@ -208,6 +219,19 @@ class Edit(_Test):
         oldText = self.qpart.text
         QTest.keyClicks(self.qpart, 'ddu')
         self.assertEqual(self.qpart.text, oldText)
+
+    def test_02(self):
+        """Paste with p
+        """
+        self.qpart.cursorPosition = (0, 4)
+        QTest.keyClicks(self.qpart, "5x")
+        self.assertEqual(self.qpart.lines[0],
+                         'The  brown fox')
+
+        QTest.keyClicks(self.qpart, "p")
+        self.assertEqual(self.qpart.lines[0],
+                         'The quick brown fox')  # NOTE 'The  quickbrown fox' in vim
+
 
 
 if __name__ == '__main__':

@@ -21,6 +21,7 @@ class Vim(QObject):
         self._mode = NORMAL
         self._pendingOperator = None
         self._pendingCount = 0
+        self._internalClipboard = ''  # delete commands save text to this clipboard
 
     def isActive(self):
         return True
@@ -66,6 +67,14 @@ class Vim(QObject):
             cmdFunc = self._COMMANDS[self._mode]['composite'][self._pendingOperator]
             runFunc(cmdFunc, self._pendingOperator, text)
             self._pendingOperator = None
+            self._pendingCount = 0
+            self._updateIndication()
+            return True
+        elif text == 'x':
+            """ Delete command is special case.
+            It accumulates deleted text in the internal clipboard
+            """
+            self.cmdDelete(self._pendingCount or 1)
             self._pendingCount = 0
             self._updateIndication()
             return True
@@ -125,9 +134,6 @@ class Vim(QObject):
     def cmdInsertMode(self, cmd): self._setMode(INSERT)
     def cmdNormalMode(self, cmd): self._setMode(NORMAL)
 
-    def cmdDelete(self, cmd):
-        self._qpart.textCursor().deleteChar()
-
     def cmdAppend(self, cmd):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.EndOfLine)
@@ -136,6 +142,10 @@ class Vim(QObject):
 
     def cmdUndo(self, cmd):
         self._qpart.undo()
+
+    def cmdInternalPaste(self, cmd):
+        if self._internalClipboard:
+            self._qpart.textCursor().insertText(self._internalClipboard)
 
     #
     # Composite commands
@@ -158,6 +168,17 @@ class Vim(QObject):
             self._moveCursor(motion, select=True)
             self._qpart.textCursor().removeSelectedText()
 
+    #
+    # Special cases
+    #
+    def cmdDelete(self, count):
+        cursor = self._qpart.textCursor()
+        for _ in xrange(count):
+            cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
+
+        if cursor.selectedText():
+            self._internalClipboard = cursor.selectedText()
+            cursor.removeSelectedText()
 
 
     _COMMANDS = {NORMAL: {'simple': {'i': cmdInsertMode,
@@ -169,9 +190,9 @@ class Vim(QObject):
                                      'e': cmdMove,
                                      '$': cmdMove,
                                      '0': cmdMove,
-                                     'x': cmdDelete,
                                      'A': cmdAppend,
                                      'u': cmdUndo,
+                                     'p': cmdInternalPaste,
                                     },
                           'composite': {'d': cmdCompositeDelete,
                                        }
