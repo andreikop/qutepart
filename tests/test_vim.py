@@ -169,16 +169,21 @@ class Del(_Test):
                           'back'])
         self.assertEqual(self.qpart.cursorPosition[1], 0)
 
+        # nothing deleted, if having only one line
         self.qpart.cursorPosition = (1, 1)
         QTest.keyClicks(self.qpart, 'dj')
         self.assertEqual(self.qpart.lines[:],
                          ['lazy dog',
                           'back'])
 
+
         QTest.keyClicks(self.qpart, 'k')
         QTest.keyClicks(self.qpart, 'dj')
         self.assertEqual(self.qpart.lines[:],
                          [''])
+        self.assertEqual(self.qpart._vim._internalClipboard,
+                         ['lazy dog',
+                          'back'])
 
     def test_04(self):
         """Composite delete with d. Up
@@ -192,6 +197,10 @@ class Del(_Test):
         self.assertEqual(self.qpart.lines[:],
                          ['The quick brown fox',
                           'back'])
+        self.assertEqual(self.qpart._vim._internalClipboard,
+                         ['jumps over the',
+                          'lazy dog'])
+
         self.assertEqual(self.qpart.cursorPosition[1], 0)
 
     def test_05(self):
@@ -199,6 +208,8 @@ class Del(_Test):
         """
         QTest.keyClicks(self.qpart, '3dw')
         self.assertEqual(self.qpart.lines[0], 'fox')
+        self.assertEqual(self.qpart._vim._internalClipboard,
+                         'The quick brown ')
 
     def test_06(self):
         """Delete line

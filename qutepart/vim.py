@@ -65,7 +65,7 @@ class Vim(QObject):
 
         if self._pendingOperator:
             cmdFunc = self._COMMANDS[self._mode]['composite'][self._pendingOperator]
-            runFunc(cmdFunc, self._pendingOperator, text)
+            cmdFunc(self, self._pendingOperator, text, self._pendingCount or 1)
             self._pendingOperator = None
             self._pendingCount = 0
             self._updateIndication()
@@ -144,29 +144,54 @@ class Vim(QObject):
         self._qpart.undo()
 
     def cmdInternalPaste(self, cmd):
-        if self._internalClipboard:
+        if not self._internalClipboard:
+            return
+
+        if isinstance(self._internalClipboard, basestring):
             self._qpart.textCursor().insertText(self._internalClipboard)
+        elif isinstance(self._internalClipboard, list):
+            pass
 
     #
     # Composite commands
     #
 
-    def cmdCompositeDelete(self, cmd, motion):
+    def cmdCompositeDelete(self, cmd, motion, count):
         if motion == 'j':  # down
             lineIndex = self._qpart.cursorPosition[0]
-            if lineIndex == len(self._qpart.lines) - 1:  # last line
+            availableCount = len(self._qpart.lines) - lineIndex
+            if availableCount < 2:  # last line
                 return
-            del self._qpart.lines[lineIndex:lineIndex + 2]
+
+            effectiveCount = min(availableCount, count)
+
+            self._internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
+            del self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
         elif motion == 'k':  # up
             lineIndex = self._qpart.cursorPosition[0]
             if lineIndex == 0:  # first line
                 return
-            del self._qpart.lines[lineIndex - 1:lineIndex + 1]
+
+            effectiveCount = min(lineIndex, count)
+
+            self._internalClipboard = self._qpart.lines[lineIndex - effectiveCount:lineIndex + 1]
+            del self._qpart.lines[lineIndex - effectiveCount:lineIndex + 1]
         elif motion == 'd':  # delete whole line
-            del self._qpart.lines[self._qpart.cursorPosition[0]]
+            lineIndex = self._qpart.cursorPosition[0]
+            availableCount = len(self._qpart.lines) - lineIndex
+
+            effectiveCount = min(availableCount, count)
+
+            self._internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount]
+            del self._qpart.lines[lineIndex:lineIndex + effectiveCount]
         elif motion in 'hlwe$0':
-            self._moveCursor(motion, select=True)
-            self._qpart.textCursor().removeSelectedText()
+            for _ in xrange(count):
+                self._moveCursor(motion, select=True)
+
+            selText = self._qpart.textCursor().selectedText()
+            if selText:
+                self._internalClipboard = selText
+                self._qpart.textCursor().removeSelectedText()
 
     #
     # Special cases
