@@ -873,6 +873,7 @@ class Qutepart(QPlainTextEdit):
             not cursor.hasSelection() and \
             cursor.positionInBlock() < cursor.block().length():
             typeOverwrite(event.text())
+            self._vim.keyPressEvent(event)
         elif event.matches(QKeySequence.MoveToStartOfLine):
             self._onShortcutHome(select=False)
         elif event.matches(QKeySequence.SelectStartOfLine):

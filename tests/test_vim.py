@@ -260,6 +260,17 @@ class Edit(_Test):
                           'lazy dog',
                           'back'])
 
+    def test_04(self):
+        """Replace char with r
+        """
+        self.qpart.cursorPosition = (0, 4)
+        QTest.keyClicks(self.qpart, 'rZ')
+        self.assertEqual(self.qpart.lines[0],
+                         'The Zuick brown fox')
+
+        QTest.keyClicks(self.qpart, 'rW')
+        self.assertEqual(self.qpart.lines[0],
+                         'The Wuick brown fox')
 
 
 if __name__ == '__main__':

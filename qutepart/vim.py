@@ -1,12 +1,14 @@
-from PyQt4.QtCore import pyqtSignal, QObject, Qt
+from PyQt4.QtCore import pyqtSignal, QObject
 from PyQt4.QtGui import QColor, QTextCursor
 
 
 NORMAL = 'normal'
 INSERT = 'insert'
+REPLACE_CHAR = 'replace character'
 
 MODE_COLORS = {NORMAL: QColor('#33cc33'),
-               INSERT: QColor('#ff9900')}
+               INSERT: QColor('#ff9900'),
+               REPLACE_CHAR: QColor('#ff3300')}
 
 
 class Vim(QObject):
@@ -44,16 +46,14 @@ class Vim(QObject):
     def _updateIndication(self):
         self.modeIndicationChanged.emit(*self.indication())
 
-    def keyPressEvent(self, event):
-        """Check the event. Return True if processed and False otherwise
-        """
+    def normalKeyPress(self, event):
         text = event.text()
 
         if not text:
             return
 
-        simpleCommands = self._COMMANDS[self._mode]['simple']
-        compositeCommands = self._COMMANDS[self._mode]['composite']
+        simpleCommands = self._COMMANDS['simple']
+        compositeCommands = self._COMMANDS['composite']
 
         def runFunc(cmdFunc, *args):
             if self._pendingCount:
@@ -64,7 +64,7 @@ class Vim(QObject):
                 cmdFunc(self, *args)
 
         if self._pendingOperator:
-            cmdFunc = self._COMMANDS[self._mode]['composite'][self._pendingOperator]
+            cmdFunc = self._COMMANDS['composite'][self._pendingOperator]
             cmdFunc(self, self._pendingOperator, text, self._pendingCount or 1)
             self._pendingOperator = None
             self._pendingCount = 0
@@ -84,7 +84,7 @@ class Vim(QObject):
             self._pendingCount = 0
             self._updateIndication()
             return True
-        elif self._mode == NORMAL and text.isdigit():
+        elif text.isdigit():
             digit = int(text)
             self._pendingCount = (self._pendingCount * 10)+ digit
             self._updateIndication()
@@ -95,6 +95,29 @@ class Vim(QObject):
             return True
         else:
             return False
+
+    def replaceCharKeyPress(self, event):
+        if event.text():
+            self._qpart.setOverwriteMode(False)
+            line, col = self._qpart.cursorPosition
+            if col > 0:
+                self._qpart.cursorPosition = (line, col - 1)  # return the cursor back after replacement
+            self._setMode(NORMAL)
+            return False
+
+    def insertKeyPress(self, event):
+        if event.text() == '\x1b':  # ESC
+            self._setMode(NORMAL)
+            return True
+
+    def keyPressEvent(self, event):
+        """Check the event. Return True if processed and False otherwise
+        """
+        handlers = {NORMAL: self.normalKeyPress,
+                    INSERT: self.insertKeyPress,
+                    REPLACE_CHAR: self.replaceCharKeyPress}
+
+        return handlers[self._mode](event)
 
     def _moveCursor(self, motion, select=False):
         cursor = self._qpart.textCursor()
@@ -132,7 +155,10 @@ class Vim(QObject):
         self._updateIndication()
 
     def cmdInsertMode(self, cmd): self._setMode(INSERT)
-    def cmdNormalMode(self, cmd): self._setMode(NORMAL)
+
+    def cmdReplaceCharMode(self, cmd):
+        self._setMode(REPLACE_CHAR)
+        self._qpart.setOverwriteMode(True)
 
     def cmdAppend(self, cmd):
         cursor = self._qpart.textCursor()
@@ -207,25 +233,20 @@ class Vim(QObject):
             cursor.removeSelectedText()
 
 
-    _COMMANDS = {NORMAL: {'simple': {'i': cmdInsertMode,
-                                     'j': cmdMove,
-                                     'k': cmdMove,
-                                     'h': cmdMove,
-                                     'l': cmdMove,
-                                     'w': cmdMove,
-                                     'e': cmdMove,
-                                     '$': cmdMove,
-                                     '0': cmdMove,
-                                     'A': cmdAppend,
-                                     'u': cmdUndo,
-                                     'p': cmdInternalPaste,
-                                    },
-                          'composite': {'d': cmdCompositeDelete,
-                                       }
-                         },
-
-                 INSERT: {'simple': {'\x1b': cmdNormalMode,  # ESC
-                                    },
-                          'composite': {}
-                         }
+    _COMMANDS = {'simple': {'i': cmdInsertMode,
+                            'r': cmdReplaceCharMode,
+                            'j': cmdMove,
+                            'k': cmdMove,
+                            'h': cmdMove,
+                            'l': cmdMove,
+                            'w': cmdMove,
+                            'e': cmdMove,
+                            '$': cmdMove,
+                            '0': cmdMove,
+                            'A': cmdAppend,
+                            'u': cmdUndo,
+                            'p': cmdInternalPaste,
+                           },
+                 'composite': {'d': cmdCompositeDelete,
+                              }
                 }
