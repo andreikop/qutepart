@@ -150,7 +150,8 @@ class Vim(QObject):
         if isinstance(self._internalClipboard, basestring):
             self._qpart.textCursor().insertText(self._internalClipboard)
         elif isinstance(self._internalClipboard, list):
-            pass
+            currentLineIndex = self._qpart.cursorPosition[0]
+            self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(self._internalClipboard))
 
     #
     # Composite commands

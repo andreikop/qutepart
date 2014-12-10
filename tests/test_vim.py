@@ -232,7 +232,7 @@ class Edit(_Test):
         self.assertEqual(self.qpart.text, oldText)
 
     def test_02(self):
-        """Paste with p
+        """Paste text with p
         """
         self.qpart.cursorPosition = (0, 4)
         QTest.keyClicks(self.qpart, "5x")
@@ -242,6 +242,23 @@ class Edit(_Test):
         QTest.keyClicks(self.qpart, "p")
         self.assertEqual(self.qpart.lines[0],
                          'The quick brown fox')  # NOTE 'The  quickbrown fox' in vim
+
+    def test_03(self):
+        """Paste lines with p
+        """
+        self.qpart.cursorPosition = (1, 2)
+        QTest.keyClicks(self.qpart, "2dd")
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'back'])
+
+        QTest.keyClicks(self.qpart, "kkk")
+        QTest.keyClicks(self.qpart, "p")
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'jumps over the',
+                          'lazy dog',
+                          'back'])
 
 
 
