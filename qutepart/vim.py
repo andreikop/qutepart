@@ -131,6 +131,8 @@ class Vim(QObject):
                          'w': QTextCursor.WordRight,
                          '$': QTextCursor.EndOfLine,
                          '0': QTextCursor.StartOfLine,
+                         'gg': QTextCursor.Start,
+                         'G': QTextCursor.End
                         }
 
         if motion in moveOperation:
@@ -226,6 +228,10 @@ class Vim(QObject):
         self.cmdCompositeDelete(cmd, motion, count)
         self._setMode(INSERT)
 
+    def cmdCompositeGMove(self, cmd, motion, count):
+        if motion == 'g':
+            self._moveCursor('gg')
+
     #
     # Special cases
     #
@@ -249,11 +255,13 @@ class Vim(QObject):
                             'e': cmdMove,
                             '$': cmdMove,
                             '0': cmdMove,
+                            'G': cmdMove,
                             'A': cmdAppend,
                             'u': cmdUndo,
                             'p': cmdInternalPaste,
                            },
                  'composite': {'c': cmdCompositeChange,
                                'd': cmdCompositeDelete,
+                               'g': cmdCompositeGMove,
                               }
                 }
