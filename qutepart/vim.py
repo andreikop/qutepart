@@ -147,6 +147,7 @@ class Vim(QObject):
     #
     # Simple commands
     #
+
     def cmdMove(self, cmd):
         self._moveCursor(cmd, select=False)
 
@@ -220,6 +221,11 @@ class Vim(QObject):
                 self._internalClipboard = selText
                 self._qpart.textCursor().removeSelectedText()
 
+    def cmdCompositeChange(self, cmd, motion, count):
+        # TODO deletion and next insertion should be undo-ble as 1 action
+        self.cmdCompositeDelete(cmd, motion, count)
+        self._setMode(INSERT)
+
     #
     # Special cases
     #
@@ -247,6 +253,7 @@ class Vim(QObject):
                             'u': cmdUndo,
                             'p': cmdInternalPaste,
                            },
-                 'composite': {'d': cmdCompositeDelete,
+                 'composite': {'c': cmdCompositeChange,
+                               'd': cmdCompositeDelete,
                               }
                 }
