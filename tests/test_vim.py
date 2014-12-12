@@ -275,7 +275,7 @@ class Edit(_Test):
     def test_05(self):
         """Change 2 words with c
         """
-        QTest.keyClicks(self.qpart, '2ce')
+        QTest.keyClicks(self.qpart, 'c2e')
         QTest.keyClicks(self.qpart, 'asdf')
         self.assertEqual(self.qpart.lines[0],
                          'asdf brown fox')

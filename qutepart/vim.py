@@ -63,7 +63,12 @@ class Vim(QObject):
             else:
                 cmdFunc(self, *args)
 
-        if self._pendingOperator:
+        if text.isdigit() and (text != '0' or self._pendingCount):  # 0 is a command, not a count
+            digit = int(text)
+            self._pendingCount = (self._pendingCount * 10)+ digit
+            self._updateIndication()
+            return True
+        elif self._pendingOperator:
             cmdFunc = self._COMMANDS['composite'][self._pendingOperator]
             cmdFunc(self, self._pendingOperator, text, self._pendingCount or 1)
             self._pendingOperator = None
@@ -82,11 +87,6 @@ class Vim(QObject):
             cmdFunc = simpleCommands[text]
             runFunc(cmdFunc, text)
             self._pendingCount = 0
-            self._updateIndication()
-            return True
-        elif text.isdigit():
-            digit = int(text)
-            self._pendingCount = (self._pendingCount * 10)+ digit
             self._updateIndication()
             return True
         elif text in compositeCommands:
