@@ -30,19 +30,7 @@ class Vim(QObject):
         return True
 
     def indication(self):
-        color = self._mode.color
-        text = ''
-
-        if self._pendingCount:
-            text += str(self._pendingCount)
-
-        if self._pendingOperator:
-            text += self._pendingOperator
-
-        if not text:
-            text = self._mode.text
-
-        return color, text
+        return self._mode.color, self._mode.text()
 
     def updateIndication(self):
         self.modeIndicationChanged.emit(*self.indication())
@@ -62,11 +50,13 @@ class Vim(QObject):
 
 class Mode:
     color = None
-    text = None
 
     def __init__(self, vim, qpart):
         self._vim = vim
         self._qpart = qpart
+
+    def text(self):
+        return None
 
     def keyPressEvent(self, text):
         pass
@@ -78,7 +68,9 @@ class Mode:
 
 class Insert(Mode):
     color = QColor('#ff9900')
-    text = 'insert'
+
+    def text(self):
+        return 'insert'
 
     def keyPressEvent(self, text):
         if text == '\x1b':  # ESC
@@ -90,7 +82,9 @@ class Insert(Mode):
 
 class ReplaceChar(Mode):
     color = QColor('#ff3300')
-    text = 'replace char'
+
+    def text(self):
+        return 'replace char'
 
     def keyPressEvent(self, text):
         if text:
@@ -104,7 +98,20 @@ class ReplaceChar(Mode):
 
 class NormalBase(Mode):
     color = QColor('#33cc33')
-    text = 'normal'
+
+    def text(self):
+        text = ''
+
+        if self._vim._pendingCount:
+            text += str(self._vim._pendingCount)
+
+        if self._vim._pendingOperator:
+            text += self._vim._pendingOperator
+
+        if not text:
+            text = 'normal'
+
+        return text
 
     def keyPressEvent(self, text):
         if not text:
