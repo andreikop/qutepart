@@ -161,7 +161,7 @@ class Del(_Test):
 
         self.assertEqual(self.qpart.lines[0],
                          'The  brown fox')
-        self.assertEqual(self.qpart._vim._internalClipboard, 'k')
+        self.assertEqual(self.qpart._vim.internalClipboard, 'k')
 
     def test_01b(self):
         """Delete with x
@@ -171,7 +171,7 @@ class Del(_Test):
 
         self.assertEqual(self.qpart.lines[0],
                          'The  brown fox')
-        self.assertEqual(self.qpart._vim._internalClipboard, 'quick')
+        self.assertEqual(self.qpart._vim.internalClipboard, 'quick')
 
     def test_02(self):
         """Composite delete with d. Left and right
@@ -207,7 +207,7 @@ class Del(_Test):
         QTest.keyClicks(self.qpart, 'dj')
         self.assertEqual(self.qpart.lines[:],
                          [''])
-        self.assertEqual(self.qpart._vim._internalClipboard,
+        self.assertEqual(self.qpart._vim.internalClipboard,
                          ['lazy dog',
                           'back'])
 
@@ -223,7 +223,7 @@ class Del(_Test):
         self.assertEqual(self.qpart.lines[:],
                          ['The quick brown fox',
                           'back'])
-        self.assertEqual(self.qpart._vim._internalClipboard,
+        self.assertEqual(self.qpart._vim.internalClipboard,
                          ['jumps over the',
                           'lazy dog'])
 
@@ -234,7 +234,7 @@ class Del(_Test):
         """
         QTest.keyClicks(self.qpart, '3dw')
         self.assertEqual(self.qpart.lines[0], 'fox')
-        self.assertEqual(self.qpart._vim._internalClipboard,
+        self.assertEqual(self.qpart._vim.internalClipboard,
                          'The quick brown ')
 
     def test_06(self):

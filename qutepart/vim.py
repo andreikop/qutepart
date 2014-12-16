@@ -20,17 +20,17 @@ class Vim(QObject):
     def __init__(self, qpart):
         QObject.__init__(self)
         self._qpart = qpart
-        self._mode = NORMAL
+        self._mode = NormalBase(self, qpart)
         self._pendingOperator = None
         self._pendingCount = 0
         self._pendingMotion = ''
-        self._internalClipboard = ''  # delete commands save text to this clipboard
+        self.internalClipboard = ''  # delete commands save text to this clipboard
 
     def isActive(self):
         return True
 
     def indication(self):
-        color = MODE_COLORS[self._mode]
+        color = self._mode.color
         text = ''
 
         if self._pendingCount:
@@ -40,16 +40,73 @@ class Vim(QObject):
             text += self._pendingOperator
 
         if not text:
-            text = self._mode
+            text = self._mode.text
 
         return color, text
 
-    def _updateIndication(self):
+    def updateIndication(self):
         self.modeIndicationChanged.emit(*self.indication())
 
-    def normalKeyPress(self, event):
-        text = event.text()
 
+    def keyPressEvent(self, event):
+        """Check the event. Return True if processed and False otherwise
+        """
+        return self._mode.keyPressEvent(event.text())
+
+
+    def setMode(self, mode):
+        self._mode = mode
+        self.updateIndication()
+
+
+
+class Mode:
+    color = None
+    text = None
+
+    def __init__(self, vim, qpart):
+        self._vim = vim
+        self._qpart = qpart
+
+    def keyPressEvent(self, text):
+        pass
+
+    def switchMode(self, modeClass):
+        mode = modeClass(self._vim, self._qpart)
+        self._vim.setMode(mode)
+
+
+class Insert(Mode):
+    color = QColor('#ff9900')
+    text = 'insert'
+
+    def keyPressEvent(self, text):
+        if text == '\x1b':  # ESC
+            self.switchMode(NormalBase)
+            return True
+
+        return False
+
+
+class ReplaceChar(Mode):
+    color = QColor('#ff3300')
+    text = 'replace char'
+
+    def keyPressEvent(self, text):
+        if text:
+            self._qpart.setOverwriteMode(False)
+            line, col = self._qpart.cursorPosition
+            if col > 0:
+                self._qpart.cursorPosition = (line, col - 1)  # return the cursor back after replacement
+            self.switchMode(NormalBase)
+
+
+
+class NormalBase(Mode):
+    color = QColor('#33cc33')
+    text = 'normal'
+
+    def keyPressEvent(self, text):
         if not text:
             return
 
@@ -57,78 +114,55 @@ class Vim(QObject):
         compositeCommands = self._COMMANDS['composite']
 
         def runFunc(cmdFunc, *args):
-            if self._pendingCount:
+            if self._vim._pendingCount:
                 with self._qpart:
-                    for _ in range(self._pendingCount):
+                    for _ in range(self._vim._pendingCount):
                         cmdFunc(self, *args)
             else:
                 cmdFunc(self, *args)
 
-        if text.isdigit() and (text != '0' or self._pendingCount):  # 0 is a command, not a count
+        if text.isdigit() and (text != '0' or self._vim._pendingCount):  # 0 is a command, not a count
             digit = int(text)
-            self._pendingCount = (self._pendingCount * 10)+ digit
-            self._updateIndication()
+            self._vim._pendingCount = (self._vim._pendingCount * 10)+ digit
+            self._vim.updateIndication()
             return True
-        elif self._pendingOperator:
-            if text == 'g' and self._pendingOperator != 'g':
-                if self._pendingMotion:
-                    motion = self._pendingMotion + text
-                    self._pendingMotion = ''
+        elif self._vim._pendingOperator:
+            if text == 'g' and self._vim._pendingOperator != 'g':
+                if self._vim._pendingMotion:
+                    motion = self._vim._pendingMotion + text
+                    self._vim._pendingMotion = ''
                 else:
-                    self._pendingMotion = text
+                    self._vim._pendingMotion = text
                     return True
             else:
                 motion = text
 
-            cmdFunc = self._COMMANDS['composite'][self._pendingOperator]
-            cmdFunc(self, self._pendingOperator, motion, self._pendingCount or 1)
-            self._pendingOperator = None
-            self._pendingCount = 0
-            self._updateIndication()
+            cmdFunc = self._COMMANDS['composite'][self._vim._pendingOperator]
+            cmdFunc(self, self._vim._pendingOperator, motion, self._vim._pendingCount or 1)
+            self._vim._pendingOperator = None
+            self._vim._pendingCount = 0
+            self._vim.updateIndication()
             return True
         elif text == 'x':
             """ Delete command is special case.
             It accumulates deleted text in the internal clipboard
             """
-            self.cmdDelete(self._pendingCount or 1)
-            self._pendingCount = 0
-            self._updateIndication()
+            self.cmdDelete(self._vim._pendingCount or 1)
+            self._vim._pendingCount = 0
+            self._vim.updateIndication()
             return True
         elif text in simpleCommands:
             cmdFunc = simpleCommands[text]
             runFunc(cmdFunc, text)
-            self._pendingCount = 0
-            self._updateIndication()
+            self._vim._pendingCount = 0
+            self._vim.updateIndication()
             return True
         elif text in compositeCommands:
-            self._pendingOperator = text
-            self._updateIndication()
+            self._vim._pendingOperator = text
+            self._vim.updateIndication()
             return True
         else:
             return False
-
-    def replaceCharKeyPress(self, event):
-        if event.text():
-            self._qpart.setOverwriteMode(False)
-            line, col = self._qpart.cursorPosition
-            if col > 0:
-                self._qpart.cursorPosition = (line, col - 1)  # return the cursor back after replacement
-            self._setMode(NORMAL)
-            return False
-
-    def insertKeyPress(self, event):
-        if event.text() == '\x1b':  # ESC
-            self._setMode(NORMAL)
-            return True
-
-    def keyPressEvent(self, event):
-        """Check the event. Return True if processed and False otherwise
-        """
-        handlers = {NORMAL: self.normalKeyPress,
-                    INSERT: self.insertKeyPress,
-                    REPLACE_CHAR: self.replaceCharKeyPress}
-
-        return handlers[self._mode](event)
 
     def _moveCursor(self, motion, select=False):
         cursor = self._qpart.textCursor()
@@ -164,40 +198,37 @@ class Vim(QObject):
     def cmdMove(self, cmd):
         self._moveCursor(cmd, select=False)
 
-    def _setMode(self, mode):
-        self._mode = mode
-        self._updateIndication()
-
-    def cmdInsertMode(self, cmd): self._setMode(INSERT)
+    def cmdInsertMode(self, cmd):
+        self.switchMode(Insert)
 
     def cmdReplaceCharMode(self, cmd):
-        self._setMode(REPLACE_CHAR)
+        self.switchMode(ReplaceChar)
         self._qpart.setOverwriteMode(True)
 
     def cmdAppendAfterLine(self, cmd):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.EndOfLine)
         self._qpart.setTextCursor(cursor)
-        self._setMode(INSERT)
+        self.switchMode(Insert)
 
     def cmdAppendAfterChar(self, cmd):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.Right)
         self._qpart.setTextCursor(cursor)
-        self._setMode(INSERT)
+        self.switchMode(Insert)
 
     def cmdUndo(self, cmd):
         self._qpart.undo()
 
     def cmdInternalPaste(self, cmd):
-        if not self._internalClipboard:
+        if not self._vim.internalClipboard:
             return
 
-        if isinstance(self._internalClipboard, basestring):
-            self._qpart.textCursor().insertText(self._internalClipboard)
-        elif isinstance(self._internalClipboard, list):
+        if isinstance(self._vim.internalClipboard, basestring):
+            self._qpart.textCursor().insertText(self._vim.internalClipboard)
+        elif isinstance(self._vim.internalClipboard, list):
             currentLineIndex = self._qpart.cursorPosition[0]
-            self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(self._internalClipboard))
+            self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(self._vim.internalClipboard))
 
     #
     # Composite commands
@@ -212,7 +243,7 @@ class Vim(QObject):
 
             effectiveCount = min(availableCount, count)
 
-            self._internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
+            self._vim.internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
             del self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
         elif motion == 'k':  # up
             lineIndex = self._qpart.cursorPosition[0]
@@ -221,7 +252,7 @@ class Vim(QObject):
 
             effectiveCount = min(lineIndex, count)
 
-            self._internalClipboard = self._qpart.lines[lineIndex - effectiveCount:lineIndex + 1]
+            self._vim.internalClipboard = self._qpart.lines[lineIndex - effectiveCount:lineIndex + 1]
             del self._qpart.lines[lineIndex - effectiveCount:lineIndex + 1]
         elif motion == 'd':  # delete whole line
             lineIndex = self._qpart.cursorPosition[0]
@@ -229,15 +260,15 @@ class Vim(QObject):
 
             effectiveCount = min(availableCount, count)
 
-            self._internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount]
+            self._vim.internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount]
             del self._qpart.lines[lineIndex:lineIndex + effectiveCount]
         elif motion == 'G':
             currentLineIndex = self._qpart.cursorPosition[0]
-            self._internalClipboard = self._qpart.lines[currentLineIndex:]
+            self._vim.internalClipboard = self._qpart.lines[currentLineIndex:]
             del self._qpart.lines[currentLineIndex:]
         elif motion == 'gg':
             currentLineIndex = self._qpart.cursorPosition[0]
-            self._internalClipboard = self._qpart.lines[:currentLineIndex + 1]
+            self._vim.internalClipboard = self._qpart.lines[:currentLineIndex + 1]
             del self._qpart.lines[:currentLineIndex + 1]
         elif motion in 'hlwe$0':
             for _ in xrange(count):
@@ -245,13 +276,13 @@ class Vim(QObject):
 
             selText = self._qpart.textCursor().selectedText()
             if selText:
-                self._internalClipboard = selText
+                self._vim.internalClipboard = selText
                 self._qpart.textCursor().removeSelectedText()
 
     def cmdCompositeChange(self, cmd, motion, count):
         # TODO deletion and next insertion should be undo-ble as 1 action
         self.cmdCompositeDelete(cmd, motion, count)
-        self._setMode(INSERT)
+        self.switchMode(Insert)
 
     def cmdCompositeGMove(self, cmd, motion, count):
         if motion == 'g':
@@ -266,8 +297,9 @@ class Vim(QObject):
             cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
 
         if cursor.selectedText():
-            self._internalClipboard = cursor.selectedText()
+            self._vim.internalClipboard = cursor.selectedText()
             cursor.removeSelectedText()
+
 
 
     _COMMANDS = {'simple': {'i': cmdInsertMode,
