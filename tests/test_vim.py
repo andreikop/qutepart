@@ -236,6 +236,27 @@ class Del(_Test):
                           'lazy dog',
                           'back'])
 
+    def test_07(self):
+        """Delete until end of file
+        G
+        """
+        self.qpart.cursorPosition = (2, 0)
+        QTest.keyClicks(self.qpart, 'dG')
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'jumps over the'])
+
+    def test_08(self):
+        """Delete until start of file
+        gg
+        """
+        self.qpart.cursorPosition = (1, 0)
+        QTest.keyClicks(self.qpart, 'dgg')
+        self.assertEqual(self.qpart.lines[:],
+                         ['lazy dog',
+                          'back'])
+
+
 
 class Edit(_Test):
     def test_01(self):

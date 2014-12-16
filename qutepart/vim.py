@@ -23,6 +23,7 @@ class Vim(QObject):
         self._mode = NORMAL
         self._pendingOperator = None
         self._pendingCount = 0
+        self._pendingMotion = ''
         self._internalClipboard = ''  # delete commands save text to this clipboard
 
     def isActive(self):
@@ -69,8 +70,18 @@ class Vim(QObject):
             self._updateIndication()
             return True
         elif self._pendingOperator:
+            if text == 'g' and self._pendingOperator != 'g':
+                if self._pendingMotion:
+                    motion = self._pendingMotion + text
+                    self._pendingMotion = ''
+                else:
+                    self._pendingMotion = text
+                    return True
+            else:
+                motion = text
+
             cmdFunc = self._COMMANDS['composite'][self._pendingOperator]
-            cmdFunc(self, self._pendingOperator, text, self._pendingCount or 1)
+            cmdFunc(self, self._pendingOperator, motion, self._pendingCount or 1)
             self._pendingOperator = None
             self._pendingCount = 0
             self._updateIndication()
@@ -214,6 +225,14 @@ class Vim(QObject):
 
             self._internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount]
             del self._qpart.lines[lineIndex:lineIndex + effectiveCount]
+        elif motion == 'G':
+            currentLineIndex = self._qpart.cursorPosition[0]
+            self._internalClipboard = self._qpart.lines[currentLineIndex:]
+            del self._qpart.lines[currentLineIndex:]
+        elif motion == 'gg':
+            currentLineIndex = self._qpart.cursorPosition[0]
+            self._internalClipboard = self._qpart.lines[:currentLineIndex + 1]
+            del self._qpart.lines[:currentLineIndex + 1]
         elif motion in 'hlwe$0':
             for _ in xrange(count):
                 self._moveCursor(motion, select=True)
