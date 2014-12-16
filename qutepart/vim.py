@@ -21,9 +21,6 @@ class Vim(QObject):
         QObject.__init__(self)
         self._qpart = qpart
         self._mode = NormalBase(self, qpart)
-        self._pendingOperator = None
-        self._pendingCount = 0
-        self._pendingMotion = ''
         self.internalClipboard = ''  # delete commands save text to this clipboard
 
     def isActive(self):
@@ -99,14 +96,20 @@ class ReplaceChar(Mode):
 class NormalBase(Mode):
     color = QColor('#33cc33')
 
+    def __init__(self, vim, qpart):
+        Mode.__init__(self, vim, qpart)
+        self._pendingOperator = None
+        self._pendingCount = 0
+        self._pendingMotion = ''
+
     def text(self):
         text = ''
 
-        if self._vim._pendingCount:
-            text += str(self._vim._pendingCount)
+        if self._pendingCount:
+            text += str(self._pendingCount)
 
-        if self._vim._pendingOperator:
-            text += self._vim._pendingOperator
+        if self._pendingOperator:
+            text += self._pendingOperator
 
         if not text:
             text = 'normal'
@@ -121,51 +124,51 @@ class NormalBase(Mode):
         compositeCommands = self._COMMANDS['composite']
 
         def runFunc(cmdFunc, *args):
-            if self._vim._pendingCount:
+            if self._pendingCount:
                 with self._qpart:
-                    for _ in range(self._vim._pendingCount):
+                    for _ in range(self._pendingCount):
                         cmdFunc(self, *args)
             else:
                 cmdFunc(self, *args)
 
-        if text.isdigit() and (text != '0' or self._vim._pendingCount):  # 0 is a command, not a count
+        if text.isdigit() and (text != '0' or self._pendingCount):  # 0 is a command, not a count
             digit = int(text)
-            self._vim._pendingCount = (self._vim._pendingCount * 10)+ digit
+            self._pendingCount = (self._pendingCount * 10)+ digit
             self._vim.updateIndication()
             return True
-        elif self._vim._pendingOperator:
-            if text == 'g' and self._vim._pendingOperator != 'g':
-                if self._vim._pendingMotion:
-                    motion = self._vim._pendingMotion + text
-                    self._vim._pendingMotion = ''
+        elif self._pendingOperator:
+            if text == 'g' and self._pendingOperator != 'g':
+                if self._pendingMotion:
+                    motion = self._pendingMotion + text
+                    self._pendingMotion = ''
                 else:
-                    self._vim._pendingMotion = text
+                    self._pendingMotion = text
                     return True
             else:
                 motion = text
 
-            cmdFunc = self._COMMANDS['composite'][self._vim._pendingOperator]
-            cmdFunc(self, self._vim._pendingOperator, motion, self._vim._pendingCount or 1)
-            self._vim._pendingOperator = None
-            self._vim._pendingCount = 0
+            cmdFunc = self._COMMANDS['composite'][self._pendingOperator]
+            cmdFunc(self, self._pendingOperator, motion, self._pendingCount or 1)
+            self._pendingOperator = None
+            self._pendingCount = 0
             self._vim.updateIndication()
             return True
         elif text == 'x':
             """ Delete command is special case.
             It accumulates deleted text in the internal clipboard
             """
-            self.cmdDelete(self._vim._pendingCount or 1)
-            self._vim._pendingCount = 0
+            self.cmdDelete(self._pendingCount or 1)
+            self._pendingCount = 0
             self._vim.updateIndication()
             return True
         elif text in simpleCommands:
             cmdFunc = simpleCommands[text]
             runFunc(cmdFunc, text)
-            self._vim._pendingCount = 0
+            self._pendingCount = 0
             self._vim.updateIndication()
             return True
         elif text in compositeCommands:
-            self._vim._pendingOperator = text
+            self._pendingOperator = text
             self._vim.updateIndication()
             return True
         else:
