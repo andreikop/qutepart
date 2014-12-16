@@ -61,6 +61,18 @@ class Modes(_Test):
                          'lazy dogXY')
 
     def test_03(self):
+        """Append with a
+        """
+        self.qpart.cursorPosition = (2, 0)
+        QTest.keyClicks(self.qpart, "a")
+        self.assertEqual(self.vimMode, 'insert')
+        QTest.keyClicks(self.qpart, "XY")
+
+        self.assertEqual(self.qpart.lines[2],
+                         'lXYazy dog')
+
+
+    def test_04(self):
         """Mode line shows composite command start
         """
         self.assertEqual(self.vimMode, 'normal')

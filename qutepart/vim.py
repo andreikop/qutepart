@@ -174,9 +174,15 @@ class Vim(QObject):
         self._setMode(REPLACE_CHAR)
         self._qpart.setOverwriteMode(True)
 
-    def cmdAppend(self, cmd):
+    def cmdAppendAfterLine(self, cmd):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.EndOfLine)
+        self._qpart.setTextCursor(cursor)
+        self._setMode(INSERT)
+
+    def cmdAppendAfterChar(self, cmd):
+        cursor = self._qpart.textCursor()
+        cursor.movePosition(QTextCursor.Right)
         self._qpart.setTextCursor(cursor)
         self._setMode(INSERT)
 
@@ -275,7 +281,8 @@ class Vim(QObject):
                             '$': cmdMove,
                             '0': cmdMove,
                             'G': cmdMove,
-                            'A': cmdAppend,
+                            'A': cmdAppendAfterLine,
+                            'a': cmdAppendAfterChar,
                             'u': cmdUndo,
                             'p': cmdInternalPaste,
                            },
