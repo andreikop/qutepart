@@ -58,8 +58,8 @@ class Mode:
     def keyPressEvent(self, text):
         pass
 
-    def switchMode(self, modeClass):
-        mode = modeClass(self._vim, self._qpart)
+    def switchMode(self, modeClass, *args):
+        mode = modeClass(self._vim, self._qpart, *args)
         self._vim.setMode(mode)
 
     def switchModeAndProcess(self, text, modeClass, *args):
@@ -98,122 +98,10 @@ class ReplaceChar(Mode):
             self.switchMode(Normal)
 
 
-
 class NormalBase(Mode):
     """Base class for normal modes
     """
     color = QColor('#33cc33')
-
-
-class Normal(NormalBase):
-    """Normal mode.
-    Command processing stage 1.
-    Waiting for command count
-    """
-    def __init__(self, *args):
-        NormalBase.__init__(self, *args)
-        self._actionCount = 0
-
-    def text(self):
-        if self._actionCount:
-            return str(self._actionCount)
-        else:
-            return 'normal'
-
-
-    def keyPressEvent(self, text):
-        if not text:
-            return
-
-        if text.isdigit() and (text != '0' or self._actionCount):
-            digit = int(text)
-            self._actionCount = (self._actionCount * 10) + digit
-            self._vim.updateIndication()
-            return True
-        else:
-            count = self._actionCount or 1
-            return self.switchModeAndProcess(text, NormalStage2, count)
-
-
-class NormalStage2(NormalBase):
-    """Normal mode command processing stage 2.
-    Waiting for action
-    """
-
-    def __init__(self, vim, qpart, actionCount):
-        NormalBase.__init__(self, vim, qpart)
-        self._actionCount = actionCount
-        self._pendingOperator = None
-        self._pendingCount = 0
-        self._pendingMotion = ''
-
-    def count(self):
-        return (self._pendingCount or 1) * self._actionCount
-
-    def text(self):
-        text = ''
-
-        if self._pendingCount:
-            text += str(self._pendingCount)
-
-        if self._pendingOperator:
-            text += self._pendingOperator
-
-        if not text:
-            text = 'normal'
-
-        return text
-
-    def keyPressEvent(self, text):
-        simpleCommands = self._COMMANDS['simple']
-        compositeCommands = self._COMMANDS['composite']
-
-        def runFunc(cmdFunc, *args):
-            if self.count() != 1:
-                with self._qpart:
-                    for _ in range(self.count()):
-                        cmdFunc(self, *args)
-            else:
-                cmdFunc(self, *args)
-
-        if text.isdigit() and (text != '0' or self._pendingCount):  # 0 is a command, not a count
-            digit = int(text)
-            self._pendingCount = (self._pendingCount * 10)+ digit
-            self._vim.updateIndication()
-            return True
-        elif self._pendingOperator:
-            if text == 'g' and self._pendingOperator != 'g':
-                if self._pendingMotion:
-                    motion = self._pendingMotion + text
-                    self._pendingMotion = ''
-                else:
-                    self._pendingMotion = text
-                    return True
-            else:
-                motion = text
-
-            self.switchMode(Normal)  # switch to normal BEFORE executing command. Command may switch mode once more
-            cmdFunc = self._COMMANDS['composite'][self._pendingOperator]
-            cmdFunc(self, self._pendingOperator, motion, self.count())
-            return True
-        elif text == 'x':
-            """ Delete command is special case.
-            It accumulates deleted text in the internal clipboard
-            """
-            self.cmdDelete(self.count())
-            self.switchMode(Normal)
-            return True
-        elif text in simpleCommands:
-            self.switchMode(Normal)  # switch to normal BEFORE executing command. Command may switch mode once more
-            cmdFunc = simpleCommands[text]
-            runFunc(cmdFunc, text)
-            return True
-        elif text in compositeCommands:
-            self._pendingOperator = text
-            self._vim.updateIndication()
-            return True
-        else:
-            return False
 
     def _moveCursor(self, motion, select=False):
         cursor = self._qpart.textCursor()
@@ -241,6 +129,79 @@ class NormalStage2(NormalBase):
                 cursor.movePosition(QTextCursor.EndOfWord, moveMode)
 
         self._qpart.setTextCursor(cursor)
+
+
+class Normal(NormalBase):
+    """Normal mode.
+    Command processing stage 1.
+    Waiting for command count
+    """
+    def __init__(self, *args):
+        NormalBase.__init__(self, *args)
+        self._actionCount = 0
+
+    def text(self):
+        if self._actionCount:
+            return str(self._actionCount)
+        else:
+            return 'normal'
+
+    def keyPressEvent(self, text):
+        if not text:
+            return
+
+        if text.isdigit() and (text != '0' or self._actionCount):
+            digit = int(text)
+            self._actionCount = (self._actionCount * 10) + digit
+            self._vim.updateIndication()
+            return True
+        else:
+            count = self._actionCount or 1
+            return self.switchModeAndProcess(text, NormalGetAction, count)
+
+
+class NormalGetAction(NormalBase):
+    """Normal mode command processing stage 2.
+    Waiting for action.
+    Process simple actions. Switch to next mode if got composite action.
+    """
+
+    def __init__(self, vim, qpart, actionCount):
+        NormalBase.__init__(self, vim, qpart)
+        self._actionCount = actionCount
+
+    def text(self):
+        if self._actionCount != 1:
+            return str(self._actionCount)
+        else:
+            return 'normal'
+
+    def keyPressEvent(self, text):
+        if text == 'x':
+            """ Delete command is special case.
+            It accumulates deleted text in the internal clipboard
+            """
+            self.cmdDelete(self._actionCount)
+            self.switchMode(Normal)
+            return True
+        elif text in self._SIMPLE_COMMANDS:
+            self.switchMode(Normal)  # switch to normal BEFORE executing command. Command may switch mode once more
+            cmdFunc = self._SIMPLE_COMMANDS[text]
+
+            if self._actionCount != 1:
+                with self._qpart:
+                    for _ in range(self._actionCount):
+                        cmdFunc(self, text)
+            else:
+                cmdFunc(self, text)
+
+            return True
+        elif text in 'cdg':
+            self.switchMode(NormalGetCompositeActionCount, self._actionCount, text)
+            return True
+        else:
+            self.switchMode(Normal)
+            return False
 
     #
     # Simple commands
@@ -280,6 +241,89 @@ class NormalStage2(NormalBase):
         elif isinstance(self._vim.internalClipboard, list):
             currentLineIndex = self._qpart.cursorPosition[0]
             self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(self._vim.internalClipboard))
+
+    #
+    # Special cases
+    #
+    def cmdDelete(self, count):
+        cursor = self._qpart.textCursor()
+        for _ in xrange(count):
+            cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
+
+        if cursor.selectedText():
+            self._vim.internalClipboard = cursor.selectedText()
+            cursor.removeSelectedText()
+
+
+    _SIMPLE_COMMANDS = {'i': cmdInsertMode,
+                        'r': cmdReplaceCharMode,
+                        'j': cmdMove,
+                        'k': cmdMove,
+                        'h': cmdMove,
+                        'l': cmdMove,
+                        'w': cmdMove,
+                        'e': cmdMove,
+                        '$': cmdMove,
+                        '0': cmdMove,
+                        'G': cmdMove,
+                        'A': cmdAppendAfterLine,
+                        'a': cmdAppendAfterChar,
+                        'u': cmdUndo,
+                        'p': cmdInternalPaste,
+                       }
+
+
+class NormalGetCompositeActionCount(NormalBase):
+    """Normal mode.
+    Got action count and action. Get move count
+    """
+    def __init__(self, vim, qpart, actionCount, action):
+        NormalBase.__init__(self, vim, qpart)
+        self._actionCount = actionCount
+        self._action = action
+        self._pendingCount = 0
+        self._pendingMotion = ''
+
+    def count(self):
+        return (self._pendingCount or 1) * self._actionCount
+
+    def text(self):
+        text = ''
+
+        if self.count() != 1:
+            text += str(self.count())
+
+        if self._action:
+            text += self._action
+
+        if not text:
+            text = 'normal'
+
+        return text
+
+    def keyPressEvent(self, text):
+        if text.isdigit() and (text != '0' or self._pendingCount):  # 0 is a command, not a count
+            digit = int(text)
+            self._pendingCount = (self._pendingCount * 10)+ digit
+            self._vim.updateIndication()
+            return True
+        elif self._action:
+            if text == 'g' and self._action != 'g':
+                if self._pendingMotion:
+                    motion = self._pendingMotion + text
+                    self._pendingMotion = ''
+                else:
+                    self._pendingMotion = text
+                    return True
+            else:
+                motion = text
+
+            self.switchMode(Normal)  # switch to normal BEFORE executing command. Command may switch mode once more
+            cmdFunc = self._COMPOSITE_COMMANDS[self._action]
+            cmdFunc(self, self._action, motion, self.count())
+            return True
+        else:
+            return False
 
     #
     # Composite commands
@@ -339,38 +383,7 @@ class NormalStage2(NormalBase):
         if motion == 'g':
             self._moveCursor('gg')
 
-    #
-    # Special cases
-    #
-    def cmdDelete(self, count):
-        cursor = self._qpart.textCursor()
-        for _ in xrange(count):
-            cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
-
-        if cursor.selectedText():
-            self._vim.internalClipboard = cursor.selectedText()
-            cursor.removeSelectedText()
-
-
-
-    _COMMANDS = {'simple': {'i': cmdInsertMode,
-                            'r': cmdReplaceCharMode,
-                            'j': cmdMove,
-                            'k': cmdMove,
-                            'h': cmdMove,
-                            'l': cmdMove,
-                            'w': cmdMove,
-                            'e': cmdMove,
-                            '$': cmdMove,
-                            '0': cmdMove,
-                            'G': cmdMove,
-                            'A': cmdAppendAfterLine,
-                            'a': cmdAppendAfterChar,
-                            'u': cmdUndo,
-                            'p': cmdInternalPaste,
-                           },
-                 'composite': {'c': cmdCompositeChange,
-                               'd': cmdCompositeDelete,
-                               'g': cmdCompositeGMove,
-                              }
-                }
+    _COMPOSITE_COMMANDS = {'c': cmdCompositeChange,
+                           'd': cmdCompositeDelete,
+                           'g': cmdCompositeGMove,
+                          }
