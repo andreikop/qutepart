@@ -197,7 +197,7 @@ class NormalGetAction(NormalBase):
 
             return True
         elif text in 'cdg':
-            self.switchMode(NormalGetCompositeActionCount, self._actionCount, text)
+            self.switchMode(NormalGetCompositeActionMoveCount, self._actionCount, text)
             return True
         else:
             self.switchMode(Normal)
@@ -273,57 +273,63 @@ class NormalGetAction(NormalBase):
                        }
 
 
-class NormalGetCompositeActionCount(NormalBase):
+class NormalGetCompositeActionMoveCount(NormalBase):
     """Normal mode.
-    Got action count and action. Get move count
+    Got action count and composite action.
+    Get move count
     """
     def __init__(self, vim, qpart, actionCount, action):
         NormalBase.__init__(self, vim, qpart)
         self._actionCount = actionCount
         self._action = action
-        self._pendingCount = 0
+        self._moveCount = 0
         self._pendingMotion = ''
 
-    def count(self):
-        return (self._pendingCount or 1) * self._actionCount
-
     def text(self):
-        text = ''
-
-        if self.count() != 1:
-            text += str(self.count())
-
-        if self._action:
-            text += self._action
-
-        if not text:
-            text = 'normal'
-
-        return text
+        count = '' if self._actionCount == 1 else str(self._actionCount)
+        return count + self._action
 
     def keyPressEvent(self, text):
-        if text.isdigit() and (text != '0' or self._pendingCount):  # 0 is a command, not a count
+        if text.isdigit() and (text != '0' or self._moveCount):  # 0 is a command, not a count
             digit = int(text)
-            self._pendingCount = (self._pendingCount * 10)+ digit
+            self._moveCount = (self._moveCount * 10)+ digit
             self._vim.updateIndication()
             return True
-        elif self._action:
-            if text == 'g' and self._action != 'g':
-                if self._pendingMotion:
-                    motion = self._pendingMotion + text
-                    self._pendingMotion = ''
-                else:
-                    self._pendingMotion = text
-                    return True
-            else:
-                motion = text
-
-            self.switchMode(Normal)  # switch to normal BEFORE executing command. Command may switch mode once more
-            cmdFunc = self._COMPOSITE_COMMANDS[self._action]
-            cmdFunc(self, self._action, motion, self.count())
-            return True
         else:
-            return False
+            count = (self._moveCount or 1) * self._actionCount
+            return self.switchModeAndProcess(text, NormalGetCompositeActionMove, count, self._action)
+
+
+
+class NormalGetCompositeActionMove(NormalBase):
+    """Normal mode.
+    Got action count and action. Get move count
+    """
+    def __init__(self, vim, qpart, count, action):
+        NormalBase.__init__(self, vim, qpart)
+        self._count = count
+        self._action = action
+        self._pendingMotion = ''
+
+    def text(self):
+        count = '' if self._count == 1 else str(self._count)
+        return count + self._action
+
+    def keyPressEvent(self, text):
+        if text == 'g' and self._action != 'g':
+            if self._pendingMotion:
+                motion = self._pendingMotion + text
+                self._pendingMotion = ''
+            else:
+                self._pendingMotion = text
+                return True
+        else:
+            motion = text
+
+        self.switchMode(Normal)  # switch to normal BEFORE executing command. Command may switch mode once more
+        cmdFunc = self._COMPOSITE_COMMANDS[self._action]
+        cmdFunc(self, self._action, motion, self._count)
+        return True
 
     #
     # Composite commands
