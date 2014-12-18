@@ -196,7 +196,10 @@ class NormalGetAction(NormalBase):
                 cmdFunc(self, text)
 
             return True
-        elif text in 'cdg':
+        elif text == 'g':
+            self.switchMode(NormalGetGAndMove)
+            return True
+        elif text in 'cd':
             self.switchMode(NormalGetCompositeActionMoveCount, self._actionCount, text)
             return True
         else:
@@ -273,6 +276,22 @@ class NormalGetAction(NormalBase):
                        }
 
 
+class NormalGetGAndMove(NormalBase):
+    """Normal mode. g was pressed.
+    Execute gg command after next g was pressed
+    """
+    def text(self):
+        return 'g'
+
+    def keyPressEvent(self, text):
+        if text == 'g':
+            self._moveCursor('gg')
+        else:
+            self.switchMode(Normal)
+
+        return True
+
+
 class NormalGetCompositeActionMoveCount(NormalBase):
     """Normal mode.
     Got action count and composite action.
@@ -283,7 +302,6 @@ class NormalGetCompositeActionMoveCount(NormalBase):
         self._actionCount = actionCount
         self._action = action
         self._moveCount = 0
-        self._pendingMotion = ''
 
     def text(self):
         count = '' if self._actionCount == 1 else str(self._actionCount)
@@ -316,15 +334,13 @@ class NormalGetCompositeActionMove(NormalBase):
         return count + self._action
 
     def keyPressEvent(self, text):
-        if text == 'g' and self._action != 'g':
-            if self._pendingMotion:
-                motion = self._pendingMotion + text
-                self._pendingMotion = ''
-            else:
-                self._pendingMotion = text
-                return True
-        else:
-            motion = text
+        motion = self._pendingMotion + text
+
+        if motion == 'g':  # wait for next g
+            self._pendingMotion = motion
+            return True
+
+        # TODO verify if motion is valid
 
         self.switchMode(Normal)  # switch to normal BEFORE executing command. Command may switch mode once more
         cmdFunc = self._COMPOSITE_COMMANDS[self._action]
@@ -385,11 +401,6 @@ class NormalGetCompositeActionMove(NormalBase):
         self.cmdCompositeDelete(cmd, motion, count)
         self.switchMode(Insert)
 
-    def cmdCompositeGMove(self, cmd, motion, count):
-        if motion == 'g':
-            self._moveCursor('gg')
-
     _COMPOSITE_COMMANDS = {'c': cmdCompositeChange,
                            'd': cmdCompositeDelete,
-                           'g': cmdCompositeGMove,
                           }
