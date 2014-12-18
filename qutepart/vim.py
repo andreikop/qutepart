@@ -20,7 +20,7 @@ class Vim(QObject):
     def __init__(self, qpart):
         QObject.__init__(self)
         self._qpart = qpart
-        self._mode = NormalBase(self, qpart)
+        self._mode = Normal(self, qpart)
         self.internalClipboard = ''  # delete commands save text to this clipboard
 
     def isActive(self):
@@ -62,6 +62,12 @@ class Mode:
         mode = modeClass(self._vim, self._qpart)
         self._vim.setMode(mode)
 
+    def switchModeAndProcess(self, text, modeClass, *args):
+        mode = modeClass(self._vim, self._qpart, *args)
+        self._vim.setMode(mode)
+        return mode.keyPressEvent(text)
+
+
 
 class Insert(Mode):
     color = QColor('#ff9900')
@@ -71,7 +77,7 @@ class Insert(Mode):
 
     def keyPressEvent(self, text):
         if text == '\x1b':  # ESC
-            self.switchMode(NormalBase)
+            self.switchMode(Normal)
             return True
 
         return False
@@ -89,18 +95,60 @@ class ReplaceChar(Mode):
             line, col = self._qpart.cursorPosition
             if col > 0:
                 self._qpart.cursorPosition = (line, col - 1)  # return the cursor back after replacement
-            self.switchMode(NormalBase)
+            self.switchMode(Normal)
 
 
 
 class NormalBase(Mode):
+    """Base class for normal modes
+    """
     color = QColor('#33cc33')
 
-    def __init__(self, vim, qpart):
-        Mode.__init__(self, vim, qpart)
+
+class Normal(NormalBase):
+    """Normal mode.
+    Command processing stage 1.
+    Waiting for command count
+    """
+    def __init__(self, *args):
+        NormalBase.__init__(self, *args)
+        self._actionCount = 0
+
+    def text(self):
+        if self._actionCount:
+            return str(self._actionCount)
+        else:
+            return 'normal'
+
+
+    def keyPressEvent(self, text):
+        if not text:
+            return
+
+        if text.isdigit() and (text != '0' or self._actionCount):
+            digit = int(text)
+            self._actionCount = (self._actionCount * 10) + digit
+            self._vim.updateIndication()
+            return True
+        else:
+            count = self._actionCount or 1
+            return self.switchModeAndProcess(text, NormalStage2, count)
+
+
+class NormalStage2(NormalBase):
+    """Normal mode command processing stage 2.
+    Waiting for action
+    """
+
+    def __init__(self, vim, qpart, actionCount):
+        NormalBase.__init__(self, vim, qpart)
+        self._actionCount = actionCount
         self._pendingOperator = None
         self._pendingCount = 0
         self._pendingMotion = ''
+
+    def count(self):
+        return (self._pendingCount or 1) * self._actionCount
 
     def text(self):
         text = ''
@@ -117,16 +165,13 @@ class NormalBase(Mode):
         return text
 
     def keyPressEvent(self, text):
-        if not text:
-            return
-
         simpleCommands = self._COMMANDS['simple']
         compositeCommands = self._COMMANDS['composite']
 
         def runFunc(cmdFunc, *args):
-            if self._pendingCount:
+            if self.count() != 1:
                 with self._qpart:
-                    for _ in range(self._pendingCount):
+                    for _ in range(self.count()):
                         cmdFunc(self, *args)
             else:
                 cmdFunc(self, *args)
@@ -147,25 +192,21 @@ class NormalBase(Mode):
             else:
                 motion = text
 
+            self.switchMode(Normal)  # switch to normal BEFORE executing command. Command may switch mode once more
             cmdFunc = self._COMMANDS['composite'][self._pendingOperator]
-            cmdFunc(self, self._pendingOperator, motion, self._pendingCount or 1)
-            self._pendingOperator = None
-            self._pendingCount = 0
-            self._vim.updateIndication()
+            cmdFunc(self, self._pendingOperator, motion, self.count())
             return True
         elif text == 'x':
             """ Delete command is special case.
             It accumulates deleted text in the internal clipboard
             """
-            self.cmdDelete(self._pendingCount or 1)
-            self._pendingCount = 0
-            self._vim.updateIndication()
+            self.cmdDelete(self.count())
+            self.switchMode(Normal)
             return True
         elif text in simpleCommands:
+            self.switchMode(Normal)  # switch to normal BEFORE executing command. Command may switch mode once more
             cmdFunc = simpleCommands[text]
             runFunc(cmdFunc, text)
-            self._pendingCount = 0
-            self._vim.updateIndication()
             return True
         elif text in compositeCommands:
             self._pendingOperator = text
