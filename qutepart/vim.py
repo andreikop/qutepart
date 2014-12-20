@@ -98,10 +98,99 @@ class ReplaceChar(Mode):
             self.switchMode(Normal)
 
 
-class NormalBase(Mode):
-    """Base class for normal modes
-    """
+class Normal(Mode):
     color = QColor('#33cc33')
+
+    def __init__(self, *args):
+        Mode.__init__(self, *args)
+        self._reset()
+
+    def _reset(self):
+        self._processCharCoroutine = self._processChar()
+        self._processCharCoroutine.next()  # run until first yield
+        self._typedText = ''
+
+    def text(self):
+        return self._typedText or 'normal'
+
+    def keyPressEvent(self, char):
+        self._typedText += char
+        try:
+            self._processCharCoroutine.send(char)
+        except StopIteration:
+            self._reset()
+
+        self._vim.updateIndication()
+
+        return True
+
+    def _processChar(self):
+        char = yield None
+
+        # Get action count
+        actionCount = 0
+
+        while char.isdigit() and (actionCount or char != '0'):
+            digit = int(char)
+            actionCount = (actionCount * 10) + digit
+            char = yield
+
+        if actionCount == 0:
+            actionCount = 1
+
+        # Now get the action
+        action = char
+        if action == 'x':
+            """ Delete command is a special case.
+            It accumulates deleted text in the internal clipboard. Give count as a command parameter
+            """
+            self.cmdDelete(actionCount)
+            return
+        elif action in self._SIMPLE_COMMANDS:
+            cmdFunc = self._SIMPLE_COMMANDS[action]
+
+            if actionCount != 1:
+                with self._qpart:
+                    for _ in range(actionCount):
+                        cmdFunc(self, action)
+            else:
+                cmdFunc(self, action)
+
+            return
+        elif action == 'g':
+            char = yield
+            if char == 'g':
+                self._moveCursor('gg')
+
+            return
+        elif action in 'cd':
+            moveCount = 0
+            char = yield
+            while char.isdigit() and (char != '0' or moveCount):  # 0 is a command, not a count
+                digit = int(char)
+                moveCount = (moveCount * 10) + digit
+                char = yield
+
+            if moveCount == 0:
+                moveCount = 1
+
+            count = actionCount * moveCount
+
+            # Get motion for a composite command
+            motion = char
+            if motion == 'g':
+                char = yield
+                if char == 'g':
+                    motion += 'g'
+                else:
+                    return
+
+            # TODO verify if motion is valid
+
+            cmdFunc = self._COMPOSITE_COMMANDS[action]
+            cmdFunc(self, action, motion, count)
+
+            return
 
     def _moveCursor(self, motion, select=False):
         cursor = self._qpart.textCursor()
@@ -129,82 +218,6 @@ class NormalBase(Mode):
                 cursor.movePosition(QTextCursor.EndOfWord, moveMode)
 
         self._qpart.setTextCursor(cursor)
-
-
-class Normal(NormalBase):
-    """Normal mode.
-    Command processing stage 1.
-    Waiting for command count
-    """
-    def __init__(self, *args):
-        NormalBase.__init__(self, *args)
-        self._actionCount = 0
-
-    def text(self):
-        if self._actionCount:
-            return str(self._actionCount)
-        else:
-            return 'normal'
-
-    def keyPressEvent(self, text):
-        if not text:
-            return
-
-        if text.isdigit() and (text != '0' or self._actionCount):
-            digit = int(text)
-            self._actionCount = (self._actionCount * 10) + digit
-            self._vim.updateIndication()
-            return True
-        else:
-            count = self._actionCount or 1
-            return self.switchModeAndProcess(text, NormalGetAction, count)
-
-
-class NormalGetAction(NormalBase):
-    """Normal mode command processing stage 2.
-    Waiting for action.
-    Process simple actions. Switch to next mode if got composite action.
-    """
-
-    def __init__(self, vim, qpart, actionCount):
-        NormalBase.__init__(self, vim, qpart)
-        self._actionCount = actionCount
-
-    def text(self):
-        if self._actionCount != 1:
-            return str(self._actionCount)
-        else:
-            return 'normal'
-
-    def keyPressEvent(self, text):
-        if text == 'x':
-            """ Delete command is special case.
-            It accumulates deleted text in the internal clipboard
-            """
-            self.cmdDelete(self._actionCount)
-            self.switchMode(Normal)
-            return True
-        elif text in self._SIMPLE_COMMANDS:
-            self.switchMode(Normal)  # switch to normal BEFORE executing command. Command may switch mode once more
-            cmdFunc = self._SIMPLE_COMMANDS[text]
-
-            if self._actionCount != 1:
-                with self._qpart:
-                    for _ in range(self._actionCount):
-                        cmdFunc(self, text)
-            else:
-                cmdFunc(self, text)
-
-            return True
-        elif text == 'g':
-            self.switchMode(NormalGetGAndMove)
-            return True
-        elif text in 'cd':
-            self.switchMode(NormalGetCompositeActionMoveCount, self._actionCount, text)
-            return True
-        else:
-            self.switchMode(Normal)
-            return False
 
     #
     # Simple commands
@@ -275,77 +288,6 @@ class NormalGetAction(NormalBase):
                         'p': cmdInternalPaste,
                        }
 
-
-class NormalGetGAndMove(NormalBase):
-    """Normal mode. g was pressed.
-    Execute gg command after next g was pressed
-    """
-    def text(self):
-        return 'g'
-
-    def keyPressEvent(self, text):
-        if text == 'g':
-            self._moveCursor('gg')
-        else:
-            self.switchMode(Normal)
-
-        return True
-
-
-class NormalGetCompositeActionMoveCount(NormalBase):
-    """Normal mode.
-    Got action count and composite action.
-    Get move count
-    """
-    def __init__(self, vim, qpart, actionCount, action):
-        NormalBase.__init__(self, vim, qpart)
-        self._actionCount = actionCount
-        self._action = action
-        self._moveCount = 0
-
-    def text(self):
-        count = '' if self._actionCount == 1 else str(self._actionCount)
-        return count + self._action
-
-    def keyPressEvent(self, text):
-        if text.isdigit() and (text != '0' or self._moveCount):  # 0 is a command, not a count
-            digit = int(text)
-            self._moveCount = (self._moveCount * 10)+ digit
-            self._vim.updateIndication()
-            return True
-        else:
-            count = (self._moveCount or 1) * self._actionCount
-            return self.switchModeAndProcess(text, NormalGetCompositeActionMove, count, self._action)
-
-
-
-class NormalGetCompositeActionMove(NormalBase):
-    """Normal mode.
-    Got action count and action. Get move count
-    """
-    def __init__(self, vim, qpart, count, action):
-        NormalBase.__init__(self, vim, qpart)
-        self._count = count
-        self._action = action
-        self._pendingMotion = ''
-
-    def text(self):
-        count = '' if self._count == 1 else str(self._count)
-        return count + self._action
-
-    def keyPressEvent(self, text):
-        motion = self._pendingMotion + text
-
-        if motion == 'g':  # wait for next g
-            self._pendingMotion = motion
-            return True
-
-        # TODO verify if motion is valid
-
-        self.switchMode(Normal)  # switch to normal BEFORE executing command. Command may switch mode once more
-        cmdFunc = self._COMPOSITE_COMMANDS[self._action]
-        cmdFunc(self, self._action, motion, self._count)
-        return True
 
     #
     # Composite commands
