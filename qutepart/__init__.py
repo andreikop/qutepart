@@ -141,7 +141,8 @@ class Qutepart(QPlainTextEdit):
     * ``lintMarks`` Linter messages as {lineNumber: (type, text)} dictionary. Cleared on any edit operation. Type is one of `Qutepart.LINT_ERROR, Qutepart.LINT_WARNING, Qutepart.LINT_NOTE)
 
     ** Vim mode**
-    ``vimModeIndication`` - An application shall display a label, which shows current Vim mode. This read-only property contains (QColor, str) to be displayed on the label. See also ``vimModeIndicationChanged``
+    ``vimModeEnabled`` - read-write property switches Vim mode. See also ``vimModeEnabledChanged``.
+    ``vimModeIndication`` - An application shall display a label, which shows current Vim mode. This read-only property contains (QColor, str) to be displayed on the label. See also ``vimModeIndicationChanged``.
 
     **Actions**
 
@@ -204,6 +205,7 @@ class Qutepart(QPlainTextEdit):
     * ``indentWidthChanged(int)``                 Indentation width changed. See also ``indentWidth``
     * ``indentUseTabsChanged(bool)``              Indentation uses tab property changed. See also ``indentUseTabs``
     * ``eolChanged(eol)``                         EOL mode changed. See also ``eol``.
+    * ``vimModeEnabledChanged(enabled)            Vim mode has been enabled or disabled.
     * ``vimModeIndicationChanged(color, text)``   Vim mode changed. Parameters contain color and text to be displayed on an indicator. See also ``vimModeIndication``
 
     **Public methods**
@@ -215,6 +217,7 @@ class Qutepart(QPlainTextEdit):
     indentUseTabsChanged = pyqtSignal(bool)
     eolChanged = pyqtSignal(unicode)
     vimModeIndicationChanged = pyqtSignal(QColor, unicode)
+    vimModeEnabledChanged = pyqtSignal(bool)
 
     LINT_ERROR = 'e'
     LINT_WARNING = 'w'
@@ -262,8 +265,7 @@ class Qutepart(QPlainTextEdit):
         self.completionEnabled = self._DEFAULT_COMPLETION_ENABLED
         self._completer = Completer(self)
 
-        self._vim = Vim(self)
-        self._vim.modeIndicationChanged.connect(self.vimModeIndicationChanged)
+        self._vim = None
 
         self._initActions()
 
@@ -579,8 +581,27 @@ class Qutepart(QPlainTextEdit):
             self.update()
 
     @property
+    def vimModeEnabled(self):
+        return self._vim is not None
+
+    @vimModeEnabled.setter
+    def vimModeEnabled(self, enabled):
+        if enabled:
+            if self._vim is None:
+                self._vim = Vim(self)
+                self._vim.modeIndicationChanged.connect(self.vimModeIndicationChanged)
+                self.vimModeEnabledChanged.emit(True)
+        else:
+            if self._vim is not None:
+                self._vim = None
+                self.vimModeEnabledChanged.emit(False)
+
+    @property
     def vimModeIndication(self):
-        return self._vim.indication()
+        if self._vim is not None:
+            return self._vim.indication()
+        else:
+            return (None, None)
 
     def replaceText(self, pos, length, text):
         """Replace length symbols from ``pos`` with new text.
@@ -873,7 +894,8 @@ class Qutepart(QPlainTextEdit):
             not cursor.hasSelection() and \
             cursor.positionInBlock() < cursor.block().length():
             typeOverwrite(event.text())
-            self._vim.keyPressEvent(event)
+            if self._vim is not None:
+                self._vim.keyPressEvent(event)
         elif event.matches(QKeySequence.MoveToStartOfLine):
             self._onShortcutHome(select=False)
         elif event.matches(QKeySequence.SelectStartOfLine):
@@ -885,7 +907,7 @@ class Qutepart(QPlainTextEdit):
                     super(Qutepart, self).keyPressEvent(event)
                     self._indenter.autoIndentBlock(cursor.block(), event.text())
         else:
-            if self._vim.isActive():
+            if self._vim is not None:
                 if self._vim.keyPressEvent(event):
                     return
 

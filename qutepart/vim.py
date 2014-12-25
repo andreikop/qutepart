@@ -22,9 +22,7 @@ class Vim(QObject):
         self._qpart = qpart
         self._mode = Normal(self, qpart)
         self.internalClipboard = ''  # delete commands save text to this clipboard
-
-    def isActive(self):
-        return True
+        self.updateIndication()
 
     def indication(self):
         return self._mode.color, self._mode.text()
@@ -36,6 +34,11 @@ class Vim(QObject):
     def keyPressEvent(self, event):
         """Check the event. Return True if processed and False otherwise
         """
+        text = event.text()
+
+        if not text:
+            return False
+
         return self._mode.keyPressEvent(event.text())
 
 
