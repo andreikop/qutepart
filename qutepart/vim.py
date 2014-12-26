@@ -87,7 +87,7 @@ class Insert(Mode):
 
 
 class ReplaceChar(Mode):
-    color = QColor('#ff3300')
+    color = QColor('#ee7777')
 
     def text(self):
         return 'replace char'
