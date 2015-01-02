@@ -344,5 +344,19 @@ class Edit(_Test):
                          'asdf brown fox')
 
 
+class Visual(_Test):
+    def test_01(self):
+        """ x
+        """
+        QTest.keyClicks(self.qpart, 'v')
+        self.assertEqual(self.vimMode, 'visual')
+        QTest.keyClicks(self.qpart, '2w')
+        self.assertEqual(self.qpart.selectedText, 'The quick ')
+        QTest.keyClicks(self.qpart, 'x')
+        self.assertEqual(self.qpart.lines[0],
+                         'brown fox')
+        self.assertEqual(self.vimMode, 'normal')
+
+
 if __name__ == '__main__':
     unittest.main()
