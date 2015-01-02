@@ -25,6 +25,7 @@ class _Test(unittest.TestCase):
                             'back']
         self.qpart.vimModeIndicationChanged.connect(self._onVimModeChanged)
 
+        self.qpart.vimModeEnabled = True
         self.vimMode = 'normal'
 
     def tearDown(self):
@@ -71,7 +72,6 @@ class Modes(_Test):
         self.assertEqual(self.qpart.lines[2],
                          'lXYazy dog')
 
-
     def test_04(self):
         """Mode line shows composite command start
         """
@@ -81,6 +81,22 @@ class Modes(_Test):
         QTest.keyClick(self.qpart, 'w')
         self.assertEqual(self.vimMode, 'normal')
 
+    def test_05(self):
+        """ Replace mode
+        """
+        self.assertEqual(self.vimMode, 'normal')
+        QTest.keyClick(self.qpart, 'R')
+        self.assertEqual(self.vimMode, 'replace')
+        QTest.keyClicks(self.qpart, 'asdf')
+        self.assertEqual(self.qpart.lines[0],
+                         'asdfquick brown fox')
+        QTest.keyClick(self.qpart, Qt.Key_Escape)
+        self.assertEqual(self.vimMode, 'normal')
+
+        QTest.keyClick(self.qpart, 'R')
+        self.assertEqual(self.vimMode, 'replace')
+        QTest.keyClick(self.qpart, Qt.Key_Insert)
+        self.assertEqual(self.vimMode, 'insert')
 
 
 class Move(_Test):

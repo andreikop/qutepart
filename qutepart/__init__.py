@@ -879,7 +879,10 @@ class Qutepart(QPlainTextEdit):
         elif self._rectangularSelection.isDeleteKeyEvent(event):
             self._rectangularSelection.delete()
         elif event.key() == Qt.Key_Insert and event.modifiers() == Qt.NoModifier:
-            self.setOverwriteMode(not self.overwriteMode())
+            if self._vim is not None:
+                self._vim.keyPressEvent(event)
+            else:
+                self.setOverwriteMode(not self.overwriteMode())
         elif event.key() == Qt.Key_Backspace and \
              shouldUnindentWithBackspace():
             self._indenter.onShortcutUnindentWithBackspace()

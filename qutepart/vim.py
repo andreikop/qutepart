@@ -1,4 +1,4 @@
-from PyQt4.QtCore import pyqtSignal, QObject
+from PyQt4.QtCore import Qt, pyqtSignal, QObject
 from PyQt4.QtGui import QColor, QTextCursor
 
 
@@ -36,10 +36,12 @@ class Vim(QObject):
         """
         text = event.text()
 
-        if not text:
-            return False
+        if event.key() == Qt.Key_Insert and event.modifiers() == Qt.NoModifier:
+            text = '<Insert>'
+        elif event.key() == Qt.Key_Escape and event.modifiers() == Qt.NoModifier:
+            text = '<Esc>'
 
-        return self._mode.keyPressEvent(event.text())
+        return self._mode.keyPressEvent(text)
 
 
     def setMode(self, mode):
@@ -79,7 +81,7 @@ class Insert(Mode):
         return 'insert'
 
     def keyPressEvent(self, text):
-        if text == '\x1b':  # ESC
+        if text == '<Esc>':
             self.switchMode(Normal)
             return True
 
@@ -101,6 +103,22 @@ class ReplaceChar(Mode):
             self.switchMode(Normal)
 
 
+class Replace(Mode):
+    color = QColor('#ee7777')
+
+    def text(self):
+        return 'replace'
+
+    def keyPressEvent(self, text):
+        if text:
+            if text == '<Insert>':
+                self._qpart.setOverwriteMode(False)
+                self.switchMode(Insert)
+            elif text == '<Esc>':
+                self._qpart.setOverwriteMode(False)
+                self.switchMode(Normal)
+
+
 class Normal(Mode):
     color = QColor('#33cc33')
 
@@ -117,6 +135,9 @@ class Normal(Mode):
         return self._typedText or 'normal'
 
     def keyPressEvent(self, char):
+        if not char:
+            return False
+
         self._typedText += char
         try:
             self._processCharCoroutine.send(char)
@@ -232,6 +253,10 @@ class Normal(Mode):
     def cmdInsertMode(self, cmd):
         self.switchMode(Insert)
 
+    def cmdReplaceMode(self, cmd):
+        self.switchMode(Replace)
+        self._qpart.setOverwriteMode(True)
+
     def cmdReplaceCharMode(self, cmd):
         self.switchMode(ReplaceChar)
         self._qpart.setOverwriteMode(True)
@@ -276,6 +301,7 @@ class Normal(Mode):
 
     _SIMPLE_COMMANDS = {'i': cmdInsertMode,
                         'r': cmdReplaceCharMode,
+                        'R': cmdReplaceMode,
                         'j': cmdMove,
                         'k': cmdMove,
                         'h': cmdMove,

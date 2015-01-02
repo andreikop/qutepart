@@ -56,6 +56,9 @@ def main():
     layout.addWidget(vimModeIndication)
 
     qpart = qutepart.Qutepart()
+
+    qpart.vimModeEnabled = True
+
     layout.addWidget(qpart)
 
     def onVimModeChanged(color, text):
