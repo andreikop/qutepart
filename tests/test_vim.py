@@ -98,6 +98,22 @@ class Modes(_Test):
         QTest.keyClick(self.qpart, Qt.Key_Insert)
         self.assertEqual(self.vimMode, 'insert')
 
+    def test_06(self):
+        """ Visual mode
+        """
+        self.assertEqual(self.vimMode, 'normal')
+
+        QTest.keyClick(self.qpart, 'v')
+        self.assertEqual(self.vimMode, 'visual')
+        QTest.keyClick(self.qpart, Qt.Key_Escape)
+        self.assertEqual(self.vimMode, 'normal')
+
+        QTest.keyClick(self.qpart, 'v')
+        self.assertEqual(self.vimMode, 'visual')
+        QTest.keyClick(self.qpart, 'i')
+        self.assertEqual(self.vimMode, 'insert')
+
+
 
 class Move(_Test):
     def test_01(self):
@@ -357,6 +373,65 @@ class Visual(_Test):
                          'brown fox')
         self.assertEqual(self.vimMode, 'normal')
 
+    def test_02(self):
+        """Append with a
+        """
+        QTest.keyClicks(self.qpart, "vlllA")
+        QTest.keyClicks(self.qpart, "asdf ")
+        self.assertEqual(self.qpart.lines[0],
+                         'The asdf quick brown fox')
+
+    def test_03(self):
+        """Replace with r
+        """
+        self.qpart.cursorPosition = (0, 16)
+        QTest.keyClicks(self.qpart, "v9l")
+        QTest.keyClicks(self.qpart, "rz")
+        self.assertEqual(self.qpart.lines[0:2],
+                         ['The quick brown zzz',
+                          'zzzzz over the'])
+
+    def test_04(self):
+        """Replace selected lines with R
+        """
+        QTest.keyClicks(self.qpart, "vjl")
+        QTest.keyClicks(self.qpart, "R")
+        QTest.keyClicks(self.qpart, "Z")
+        self.assertEqual(self.qpart.lines[:],
+                         ['Z',
+                          'lazy dog',
+                          'back'])
+
+    def test_05(self):
+        """Reset selection with u
+        """
+        self.qpart.cursorPosition = (1, 3)
+        QTest.keyClicks(self.qpart, 'vjl')
+        QTest.keyClicks(self.qpart, 'u')
+        self.assertEqual(self.qpart.selectedPosition, ((1, 3), (1, 3)))
+
+    def test_06(self):
+        """Yank with y and paste with p
+        """
+        self.qpart.cursorPosition = (0, 4)
+        QTest.keyClicks(self.qpart, "ve")
+        #print self.qpart.selectedText
+        QTest.keyClicks(self.qpart, "y")
+        QTest.keyClick(self.qpart, Qt.Key_Escape)
+        self.qpart.cursorPosition = (0, 16)
+        QTest.keyClicks(self.qpart, "ve")
+        QTest.keyClicks(self.qpart, "p")
+        self.assertEqual(self.qpart.lines[0],
+                         'The quick brown quick')
+
+    def test_07(self):
+        """Change with c
+        """
+        QTest.keyClicks(self.qpart, "w")
+        QTest.keyClicks(self.qpart, "vec")
+        QTest.keyClicks(self.qpart, "slow")
+        self.assertEqual(self.qpart.lines[0],
+                         'The slow brown fox')
 
 if __name__ == '__main__':
     unittest.main()

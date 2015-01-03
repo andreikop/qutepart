@@ -198,8 +198,8 @@ class Visual(Mode):
         action = char
         if action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]
-            cmdFunc(self, action)
             self.switchMode(Normal)
+            cmdFunc(self, action)
             return
         elif action in _MOTIONS:
             for _ in range(count):
@@ -210,6 +210,15 @@ class Visual(Mode):
                 _moveCursor(self._qpart, 'gg', select=True)
 
             return
+        elif action == 'r':
+            nextChar = yield
+            if len(nextChar) == 1:  # not <Esc> <Insert> etc
+                newChars = [nextChar if char != '\n' else '\n' \
+                                for char in self._qpart.selectedText
+                            ]
+                newText = ''.join(newChars)
+                self._qpart.selectedText = newText
+
 
     #
     # Simple commands
@@ -217,25 +226,15 @@ class Visual(Mode):
 
     def cmdDelete(self, cmd):
         cursor = self._qpart.textCursor()
-        cursor.removeSelectedText()
+        if cursor.selectedText():
+            self._vim.internalClipboard = cursor.selectedText()
+            cursor.removeSelectedText()
 
-    """
     def cmdInsertMode(self, cmd):
         self.switchMode(Insert)
 
-    def cmdReplaceMode(self, cmd):
-        self.switchMode(Replace)
-        self._qpart.setOverwriteMode(True)
-
-    def cmdReplaceCharMode(self, cmd):
-        self.switchMode(ReplaceChar)
-        self._qpart.setOverwriteMode(True)
-
-    def cmdAppendAfterLine(self, cmd):
-        cursor = self._qpart.textCursor()
-        cursor.movePosition(QTextCursor.EndOfLine)
-        self._qpart.setTextCursor(cursor)
-        self.switchMode(Insert)
+    def cmdNormalMode(self, cmd):
+        self.switchMode(Normal)
 
     def cmdAppendAfterChar(self, cmd):
         cursor = self._qpart.textCursor()
@@ -243,8 +242,19 @@ class Visual(Mode):
         self._qpart.setTextCursor(cursor)
         self.switchMode(Insert)
 
-    def cmdUndo(self, cmd):
-        self._qpart.undo()
+    def cmdReplaceSelectedLines(self, cmd):
+        ((startLine, startCol), (endLine, endCol)) = self._qpart.selectedPosition
+
+        self._vim.internalClipboard = self._qpart.lines[startLine:endLine + 1]
+
+        lastLineLen = len(self._qpart.lines[endLine])
+        self._qpart.selectedPosition = ((startLine, 0), (endLine, lastLineLen))
+        self._qpart.selectedText = ''
+
+        self.switchMode(Insert)
+
+    def cmdResetSelection(self, cmd):
+        self._qpart.cursorPosition = self._qpart.selectedPosition[0]
 
     def cmdInternalPaste(self, cmd):
         if not self._vim.internalClipboard:
@@ -256,25 +266,30 @@ class Visual(Mode):
             currentLineIndex = self._qpart.cursorPosition[0]
             self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(self._vim.internalClipboard))
 
-    def cmdVisualMode(self, cmd):
-        self.switchMode(Visual)
-    """
+    def cmdYank(self, cmd):
+        self._qpart.copy()
+        self._vim.internalClipboard = self._qpart.selectedText
 
-    _SIMPLE_COMMANDS = {'x': cmdDelete,
+    def cmdChange(self, cmd):
+        cursor = self._qpart.textCursor()
+        if cursor.selectedText():
+            self._vim.internalClipboard = cursor.selectedText()
+            cursor.removeSelectedText()
+        self.switchMode(Insert)
+
+
+    _SIMPLE_COMMANDS = {
+                            'A': cmdAppendAfterChar,
+                            'c': cmdChange,
+                            'd': cmdDelete,
+                            'i': cmdInsertMode,
+                            'x': cmdDelete,
+                            'R': cmdReplaceSelectedLines,
+                            'p': cmdInternalPaste,
+                            'u': cmdResetSelection,
+                            'y': cmdYank,
+                            '<Esc>': cmdNormalMode,
                        }
-
-    """
-                        'A': cmdAppendAfterLine,
-                        'a': cmdAppendAfterChar,
-                        'i': cmdInsertMode,
-                        'r': cmdReplaceCharMode,
-                        'R': cmdReplaceMode,
-                        'v': cmdVisualMode,
-                        'p': cmdInternalPaste,
-                        'u': cmdUndo,
-                        'c': None,
-                        'd': None,
-    """
 
 
 class Normal(Mode):
