@@ -99,11 +99,17 @@ class ReplaceChar(Mode):
         return 'replace char'
 
     def keyPressEvent(self, text):
-        self._qpart.setOverwriteMode(False)
-        line, col = self._qpart.cursorPosition
-        if col > 0:
-            self._qpart.cursorPosition = (line, col - 1)  # return the cursor back after replacement
-        self.switchMode(Normal)
+        if len(text) == 1:  # a char
+            self._qpart.setOverwriteMode(False)
+            line, col = self._qpart.cursorPosition
+            if col > 0:
+                self._qpart.cursorPosition = (line, col - 1)  # return the cursor back after replacement
+            self.switchMode(Normal)
+            return True
+        else:
+            self._qpart.setOverwriteMode(False)
+            self.switchMode(Normal)
+            return False
 
 
 class Replace(Mode):
@@ -116,9 +122,13 @@ class Replace(Mode):
         if text == '<Insert>':
             self._qpart.setOverwriteMode(False)
             self.switchMode(Insert)
+            return True
         elif text == '<Esc>':
             self._qpart.setOverwriteMode(False)
             self.switchMode(Normal)
+            return True
+        else:
+            return False
 
 
 _MOTIONS = '0eGjlkhw$'
@@ -173,12 +183,15 @@ class Visual(Mode):
         self._typedText += char
         try:
             self._processCharCoroutine.send(char)
-        except StopIteration:
+        except StopIteration as ex:
+            retVal = ex.args[0]
             self._reset()
+        else:
+            retVal = True
 
         self._vim.updateIndication()
 
-        return True
+        return retVal
 
     def _processChar(self):
         char = yield None
@@ -200,16 +213,17 @@ class Visual(Mode):
             cmdFunc = self._SIMPLE_COMMANDS[action]
             self.switchMode(Normal)
             cmdFunc(self, action)
-            return
+            raise StopIteration(True)
         elif action in _MOTIONS:
             for _ in range(count):
                 _moveCursor(self._qpart, action, select=True)
+            raise StopIteration(True)
         elif action == 'g':
             char = yield
             if char == 'g':
                 _moveCursor(self._qpart, 'gg', select=True)
 
-            return
+            raise StopIteration(True)
         elif action == 'r':
             nextChar = yield
             if len(nextChar) == 1:  # not <Esc> <Insert> etc
@@ -218,6 +232,12 @@ class Visual(Mode):
                             ]
                 newText = ''.join(newChars)
                 self._qpart.selectedText = newText
+            raise StopIteration(True)
+        else:
+            raise StopIteration(False)
+
+        assert 0  # must StopIteration on if
+
 
 
     #
@@ -311,12 +331,15 @@ class Normal(Mode):
         self._typedText += char
         try:
             self._processCharCoroutine.send(char)
-        except StopIteration:
+        except StopIteration as ex:
+            retVal = ex.args[0]
             self._reset()
+        else:
+            retVal = True
 
         self._vim.updateIndication()
 
-        return True
+        return retVal
 
     def _processChar(self):
         char = yield None
@@ -339,7 +362,7 @@ class Normal(Mode):
             It accumulates deleted text in the internal clipboard. Give count as a command parameter
             """
             self.cmdDelete(actionCount)
-            return
+            raise StopIteration(True)
         elif action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]
 
@@ -350,16 +373,17 @@ class Normal(Mode):
             else:
                 cmdFunc(self, action)
 
-            return
+            raise StopIteration(True)
         elif action in _MOTIONS:
             for _ in range(actionCount):
                 _moveCursor(self._qpart, action, select=False)
+            raise StopIteration(True)
         elif action == 'g':
             char = yield
             if char == 'g':
                 _moveCursor(self._qpart, 'gg')
 
-            return
+            raise StopIteration(True)
         elif action in 'cd':
             moveCount = 0
             char = yield
@@ -380,14 +404,18 @@ class Normal(Mode):
                 if char == 'g':
                     motion += 'g'
                 else:
-                    return
+                    raise StopIteration(True)
 
             # TODO verify if motion is valid
 
             cmdFunc = self._COMPOSITE_COMMANDS[action]
             cmdFunc(self, action, motion, count)
 
-            return
+            raise StopIteration(True)
+        else:
+            raise StopIteration(False)
+
+        assert 0  # must StopIteration on if
 
     #
     # Simple commands
