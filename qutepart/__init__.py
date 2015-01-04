@@ -233,6 +233,8 @@ class Qutepart(QPlainTextEdit):
     def __init__(self, *args):
         QPlainTextEdit.__init__(self, *args)
 
+        self.setAttribute(Qt.WA_KeyCompression, False)  # vim can't process compressed keys
+
         # toPlainText() takes a lot of time on long texts, therefore it is cached
         self._cachedText = None
 
