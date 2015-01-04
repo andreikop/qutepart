@@ -233,8 +233,10 @@ class Visual(Mode):
                 newText = ''.join(newChars)
                 self._qpart.selectedText = newText
             raise StopIteration(True)
+        elif len(action) == 1:
+            raise StopIteration(True)  # ignore unknown character
         else:
-            raise StopIteration(False)
+            raise StopIteration(False)  # but do not ignore not-a-character keys
 
         assert 0  # must StopIteration on if
 
@@ -412,8 +414,11 @@ class Normal(Mode):
             cmdFunc(self, action, motion, count)
 
             raise StopIteration(True)
+        elif len(action) == 1:
+            raise StopIteration(True)  # ignore unknown character
         else:
-            raise StopIteration(False)
+            raise StopIteration(False)  # but do not ignore not-a-character keys
+
 
         assert 0  # must StopIteration on if
 
