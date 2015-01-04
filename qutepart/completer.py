@@ -343,13 +343,15 @@ class Completer(QObject):
 
         self._wordSet = None
 
-        qpart.installEventFilter(self)
         qpart.textChanged.connect(self._onTextChanged)
 
     def terminate(self):
         """Object deleted. Cancel timer
         """
         self._globalUpdateWordSetTimer.cancel(self._updateWordSet)
+
+    def isVisible(self):
+        return self._widget is not None
 
     def _onTextChanged(self):
         """Text in the qpart changed. Update word set"""
@@ -371,23 +373,9 @@ class Completer(QObject):
 
     def invokeCompletion(self):
         """Invoke completion manually"""
-        if self._invokeCompletionIfAvailable(requestedByUser=True):
+        if self.invokeCompletionIfAvailable(requestedByUser=True):
             self._completionOpenedManually = True
 
-    def eventFilter(self, object, event):
-        """Catch events from qpart. Show completion if necessary
-        """
-        if event.type() == QEvent.KeyRelease:
-            text = event.text()
-            textTyped = (event.modifiers() in (Qt.NoModifier, Qt.ShiftModifier)) and \
-                        (text.isalpha() or text.isdigit() or text == '_')
-
-            if textTyped or \
-            (event.key() == Qt.Key_Backspace and self._widget is not None):
-                self._invokeCompletionIfAvailable()
-                return False
-
-        return False
 
     def _shouldShowModel(self, model, forceShow):
         if not model.hasWords():
@@ -402,7 +390,7 @@ class Completer(QObject):
         self._widget.itemSelected.connect(self._onCompletionListItemSelected)
         self._widget.tabPressed.connect(self._onCompletionListTabPressed)
 
-    def _invokeCompletionIfAvailable(self, requestedByUser=False):
+    def invokeCompletionIfAvailable(self, requestedByUser=False):
         """Invoke completion, if available. Called after text has been typed in qpart
         Returns True, if invoked
         """
@@ -476,4 +464,4 @@ class Completer(QObject):
         canCompleteText = self._widget.model().canCompleteText
         if canCompleteText:
             self._qpart.textCursor().insertText(canCompleteText)
-            self._invokeCompletionIfAvailable()
+            self.invokeCompletionIfAvailable()

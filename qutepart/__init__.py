@@ -6,7 +6,7 @@ import os.path
 import logging
 import platform
 
-from PyQt4.QtCore import QRect, Qt, pyqtSignal
+from PyQt4.QtCore import QRect, Qt, QEvent, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, \
                         QDialog, QFont, \
                         QIcon, QKeySequence, QPainter, QPen, QPalette, \
@@ -925,6 +925,16 @@ class Qutepart(QPlainTextEdit):
                     return
                 else:
                     super(Qutepart, self).keyPressEvent(event)
+
+    def keyReleaseEvent(self, event):
+        text = event.text()
+        textTyped = (text and \
+                     event.modifiers() in (Qt.NoModifier, Qt.ShiftModifier)) and \
+                     (text.isalpha() or text.isdigit() or text == '_')
+
+        if textTyped or \
+        (event.key() == Qt.Key_Backspace and self._completer.isVisible()):
+            self._completer.invokeCompletionIfAvailable()
 
     def mousePressEvent(self, mouseEvent):
         pass  # suppress docstring for non-public method
