@@ -1,5 +1,26 @@
+import sys
+
 from PyQt4.QtCore import Qt, pyqtSignal, QObject
 from PyQt4.QtGui import QColor, QTextCursor
+
+
+""" This magic code sets variables like _a and _A in the global scope
+"""
+thismodule = sys.modules[__name__]
+for code in range(ord('a'), ord('z')):
+    shortName = chr(code)
+    longName = 'Key_' + shortName.upper()
+    qtCode = getattr(Qt, longName)
+    setattr(thismodule, '_' + shortName, qtCode)
+    setattr(thismodule, '_' + shortName.upper(), Qt.ShiftModifier + qtCode)
+
+_Dollar = Qt.Key_Dollar
+_Esc = Qt.Key_Escape
+_Insert = Qt.Key_Insert
+_0 = Qt.Key_0
+
+def code(ev):
+    return int(ev.modifiers()) + ev.key()
 
 
 NORMAL = 'normal'
@@ -30,23 +51,16 @@ class Vim(QObject):
     def updateIndication(self):
         self.modeIndicationChanged.emit(*self.indication())
 
-
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, ev):
         """Check the event. Return True if processed and False otherwise
         """
-        text = event.text()
+        if ev.key() in (Qt.Key_Shift, Qt.Key_Control,
+                        Qt.Key_Meta, Qt.Key_Alt,
+                        Qt.Key_AltGr, Qt.Key_CapsLock,
+                        Qt.Key_NumLock, Qt.Key_ScrollLock):
+            return False  # ignore modifier pressing. Will process key pressing later
 
-        if event.key() == Qt.Key_Insert and event.modifiers() == Qt.NoModifier:
-            text = '<Insert>'
-        elif event.key() == Qt.Key_Escape and event.modifiers() == Qt.NoModifier:
-            text = '<Esc>'
-
-        if text:
-            return self._mode.keyPressEvent(text)
-        else:
-            return False
-
-
+        return self._mode.keyPressEvent(ev)
 
     def setMode(self, mode):
         self._mode = mode
@@ -64,7 +78,7 @@ class Mode:
     def text(self):
         return None
 
-    def keyPressEvent(self, text):
+    def keyPressEvent(self, ev):
         pass
 
     def switchMode(self, modeClass, *args):
@@ -84,8 +98,8 @@ class Insert(Mode):
     def text(self):
         return 'insert'
 
-    def keyPressEvent(self, text):
-        if text == '<Esc>':
+    def keyPressEvent(self, ev):
+        if ev.key() == Qt.Key_Escape:
             self.switchMode(Normal)
             return True
 
@@ -98,8 +112,8 @@ class ReplaceChar(Mode):
     def text(self):
         return 'replace char'
 
-    def keyPressEvent(self, text):
-        if len(text) == 1:  # a char
+    def keyPressEvent(self, ev):
+        if ev.text():  # a char
             self._qpart.setOverwriteMode(False)
             line, col = self._qpart.cursorPosition
             if col > 0:
@@ -118,12 +132,12 @@ class Replace(Mode):
     def text(self):
         return 'replace'
 
-    def keyPressEvent(self, text):
-        if text == '<Insert>':
+    def keyPressEvent(self, ev):
+        if ev.key() == _Insert:
             self._qpart.setOverwriteMode(False)
             self.switchMode(Insert)
             return True
-        elif text == '<Esc>':
+        elif ev.key() == _Esc:
             self._qpart.setOverwriteMode(False)
             self.switchMode(Normal)
             return True
@@ -131,7 +145,7 @@ class Replace(Mode):
             return False
 
 
-_MOTIONS = '0eGjlkhw$'
+_MOTIONS = (_0, _e, _G, _j, _l, _k, _h, _w, _Dollar)
 
 def _moveCursor(qpart, motion, select=False):
     """ Move cursor.
@@ -141,20 +155,20 @@ def _moveCursor(qpart, motion, select=False):
 
     moveMode = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
 
-    moveOperation = {'j': QTextCursor.Down,
-                     'k': QTextCursor.Up,
-                     'h': QTextCursor.Left,
-                     'l': QTextCursor.Right,
-                     'w': QTextCursor.WordRight,
-                     '$': QTextCursor.EndOfLine,
-                     '0': QTextCursor.StartOfLine,
+    moveOperation = {_j: QTextCursor.Down,
+                     _k: QTextCursor.Up,
+                     _h: QTextCursor.Left,
+                     _l: QTextCursor.Right,
+                     _w: QTextCursor.WordRight,
+                     _Dollar: QTextCursor.EndOfLine,
+                     _0: QTextCursor.StartOfLine,
                      'gg': QTextCursor.Start,
-                     'G': QTextCursor.End
+                     _G: QTextCursor.End
                     }
 
     if motion in moveOperation:
         cursor.movePosition(moveOperation[motion], moveMode)
-    elif motion == 'e':
+    elif motion == _e:
         oldPos = cursor.position()
         cursor.movePosition(QTextCursor.EndOfWord, moveMode)
         if cursor.position() == oldPos:
@@ -179,10 +193,10 @@ class Visual(Mode):
     def text(self):
         return self._typedText or 'visual'
 
-    def keyPressEvent(self, char):
-        self._typedText += char
+    def keyPressEvent(self, ev):
+        self._typedText += ev.text()
         try:
-            self._processCharCoroutine.send(char)
+            self._processCharCoroutine.send(ev)
         except StopIteration as ex:
             retVal = ex.args[0]
             self._reset()
@@ -194,21 +208,24 @@ class Visual(Mode):
         return retVal
 
     def _processChar(self):
-        char = yield None
+        ev = yield None
 
         # Get count
         count = 0
 
-        while char.isdigit() and (count or char != '0'):
-            digit = int(char)
-            count = (count * 10) + digit
-            char = yield
+        if ev.key() != _0:
+            char = ev.text()
+            while char.isdigit():
+                digit = int(char)
+                count = (count * 10) + digit
+                ev = yield
+                char = ev.text()
 
         if count == 0:
             count = 1
 
         # Now get the action
-        action = char
+        action = code(ev)
         if action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]
             self.switchMode(Normal)
@@ -218,22 +235,23 @@ class Visual(Mode):
             for _ in range(count):
                 _moveCursor(self._qpart, action, select=True)
             raise StopIteration(True)
-        elif action == 'g':
-            char = yield
-            if char == 'g':
+        elif action == _g:
+            ev = yield
+            if code(ev) == _g:
                 _moveCursor(self._qpart, 'gg', select=True)
 
             raise StopIteration(True)
-        elif action == 'r':
-            nextChar = yield
-            if len(nextChar) == 1:  # not <Esc> <Insert> etc
-                newChars = [nextChar if char != '\n' else '\n' \
+        elif action == _r:
+            ev = yield
+            newChar = ev.text()
+            if newChar:
+                newChars = [newChar if char != '\n' else '\n' \
                                 for char in self._qpart.selectedText
                             ]
                 newText = ''.join(newChars)
                 self._qpart.selectedText = newText
             raise StopIteration(True)
-        elif len(action) == 1:
+        elif ev.text():
             raise StopIteration(True)  # ignore unknown character
         else:
             raise StopIteration(False)  # but do not ignore not-a-character keys
@@ -301,16 +319,16 @@ class Visual(Mode):
 
 
     _SIMPLE_COMMANDS = {
-                            'A': cmdAppendAfterChar,
-                            'c': cmdChange,
-                            'd': cmdDelete,
-                            'i': cmdInsertMode,
-                            'x': cmdDelete,
-                            'R': cmdReplaceSelectedLines,
-                            'p': cmdInternalPaste,
-                            'u': cmdResetSelection,
-                            'y': cmdYank,
-                            '<Esc>': cmdNormalMode,
+                            _A: cmdAppendAfterChar,
+                            _c: cmdChange,
+                            _d: cmdDelete,
+                            _i: cmdInsertMode,
+                            _x: cmdDelete,
+                            _R: cmdReplaceSelectedLines,
+                            _p: cmdInternalPaste,
+                            _u: cmdResetSelection,
+                            _y: cmdYank,
+                            _Esc: cmdNormalMode,
                        }
 
 
@@ -329,10 +347,10 @@ class Normal(Mode):
     def text(self):
         return self._typedText or 'normal'
 
-    def keyPressEvent(self, char):
-        self._typedText += char
+    def keyPressEvent(self, ev):
+        self._typedText += ev.text()
         try:
-            self._processCharCoroutine.send(char)
+            self._processCharCoroutine.send(ev)
         except StopIteration as ex:
             retVal = ex.args[0]
             self._reset()
@@ -344,22 +362,25 @@ class Normal(Mode):
         return retVal
 
     def _processChar(self):
-        char = yield None
+        ev = yield None
 
         # Get action count
         actionCount = 0
 
-        while char.isdigit() and (actionCount or char != '0'):
-            digit = int(char)
-            actionCount = (actionCount * 10) + digit
-            char = yield
+        if ev.key() != _0:
+            char = ev.text()
+            while char.isdigit():
+                digit = int(char)
+                actionCount = (actionCount * 10) + digit
+                ev = yield
+                char = ev.text()
 
         if actionCount == 0:
             actionCount = 1
 
         # Now get the action
-        action = char
-        if action == 'x':
+        action = code(ev)
+        if action == _x:
             """ Delete command is a special case.
             It accumulates deleted text in the internal clipboard. Give count as a command parameter
             """
@@ -380,19 +401,23 @@ class Normal(Mode):
             for _ in range(actionCount):
                 _moveCursor(self._qpart, action, select=False)
             raise StopIteration(True)
-        elif action == 'g':
-            char = yield
-            if char == 'g':
+        elif action == _g:
+            ev = yield
+            if code(ev) == _g:
                 _moveCursor(self._qpart, 'gg')
 
             raise StopIteration(True)
-        elif action in 'cd':
+        elif action in (_c, _d):
             moveCount = 0
-            char = yield
-            while char.isdigit() and (char != '0' or moveCount):  # 0 is a command, not a count
-                digit = int(char)
-                moveCount = (moveCount * 10) + digit
-                char = yield
+            ev = yield
+
+            if ev.key() != _0:  # 0 is a command, not a count
+                char = ev.text()
+                while char.isdigit():
+                    digit = int(char)
+                    moveCount = (moveCount * 10) + digit
+                    ev = yield
+                    char = ev.text()
 
             if moveCount == 0:
                 moveCount = 1
@@ -400,11 +425,11 @@ class Normal(Mode):
             count = actionCount * moveCount
 
             # Get motion for a composite command
-            motion = char
-            if motion == 'g':
-                char = yield
-                if char == 'g':
-                    motion += 'g'
+            motion = code(ev)
+            if motion == _g:
+                ev = yield
+                if code(ev) == _g:
+                    motion = 'gg'
                 else:
                     raise StopIteration(True)
 
@@ -414,7 +439,7 @@ class Normal(Mode):
             cmdFunc(self, action, motion, count)
 
             raise StopIteration(True)
-        elif len(action) == 1:
+        elif ev.text() == 1:
             raise StopIteration(True)  # ignore unknown character
         else:
             raise StopIteration(False)  # but do not ignore not-a-character keys
@@ -478,14 +503,14 @@ class Normal(Mode):
             cursor.removeSelectedText()
 
 
-    _SIMPLE_COMMANDS = {'A': cmdAppendAfterLine,
-                        'a': cmdAppendAfterChar,
-                        'i': cmdInsertMode,
-                        'r': cmdReplaceCharMode,
-                        'R': cmdReplaceMode,
-                        'v': cmdVisualMode,
-                        'p': cmdInternalPaste,
-                        'u': cmdUndo,
+    _SIMPLE_COMMANDS = {_A: cmdAppendAfterLine,
+                        _a: cmdAppendAfterChar,
+                        _i: cmdInsertMode,
+                        _r: cmdReplaceCharMode,
+                        _R: cmdReplaceMode,
+                        _v: cmdVisualMode,
+                        _p: cmdInternalPaste,
+                        _u: cmdUndo,
                        }
 
     #
@@ -493,7 +518,7 @@ class Normal(Mode):
     #
 
     def cmdCompositeDelete(self, cmd, motion, count):
-        if motion == 'j':  # down
+        if motion == _j:  # down
             lineIndex = self._qpart.cursorPosition[0]
             availableCount = len(self._qpart.lines) - lineIndex
             if availableCount < 2:  # last line
@@ -503,7 +528,7 @@ class Normal(Mode):
 
             self._vim.internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
             del self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
-        elif motion == 'k':  # up
+        elif motion == _k:  # up
             lineIndex = self._qpart.cursorPosition[0]
             if lineIndex == 0:  # first line
                 return
@@ -512,7 +537,7 @@ class Normal(Mode):
 
             self._vim.internalClipboard = self._qpart.lines[lineIndex - effectiveCount:lineIndex + 1]
             del self._qpart.lines[lineIndex - effectiveCount:lineIndex + 1]
-        elif motion == 'd':  # delete whole line
+        elif motion == _d:  # delete whole line
             lineIndex = self._qpart.cursorPosition[0]
             availableCount = len(self._qpart.lines) - lineIndex
 
@@ -520,7 +545,7 @@ class Normal(Mode):
 
             self._vim.internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount]
             del self._qpart.lines[lineIndex:lineIndex + effectiveCount]
-        elif motion == 'G':
+        elif motion == _G:
             currentLineIndex = self._qpart.cursorPosition[0]
             self._vim.internalClipboard = self._qpart.lines[currentLineIndex:]
             del self._qpart.lines[currentLineIndex:]
@@ -528,7 +553,7 @@ class Normal(Mode):
             currentLineIndex = self._qpart.cursorPosition[0]
             self._vim.internalClipboard = self._qpart.lines[:currentLineIndex + 1]
             del self._qpart.lines[:currentLineIndex + 1]
-        elif motion in 'hlwe$0':
+        elif motion in (_h, _l, _w, _e, _Dollar, _0):
             for _ in xrange(count):
                 _moveCursor(self._qpart, motion, select=True)
 
@@ -542,6 +567,6 @@ class Normal(Mode):
         self.cmdCompositeDelete(cmd, motion, count)
         self.switchMode(Insert)
 
-    _COMPOSITE_COMMANDS = {'c': cmdCompositeChange,
-                           'd': cmdCompositeDelete,
+    _COMPOSITE_COMMANDS = {_c: cmdCompositeChange,
+                           _d: cmdCompositeDelete,
                           }
