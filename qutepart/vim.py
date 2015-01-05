@@ -14,10 +14,15 @@ for code in range(ord('a'), ord('z')):
     setattr(thismodule, '_' + shortName, qtCode)
     setattr(thismodule, '_' + shortName.upper(), Qt.ShiftModifier + qtCode)
 
+_0 = Qt.Key_0
 _Dollar = Qt.Key_Dollar
 _Esc = Qt.Key_Escape
 _Insert = Qt.Key_Insert
-_0 = Qt.Key_0
+_Down = Qt.Key_Down
+_Up = Qt.Key_Up
+_Left = Qt.Key_Left
+_Right = Qt.Key_Right
+
 
 def code(ev):
     return int(ev.modifiers()) + ev.key()
@@ -145,7 +150,7 @@ class Replace(Mode):
             return False
 
 
-_MOTIONS = (_0, _e, _G, _j, _l, _k, _h, _w, _Dollar)
+_MOTIONS = (_0, _e, _G, _j, _Down, _l, _Right, _k, _Up, _h, _Left, _w, _Dollar)
 
 def _moveCursor(qpart, motion, select=False):
     """ Move cursor.
@@ -156,9 +161,13 @@ def _moveCursor(qpart, motion, select=False):
     moveMode = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
 
     moveOperation = {_j: QTextCursor.Down,
+                     _Down: QTextCursor.Down,
                      _k: QTextCursor.Up,
+                     _Up: QTextCursor.Up,
                      _h: QTextCursor.Left,
+                     _Left: QTextCursor.Left,
                      _l: QTextCursor.Right,
+                     _Right: QTextCursor.Right,
                      _w: QTextCursor.WordRight,
                      _Dollar: QTextCursor.EndOfLine,
                      _0: QTextCursor.StartOfLine,
@@ -518,7 +527,7 @@ class Normal(Mode):
     #
 
     def cmdCompositeDelete(self, cmd, motion, count):
-        if motion == _j:  # down
+        if motion in (_j, _Down):
             lineIndex = self._qpart.cursorPosition[0]
             availableCount = len(self._qpart.lines) - lineIndex
             if availableCount < 2:  # last line
@@ -528,7 +537,7 @@ class Normal(Mode):
 
             self._vim.internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
             del self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
-        elif motion == _k:  # up
+        elif motion in (_k, _Up):
             lineIndex = self._qpart.cursorPosition[0]
             if lineIndex == 0:  # first line
                 return
@@ -553,7 +562,7 @@ class Normal(Mode):
             currentLineIndex = self._qpart.cursorPosition[0]
             self._vim.internalClipboard = self._qpart.lines[:currentLineIndex + 1]
             del self._qpart.lines[:currentLineIndex + 1]
-        elif motion in (_h, _l, _w, _e, _Dollar, _0):
+        elif motion in (_h, _Left, _l, _Right, _w, _e, _Dollar, _0):
             for _ in xrange(count):
                 _moveCursor(self._qpart, motion, select=True)
 
