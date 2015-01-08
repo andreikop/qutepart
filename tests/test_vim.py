@@ -369,6 +369,25 @@ class Edit(_Test):
         self.assertEqual(self.qpart.lines[0],
                          'asdf brown fox')
 
+    def test_06(self):
+        """Open new line with o
+        """
+        self.click('o')
+        self.click('asdf')
+        self.assertEqual(self.qpart.lines[0:3],
+                         ['The quick brown fox',
+                          'asdf',
+                          'jumps over the'])
+
+    def test_07(self):
+        """Open new line with O
+        """
+        self.click('O')
+        self.click('asdf')
+        self.assertEqual(self.qpart.lines[0:2],
+                         ['asdf',
+                          'The quick brown fox'])
+
 
 class Visual(_Test):
     def test_01(self):

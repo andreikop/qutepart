@@ -486,6 +486,21 @@ class Normal(Mode):
     def cmdUndo(self, cmd):
         self._qpart.undo()
 
+    def cmdNewLineBelow(self, cmd):
+        cursor = self._qpart.textCursor()
+        cursor.movePosition(QTextCursor.EndOfLine)
+        self._qpart.setTextCursor(cursor)
+        cursor.insertBlock()
+        self.switchMode(Insert)
+
+    def cmdNewLineAbove(self, cmd):
+        cursor = self._qpart.textCursor()
+        cursor.movePosition(QTextCursor.StartOfLine)
+        cursor.insertBlock()
+        cursor.movePosition(QTextCursor.Up)
+        self._qpart.setTextCursor(cursor)
+        self.switchMode(Insert)
+
     def cmdInternalPaste(self, cmd):
         if not self._vim.internalClipboard:
             return
@@ -518,6 +533,8 @@ class Normal(Mode):
                         _r: cmdReplaceCharMode,
                         _R: cmdReplaceMode,
                         _v: cmdVisualMode,
+                        _o: cmdNewLineBelow,
+                        _O: cmdNewLineAbove,
                         _p: cmdInternalPaste,
                         _u: cmdUndo,
                        }
