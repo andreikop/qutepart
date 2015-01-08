@@ -22,6 +22,8 @@ _Down = Qt.Key_Down
 _Up = Qt.Key_Up
 _Left = Qt.Key_Left
 _Right = Qt.Key_Right
+_Space = Qt.Key_Space
+_BackSpace = Qt.Key_Backspace
 
 
 def code(ev):
@@ -150,7 +152,12 @@ class Replace(Mode):
             return False
 
 
-_MOTIONS = (_0, _e, _G, _j, _Down, _l, _Right, _k, _Up, _h, _Left, _w, _Dollar)
+_MOTIONS = (_0, _e, _G,
+            _j, _Down,
+            _l, _Right, _Space,
+            _k, _Up,
+            _h, _Left, _BackSpace,
+            _w, _Dollar)
 
 def _moveCursor(qpart, motion, select=False):
     """ Move cursor.
@@ -166,8 +173,10 @@ def _moveCursor(qpart, motion, select=False):
                      _Up: QTextCursor.Up,
                      _h: QTextCursor.Left,
                      _Left: QTextCursor.Left,
+                     _BackSpace: QTextCursor.Left,
                      _l: QTextCursor.Right,
                      _Right: QTextCursor.Right,
+                     _Space: QTextCursor.Right,
                      _w: QTextCursor.WordRight,
                      _Dollar: QTextCursor.EndOfLine,
                      _0: QTextCursor.StartOfLine,
