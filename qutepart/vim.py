@@ -462,7 +462,7 @@ class Normal(Mode):
             cmdFunc(self, action, motion, count)
 
             raise StopIteration(True)
-        elif ev.text() == 1:
+        elif len(ev.text()) == 1:
             raise StopIteration(True)  # ignore unknown character
         else:
             raise StopIteration(False)  # but do not ignore not-a-character keys
