@@ -192,6 +192,15 @@ class Move(_Test):
         self.click('gg')
         self.assertEqual(self.qpart.cursorPosition, (00, 0))
 
+    def test_08(self):
+        """ b word back
+        """
+        self.qpart.cursorPosition = (0, 19)
+        self.click('b')
+        self.assertEqual(self.qpart.cursorPosition, (0, 16))
+
+        self.click('b')
+        self.assertEqual(self.qpart.cursorPosition, (0, 10))
 
 
 class Del(_Test):

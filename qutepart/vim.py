@@ -152,13 +152,16 @@ class Replace(Mode):
             return False
 
 
-_MOTIONS = (_0, _e, _G,
+_MOTIONS = (_0, _Dollar,
+            _b,
+            _e,
+            _G,
             _j, _Down,
             _l, _Right, _Space,
             _k, _Up,
             _h, _Left, _BackSpace,
             _w,
-            _Dollar)
+            )
 
 def _moveCursor(qpart, motion, select=False):
     """ Move cursor.
@@ -168,7 +171,8 @@ def _moveCursor(qpart, motion, select=False):
 
     moveMode = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
 
-    moveOperation = {_j: QTextCursor.Down,
+    moveOperation = {_b: QTextCursor.WordLeft,
+                     _j: QTextCursor.Down,
                      _Down: QTextCursor.Down,
                      _k: QTextCursor.Up,
                      _Up: QTextCursor.Up,
