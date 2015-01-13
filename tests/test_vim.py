@@ -38,7 +38,7 @@ class _Test(unittest.TestCase):
     def click(self, keys):
         if isinstance(keys, basestring):
             for key in keys:
-                if key.isupper():
+                if key.isupper() or key == '$':
                     QTest.keyClick(self.qpart, key, Qt.ShiftModifier)
                 else:
                     QTest.keyClicks(self.qpart, key)

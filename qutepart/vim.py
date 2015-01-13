@@ -15,7 +15,7 @@ for code in range(ord('a'), ord('z')):
     setattr(thismodule, '_' + shortName.upper(), Qt.ShiftModifier + qtCode)
 
 _0 = Qt.Key_0
-_Dollar = Qt.Key_Dollar
+_Dollar = Qt.ShiftModifier + Qt.Key_Dollar
 _Esc = Qt.Key_Escape
 _Insert = Qt.Key_Insert
 _Down = Qt.Key_Down
@@ -157,7 +157,8 @@ _MOTIONS = (_0, _e, _G,
             _l, _Right, _Space,
             _k, _Up,
             _h, _Left, _BackSpace,
-            _w, _Dollar)
+            _w,
+            _Dollar)
 
 def _moveCursor(qpart, motion, select=False):
     """ Move cursor.
