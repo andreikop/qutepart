@@ -69,6 +69,9 @@ class Vim(QObject):
 
         return self._mode.keyPressEvent(ev)
 
+    def inInsertMode(self):
+        return isinstance(self._mode, Insert)
+
     def setMode(self, mode):
         self._mode = mode
         self.updateIndication()

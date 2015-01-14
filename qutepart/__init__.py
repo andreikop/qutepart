@@ -929,6 +929,10 @@ class Qutepart(QPlainTextEdit):
                     super(Qutepart, self).keyPressEvent(event)
 
     def keyReleaseEvent(self, event):
+        if self.vimModeEnabled and \
+           (not self._vim.inInsertMode()):
+           return
+
         text = event.text()
         textTyped = (text and \
                      event.modifiers() in (Qt.NoModifier, Qt.ShiftModifier)) and \
