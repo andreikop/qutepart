@@ -235,6 +235,7 @@ class Qutepart(QPlainTextEdit):
 
         self.setAttribute(Qt.WA_KeyCompression, False)  # vim can't process compressed keys
 
+        self._lastKeyPressProcessedByParent = False
         # toPlainText() takes a lot of time on long texts, therefore it is cached
         self._cachedText = None
 
@@ -841,6 +842,8 @@ class Qutepart(QPlainTextEdit):
         """QPlainTextEdit.keyPressEvent() implementation.
         Catch events, which may not be catched with QShortcut and call slots
         """
+        self._lastKeyPressProcessedByParent = False
+
         cursor = self.textCursor()
 
         def shouldUnindentWithBackspace():
@@ -926,21 +929,24 @@ class Qutepart(QPlainTextEdit):
                 if event.text() and event.modifiers() == Qt.AltModifier:
                     return
                 else:
+                    self._lastKeyPressProcessedByParent = True
                     super(Qutepart, self).keyPressEvent(event)
 
     def keyReleaseEvent(self, event):
-        if self.vimModeEnabled and \
-           (not self._vim.inInsertMode()):
-           return
+        if self._lastKeyPressProcessedByParent:
+            """ A hacky way to do not show completion list after a event, processed by vim
+            """
 
-        text = event.text()
-        textTyped = (text and \
-                     event.modifiers() in (Qt.NoModifier, Qt.ShiftModifier)) and \
-                     (text.isalpha() or text.isdigit() or text == '_')
+            text = event.text()
+            textTyped = (text and \
+                         event.modifiers() in (Qt.NoModifier, Qt.ShiftModifier)) and \
+                         (text.isalpha() or text.isdigit() or text == '_')
 
-        if textTyped or \
-        (event.key() == Qt.Key_Backspace and self._completer.isVisible()):
-            self._completer.invokeCompletionIfAvailable()
+            if textTyped or \
+            (event.key() == Qt.Key_Backspace and self._completer.isVisible()):
+                self._completer.invokeCompletionIfAvailable()
+
+        super(Qutepart, self).keyReleaseEvent(event)
 
     def mousePressEvent(self, mouseEvent):
         pass  # suppress docstring for non-public method
