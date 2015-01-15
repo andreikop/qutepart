@@ -195,11 +195,20 @@ def _moveCursor(qpart, motion, select=False):
     if motion in moveOperation:
         cursor.movePosition(moveOperation[motion], moveMode)
     elif motion == _e:
-        oldPos = cursor.position()
+        # skip spaces
+        text = cursor.block().text()
+        pos = cursor.positionInBlock()
+        for char in text[pos:]:
+            if char.isspace():
+                cursor.movePosition(QTextCursor.NextCharacter, moveMode)
+            else:
+                break
+
+        if cursor.positionInBlock() == len(text):  # at the end of line
+            cursor.movePosition(QTextCursor.NextCharacter, moveMode)  # move to the next line
+
+        # now move to the end of word
         cursor.movePosition(QTextCursor.EndOfWord, moveMode)
-        if cursor.position() == oldPos:
-            cursor.movePosition(QTextCursor.Right, moveMode)
-            cursor.movePosition(QTextCursor.EndOfWord, moveMode)
 
     qpart.setTextCursor(cursor)
 

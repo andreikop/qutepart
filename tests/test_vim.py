@@ -155,9 +155,9 @@ class Move(_Test):
     def test_03(self):
         """e
         """
-        self.qpart.lines[0] = 'word, comma, word'
+        self.qpart.lines[0] = '  word, comma, word'
         self.qpart.cursorPosition = (0, 0)
-        for column in (4, 5, 11, 12, 17, 5):
+        for column in (6, 7, 13, 14, 19, 5):
             self.click('e')
             self.assertEqual(self.qpart.cursorPosition[1], column)
 
