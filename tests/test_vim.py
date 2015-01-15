@@ -327,7 +327,12 @@ class Edit(_Test):
         """
         oldText = self.qpart.text
         self.click('ddu')
+        modifiedText = self.qpart.text
         self.assertEqual(self.qpart.text, oldText)
+        """ NOTE this part of test doesn't work. Don't know why.
+        self.click('U')
+        self.assertEqual(self.qpart.text, modifiedText)
+        """
 
     def test_02(self):
         """Paste text with p

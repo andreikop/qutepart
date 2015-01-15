@@ -512,6 +512,9 @@ class Normal(Mode):
     def cmdUndo(self, cmd):
         self._qpart.undo()
 
+    def cmdRedo(self, cmd):
+        self._qpart.redo()
+
     def cmdNewLineBelow(self, cmd):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.EndOfLine)
@@ -563,6 +566,7 @@ class Normal(Mode):
                         _O: cmdNewLineAbove,
                         _p: cmdInternalPaste,
                         _u: cmdUndo,
+                        _U: cmdRedo,
                        }
 
     #
