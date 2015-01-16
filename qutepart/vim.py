@@ -155,78 +155,12 @@ class Replace(Mode):
             return False
 
 
-_MOTIONS = (_0, _Dollar,
-            _b,
-            _e,
-            _G,
-            _j, _Down,
-            _l, _Right, _Space,
-            _k, _Up,
-            _h, _Left, _BackSpace,
-            _w,
-            )
-
-def _moveCursor(qpart, motion, select=False):
-    """ Move cursor.
-    Used by Normal and Visual mode
+class BaseCommandMode(Mode):
+    """ Base class for Normal and Visual modes
     """
-    cursor = qpart.textCursor()
-
-    moveMode = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
-
-    moveOperation = {_b: QTextCursor.WordLeft,
-                     _j: QTextCursor.Down,
-                     _Down: QTextCursor.Down,
-                     _k: QTextCursor.Up,
-                     _Up: QTextCursor.Up,
-                     _h: QTextCursor.Left,
-                     _Left: QTextCursor.Left,
-                     _BackSpace: QTextCursor.Left,
-                     _l: QTextCursor.Right,
-                     _Right: QTextCursor.Right,
-                     _Space: QTextCursor.Right,
-                     _w: QTextCursor.WordRight,
-                     _Dollar: QTextCursor.EndOfLine,
-                     _0: QTextCursor.StartOfLine,
-                     'gg': QTextCursor.Start,
-                     _G: QTextCursor.End
-                    }
-
-    if motion in moveOperation:
-        cursor.movePosition(moveOperation[motion], moveMode)
-    elif motion == _e:
-        # skip spaces
-        text = cursor.block().text()
-        pos = cursor.positionInBlock()
-        for char in text[pos:]:
-            if char.isspace():
-                cursor.movePosition(QTextCursor.NextCharacter, moveMode)
-            else:
-                break
-
-        if cursor.positionInBlock() == len(text):  # at the end of line
-            cursor.movePosition(QTextCursor.NextCharacter, moveMode)  # move to the next line
-
-        # now move to the end of word
-        cursor.movePosition(QTextCursor.EndOfWord, moveMode)
-
-    qpart.setTextCursor(cursor)
-
-
-class Visual(Mode):
-    color = QColor('#6699ff')
-
     def __init__(self, *args):
         Mode.__init__(self, *args)
         self._reset()
-
-    def _reset(self):
-        self._processCharCoroutine = self._processChar()
-        self._processCharCoroutine.next()  # run until the first yield
-        self._typedText = ''
-
-    def text(self):
-        return self._typedText or 'visual'
 
     def keyPressEvent(self, ev):
         self._typedText += ev.text()
@@ -241,6 +175,77 @@ class Visual(Mode):
         self._vim.updateIndication()
 
         return retVal
+
+    def text(self):
+        return self._typedText or self.name
+
+    def _reset(self):
+        self._processCharCoroutine = self._processChar()
+        self._processCharCoroutine.next()  # run until the first yield
+        self._typedText = ''
+
+    _MOTIONS = (_0, _Dollar,
+                _b,
+                _e,
+                _G,
+                _j, _Down,
+                _l, _Right, _Space,
+                _k, _Up,
+                _h, _Left, _BackSpace,
+                _w,
+                )
+
+    def _moveCursor(self, motion, select=False):
+        """ Move cursor.
+        Used by Normal and Visual mode
+        """
+        cursor = self._qpart.textCursor()
+
+        moveMode = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
+
+        moveOperation = {_b: QTextCursor.WordLeft,
+                         _j: QTextCursor.Down,
+                         _Down: QTextCursor.Down,
+                         _k: QTextCursor.Up,
+                         _Up: QTextCursor.Up,
+                         _h: QTextCursor.Left,
+                         _Left: QTextCursor.Left,
+                         _BackSpace: QTextCursor.Left,
+                         _l: QTextCursor.Right,
+                         _Right: QTextCursor.Right,
+                         _Space: QTextCursor.Right,
+                         _w: QTextCursor.WordRight,
+                         _Dollar: QTextCursor.EndOfLine,
+                         _0: QTextCursor.StartOfLine,
+                         'gg': QTextCursor.Start,
+                         _G: QTextCursor.End
+                        }
+
+        if motion in moveOperation:
+            cursor.movePosition(moveOperation[motion], moveMode)
+        elif motion == _e:
+            # skip spaces
+            text = cursor.block().text()
+            pos = cursor.positionInBlock()
+            for char in text[pos:]:
+                if char.isspace():
+                    cursor.movePosition(QTextCursor.NextCharacter, moveMode)
+                else:
+                    break
+
+            if cursor.positionInBlock() == len(text):  # at the end of line
+                cursor.movePosition(QTextCursor.NextCharacter, moveMode)  # move to the next line
+
+            # now move to the end of word
+            cursor.movePosition(QTextCursor.EndOfWord, moveMode)
+
+        self._qpart.setTextCursor(cursor)
+
+
+
+class BaseVisual(BaseCommandMode):
+    color = QColor('#6699ff')
+    _selectLines = NotImplementedError()
 
     def _processChar(self):
         ev = yield None
@@ -266,15 +271,18 @@ class Visual(Mode):
             self.switchMode(Normal)
             cmdFunc(self, action)
             raise StopIteration(True)
-        elif action in _MOTIONS:
+        elif action in self._MOTIONS:
             for _ in range(count):
-                _moveCursor(self._qpart, action, select=True)
+                self._moveCursor(action, select=True)
+            if self._selectLines:
+                self._expandSelection()
             raise StopIteration(True)
         elif action == _g:
             ev = yield
             if code(ev) == _g:
-                _moveCursor(self._qpart, 'gg', select=True)
-
+                self._moveCursor('gg', select=True)
+                if self._selectLines:
+                    self._expandSelection()
             raise StopIteration(True)
         elif action == _r:
             ev = yield
@@ -293,6 +301,26 @@ class Visual(Mode):
 
         assert 0  # must StopIteration on if
 
+    def _expandSelection(self):
+        cursor = self._qpart.textCursor()
+        anchor = cursor.anchor()
+        pos = cursor.position()
+
+
+        if pos >= anchor:
+            anchorSide = QTextCursor.StartOfLine
+            cursorSide = QTextCursor.EndOfLine
+        else:
+            anchorSide = QTextCursor.EndOfLine
+            cursorSide = QTextCursor.StartOfLine
+
+
+        cursor.setPosition(anchor)
+        cursor.movePosition(anchorSide)
+        cursor.setPosition(pos, QTextCursor.KeepAnchor)
+        cursor.movePosition(cursorSide, QTextCursor.KeepAnchor)
+
+        self._qpart.setTextCursor(cursor)
 
 
     #
@@ -367,34 +395,25 @@ class Visual(Mode):
                        }
 
 
-class Normal(Mode):
-    color = QColor('#33cc33')
+class Visual(BaseVisual):
+    name = 'visual'
+
+    _selectLines = False
+
+
+class VisualLines(BaseVisual):
+    name = 'visual lines'
+
+    _selectLines = True
 
     def __init__(self, *args):
-        Mode.__init__(self, *args)
-        self._reset()
+        BaseVisual.__init__(self, *args)
+        self._expandSelection()
 
-    def _reset(self):
-        self._processCharCoroutine = self._processChar()
-        self._processCharCoroutine.next()  # run until the first yield
-        self._typedText = ''
 
-    def text(self):
-        return self._typedText or 'normal'
-
-    def keyPressEvent(self, ev):
-        self._typedText += ev.text()
-        try:
-            self._processCharCoroutine.send(ev)
-        except StopIteration as ex:
-            retVal = ex.args[0]
-            self._reset()
-        else:
-            retVal = True
-
-        self._vim.updateIndication()
-
-        return retVal
+class Normal(BaseCommandMode):
+    color = QColor('#33cc33')
+    name = 'normal'
 
     def _processChar(self):
         ev = yield None
@@ -432,14 +451,14 @@ class Normal(Mode):
                 cmdFunc(self, action)
 
             raise StopIteration(True)
-        elif action in _MOTIONS:
+        elif action in self._MOTIONS:
             for _ in range(actionCount):
-                _moveCursor(self._qpart, action, select=False)
+                self._moveCursor(action, select=False)
             raise StopIteration(True)
         elif action == _g:
             ev = yield
             if code(ev) == _g:
-                _moveCursor(self._qpart, 'gg')
+                self._moveCursor('gg')
 
             raise StopIteration(True)
         elif action in (_c, _d):
@@ -543,6 +562,9 @@ class Normal(Mode):
     def cmdVisualMode(self, cmd):
         self.switchMode(Visual)
 
+    def cmdVisualLinesMode(self, cmd):
+        self.switchMode(VisualLines)
+
     #
     # Special cases
     #
@@ -562,6 +584,7 @@ class Normal(Mode):
                         _r: cmdReplaceCharMode,
                         _R: cmdReplaceMode,
                         _v: cmdVisualMode,
+                        _V: cmdVisualLinesMode,
                         _o: cmdNewLineBelow,
                         _O: cmdNewLineAbove,
                         _p: cmdInternalPaste,
@@ -611,7 +634,7 @@ class Normal(Mode):
             del self._qpart.lines[:currentLineIndex + 1]
         elif motion in (_h, _Left, _l, _Right, _w, _e, _Dollar, _0):
             for _ in xrange(count):
-                _moveCursor(self._qpart, motion, select=True)
+                self._moveCursor(motion, select=True)
 
             selText = self._qpart.textCursor().selectedText()
             if selText:
