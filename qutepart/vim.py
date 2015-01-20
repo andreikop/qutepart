@@ -330,8 +330,13 @@ class BaseVisual(BaseCommandMode):
     def cmdDelete(self, cmd):
         cursor = self._qpart.textCursor()
         if cursor.selectedText():
-            self._vim.internalClipboard = cursor.selectedText()
-            cursor.removeSelectedText()
+            if self._selectLines:
+                (startLine, startCol), (endLine, endCol) = self._qpart.selectedPosition
+                self._vim.internalClipboard = self._qpart.lines[startLine:endLine + 1]
+                del self._qpart.lines[startLine:endLine + 1]
+            else:
+                self._vim.internalClipboard = cursor.selectedText()
+                cursor.removeSelectedText()
 
     def cmdInsertMode(self, cmd):
         self.switchMode(Insert)
@@ -370,13 +375,21 @@ class BaseVisual(BaseCommandMode):
             self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(self._vim.internalClipboard))
 
     def cmdYank(self, cmd):
+        if self._selectLines:
+            (startLine, startCol), (endLine, endCol) = self._qpart.selectedPosition
+            self._vim.internalClipboard = self._qpart.lines[startLine:endLine + 1]
+        else:
+            self._vim.internalClipboard = self._qpart.selectedText
+
         self._qpart.copy()
-        self._vim.internalClipboard = self._qpart.selectedText
 
     def cmdChange(self, cmd):
         cursor = self._qpart.textCursor()
         if cursor.selectedText():
-            self._vim.internalClipboard = cursor.selectedText()
+            if self._selectLines:
+                self._vim.internalClipboard = cursor.selectedText().splitlines()
+            else:
+                self._vim.internalClipboard = cursor.selectedText()
             cursor.removeSelectedText()
         self.switchMode(Insert)
 

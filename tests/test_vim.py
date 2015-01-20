@@ -476,5 +476,42 @@ class Visual(_Test):
         self.assertEqual(self.qpart.lines[0],
                          'The slow brown fox')
 
+class VisualLines(_Test):
+    def test_01(self):
+        """ x Delete
+        """
+        self.click('V')
+        self.assertEqual(self.vimMode, 'visual lines')
+        self.click('x')
+        self.click('p')
+        self.assertEqual(self.qpart.lines[:],
+                         ['jumps over the',
+                          'The quick brown fox',
+                          'lazy dog',
+                          'back'])
+        self.assertEqual(self.vimMode, 'normal')
+
+    def test_06(self):
+        """Yank with y and paste with p
+        """
+        self.qpart.cursorPosition = (0, 4)
+        self.click("V")
+        self.click("y")
+        self.click(Qt.Key_Escape)
+        self.qpart.cursorPosition = (0, 16)
+        self.click("p")
+        self.assertEqual(self.qpart.lines[0:3],
+                         ['The quick brown fox',
+                          'The quick brown fox',
+                          'jumps over the'])
+
+    def test_07(self):
+        """Change with c
+        """
+        self.click("Vc")
+        self.click("slow")
+        self.assertEqual(self.qpart.lines[0],
+                         'slow')
+
 if __name__ == '__main__':
     unittest.main()
