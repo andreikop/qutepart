@@ -124,7 +124,6 @@ class Modes(_Test):
         self.assertEqual(self.vimMode, 'insert')
 
 
-
 class Move(_Test):
     def test_01(self):
         """Move hjkl

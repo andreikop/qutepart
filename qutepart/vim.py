@@ -506,7 +506,7 @@ class Normal(BaseCommandMode):
             cmdFunc(self, action, motion, count)
 
             raise StopIteration(True)
-        elif len(ev.text()) == 1:
+        elif len(ev.text()) == 1 and ev.modifiers() in (Qt.ShiftModifier, Qt.NoModifier):
             raise StopIteration(True)  # ignore unknown character
         else:
             raise StopIteration(False)  # but do not ignore not-a-character keys
