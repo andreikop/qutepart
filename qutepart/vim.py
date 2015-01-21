@@ -474,7 +474,7 @@ class Normal(BaseCommandMode):
                 self._moveCursor('gg')
 
             raise StopIteration(True)
-        elif action in (_c, _d):
+        elif action in self._COMPOSITE_COMMANDS:
             moveCount = 0
             ev = yield
 
@@ -659,6 +659,16 @@ class Normal(BaseCommandMode):
         self.cmdCompositeDelete(cmd, motion, count)
         self.switchMode(Insert)
 
+    def cmdCompositeYank(self, cmd, motion, count):
+        cursor = self._qpart.textCursor()
+        for _ in range(count):
+            self._moveCursor(motion, select=True)
+        self._vim.internalClipboard = self._qpart.selectedText
+        self._qpart.copy()
+        self._qpart.setTextCursor(cursor)
+
+
     _COMPOSITE_COMMANDS = {_c: cmdCompositeChange,
                            _d: cmdCompositeDelete,
+                           _y: cmdCompositeYank
                           }

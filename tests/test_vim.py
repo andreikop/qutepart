@@ -402,6 +402,14 @@ class Edit(_Test):
                          ['asdf',
                           'The quick brown fox'])
 
+    def test_08(self):
+        """ Composite yank with y
+        """
+        self.click('y2w')
+        self.click('p')
+        self.assertEqual(self.qpart.lines[0],
+                         'The quick The quick brown fox')
+
 
 class Visual(_Test):
     def test_01(self):

@@ -1,4 +1,5 @@
 fixme:
+  y as an operator
 
 todo:
   switch hihglighting language        2
