@@ -551,15 +551,17 @@ class Normal(BaseCommandMode):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.EndOfLine)
         self._qpart.setTextCursor(cursor)
-        cursor.insertBlock()
+        self._qpart._insertNewBlock()
         self.switchMode(Insert)
 
     def cmdNewLineAbove(self, cmd):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.StartOfLine)
-        cursor.insertBlock()
+        self._qpart.setTextCursor(cursor)
+        self._qpart._insertNewBlock()
         cursor.movePosition(QTextCursor.Up)
         self._qpart.setTextCursor(cursor)
+        self._qpart._indenter.autoIndentBlock(cursor.block())
         self.switchMode(Insert)
 
     def cmdInternalPaste(self, cmd):

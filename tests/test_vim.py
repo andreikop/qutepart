@@ -385,21 +385,29 @@ class Edit(_Test):
     def test_06(self):
         """Open new line with o
         """
+        self.qpart.lines = ['    indented line',
+                            '    next indented line']
         self.click('o')
         self.click('asdf')
-        self.assertEqual(self.qpart.lines[0:3],
-                         ['The quick brown fox',
-                          'asdf',
-                          'jumps over the'])
+        self.assertEqual(self.qpart.lines[:],
+                         ['    indented line',
+                          '    asdf',
+                          '    next indented line'])
 
     def test_07(self):
         """Open new line with O
+
+        Check indentation
         """
+        self.qpart.lines = ['    indented line',
+                            '    next indented line']
+        self.click('j')
         self.click('O')
         self.click('asdf')
-        self.assertEqual(self.qpart.lines[0:2],
-                         ['asdf',
-                          'The quick brown fox'])
+        self.assertEqual(self.qpart.lines[:],
+                         ['    indented line',
+                          '    asdf',
+                          '    next indented line'])
 
     def test_08(self):
         """ Composite yank with y
