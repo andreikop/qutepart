@@ -123,6 +123,12 @@ class Modes(_Test):
         self.click('i')
         self.assertEqual(self.vimMode, 'insert')
 
+    def test_07(self):
+        """ Switch to visual on selection
+        """
+        QTest.keyClick(self.qpart, Qt.Key_Right, Qt.ShiftModifier)
+        self.assertEqual(self.vimMode, 'visual')
+
 
 class Move(_Test):
     def test_01(self):

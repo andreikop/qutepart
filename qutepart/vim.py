@@ -50,6 +50,11 @@ class Vim(QObject):
         self._qpart = qpart
         self._mode = Normal(self, qpart)
         self.internalClipboard = ''  # delete commands save text to this clipboard
+
+        self._qpart.selectionChanged.connect(self._onSelectionChanged)
+
+        self._processingKeyPress = False
+
         self.updateIndication()
 
     def indication(self):
@@ -67,7 +72,12 @@ class Vim(QObject):
                         Qt.Key_NumLock, Qt.Key_ScrollLock):
             return False  # ignore modifier pressing. Will process key pressing later
 
-        return self._mode.keyPressEvent(ev)
+        self._processingKeyPress = True
+        try:
+            ret = self._mode.keyPressEvent(ev)
+        finally:
+            self._processingKeyPress = False
+        return ret
 
     def inInsertMode(self):
         return isinstance(self._mode, Insert)
@@ -76,6 +86,11 @@ class Vim(QObject):
         self._mode = mode
         self.updateIndication()
 
+    def _onSelectionChanged(self):
+        if not self._processingKeyPress:
+            if self._qpart.selectedText and \
+               (not isinstance(self._mode, (Visual, VisualLines))):
+                self.setMode(Visual(self, self._qpart))
 
 
 class Mode:
@@ -270,6 +285,7 @@ class BaseVisual(BaseCommandMode):
             cmdFunc = self._SIMPLE_COMMANDS[action]
             self.switchMode(Normal)
             cmdFunc(self, action)
+            self._qpart.cursorPosition = self._qpart.selectedPosition[0]  # reset selection
             raise StopIteration(True)
         elif action in self._MOTIONS:
             for _ in range(count):
