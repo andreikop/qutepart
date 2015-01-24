@@ -304,7 +304,7 @@ class BaseVisual(BaseCommandMode):
             cmdFunc = self._SIMPLE_COMMANDS[action]
             self.switchMode(Normal)
             cmdFunc(self, action)
-            self._qpart.cursorPosition = self._qpart.selectedPosition[0]  # reset selection
+            self._qpart.cursorPosition = self._qpart.selectedPosition[1]  # reset selection
             raise StopIteration(True)
         elif action in self._MOTIONS:
             self._moveCursor(action, count, select=True)

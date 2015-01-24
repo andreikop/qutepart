@@ -8,7 +8,6 @@ fixme:
   V in visual mode
   Tab and Shift+Space doesn't indent in visual lines
   a appends after next character
-  select with mouse and Esc - moves cursor
 
 todo:
   switch hihglighting language        2
