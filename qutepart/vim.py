@@ -329,7 +329,7 @@ class BaseVisual(BaseCommandMode):
                 newText = ''.join(newChars)
                 self._qpart.selectedText = newText
             raise StopIteration(True)
-        elif ev.text():
+        elif len(ev.text()) == 1 and ev.modifiers() in (Qt.ShiftModifier, Qt.NoModifier):
             raise StopIteration(True)  # ignore unknown character
         else:
             raise StopIteration(False)  # but do not ignore not-a-character keys
