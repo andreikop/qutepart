@@ -5,9 +5,7 @@ fixme:
   W motion
   yy to yank current line
   yw is not inserted with p
-  V in visual mode
   Tab and Shift+Space doesn't indent in visual lines
-  db doesn't work
   should p replace in V?
 
 todo:

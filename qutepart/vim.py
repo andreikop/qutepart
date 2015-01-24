@@ -709,7 +709,7 @@ class Normal(BaseCommandMode):
             currentLineIndex = self._qpart.cursorPosition[0]
             self._vim.internalClipboard = self._qpart.lines[:currentLineIndex + 1]
             del self._qpart.lines[:currentLineIndex + 1]
-        elif motion in (_h, _Left, _l, _Right, _w, _e, _Dollar, _Percent, _0):
+        else:
             self._moveCursor(motion, count, select=True)
 
             selText = self._qpart.textCursor().selectedText()
