@@ -30,6 +30,22 @@ _BackSpace = Qt.Key_Backspace
 def code(ev):
     return int(ev.modifiers()) + ev.key()
 
+def isChar(ev):
+    """ Check if an event may be a typed character
+    """
+    text = ev.text()
+    if len(ev.text()) != 1:
+        return False
+
+    if ev.modifiers() not in (Qt.ShiftModifier, Qt.NoModifier):
+        return False
+
+    asciiCode = ord(ev.text())
+    if asciiCode <= 31 or asciiCode == 0x7f:  # control characters
+        return False
+
+    return True
+
 
 NORMAL = 'normal'
 INSERT = 'insert'
@@ -329,7 +345,7 @@ class BaseVisual(BaseCommandMode):
                 newText = ''.join(newChars)
                 self._qpart.selectedText = newText
             raise StopIteration(True)
-        elif len(ev.text()) == 1 and ev.modifiers() in (Qt.ShiftModifier, Qt.NoModifier):
+        elif isChar(ev):
             raise StopIteration(True)  # ignore unknown character
         else:
             raise StopIteration(False)  # but do not ignore not-a-character keys
@@ -552,7 +568,7 @@ class Normal(BaseCommandMode):
             cmdFunc(self, action, motion, count)
 
             raise StopIteration(True)
-        elif len(ev.text()) == 1 and ev.modifiers() in (Qt.ShiftModifier, Qt.NoModifier):
+        elif isChar(ev):
             raise StopIteration(True)  # ignore unknown character
         else:
             raise StopIteration(False)  # but do not ignore not-a-character keys
