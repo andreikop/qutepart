@@ -304,7 +304,8 @@ class BaseVisual(BaseCommandMode):
             cmdFunc = self._SIMPLE_COMMANDS[action]
             self.switchMode(Normal)
             cmdFunc(self, action)
-            self._qpart.cursorPosition = self._qpart.selectedPosition[1]  # reset selection
+            if action not in (_v, _V):  # if not switched to another visual mode
+                self._qpart.cursorPosition = self._qpart.selectedPosition[1]  # reset selection
             raise StopIteration(True)
         elif action in self._MOTIONS:
             self._moveCursor(action, count, select=True)
@@ -408,6 +409,17 @@ class BaseVisual(BaseCommandMode):
             currentLineIndex = self._qpart.cursorPosition[0]
             self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(self._vim.internalClipboard))
 
+    def cmdVisualMode(self, cmd):
+        if not self._selectLines:
+            return  # already in visual mode
+        self.switchMode(Visual)
+
+    def cmdVisualLinesMode(self, cmd):
+        if self._selectLines:
+            return  # already in visual lines mode
+
+        self.switchMode(VisualLines)
+
     def cmdYank(self, cmd):
         if self._selectLines:
             (startLine, startCol), (endLine, endCol) = self._qpart.selectedPosition
@@ -433,10 +445,12 @@ class BaseVisual(BaseCommandMode):
                             _c: cmdChange,
                             _d: cmdDelete,
                             _i: cmdInsertMode,
-                            _x: cmdDelete,
                             _R: cmdReplaceSelectedLines,
                             _p: cmdInternalPaste,
                             _u: cmdResetSelection,
+                            _x: cmdDelete,
+                            _v: cmdVisualMode,
+                            _V: cmdVisualLinesMode,
                             _y: cmdYank,
                             _Esc: cmdNormalMode,
                        }

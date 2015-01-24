@@ -7,7 +7,8 @@ fixme:
   yw is not inserted with p
   V in visual mode
   Tab and Shift+Space doesn't indent in visual lines
-  a appends after next character
+  db doesn't work
+  del doesn't work in normal mode
 
 todo:
   switch hihglighting language        2

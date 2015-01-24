@@ -129,6 +129,25 @@ class Modes(_Test):
         QTest.keyClick(self.qpart, Qt.Key_Right, Qt.ShiftModifier)
         self.assertEqual(self.vimMode, 'visual')
 
+    def test_08(self):
+        """ From VISUAL to VISUAL LINES
+        """
+        self.click('v')
+        self.click('kkk')
+        self.click('V')
+        self.assertEqual(self.qpart.selectedText,
+                         'The quick brown fox')
+        self.assertEqual(self.vimMode, 'visual lines')
+
+    def test_09(self):
+        """ From VISUAL LINES to VISUAL
+        """
+        self.click('V')
+        self.click('v')
+        self.assertEqual(self.qpart.selectedText,
+                         'The quick brown fox')
+        self.assertEqual(self.vimMode, 'visual')
+
 
 class Move(_Test):
     def test_01(self):
