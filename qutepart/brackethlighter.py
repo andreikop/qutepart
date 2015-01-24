@@ -29,6 +29,8 @@ class BracketHighlighter:
     _OPOSITE_BRACKET = dict( (bracket, oposite)
                     for (bracket, oposite) in zip(_START_BRACKETS + _END_BRACKETS, _END_BRACKETS + _START_BRACKETS))
 
+    currentMatchedBrackets = None  # instance variable. None or ((block, columnIndex), (block, columnIndex))
+
     def _iterateDocumentCharsForward(self, block, startColumnIndex):
         """Traverse document forward. Yield (block, columnIndex, char)
         Raise _TimeoutException if time is over
@@ -119,9 +121,11 @@ class BracketHighlighter:
             return[] # highlight nothing
 
         if matchedBlock is not None:
+            self.currentMatchedBrackets = ((block, columnIndex), (matchedBlock, matchedColumnIndex))
             return [self._makeMatchSelection(block, columnIndex, True),
                     self._makeMatchSelection(matchedBlock, matchedColumnIndex, True)]
         else:
+            self.currentMatchedBrackets = None
             return [self._makeMatchSelection(block, columnIndex, False)]
 
     def extraSelections(self, qpart, block, columnIndex):
@@ -138,4 +142,5 @@ class BracketHighlighter:
              qpart.isCode(block, columnIndex):
             return self._highlightBracket(blockText[columnIndex], qpart, block, columnIndex)
         else:
+            self.currentMatchedBrackets = None
             return []

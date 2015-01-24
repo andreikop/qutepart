@@ -16,6 +16,7 @@ for code in range(ord('a'), ord('z')):
 
 _0 = Qt.Key_0
 _Dollar = Qt.ShiftModifier + Qt.Key_Dollar
+_Percent = Qt.ShiftModifier + Qt.Key_Percent
 _Esc = Qt.Key_Escape
 _Insert = Qt.Key_Insert
 _Down = Qt.Key_Down
@@ -88,9 +89,12 @@ class Vim(QObject):
 
     def _onSelectionChanged(self):
         if not self._processingKeyPress:
-            if self._qpart.selectedText and \
-               (not isinstance(self._mode, (Visual, VisualLines))):
-                self.setMode(Visual(self, self._qpart))
+            if self._qpart.selectedText:
+                if not isinstance(self._mode, (Visual, VisualLines)):
+                    self.setMode(Visual(self, self._qpart))
+            else:
+                self.setMode(Normal(self, self._qpart))
+
 
 
 class Mode:
@@ -199,7 +203,8 @@ class BaseCommandMode(Mode):
         self._processCharCoroutine.next()  # run until the first yield
         self._typedText = ''
 
-    _MOTIONS = (_0, _Dollar,
+    _MOTIONS = (_0,
+                _Dollar, _Percent,
                 _b,
                 _e,
                 _G,
@@ -210,7 +215,7 @@ class BaseCommandMode(Mode):
                 _w,
                 )
 
-    def _moveCursor(self, motion, select=False):
+    def _moveCursor(self, motion, count, select=False):
         """ Move cursor.
         Used by Normal and Visual mode
         """
@@ -237,22 +242,36 @@ class BaseCommandMode(Mode):
                         }
 
         if motion in moveOperation:
-            cursor.movePosition(moveOperation[motion], moveMode)
+            for _ in range(count):
+                cursor.movePosition(moveOperation[motion], moveMode)
         elif motion == _e:
-            # skip spaces
-            text = cursor.block().text()
-            pos = cursor.positionInBlock()
-            for char in text[pos:]:
-                if char.isspace():
-                    cursor.movePosition(QTextCursor.NextCharacter, moveMode)
-                else:
-                    break
+            for _ in range(count):
+                # skip spaces
+                text = cursor.block().text()
+                pos = cursor.positionInBlock()
+                for char in text[pos:]:
+                    if char.isspace():
+                        cursor.movePosition(QTextCursor.NextCharacter, moveMode)
+                    else:
+                        break
 
-            if cursor.positionInBlock() == len(text):  # at the end of line
-                cursor.movePosition(QTextCursor.NextCharacter, moveMode)  # move to the next line
+                if cursor.positionInBlock() == len(text):  # at the end of line
+                    cursor.movePosition(QTextCursor.NextCharacter, moveMode)  # move to the next line
 
-            # now move to the end of word
-            cursor.movePosition(QTextCursor.EndOfWord, moveMode)
+                # now move to the end of word
+                cursor.movePosition(QTextCursor.EndOfWord, moveMode)
+        elif motion == _Percent:
+            # Percent move is done only once
+            if self._qpart._bracketHighlighter.currentMatchedBrackets is not None:
+                ((startBlock, startCol), (endBlock, endCol)) = self._qpart._bracketHighlighter.currentMatchedBrackets
+                startPos = startBlock.position() + startCol
+                endPos = endBlock.position() + endCol
+                if select and \
+                   (endPos > startPos):
+                    endPos += 1  # to select the bracket, not only chars before it
+                cursor.setPosition(endPos, moveMode)
+        else:
+            assert 0, 'Not expected motion' + str(motion)
 
         self._qpart.setTextCursor(cursor)
 
@@ -288,15 +307,14 @@ class BaseVisual(BaseCommandMode):
             self._qpart.cursorPosition = self._qpart.selectedPosition[0]  # reset selection
             raise StopIteration(True)
         elif action in self._MOTIONS:
-            for _ in range(count):
-                self._moveCursor(action, select=True)
+            self._moveCursor(action, count, select=True)
             if self._selectLines:
                 self._expandSelection()
             raise StopIteration(True)
         elif action == _g:
             ev = yield
             if code(ev) == _g:
-                self._moveCursor('gg', select=True)
+                self._moveCursor('gg', 1, select=True)
                 if self._selectLines:
                     self._expandSelection()
             raise StopIteration(True)
@@ -446,7 +464,6 @@ class Normal(BaseCommandMode):
 
     def _processChar(self):
         ev = yield None
-
         # Get action count
         actionCount = 0
 
@@ -481,13 +498,12 @@ class Normal(BaseCommandMode):
 
             raise StopIteration(True)
         elif action in self._MOTIONS:
-            for _ in range(actionCount):
-                self._moveCursor(action, select=False)
+            self._moveCursor(action, actionCount, select=False)
             raise StopIteration(True)
         elif action == _g:
             ev = yield
             if code(ev) == _g:
-                self._moveCursor('gg')
+                self._moveCursor('gg', 1)
 
             raise StopIteration(True)
         elif action in self._COMPOSITE_COMMANDS:
@@ -663,9 +679,8 @@ class Normal(BaseCommandMode):
             currentLineIndex = self._qpart.cursorPosition[0]
             self._vim.internalClipboard = self._qpart.lines[:currentLineIndex + 1]
             del self._qpart.lines[:currentLineIndex + 1]
-        elif motion in (_h, _Left, _l, _Right, _w, _e, _Dollar, _0):
-            for _ in xrange(count):
-                self._moveCursor(motion, select=True)
+        elif motion in (_h, _Left, _l, _Right, _w, _e, _Dollar, _Percent, _0):
+            self._moveCursor(motion, count, select=True)
 
             selText = self._qpart.textCursor().selectedText()
             if selText:
@@ -679,8 +694,7 @@ class Normal(BaseCommandMode):
 
     def cmdCompositeYank(self, cmd, motion, count):
         cursor = self._qpart.textCursor()
-        for _ in range(count):
-            self._moveCursor(motion, select=True)
+        self._moveCursor(motion, count, select=True)
         self._vim.internalClipboard = self._qpart.selectedText
         self._qpart.copy()
         self._qpart.setTextCursor(cursor)

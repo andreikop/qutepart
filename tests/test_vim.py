@@ -38,7 +38,7 @@ class _Test(unittest.TestCase):
     def click(self, keys):
         if isinstance(keys, basestring):
             for key in keys:
-                if key.isupper() or key == '$':
+                if key.isupper() or key in '$%':
                     QTest.keyClick(self.qpart, key, Qt.ShiftModifier)
                 else:
                     QTest.keyClicks(self.qpart, key)
@@ -206,6 +206,15 @@ class Move(_Test):
 
         self.click('b')
         self.assertEqual(self.qpart.cursorPosition, (0, 10))
+
+    def test_09(self):
+        """ % to jump to next braket
+        """
+        self.qpart.lines[0] = '(asdf fdsa) xxx'
+        self.qpart.cursorPosition = (0, 0)
+        self.click('%')
+        self.assertEqual(self.qpart.cursorPosition,
+                         (0, 10))
 
 
 class Del(_Test):
@@ -423,6 +432,14 @@ class Edit(_Test):
         self.assertEqual(self.qpart.lines[0],
                          'The quick The quick brown fox')
 
+    def test_09(self):
+        """ % to jump to next braket
+        """
+        self.qpart.lines[0] = '(asdf fdsa) xxx'
+        self.qpart.cursorPosition = (0, 0)
+        self.click('d%')
+        self.assertEqual(self.qpart.lines[0],
+                         ' xxx')
 
 class Visual(_Test):
     def test_01(self):
