@@ -525,6 +525,15 @@ class Visual(_Test):
                          'The quick brown quick')
 
     def test_07(self):
+        """ Replace word when pasting
+        """
+        self.click("vey")  # copy word
+        self.click('ww')  # move
+        self.click('vep')  # replace word
+        self.assertEqual(self.qpart.lines[0],
+                         'The quick The fox')
+
+    def test_08(self):
         """Change with c
         """
         self.click("w")
@@ -547,6 +556,17 @@ class VisualLines(_Test):
                           'lazy dog',
                           'back'])
         self.assertEqual(self.vimMode, 'normal')
+
+    def test_02(self):
+        """ Replace text when pasting
+        """
+        self.click('Vy')
+        self.click('j')
+        self.click('Vp')
+        self.assertEqual(self.qpart.lines[0:3],
+                         ['The quick brown fox',
+                          'The quick brown fox',
+                          'lazy dog',])
 
     def test_06(self):
         """Yank with y and paste with p

@@ -420,11 +420,22 @@ class BaseVisual(BaseCommandMode):
         if not self._vim.internalClipboard:
             return
 
-        if isinstance(self._vim.internalClipboard, basestring):
-            self._qpart.textCursor().insertText(self._vim.internalClipboard)
-        elif isinstance(self._vim.internalClipboard, list):
-            currentLineIndex = self._qpart.cursorPosition[0]
-            self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(self._vim.internalClipboard))
+        with self._qpart:
+            cursor = self._qpart.textCursor()
+
+            if self._selectLines:
+                (startLine, startCol), (endLine, endCol) = self._qpart.selectedPosition
+                del self._qpart.lines[startLine:endLine + 1]
+            else:
+                cursor.removeSelectedText()
+
+            if isinstance(self._vim.internalClipboard, basestring):
+                self._qpart.textCursor().insertText(self._vim.internalClipboard)
+            elif isinstance(self._vim.internalClipboard, list):
+                currentLineIndex = self._qpart.cursorPosition[0]
+                text = '\n'.join(self._vim.internalClipboard)
+                index = currentLineIndex if self._selectLines else currentLineIndex + 1
+                self._qpart.lines.insert(index, text)
 
     def cmdVisualMode(self, cmd):
         if not self._selectLines:

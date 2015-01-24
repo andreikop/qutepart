@@ -4,8 +4,6 @@ fixme:
   = autoindents
   W motion
   yy to yank current line
-  Tab and Shift+Space doesn't indent in visual lines
-  should p replace in V?
 
 todo:
   switch hihglighting language        2
