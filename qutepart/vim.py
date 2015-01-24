@@ -229,6 +229,7 @@ class BaseCommandMode(Mode):
                 _k, _Up,
                 _h, _Left, _BackSpace,
                 _w,
+                'gg'
                 )
 
     def _moveCursor(self, motion, count, select=False):
@@ -287,7 +288,7 @@ class BaseCommandMode(Mode):
                     endPos += 1  # to select the bracket, not only chars before it
                 cursor.setPosition(endPos, moveMode)
         else:
-            assert 0, 'Not expected motion' + str(motion)
+            assert 0, 'Not expected motion ' + str(motion)
 
         self._qpart.setTextCursor(cursor)
 
@@ -323,17 +324,17 @@ class BaseVisual(BaseCommandMode):
             if action not in (_v, _V):  # if not switched to another visual mode
                 self._qpart.cursorPosition = self._qpart.selectedPosition[1]  # reset selection
             raise StopIteration(True)
-        elif action in self._MOTIONS:
-            self._moveCursor(action, count, select=True)
-            if self._selectLines:
-                self._expandSelection()
-            raise StopIteration(True)
         elif action == _g:
             ev = yield
             if code(ev) == _g:
                 self._moveCursor('gg', 1, select=True)
                 if self._selectLines:
                     self._expandSelection()
+            raise StopIteration(True)
+        elif action in self._MOTIONS:
+            self._moveCursor(action, count, select=True)
+            if self._selectLines:
+                self._expandSelection()
             raise StopIteration(True)
         elif action == _r:
             ev = yield
@@ -527,14 +528,14 @@ class Normal(BaseCommandMode):
                 cmdFunc(self, action)
 
             raise StopIteration(True)
-        elif action in self._MOTIONS:
-            self._moveCursor(action, actionCount, select=False)
-            raise StopIteration(True)
         elif action == _g:
             ev = yield
             if code(ev) == _g:
                 self._moveCursor('gg', 1)
 
+            raise StopIteration(True)
+        elif action in self._MOTIONS:
+            self._moveCursor(action, actionCount, select=False)
             raise StopIteration(True)
         elif action in self._COMPOSITE_COMMANDS:
             moveCount = 0
@@ -562,10 +563,9 @@ class Normal(BaseCommandMode):
                 else:
                     raise StopIteration(True)
 
-            # TODO verify if motion is valid
-
-            cmdFunc = self._COMPOSITE_COMMANDS[action]
-            cmdFunc(self, action, motion, count)
+            if motion in self._MOTIONS or motion == _d:
+                cmdFunc = self._COMPOSITE_COMMANDS[action]
+                cmdFunc(self, action, motion, count)
 
             raise StopIteration(True)
         elif isChar(ev):
