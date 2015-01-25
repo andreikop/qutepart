@@ -1,9 +1,7 @@
 fixme:
   ^ to move to first non-blank char
-  visual mode switches on when alt+up is used
   = autoindents
   W motion
-  yy to yank current line
 
 todo:
   switch hihglighting language        2

@@ -574,7 +574,8 @@ class Normal(BaseCommandMode):
                 else:
                     raise StopIteration(True)
 
-            if motion in self._MOTIONS or motion == _d:
+            if motion in self._MOTIONS or \
+               (action, motion) in ((_d, _d), (_y, _y)):
                 cmdFunc = self._COMPOSITE_COMMANDS[action]
                 cmdFunc(self, action, motion, count)
 
@@ -734,11 +735,21 @@ class Normal(BaseCommandMode):
         self.switchMode(Insert)
 
     def cmdCompositeYank(self, cmd, motion, count):
-        cursor = self._qpart.textCursor()
-        self._moveCursor(motion, count, select=True)
-        self._vim.internalClipboard = self._qpart.selectedText
+        oldCursor = self._qpart.textCursor()
+        if motion == _y:
+            cursor = self._qpart.textCursor()
+            cursor.movePosition(QTextCursor.StartOfLine)
+            for _ in range(count - 1):
+                cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor)
+            cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+            self._qpart.setTextCursor(cursor)
+            self._vim.internalClipboard = [self._qpart.selectedText]
+        else:
+            self._moveCursor(motion, count, select=True)
+            self._vim.internalClipboard = self._qpart.selectedText
+
         self._qpart.copy()
-        self._qpart.setTextCursor(cursor)
+        self._qpart.setTextCursor(oldCursor)
 
 
     _COMPOSITE_COMMANDS = {_c: cmdCompositeChange,

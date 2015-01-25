@@ -367,35 +367,6 @@ class Edit(_Test):
         self.assertEqual(self.qpart.text, modifiedText)
         """
 
-    def test_02(self):
-        """Paste text with p
-        """
-        self.qpart.cursorPosition = (0, 4)
-        self.click("5x")
-        self.assertEqual(self.qpart.lines[0],
-                         'The  brown fox')
-
-        self.click("p")
-        self.assertEqual(self.qpart.lines[0],
-                         'The quick brown fox')  # NOTE 'The  quickbrown fox' in vim
-
-    def test_03(self):
-        """Paste lines with p
-        """
-        self.qpart.cursorPosition = (1, 2)
-        self.click("2dd")
-        self.assertEqual(self.qpart.lines[:],
-                         ['The quick brown fox',
-                          'back'])
-
-        self.click("kkk")
-        self.click("p")
-        self.assertEqual(self.qpart.lines[:],
-                         ['The quick brown fox',
-                          'jumps over the',
-                          'lazy dog',
-                          'back'])
-
     def test_04(self):
         """Replace char with r
         """
@@ -443,14 +414,6 @@ class Edit(_Test):
                           '    asdf',
                           '    next indented line'])
 
-    def test_08(self):
-        """ Composite yank with y
-        """
-        self.click('y2w')
-        self.click('p')
-        self.assertEqual(self.qpart.lines[0],
-                         'The quick The quick brown fox')
-
     def test_09(self):
         """ % to jump to next braket
         """
@@ -459,6 +422,63 @@ class Edit(_Test):
         self.click('d%')
         self.assertEqual(self.qpart.lines[0],
                          ' xxx')
+
+
+class CopyPaste(_Test):
+    def test_02(self):
+        """Paste text with p
+        """
+        self.qpart.cursorPosition = (0, 4)
+        self.click("5x")
+        self.assertEqual(self.qpart.lines[0],
+                         'The  brown fox')
+
+        self.click("p")
+        self.assertEqual(self.qpart.lines[0],
+                         'The quick brown fox')  # NOTE 'The  quickbrown fox' in vim
+
+    def test_03(self):
+        """Paste lines with p
+        """
+        self.qpart.cursorPosition = (1, 2)
+        self.click("2dd")
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'back'])
+
+        self.click("kkk")
+        self.click("p")
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'jumps over the',
+                          'lazy dog',
+                          'back'])
+
+    def test_05(self):
+        """ Yank line with yy
+        """
+        self.click('y2y')
+        self.click('jll')
+        self.click('p')
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'jumps over the',
+                          'The quick brown fox',
+                          'jumps over the',
+                          'lazy dog',
+                          'back'])
+
+
+    def test_08(self):
+        """ Composite yank with y
+        """
+        self.click('y2w')
+        self.click('p')
+        self.assertEqual(self.qpart.lines[0],
+                         'The quick The quick brown fox')
+
+
+
 
 class Visual(_Test):
     def test_01(self):
