@@ -17,6 +17,7 @@ for code in range(ord('a'), ord('z')):
 _0 = Qt.Key_0
 _Dollar = Qt.ShiftModifier + Qt.Key_Dollar
 _Percent = Qt.ShiftModifier + Qt.Key_Percent
+_Caret = Qt.ShiftModifier + Qt.Key_AsciiCircum
 _Esc = Qt.Key_Escape
 _Insert = Qt.Key_Insert
 _Down = Qt.Key_Down
@@ -220,7 +221,7 @@ class BaseCommandMode(Mode):
         self._typedText = ''
 
     _MOTIONS = (_0,
-                _Dollar, _Percent,
+                _Dollar, _Percent, _Caret,
                 _b,
                 _e,
                 _G,
@@ -229,7 +230,7 @@ class BaseCommandMode(Mode):
                 _k, _Up,
                 _h, _Left, _BackSpace,
                 _w,
-                'gg'
+                'gg',
                 )
 
     def _moveCursor(self, motion, count, select=False):
@@ -287,6 +288,11 @@ class BaseCommandMode(Mode):
                    (endPos > startPos):
                     endPos += 1  # to select the bracket, not only chars before it
                 cursor.setPosition(endPos, moveMode)
+        elif motion == _Caret:
+            # Caret move is done only once
+            text = cursor.block().text()
+            spaceLen = len(text) - len(text.lstrip())
+            cursor.setPosition(cursor.block().position() + spaceLen, moveMode)
         else:
             assert 0, 'Not expected motion ' + str(motion)
 

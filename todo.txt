@@ -1,5 +1,4 @@
 fixme:
-  ^ to move to first non-blank char
   = autoindents
   W motion
 

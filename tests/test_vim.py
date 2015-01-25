@@ -38,7 +38,7 @@ class _Test(unittest.TestCase):
     def click(self, keys):
         if isinstance(keys, basestring):
             for key in keys:
-                if key.isupper() or key in '$%':
+                if key.isupper() or key in '$%^':
                     QTest.keyClick(self.qpart, key, Qt.ShiftModifier)
                 else:
                     QTest.keyClicks(self.qpart, key)
@@ -234,6 +234,14 @@ class Move(_Test):
         self.click('%')
         self.assertEqual(self.qpart.cursorPosition,
                          (0, 10))
+
+    def test_10(self):
+        """ ^ to jump to the first non-space char
+        """
+        self.qpart.lines[0] = '    indented line'
+        self.qpart.cursorPosition = (0, 14)
+        self.click('^')
+        self.assertEqual(self.qpart.cursorPosition, (0, 4))
 
 
 class Del(_Test):
