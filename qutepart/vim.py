@@ -26,6 +26,9 @@ _Left = Qt.Key_Left
 _Right = Qt.Key_Right
 _Space = Qt.Key_Space
 _BackSpace = Qt.Key_Backspace
+_Equal = Qt.Key_Equal
+_Less = Qt.ShiftModifier + Qt.Key_Less
+_Greater = Qt.ShiftModifier + Qt.Key_Greater
 
 
 def code(ev):
@@ -298,6 +301,13 @@ class BaseCommandMode(Mode):
 
         self._qpart.setTextCursor(cursor)
 
+    def _resetSelection(self, moveToAncor=False):
+        """ Reset selection.
+        If moveToStart is True - move cursor to the ancor position
+        """
+        index = 0 if moveToAncor else 1
+        self._qpart.cursorPosition = self._qpart.selectedPosition[index]
+
 
 
 class BaseVisual(BaseCommandMode):
@@ -328,7 +338,7 @@ class BaseVisual(BaseCommandMode):
             self.switchMode(Normal)
             cmdFunc(self, action)
             if action not in (_v, _V):  # if not switched to another visual mode
-                self._qpart.cursorPosition = self._qpart.selectedPosition[1]  # reset selection
+                self._resetSelection()
             raise StopIteration(True)
         elif action == _g:
             ev = yield
@@ -528,6 +538,8 @@ class Normal(BaseCommandMode):
 
         # Now get the action
         action = code(ev)
+
+
         if action == _x:
             """ Delete command is a special case.
             It accumulates deleted text in the internal clipboard. Give count as a command parameter
@@ -581,7 +593,11 @@ class Normal(BaseCommandMode):
                     raise StopIteration(True)
 
             if motion in self._MOTIONS or \
-               (action, motion) in ((_d, _d), (_y, _y)):
+               (action, motion) in ((_d, _d),
+                                    (_y, _y),
+                                    (_Less, _Less),
+                                    (_Greater, _Greater),
+                                    (_Equal, _Equal)):
                 cmdFunc = self._COMPOSITE_COMMANDS[action]
                 cmdFunc(self, action, motion, count)
 
@@ -757,8 +773,37 @@ class Normal(BaseCommandMode):
         self._qpart.copy()
         self._qpart.setTextCursor(oldCursor)
 
+    def cmdCompositeUnIndent(self, cmd, motion, count):
+        if motion == _Less:
+            pass  # current line is already selected
+        else:
+            self._moveCursor(motion, count, select=True)
+
+        self._qpart._indenter.onChangeSelectedBlocksIndent(increase=False, withSpace=False)
+        self._resetSelection(moveToAncor=True)
+
+    def cmdCompositeIndent(self, cmd, motion, count):
+        if motion == _Greater:
+            pass  # current line is already selected
+        else:
+            self._moveCursor(motion, count, select=True)
+
+        self._qpart._indenter.onChangeSelectedBlocksIndent(increase=True, withSpace=False)
+        self._resetSelection(moveToAncor=True)
+
+    def cmdCompositeAutoIndent(self, cmd, motion, count):
+        if motion == _Equal:
+            pass  # current line is already selected
+        else:
+            self._moveCursor(motion, count, select=True)
+
+        self._qpart._indenter.onAutoIndentTriggered()
+        self._resetSelection(moveToAncor=True)
 
     _COMPOSITE_COMMANDS = {_c: cmdCompositeChange,
                            _d: cmdCompositeDelete,
-                           _y: cmdCompositeYank
+                           _y: cmdCompositeYank,
+                           _Less: cmdCompositeUnIndent,
+                           _Greater: cmdCompositeIndent,
+                           _Equal: cmdCompositeAutoIndent,
                           }

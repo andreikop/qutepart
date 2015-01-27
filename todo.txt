@@ -1,4 +1,8 @@
 fixme:
+  X
+  r> doesn't work
+  check yb
+  f motion
   = autoindents
   W motion
 

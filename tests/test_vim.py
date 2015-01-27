@@ -38,7 +38,7 @@ class _Test(unittest.TestCase):
     def click(self, keys):
         if isinstance(keys, basestring):
             for key in keys:
-                if key.isupper() or key in '$%^':
+                if key.isupper() or key in '$%^<>':
                     QTest.keyClick(self.qpart, key, Qt.ShiftModifier)
                 else:
                     QTest.keyClicks(self.qpart, key)
@@ -430,6 +430,63 @@ class Edit(_Test):
         self.click('d%')
         self.assertEqual(self.qpart.lines[0],
                          ' xxx')
+
+
+class Indent(_Test):
+    def test_01(self):
+        """ Increase indent with >j, decrease with <j
+        """
+        self.click('>2j')
+        self.assertEqual(self.qpart.lines[:],
+                         ['    The quick brown fox',
+                          '    jumps over the',
+                          '    lazy dog',
+                          'back'])
+
+        self.click('<j')
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'jumps over the',
+                          '    lazy dog',
+                          'back'])
+
+    def test_02(self):
+        """ Increase indent with >>, decrease with <<
+        """
+        self.click('>>')
+        self.click('>>')
+        self.assertEqual(self.qpart.lines[0],
+                         '        The quick brown fox')
+
+        self.click('<<')
+        self.assertEqual(self.qpart.lines[0],
+                         '    The quick brown fox')
+
+    def test_03(self):
+        """ Autoindent with =j
+        """
+        self.click('i    ')
+        self.click(Qt.Key_Escape)
+        self.click('j')
+        self.click('=j')
+        self.assertEqual(self.qpart.lines[:],
+                         ['    The quick brown fox',
+                          '    jumps over the',
+                          '    lazy dog',
+                          'back'])
+
+    def test_04(self):
+        """ Autoindent with ==
+        """
+        self.click('i    ')
+        self.click(Qt.Key_Escape)
+        self.click('j')
+        self.click('==')
+        self.assertEqual(self.qpart.lines[:],
+                         ['    The quick brown fox',
+                          '    jumps over the',
+                          'lazy dog',
+                          'back'])
 
 
 class CopyPaste(_Test):
