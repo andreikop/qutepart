@@ -368,6 +368,17 @@ class Del(_Test):
         self.assertEqual(self.qpart.lines[0],
                          'Te quick brown fox')
 
+    def test_10(self):
+        """Delete with D
+        """
+        self.click("jll")
+        self.click("2D")
+
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'ju',
+                          'back'])
+
 
 class Edit(_Test):
     def test_01(self):

@@ -566,6 +566,9 @@ class Normal(BaseCommandMode):
             """
             self.cmdDelete(actionCount, back=(action == _X))
             raise StopIteration(True)
+        elif action == _D:
+            self.cmdDeleteUntilEndOfLine(actionCount)
+            raise StopIteration(True)
         elif action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]
 
@@ -700,6 +703,8 @@ class Normal(BaseCommandMode):
     # Special cases
     #
     def cmdDelete(self, count, back):
+        """ x
+        """
         cursor = self._qpart.textCursor()
         direction = QTextCursor.Left if back else QTextCursor.Right
         for _ in xrange(count):
@@ -708,6 +713,16 @@ class Normal(BaseCommandMode):
         if cursor.selectedText():
             self._vim.internalClipboard = cursor.selectedText()
             cursor.removeSelectedText()
+
+    def cmdDeleteUntilEndOfLine(self, count):
+        """ D
+        """
+        cursor = self._qpart.textCursor()
+        for _ in range(count - 1):
+            cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor)
+        cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+        self._vim.internalClipboard = cursor.selectedText()
+        cursor.removeSelectedText()
 
 
     _SIMPLE_COMMANDS = {_A: cmdAppendAfterLine,
