@@ -22,7 +22,7 @@ from qutepart.lines import Lines
 from qutepart.rectangularselection import RectangularSelection
 import qutepart.sideareas
 from qutepart.indenter import Indenter
-from qutepart.vim import Vim
+import qutepart.vim
 import qutepart.bookmarks
 
 
@@ -591,7 +591,7 @@ class Qutepart(QPlainTextEdit):
     def vimModeEnabled(self, enabled):
         if enabled:
             if self._vim is None:
-                self._vim = Vim(self)
+                self._vim = qutepart.vim.Vim(self)
                 self._vim.modeIndicationChanged.connect(self.vimModeIndicationChanged)
                 self.vimModeEnabledChanged.emit(True)
         else:
@@ -900,7 +900,7 @@ class Qutepart(QPlainTextEdit):
             backspaceOverwrite()
         elif self.overwriteMode() and \
             event.text() and \
-            event.text().isalnum() and \
+            qutepart.vim.isChar(event) and \
             not cursor.hasSelection() and \
             cursor.positionInBlock() < cursor.block().length():
             typeOverwrite(event.text())
