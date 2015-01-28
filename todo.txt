@@ -5,6 +5,7 @@ fixme:
   f motion
   = autoindents
   W motion
+  . repeats command
 
 todo:
   switch hihglighting language        2

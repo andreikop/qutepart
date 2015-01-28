@@ -488,6 +488,32 @@ class Indent(_Test):
                           'lazy dog',
                           'back'])
 
+    def test_11(self):
+        """ Increase indent with >, decrease with < in visual mode
+        """
+        self.click('v2>')
+        self.assertEqual(self.qpart.lines[:2],
+                         ['        The quick brown fox',
+                          'jumps over the'])
+
+        self.click('v<')
+        self.assertEqual(self.qpart.lines[:2],
+                         ['    The quick brown fox',
+                          'jumps over the'])
+
+    def test_12(self):
+        """ Autoindent with = in visual mode
+        """
+        self.click('i    ')
+        self.click(Qt.Key_Escape)
+        self.click('j')
+        self.click('Vj=')
+        self.assertEqual(self.qpart.lines[:],
+                         ['    The quick brown fox',
+                          '    jumps over the',
+                          '    lazy dog',
+                          'back'])
+
 
 class CopyPaste(_Test):
     def test_02(self):

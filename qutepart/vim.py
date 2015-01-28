@@ -336,7 +336,8 @@ class BaseVisual(BaseCommandMode):
         if action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]
             self.switchMode(Normal)
-            cmdFunc(self, action)
+            for _ in range(count):
+                cmdFunc(self, action)
             if action not in (_v, _V):  # if not switched to another visual mode
                 self._resetSelection()
             raise StopIteration(True)
@@ -483,6 +484,14 @@ class BaseVisual(BaseCommandMode):
             cursor.removeSelectedText()
         self.switchMode(Insert)
 
+    def cmdUnIndent(self, cmd):
+        self._qpart._indenter.onChangeSelectedBlocksIndent(increase=False, withSpace=False)
+
+    def cmdIndent(self, cmd):
+        self._qpart._indenter.onChangeSelectedBlocksIndent(increase=True, withSpace=False)
+
+    def cmdAutoIndent(self, cmd):
+        self._qpart._indenter.onAutoIndentTriggered()
 
     _SIMPLE_COMMANDS = {
                             _A: cmdAppendAfterChar,
@@ -497,6 +506,9 @@ class BaseVisual(BaseCommandMode):
                             _V: cmdVisualLinesMode,
                             _y: cmdYank,
                             _Esc: cmdNormalMode,
+                            _Less: cmdUnIndent,
+                            _Greater: cmdIndent,
+                            _Equal: cmdAutoIndent,
                        }
 
 
