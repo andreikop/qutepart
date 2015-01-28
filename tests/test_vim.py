@@ -256,7 +256,7 @@ class Del(_Test):
         self.assertEqual(self.qpart._vim.internalClipboard, 'k')
 
     def test_01b(self):
-        """Delete with x
+        """Delete with x. Use count
         """
         self.qpart.cursorPosition = (0, 4)
         self.click("5x")
@@ -360,6 +360,13 @@ class Del(_Test):
                          ['lazy dog',
                           'back'])
 
+    def test_09(self):
+        """Delete with X
+        """
+        self.click("llX")
+
+        self.assertEqual(self.qpart.lines[0],
+                         'Te quick brown fox')
 
 
 class Edit(_Test):
@@ -652,6 +659,28 @@ class Visual(_Test):
         self.click("slow")
         self.assertEqual(self.qpart.lines[0],
                          'The slow brown fox')
+
+    def test_09(self):
+        """ Delete lines with X and D
+        """
+        self.click('jvlX')
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'lazy dog',
+                          'back'])
+
+        self.click('u')
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'jumps over the',
+                          'lazy dog',
+                          'back'])
+
+        self.click('vjD')
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'back'])
+
 
 class VisualLines(_Test):
     def test_01(self):

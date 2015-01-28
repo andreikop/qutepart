@@ -407,6 +407,12 @@ class BaseVisual(BaseCommandMode):
                 self._vim.internalClipboard = cursor.selectedText()
                 cursor.removeSelectedText()
 
+    def cmdDeleteLines(self, cmd):
+        cursor = self._qpart.textCursor()
+        (startLine, startCol), (endLine, endCol) = self._qpart.selectedPosition
+        self._vim.internalClipboard = self._qpart.lines[startLine:endLine + 1]
+        del self._qpart.lines[startLine:endLine + 1]
+
     def cmdInsertMode(self, cmd):
         self.switchMode(Insert)
 
@@ -497,6 +503,7 @@ class BaseVisual(BaseCommandMode):
                             _A: cmdAppendAfterChar,
                             _c: cmdChange,
                             _d: cmdDelete,
+                            _D: cmdDeleteLines,
                             _i: cmdInsertMode,
                             _R: cmdReplaceSelectedLines,
                             _p: cmdInternalPaste,
@@ -504,6 +511,7 @@ class BaseVisual(BaseCommandMode):
                             _x: cmdDelete,
                             _v: cmdVisualMode,
                             _V: cmdVisualLinesMode,
+                            _X: cmdDeleteLines,
                             _y: cmdYank,
                             _Esc: cmdNormalMode,
                             _Less: cmdUnIndent,
@@ -552,11 +560,11 @@ class Normal(BaseCommandMode):
         action = code(ev)
 
 
-        if action == _x:
+        if action in (_x, _X):
             """ Delete command is a special case.
             It accumulates deleted text in the internal clipboard. Give count as a command parameter
             """
-            self.cmdDelete(actionCount)
+            self.cmdDelete(actionCount, back=(action == _X))
             raise StopIteration(True)
         elif action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]
@@ -691,10 +699,11 @@ class Normal(BaseCommandMode):
     #
     # Special cases
     #
-    def cmdDelete(self, count):
+    def cmdDelete(self, count, back):
         cursor = self._qpart.textCursor()
+        direction = QTextCursor.Left if back else QTextCursor.Right
         for _ in xrange(count):
-            cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
+            cursor.movePosition(direction, QTextCursor.KeepAnchor)
 
         if cursor.selectedText():
             self._vim.internalClipboard = cursor.selectedText()
