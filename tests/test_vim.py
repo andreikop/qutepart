@@ -243,6 +243,36 @@ class Move(_Test):
         self.click('^')
         self.assertEqual(self.qpart.cursorPosition, (0, 4))
 
+    def test_11(self):
+        """ f to search forward
+        """
+        self.click('fv')
+        self.assertEqual(self.qpart.cursorPosition,
+                         (1, 7))
+
+    def test_12(self):
+        """ F to search backward
+        """
+        self.qpart.cursorPosition = (2, 0)
+        self.click('Fv')
+        self.assertEqual(self.qpart.cursorPosition,
+                         (1, 7))
+
+    def test_13(self):
+        """ t to search forward
+        """
+        self.click('tv')
+        self.assertEqual(self.qpart.cursorPosition,
+                         (1, 6))
+
+    def test_14(self):
+        """ T to search backward
+        """
+        self.qpart.cursorPosition = (2, 0)
+        self.click('Tv')
+        self.assertEqual(self.qpart.cursorPosition,
+                         (1, 8))
+
 
 class Del(_Test):
     def test_01a(self):
@@ -699,6 +729,13 @@ class Visual(_Test):
         self.assertEqual(self.qpart.lines[:],
                          ['The quick brown fox',
                           'back'])
+
+    def test_10(self):
+        """ Check if f works
+        """
+        self.click('vfo')
+        self.assertEqual(self.qpart.selectedText,
+                         'The quick br')
 
 
 class VisualLines(_Test):

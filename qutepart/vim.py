@@ -237,9 +237,10 @@ class BaseCommandMode(Mode):
                 _h, _Left, _BackSpace,
                 _w,
                 'gg',
+                _f, _F, _t, _T,
                 )
 
-    def _moveCursor(self, motion, count, select=False):
+    def _moveCursor(self, motion, count, searchChar=None, select=False):
         """ Move cursor.
         Used by Normal and Visual mode
         """
@@ -313,10 +314,57 @@ class BaseCommandMode(Mode):
         elif motion == _Caret:
             # Caret move is done only once
             moveToFirstNonSpace()
+        elif motion in (_f, _F, _t, _T):
+            if motion in (_f, _t):
+                iterator = self._iterateDocumentCharsForward(cursor.block(), cursor.columnNumber())
+                stepBack = QTextCursor.Left
+            else:
+                iterator = self._iterateDocumentCharsBackward(cursor.block(), cursor.columnNumber())
+                stepBack = QTextCursor.Right
+
+            for block, columnIndex, char in iterator:
+                if char == searchChar:
+                    cursor.setPosition(block.position() + columnIndex, moveMode)
+                    if motion in (_t, _T):
+                        cursor.movePosition(stepBack, moveMode)
+                    break
         else:
             assert 0, 'Not expected motion ' + str(motion)
 
         self._qpart.setTextCursor(cursor)
+
+    def _iterateDocumentCharsForward(self, block, startColumnIndex):
+        """Traverse document forward. Yield (block, columnIndex, char)
+        Raise _TimeoutException if time is over
+        """
+        # Chars in the start line
+        for columnIndex, char in list(enumerate(block.text()))[startColumnIndex:]:
+            yield block, columnIndex, char
+        block = block.next()
+
+        # Next lines
+        while block.isValid():
+            for columnIndex, char in enumerate(block.text()):
+                yield block, columnIndex, char
+
+            block = block.next()
+
+    def _iterateDocumentCharsBackward(self, block, startColumnIndex):
+        """Traverse document forward. Yield (block, columnIndex, char)
+        Raise _TimeoutException if time is over
+        """
+        # Chars in the start line
+        for columnIndex, char in reversed(list(enumerate(block.text()[:startColumnIndex]))):
+            yield block, columnIndex, char
+        block = block.previous()
+
+        # Next lines
+        while block.isValid():
+            for columnIndex, char in reversed(list(enumerate(block.text()))):
+                yield block, columnIndex, char
+
+            block = block.previous()
+
 
     def _resetSelection(self, moveToAncor=False):
         """ Reset selection.
@@ -364,6 +412,14 @@ class BaseVisual(BaseCommandMode):
                 self._moveCursor('gg', 1, select=True)
                 if self._selectLines:
                     self._expandSelection()
+            raise StopIteration(True)
+        elif action in (_f, _F, _t, _T):
+            ev = yield
+            if not isChar(ev):
+                raise StopIteration(True)
+
+            searchChar = ev.text()
+            self._moveCursor(action, count, searchChar=searchChar, select=True)
             raise StopIteration(True)
         elif action in self._MOTIONS:
             self._moveCursor(action, count, select=True)
@@ -602,6 +658,14 @@ class Normal(BaseCommandMode):
             if code(ev) == _g:
                 self._moveCursor('gg', 1)
 
+            raise StopIteration(True)
+        elif action in (_f, _F, _t, _T):
+            ev = yield
+            if not isChar(ev):
+                raise StopIteration(True)
+
+            searchChar = ev.text()
+            self._moveCursor(action, effectiveCount, searchChar=searchChar, select=False)
             raise StopIteration(True)
         elif action in self._MOTIONS:
             self._moveCursor(action, typedCount, select=False)
