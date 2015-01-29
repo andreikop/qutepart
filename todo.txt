@@ -1,9 +1,7 @@
 fixme:
-  C command
   f motion
   W motion
   . repeats command
-  Shift+Space is broken
 
 todo:
   switch hihglighting language        2

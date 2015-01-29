@@ -38,15 +38,18 @@ def isChar(ev):
     """ Check if an event may be a typed character
     """
     text = ev.text()
-    if len(ev.text()) != 1:
+    if len(text) != 1:
         return False
 
     if ev.modifiers() not in (Qt.ShiftModifier, Qt.NoModifier):
         return False
 
-    asciiCode = ord(ev.text())
+    asciiCode = ord(text)
     if asciiCode <= 31 or asciiCode == 0x7f:  # control characters
         return False
+
+    if text == ' ' and ev.modifiers() == Qt.ShiftModifier:
+        return False  # Shift+Space is a shortcut, not a text
 
     return True
 
