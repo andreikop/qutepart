@@ -516,6 +516,7 @@ class BaseVisual(BaseCommandMode):
     _SIMPLE_COMMANDS = {
                             _A: cmdAppendAfterChar,
                             _c: cmdChange,
+                            _C: cmdReplaceSelectedLines,
                             _d: cmdDelete,
                             _D: cmdDeleteLines,
                             _i: cmdInsertMode,
@@ -579,8 +580,8 @@ class Normal(BaseCommandMode):
             """
             self.cmdDelete(effectiveCount, back=(action == _X))
             raise StopIteration(True)
-        elif action == _D:
-            self.cmdDeleteUntilEndOfLine(effectiveCount)
+        elif action in (_C, _D):
+            self.cmdDeleteUntilEndOfLine(effectiveCount, action==_C)
             raise StopIteration(True)
         elif action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]
@@ -721,15 +722,15 @@ class Normal(BaseCommandMode):
         """
         cursor = self._qpart.textCursor()
         direction = QTextCursor.Left if back else QTextCursor.Right
-        for _ in xrange(count):
+        for _ in range(count):
             cursor.movePosition(direction, QTextCursor.KeepAnchor)
 
         if cursor.selectedText():
             self._vim.internalClipboard = cursor.selectedText()
             cursor.removeSelectedText()
 
-    def cmdDeleteUntilEndOfLine(self, count):
-        """ D
+    def cmdDeleteUntilEndOfLine(self, count, change):
+        """ C and D
         """
         cursor = self._qpart.textCursor()
         for _ in range(count - 1):
@@ -737,6 +738,8 @@ class Normal(BaseCommandMode):
         cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
         self._vim.internalClipboard = cursor.selectedText()
         cursor.removeSelectedText()
+        if change:
+            self.switchMode(Insert)
 
 
     _SIMPLE_COMMANDS = {_A: cmdAppendAfterLine,
@@ -751,6 +754,7 @@ class Normal(BaseCommandMode):
                         _p: cmdInternalPaste,
                         _u: cmdUndo,
                         _U: cmdRedo,
+                        # C, D, x, X are implemented as special cases
                        }
 
     #

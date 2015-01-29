@@ -393,6 +393,14 @@ class Edit(_Test):
         self.assertEqual(self.qpart.text, modifiedText)
         """
 
+    def test_02(self):
+        """Change with C
+        """
+        self.click("lllCpig")
+
+        self.assertEqual(self.qpart.lines[0],
+                         'Thepig')
+
     def test_04(self):
         """Replace char with r
         """
