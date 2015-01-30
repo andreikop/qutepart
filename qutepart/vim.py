@@ -7,7 +7,7 @@ from PyQt4.QtGui import QColor, QTextCursor
 """ This magic code sets variables like _a and _A in the global scope
 """
 thismodule = sys.modules[__name__]
-for code in range(ord('a'), ord('z')):
+for code in range(ord('a'), ord('z') + 1):
     shortName = chr(code)
     longName = 'Key_' + shortName.upper()
     qtCode = getattr(Qt, longName)
@@ -615,12 +615,13 @@ class Normal(BaseCommandMode):
                 else:
                     raise StopIteration(True)
 
-            if motion in self._MOTIONS or \
+            if (action != _z and motion in self._MOTIONS) or \
                (action, motion) in ((_d, _d),
                                     (_y, _y),
                                     (_Less, _Less),
                                     (_Greater, _Greater),
-                                    (_Equal, _Equal)):
+                                    (_Equal, _Equal),
+                                    (_z, _z)):
                 cmdFunc = self._COMPOSITE_COMMANDS[action]
                 cmdFunc(self, action, motion, count)
 
@@ -836,10 +837,15 @@ class Normal(BaseCommandMode):
         self._qpart._indenter.onAutoIndentTriggered()
         self._resetSelection(moveToAncor=True)
 
+    def cmdCompositeScrollView(self, cmd, motion, count):
+        if motion == _z:
+            self._qpart.centerCursor()
+
     _COMPOSITE_COMMANDS = {_c: cmdCompositeChange,
                            _d: cmdCompositeDelete,
                            _y: cmdCompositeYank,
                            _Less: cmdCompositeUnIndent,
                            _Greater: cmdCompositeIndent,
                            _Equal: cmdCompositeAutoIndent,
+                           _z: cmdCompositeScrollView,
                           }
