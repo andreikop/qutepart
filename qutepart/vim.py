@@ -242,6 +242,8 @@ class BaseCommandMode(Mode):
         """
         cursor = self._qpart.textCursor()
 
+        effectiveCount = count or 1
+
         moveMode = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
 
         moveOperation = {_b: QTextCursor.WordLeft,
@@ -262,11 +264,25 @@ class BaseCommandMode(Mode):
                          _G: QTextCursor.End
                         }
 
-        if motion in moveOperation:
-            for _ in range(count):
+        def moveToFirstNonSpace():
+            text = cursor.block().text()
+            spaceLen = len(text) - len(text.lstrip())
+            cursor.setPosition(cursor.block().position() + spaceLen, moveMode)
+
+        if motion == _G:
+            if count == 0:  # default - go to the end
+                cursor.movePosition(QTextCursor.End, moveMode)
+            else:  # if count is set - move to line
+                block = self._qpart.document().findBlockByNumber(count - 1)
+                if not block.isValid():
+                    return
+                cursor.setPosition(block.position(), moveMode)
+            moveToFirstNonSpace()
+        elif motion in moveOperation:
+            for _ in range(effectiveCount):
                 cursor.movePosition(moveOperation[motion], moveMode)
         elif motion == _e:
-            for _ in range(count):
+            for _ in range(effectiveCount):
                 # skip spaces
                 text = cursor.block().text()
                 pos = cursor.positionInBlock()
@@ -293,9 +309,7 @@ class BaseCommandMode(Mode):
                 cursor.setPosition(endPos, moveMode)
         elif motion == _Caret:
             # Caret move is done only once
-            text = cursor.block().text()
-            spaceLen = len(text) - len(text.lstrip())
-            cursor.setPosition(cursor.block().position() + spaceLen, moveMode)
+            moveToFirstNonSpace()
         else:
             assert 0, 'Not expected motion ' + str(motion)
 
@@ -543,18 +557,17 @@ class Normal(BaseCommandMode):
     def _processChar(self):
         ev = yield None
         # Get action count
-        actionCount = 0
+        typedCount = 0
 
         if ev.key() != _0:
             char = ev.text()
             while char.isdigit():
                 digit = int(char)
-                actionCount = (actionCount * 10) + digit
+                typedCount = (typedCount * 10) + digit
                 ev = yield
                 char = ev.text()
 
-        if actionCount == 0:
-            actionCount = 1
+        effectiveCount = typedCount or 1
 
         # Now get the action
         action = code(ev)
@@ -564,17 +577,17 @@ class Normal(BaseCommandMode):
             """ Delete command is a special case.
             It accumulates deleted text in the internal clipboard. Give count as a command parameter
             """
-            self.cmdDelete(actionCount, back=(action == _X))
+            self.cmdDelete(effectiveCount, back=(action == _X))
             raise StopIteration(True)
         elif action == _D:
-            self.cmdDeleteUntilEndOfLine(actionCount)
+            self.cmdDeleteUntilEndOfLine(effectiveCount)
             raise StopIteration(True)
         elif action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]
 
-            if actionCount != 1:
+            if effectiveCount != 1:
                 with self._qpart:
-                    for _ in range(actionCount):
+                    for _ in range(effectiveCount):
                         cmdFunc(self, action)
             else:
                 cmdFunc(self, action)
@@ -587,7 +600,7 @@ class Normal(BaseCommandMode):
 
             raise StopIteration(True)
         elif action in self._MOTIONS:
-            self._moveCursor(action, actionCount, select=False)
+            self._moveCursor(action, typedCount, select=False)
             raise StopIteration(True)
         elif action in self._COMPOSITE_COMMANDS:
             moveCount = 0
@@ -604,7 +617,7 @@ class Normal(BaseCommandMode):
             if moveCount == 0:
                 moveCount = 1
 
-            count = actionCount * moveCount
+            count = effectiveCount * moveCount
 
             # Get motion for a composite command
             motion = code(ev)
