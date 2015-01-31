@@ -5,7 +5,6 @@ fixme:
   global internal buffer
   D doesn't work on down->up visual selection
   End resets visual selection
-  r<Esc> moves cursor
 
 todo:
   switch hihglighting language        2

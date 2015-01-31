@@ -167,7 +167,7 @@ class ReplaceChar(Mode):
         return 'replace char'
 
     def keyPressEvent(self, ev):
-        if ev.text():  # a char
+        if isChar(ev):  # a char
             self._qpart.setOverwriteMode(False)
             line, col = self._qpart.cursorPosition
             if col > 0:
