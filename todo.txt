@@ -2,7 +2,6 @@ fixme:
   f motion
   W motion
   . repeats command
-  global internal buffer
 
 todo:
   switch hihglighting language        2
