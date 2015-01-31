@@ -3,7 +3,6 @@ fixme:
   W motion
   . repeats command
   global internal buffer
-  D doesn't work on down->up visual selection
 
 todo:
   switch hihglighting language        2
