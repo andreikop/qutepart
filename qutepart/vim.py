@@ -7,8 +7,8 @@ from PyQt4.QtGui import QColor, QTextCursor
 """ This magic code sets variables like _a and _A in the global scope
 """
 thismodule = sys.modules[__name__]
-for code in range(ord('a'), ord('z') + 1):
-    shortName = chr(code)
+for charCode in range(ord('a'), ord('z') + 1):
+    shortName = chr(charCode)
     longName = 'Key_' + shortName.upper()
     qtCode = getattr(Qt, longName)
     setattr(thismodule, '_' + shortName, qtCode)
@@ -29,6 +29,8 @@ _BackSpace = Qt.Key_Backspace
 _Equal = Qt.Key_Equal
 _Less = Qt.ShiftModifier + Qt.Key_Less
 _Greater = Qt.ShiftModifier + Qt.Key_Greater
+_Home = Qt.Key_Home
+_End = Qt.Key_End
 
 
 def code(ev):
@@ -228,8 +230,9 @@ class BaseCommandMode(Mode):
         self._processCharCoroutine.next()  # run until the first yield
         self._typedText = ''
 
-    _MOTIONS = (_0,
-                _Dollar, _Percent, _Caret,
+    _MOTIONS = (_0, _Home,
+                _Dollar, _End,
+                _Percent, _Caret,
                 _b,
                 _e,
                 _G,
@@ -265,7 +268,9 @@ class BaseCommandMode(Mode):
                          _Space: QTextCursor.Right,
                          _w: QTextCursor.WordRight,
                          _Dollar: QTextCursor.EndOfLine,
+                         _End: QTextCursor.EndOfLine,
                          _0: QTextCursor.StartOfLine,
+                         _Home: QTextCursor.StartOfLine,
                          'gg': QTextCursor.Start,
                          _G: QTextCursor.End
                         }

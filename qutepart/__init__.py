@@ -907,7 +907,10 @@ class Qutepart(QPlainTextEdit):
             if self._vim is not None:
                 self._vim.keyPressEvent(event)
         elif event.matches(QKeySequence.MoveToStartOfLine):
-            self._onShortcutHome(select=False)
+            if self._vim is not None:
+                self._vim.keyPressEvent(event)
+            else:
+                self._onShortcutHome(select=False)
         elif event.matches(QKeySequence.SelectStartOfLine):
             self._onShortcutHome(select=True)
         elif self._rectangularSelection.isExpandKeyEvent(event):

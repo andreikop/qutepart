@@ -4,7 +4,6 @@ fixme:
   . repeats command
   global internal buffer
   D doesn't work on down->up visual selection
-  End resets visual selection
 
 todo:
   switch hihglighting language        2
