@@ -207,7 +207,7 @@ class Move(_Test):
         """
         self.qpart.cursorPosition = (0, 10)
         self.click('G')
-        self.assertEqual(self.qpart.cursorPosition, (3, 4))
+        self.assertEqual(self.qpart.cursorPosition, (3, 0))
 
     def test_07(self):
         """gg
