@@ -32,7 +32,9 @@ _Greater = Qt.ShiftModifier + Qt.Key_Greater
 
 
 def code(ev):
-    return int(ev.modifiers()) + ev.key()
+    modifiers = ev.modifiers()
+    modifiers &= ~Qt.KeypadModifier  # ignore keypad modifier to handle both main and numpad numbers
+    return int(modifiers) + ev.key()
 
 def isChar(ev):
     """ Check if an event may be a typed character
@@ -41,7 +43,7 @@ def isChar(ev):
     if len(text) != 1:
         return False
 
-    if ev.modifiers() not in (Qt.ShiftModifier, Qt.NoModifier):
+    if ev.modifiers() not in (Qt.ShiftModifier, Qt.KeypadModifier, Qt.NoModifier):
         return False
 
     asciiCode = ord(text)

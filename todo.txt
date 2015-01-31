@@ -6,7 +6,6 @@ fixme:
   D doesn't work on down->up visual selection
   End resets visual selection
   r<Esc> moves cursor
-  numpad types text in normal mode
 
 todo:
   switch hihglighting language        2
