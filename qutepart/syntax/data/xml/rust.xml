@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<!--
+  This file is part of KDE's kate project.
+  
+  copyright   : (C) 2004 by Dominik Haumann, (C) 2011 by Caspar Hasenclever
+
+ **********************************************************************
+ * This library is free software; you can redistribute it and/or      *
+ * modify it under the terms of the GNU Library General Public        *
+ * License as published by the Free Software Foundation; either       *
+ * version 2 of the License, or (at your option) any later version.   *
+ *                                                                    *
+ * This library is distributed in the hope that it will be useful,    *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of     *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU  *
+ * Library General Public License for more details.                   *
+ *                                                                    *
+ * You should have received a copy of the GNU Library General Public  *
+ * License along with this library; if not, write to the              *
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,       *
+ * Boston, MA  02110-1301, USA.                                       *
+ **********************************************************************
+ -->
+<language version="2" kateversion="2.3" name="Clojure" section="Sources" extensions="*.rs" mimetype="" author="Dominik Haumann [lisp] modified for clojure by Caspar Hasenclever; Modified for Rust by Vitaly '_Vi' Shukela" license="LGPL">
+  <highlighting>
+    <list name="definitions">
+      <item> fn </item>
+      <item> struct </item>
+      <item> enum </item>
+      <item> macro_rules! </item>
+      <item> trait </item>
+    </list>
+    <list name="keywords">
+      <item> &lt; </item>
+      <item> &lt;= </item>
+      <item> = </item>
+      <item> == </item>
+      <item> &gt; </item>
+      <item> &gt;= </item>
+      <item> - </item>
+      <item> -&gt; </item>
+      <item> -&gt;&gt; </item>
+      <item> / </item>
+      <item> . </item>
+      <item> * </item>
+      <item> + </item>
+      <item> panic! </item>
+      <item> assert_eq! </item>
+      <item> abstract </item> 
+      <item> alignof </item> 
+      <item> as </item> 
+      <item> be </item> 
+      <item> box </item> 
+      <item> break </item> 
+      <item> const </item> 
+      <item> continue </item> 
+      <item> crate </item> 
+      <item> do </item> 
+      <item> else </item> 
+      <item> extern </item> 
+      <item> false </item> 
+      <item> final </item> 
+      <item> for </item> 
+      <item> if </item> 
+      <item> impl </item> 
+      <item> in </item> 
+      <item> let </item> 
+      <item> loop </item> 
+      <item> macro </item> 
+      <item> match </item> 
+      <item> mod </item> 
+      <item> move </item> 
+      <item> mut </item> 
+      <item> offsetof </item> 
+      <item> override </item> 
+      <item> priv </item> 
+      <item> pub </item> 
+      <item> pure </item> 
+      <item> ref </item> 
+      <item> return </item> 
+      <item> sizeof </item> 
+      <item> static </item> 
+      <item> self </item> 
+      <item> super </item> 
+      <item> true </item> 
+      <item> type </item> 
+      <item> typeof </item> 
+      <item> unsafe </item> 
+      <item> unsized </item> 
+      <item> use </item> 
+      <item> virtual </item> 
+      <item> where </item> 
+      <item> while </item> 
+      <item> yield </item> 
+    </list>
+    <list name="variables">
+    </list>
+    <contexts>
+      <context name="Level0" attribute="Normal" lineEndContext="#stay">
+        <DetectChar attribute="Brackets1" context="Level1" char="("/>
+        <Detect2Chars attribute="Brackets1" context="Level1" char="#" char1="("/>
+        <IncludeRules context="Default" />
+      </context>
+      <context name="Default" attribute="Normal" lineEndContext="#stay">
+        <RegExpr attribute="Comment" context="#stay" String="/\*.*\*/"/>
+        <RegExpr attribute="Comment" context="#stay" String="//.*$"/>
+        <DetectChar attribute="BracketsCurly" context="#stay" char="{"/>
+        <DetectChar attribute="BracketsCurly" context="#stay" char="}"/>
+        <DetectChar attribute="BracketsSquare" context="#stay" char="["/>
+        <DetectChar attribute="BracketsSquare" context="#stay" char="]"/>
+        <keyword attribute="Keyword" context="#stay" String="keywords"/>
+        <!-- <keyword attribute="Variable" context="#stay" String="variables"/> -->
+        <keyword attribute="Definition" context="#stay" String="definitions"/>
+        <RegExpr attribute="Char" context="#stay" String="\\."/>
+        <Detect2Chars attribute="String" context="String" char="#" char1="&quot;"/>
+        <DetectChar attribute="String" context="String" char="&quot;"/>
+        <Float attribute="Float" context="#stay"/>
+        <Int attribute="Decimal" context="#stay"/>
+        <DetectChar attribute="Brackets1" context="Level1" char="("/>
+      </context>
+      <context name="SpecialNumber" attribute="Normal" lineEndContext="#pop">
+        <Float attribute="Float" context="#pop"/>
+        <Int attribute="Decimal" context="#pop"/>
+        <HlCOct attribute="BaseN" context="#pop"/>
+        <HlCHex attribute="Float" context="#pop"/>
+      </context>
+      <context name="String" attribute="String" lineEndContext="#stay">
+        <RegExpr attribute="Char" context="#stay" String="#\\."/>
+        <HlCStringChar attribute="String Char" context="#stay"/>
+        <DetectChar attribute="String" context="#pop" char="&quot;"/>
+      </context>
+      <context name="Level1" attribute="Normal" lineEndContext="#stay">
+        <DetectChar attribute="Brackets2" context="Level2" char="("/>
+        <Detect2Chars attribute="Brackets2" context="Level2" char="#" char1="("/>
+        <DetectChar attribute="Brackets1" context="#pop" char=")" />
+        <IncludeRules context="Default" />
+      </context>
+      <context name="Level2" attribute="Normal" lineEndContext="#stay">
+        <DetectChar attribute="Brackets3" context="Level3" char="("/>
+        <Detect2Chars attribute="Brackets3" context="Level3" char="#" char1="("/>
+        <DetectChar attribute="Brackets2" context="#pop" char=")" />
+        <IncludeRules context="Default" />
+      </context>
+      <context name="Level3" attribute="Normal" lineEndContext="#stay">
+        <DetectChar attribute="Brackets4" context="Level4" char="("/>
+        <Detect2Chars attribute="Brackets4" context="Level4" char="#" char1="("/>
+        <DetectChar attribute="Brackets3" context="#pop" char=")" />
+        <IncludeRules context="Default" />
+      </context>
+      <context name="Level4" attribute="Normal" lineEndContext="#stay">
+        <DetectChar attribute="Brackets5" context="Level5" char="("/>
+        <Detect2Chars attribute="Brackets5" context="Level5" char="#" char1="("/>
+        <DetectChar attribute="Brackets4" context="#pop" char=")" />
+        <IncludeRules context="Default" />
+      </context>
+      <context name="Level5" attribute="Normal" lineEndContext="#stay">
+        <DetectChar attribute="Brackets6" context="Level6" char="("/>
+        <Detect2Chars attribute="Brackets6" context="Level6" char="#" char1="("/>
+        <DetectChar attribute="Brackets5" context="#pop" char=")" />
+        <IncludeRules context="Default" />
+      </context>
+      <context name="Level6" attribute="Normal" lineEndContext="#stay">
+        <DetectChar attribute="Brackets1" context="Level1" char="("/>
+        <Detect2Chars attribute="Brackets1" context="Level1" char="#" char1="("/>
+        <DetectChar attribute="Brackets6" context="#pop" char=")" />
+        <IncludeRules context="Default" />
+      </context>
+    </contexts>
+    <itemDatas>
+      <itemData name="Normal" defStyleNum="dsNormal"/>
+      <itemData name="Keyword" defStyleNum="dsKeyword"/>
+      <itemData name="Operator" defStyleNum="dsKeyword" color="#d22811"/>
+      <itemData name="Modifier" defStyleNum="dsKeyword" color="#800000"/>
+      <itemData name="Modifier2" defStyleNum="dsKeyword" color="#555555"/>
+      <itemData name="Variable" defStyleNum="dsKeyword" color="#b07e1f"/>
+      <itemData name="Definition" defStyleNum="dsKeyword" color="#d22811"/>
+      <itemData name="Data" defStyleNum="dsDataType"/>
+      <itemData name="Decimal" defStyleNum="dsDecVal"/>
+      <itemData name="BaseN" defStyleNum="dsBaseN"/>
+      <itemData name="Float" defStyleNum="dsFloat"/>
+      <itemData name="Function" defStyleNum="dsFunction"/>
+      <itemData name="Char" defStyleNum="dsChar"/>
+      <itemData name="String" defStyleNum="dsString"/>
+      <itemData name="Comment" defStyleNum="dsComment"/>
+      <itemData name="Region Marker" defStyleNum="dsRegionMarker"/>
+      <itemData name="Brackets" defStyleNum="dsNormal" color="#0000ff" selColor="#00ff00" bold="1" italic="0"/>
+      <itemData name="BracketsSquare" defStyleNum="dsNormal" color="#3333ff" selColor="#3333aa"/>
+      <itemData name="BracketsCurly" defStyleNum="dsNormal" color="#206620" selColor="#219921"/>
+      <itemData name="Brackets1"    defStyleNum="dsNormal" color="#ff0000" selColor="#ffaa00" bold="0" italic="0"/>
+      <itemData name="Brackets2"    defStyleNum="dsNormal" color="#ff8800" selColor="#ffff00" bold="0" italic="0"/>
+      <itemData name="Brackets3"    defStyleNum="dsNormal" color="#888800" selColor="#888888" bold="0" italic="0"/>
+      <itemData name="Brackets4"    defStyleNum="dsNormal" color="#008800" selColor="#000000" bold="0" italic="0"/>
+      <itemData name="Brackets5"    defStyleNum="dsNormal" color="#000088" selColor="#000000" bold="0" italic="0"/>
+      <itemData name="Brackets6"    defStyleNum="dsNormal" color="#880088" selColor="#000000" bold="0" italic="0"/>
+    </itemDatas>
+  </highlighting>
+  <general>
+    <keywords casesensitive="1" weakDeliminator=""/>
+    <comments>
+      <comment name="singleLine" start="//"/>
+    </comments>
+  </general>
+</language>
