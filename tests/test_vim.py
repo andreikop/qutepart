@@ -273,6 +273,13 @@ class Move(_Test):
         self.assertEqual(self.qpart.cursorPosition,
                          (1, 8))
 
+    def test_15(self):
+        """ f in a composite command
+        """
+        self.click('dff')
+        self.assertEqual(self.qpart.lines[0],
+                         'ox')
+
 
 class Del(_Test):
     def test_01a(self):
@@ -735,7 +742,7 @@ class Visual(_Test):
         """
         self.click('vfo')
         self.assertEqual(self.qpart.selectedText,
-                         'The quick br')
+                         'The quick bro')
 
 
 class VisualLines(_Test):

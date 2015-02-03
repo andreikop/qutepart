@@ -325,9 +325,11 @@ class BaseCommandMode(Mode):
         elif motion in (_f, _F, _t, _T):
             if motion in (_f, _t):
                 iterator = self._iterateDocumentCharsForward(cursor.block(), cursor.columnNumber())
+                stepForward = QTextCursor.Right
                 stepBack = QTextCursor.Left
             else:
                 iterator = self._iterateDocumentCharsBackward(cursor.block(), cursor.columnNumber())
+                stepForward = QTextCursor.Left
                 stepBack = QTextCursor.Right
 
             for block, columnIndex, char in iterator:
@@ -335,6 +337,8 @@ class BaseCommandMode(Mode):
                     cursor.setPosition(block.position() + columnIndex, moveMode)
                     if motion in (_t, _T):
                         cursor.movePosition(stepBack, moveMode)
+                    if select:
+                        cursor.movePosition(stepForward, moveMode)
                     break
         else:
             assert 0, 'Not expected motion ' + str(motion)
@@ -703,12 +707,20 @@ class Normal(BaseCommandMode):
 
             # Get motion for a composite command
             motion = code(ev)
+            searchChar = None
+
             if motion == _g:
                 ev = yield
                 if code(ev) == _g:
                     motion = 'gg'
                 else:
                     raise StopIteration(True)
+            elif motion in (_f, _F, _t, _T):
+                ev = yield
+                if not isChar(ev):
+                    raise StopIteration(True)
+
+                searchChar = ev.text()
 
             if (action != _z and motion in self._MOTIONS) or \
                (action, motion) in ((_d, _d),
@@ -718,7 +730,7 @@ class Normal(BaseCommandMode):
                                     (_Equal, _Equal),
                                     (_z, _z)):
                 cmdFunc = self._COMPOSITE_COMMANDS[action]
-                cmdFunc(self, action, motion, count)
+                cmdFunc(self, action, motion, searchChar, count)
 
             raise StopIteration(True)
         elif isChar(ev):
@@ -842,7 +854,7 @@ class Normal(BaseCommandMode):
     # Composite commands
     #
 
-    def cmdCompositeDelete(self, cmd, motion, count):
+    def cmdCompositeDelete(self, cmd, motion, searchChar, count):
         if motion in (_j, _Down):
             lineIndex = self._qpart.cursorPosition[0]
             availableCount = len(self._qpart.lines) - lineIndex
@@ -879,19 +891,19 @@ class Normal(BaseCommandMode):
             Vim.internalClipboard = self._qpart.lines[:currentLineIndex + 1]
             del self._qpart.lines[:currentLineIndex + 1]
         else:
-            self._moveCursor(motion, count, select=True)
+            self._moveCursor(motion, count, select=True, searchChar=searchChar)
 
             selText = self._qpart.textCursor().selectedText()
             if selText:
                 Vim.internalClipboard = selText
                 self._qpart.textCursor().removeSelectedText()
 
-    def cmdCompositeChange(self, cmd, motion, count):
+    def cmdCompositeChange(self, cmd, motion, searchChar, count):
         # TODO deletion and next insertion should be undo-ble as 1 action
-        self.cmdCompositeDelete(cmd, motion, count)
+        self.cmdCompositeDelete(cmd, motion, searchChar, count)
         self.switchMode(Insert)
 
-    def cmdCompositeYank(self, cmd, motion, count):
+    def cmdCompositeYank(self, cmd, motion, searchChar, count):
         oldCursor = self._qpart.textCursor()
         if motion == _y:
             cursor = self._qpart.textCursor()
@@ -902,40 +914,40 @@ class Normal(BaseCommandMode):
             self._qpart.setTextCursor(cursor)
             Vim.internalClipboard = [self._qpart.selectedText]
         else:
-            self._moveCursor(motion, count, select=True)
+            self._moveCursor(motion, count, select=True, searchChar=searchChar)
             Vim.internalClipboard = self._qpart.selectedText
 
         self._qpart.copy()
         self._qpart.setTextCursor(oldCursor)
 
-    def cmdCompositeUnIndent(self, cmd, motion, count):
+    def cmdCompositeUnIndent(self, cmd, motion, searchChar, count):
         if motion == _Less:
             pass  # current line is already selected
         else:
-            self._moveCursor(motion, count, select=True)
+            self._moveCursor(motion, count, select=True, searchChar=searchChar)
 
         self._qpart._indenter.onChangeSelectedBlocksIndent(increase=False, withSpace=False)
         self._resetSelection(moveToAncor=True)
 
-    def cmdCompositeIndent(self, cmd, motion, count):
+    def cmdCompositeIndent(self, cmd, motion, searchChar, count):
         if motion == _Greater:
             pass  # current line is already selected
         else:
-            self._moveCursor(motion, count, select=True)
+            self._moveCursor(motion, count, select=True, searchChar=searchChar)
 
         self._qpart._indenter.onChangeSelectedBlocksIndent(increase=True, withSpace=False)
         self._resetSelection(moveToAncor=True)
 
-    def cmdCompositeAutoIndent(self, cmd, motion, count):
+    def cmdCompositeAutoIndent(self, cmd, motion, searchChar, count):
         if motion == _Equal:
             pass  # current line is already selected
         else:
-            self._moveCursor(motion, count, select=True)
+            self._moveCursor(motion, count, select=True, searchChar=searchChar)
 
         self._qpart._indenter.onAutoIndentTriggered()
         self._resetSelection(moveToAncor=True)
 
-    def cmdCompositeScrollView(self, cmd, motion, count):
+    def cmdCompositeScrollView(self, cmd, motion, searchChar, count):
         if motion == _z:
             self._qpart.centerCursor()
 
