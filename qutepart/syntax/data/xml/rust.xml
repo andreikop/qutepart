@@ -3,7 +3,7 @@
 <!--
   This file is part of KDE's kate project.
   
-  copyright   : (C) 2004 by Dominik Haumann, (C) 2011 by Caspar Hasenclever
+  copyright   : (C) 2004 by Dominik Haumann, (C) 2011 by Caspar Hasenclever, 2015 by Vitaly "_Vi" Shukela
 
  **********************************************************************
  * This library is free software; you can redistribute it and/or      *
@@ -22,7 +22,7 @@
  * Boston, MA  02110-1301, USA.                                       *
  **********************************************************************
  -->
-<language version="2" kateversion="2.3" name="Clojure" section="Sources" extensions="*.rs" mimetype="" author="Dominik Haumann [lisp] modified for clojure by Caspar Hasenclever; Modified for Rust by Vitaly '_Vi' Shukela" license="LGPL">
+<language version="1" kateversion="2.3" name="Rust" section="Sources" extensions="*.rs" mimetype="" author="Dominik Haumann [lisp] modified for clojure by Caspar Hasenclever; Modified for Rust by Vitaly '_Vi' Shukela" license="LGPL">
   <highlighting>
     <list name="definitions">
       <item> fn </item>
