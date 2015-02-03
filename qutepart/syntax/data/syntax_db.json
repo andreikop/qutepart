@@ -330,6 +330,7 @@
         "*.rnc": "relaxngcompact.xml", 
         "*.rng": "relaxng.xml", 
         "*.rqb": "rapidq.xml", 
+        "*.rs": "rust.xml", 
         "*.rss": "xml.xml", 
         "*.rst": "restructuredtext.xml", 
         "*.rxml": "ruby.xml", 
