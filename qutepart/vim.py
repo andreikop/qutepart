@@ -235,7 +235,7 @@ class BaseCommandMode(Mode):
                 _Dollar, _End,
                 _Percent, _Caret,
                 _b,
-                _e,
+                _e, _E,
                 _G,
                 _j, _Down,
                 _l, _Right, _Space,
@@ -293,7 +293,7 @@ class BaseCommandMode(Mode):
         elif motion in moveOperation:
             for _ in range(effectiveCount):
                 cursor.movePosition(moveOperation[motion], moveMode)
-        elif motion == _e:
+        elif motion in (_e, _E):
             for _ in range(effectiveCount):
                 # skip spaces
                 text = cursor.block().text()
@@ -308,7 +308,17 @@ class BaseCommandMode(Mode):
                     cursor.movePosition(QTextCursor.NextCharacter, moveMode)  # move to the next line
 
                 # now move to the end of word
-                cursor.movePosition(QTextCursor.EndOfWord, moveMode)
+                if motion == _e:
+                    cursor.movePosition(QTextCursor.EndOfWord, moveMode)
+                else:
+                    text = cursor.block().text()
+                    pos = cursor.positionInBlock()
+                    for char in text[pos:]:
+                        if not char.isspace():
+                            cursor.movePosition(QTextCursor.NextCharacter, moveMode)
+                        else:
+                            break
+
         elif motion == _Percent:
             # Percent move is done only once
             if self._qpart._bracketHighlighter.currentMatchedBrackets is not None:

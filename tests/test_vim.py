@@ -280,6 +280,16 @@ class Move(_Test):
         self.assertEqual(self.qpart.lines[0],
                          'ox')
 
+    def test_16(self):
+        """ E
+        """
+        self.qpart.lines[0] = 'asdfk.xx.z  asdfk.xx.z  asdfk.xx.z asdfk.xx.z'
+        self.qpart.cursorPosition = (0, 0)
+        for pos in (5, 6, 8, 9):
+            self.click('e')
+            self.assertEqual(self.qpart.cursorPosition[1],
+                             pos)
+
 
 class Del(_Test):
     def test_01a(self):
