@@ -1,9 +1,6 @@
 fixme:
-  f motion
-  W motion
   . repeats command
-  visual mode is not switched on on rectangular selection
-  vrx - leave visual mode
+  visual block mode + rectangular selection
 
 todo:
   switch hihglighting language        2

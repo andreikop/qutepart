@@ -466,6 +466,7 @@ class BaseVisual(BaseCommandMode):
                             ]
                 newText = ''.join(newChars)
                 self._qpart.selectedText = newText
+            self.switchMode(Normal)
             raise StopIteration(True)
         elif isChar(ev):
             raise StopIteration(True)  # ignore unknown character
