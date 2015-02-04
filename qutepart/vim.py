@@ -241,7 +241,7 @@ class BaseCommandMode(Mode):
                 _l, _Right, _Space,
                 _k, _Up,
                 _h, _Left, _BackSpace,
-                _w,
+                _w, _W,
                 'gg',
                 _f, _F, _t, _T,
                 )
@@ -318,7 +318,12 @@ class BaseCommandMode(Mode):
                             cursor.movePosition(QTextCursor.NextCharacter, moveMode)
                         else:
                             break
-
+        elif motion == _W:
+            cursor.movePosition(QTextCursor.WordRight)
+            text = cursor.block().text()
+            while cursor.positionInBlock() and \
+                  (not cursor.block().text()[cursor.positionInBlock() - 1].isspace()):
+                cursor.movePosition(QTextCursor.WordRight)
         elif motion == _Percent:
             # Percent move is done only once
             if self._qpart._bracketHighlighter.currentMatchedBrackets is not None:

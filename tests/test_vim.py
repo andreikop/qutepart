@@ -289,6 +289,21 @@ class Move(_Test):
             self.click('e')
             self.assertEqual(self.qpart.cursorPosition[1],
                              pos)
+        self.qpart.cursorPosition = (0, 0)
+        for pos in (10, 22, 34, 45, 5):
+            self.click('E')
+            self.assertEqual(self.qpart.cursorPosition[1],
+                             pos)
+
+    def test_17(self):
+        """ W
+        """
+        self.qpart.lines[0] = 'asdfk.xx.z  asdfk.xx.z  asdfk.xx.z asdfk.xx.z'
+        self.qpart.cursorPosition = (0, 0)
+        for pos in ((0, 12), (0, 24), (0, 35), (1, 0), (1, 6)):
+            self.click('W')
+            self.assertEqual(self.qpart.cursorPosition,
+                             pos)
 
 
 class Del(_Test):
