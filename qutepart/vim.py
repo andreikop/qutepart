@@ -234,7 +234,7 @@ class BaseCommandMode(Mode):
     _MOTIONS = (_0, _Home,
                 _Dollar, _End,
                 _Percent, _Caret,
-                _b,
+                _b, _B,
                 _e, _E,
                 _G,
                 _j, _Down,
@@ -318,10 +318,14 @@ class BaseCommandMode(Mode):
                             cursor.movePosition(QTextCursor.NextCharacter, moveMode)
                         else:
                             break
+        elif motion == _B:
+            cursor.movePosition(QTextCursor.WordLeft)
+            while cursor.positionInBlock() != 0 and \
+                  (not cursor.block().text()[cursor.positionInBlock() - 1].isspace()):
+                cursor.movePosition(QTextCursor.WordLeft)
         elif motion == _W:
             cursor.movePosition(QTextCursor.WordRight)
-            text = cursor.block().text()
-            while cursor.positionInBlock() and \
+            while cursor.positionInBlock() != 0 and \
                   (not cursor.block().text()[cursor.positionInBlock() - 1].isspace()):
                 cursor.movePosition(QTextCursor.WordRight)
         elif motion == _Percent:
