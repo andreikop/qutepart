@@ -31,6 +31,8 @@ _Less = Qt.ShiftModifier + Qt.Key_Less
 _Greater = Qt.ShiftModifier + Qt.Key_Greater
 _Home = Qt.Key_Home
 _End = Qt.Key_End
+_PageDown = Qt.Key_PageDown
+_PageUp = Qt.Key_PageUp
 
 
 def code(ev):
@@ -244,6 +246,7 @@ class BaseCommandMode(Mode):
                 _w, _W,
                 'gg',
                 _f, _F, _t, _T,
+                _PageDown, _PageUp
                 )
 
     def _moveCursor(self, motion, count, searchChar=None, select=False):
@@ -359,6 +362,13 @@ class BaseCommandMode(Mode):
                     if select:
                         cursor.movePosition(stepForward, moveMode)
                     break
+        elif motion in (_PageDown, _PageUp):
+            cursorHeight = self._qpart.cursorRect().height()
+            qpartHeight = self._qpart.height()
+            visibleLineCount = qpartHeight / cursorHeight
+            direction = QTextCursor.Down if motion == _PageDown else QTextCursor.Up
+            for _ in range(visibleLineCount):
+                cursor.movePosition(direction, moveMode)
         else:
             assert 0, 'Not expected motion ' + str(motion)
 
