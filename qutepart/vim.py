@@ -681,25 +681,9 @@ class Normal(BaseCommandMode):
         action = code(ev)
 
 
-        if action in (_x, _X):
-            """ Delete command is a special case.
-            It accumulates deleted text in the internal clipboard. Give count as a command parameter
-            """
-            self.cmdDelete(effectiveCount, back=(action == _X))
-            raise StopIteration(True)
-        elif action in (_C, _D):
-            self.cmdDeleteUntilEndOfLine(effectiveCount, action==_C)
-            raise StopIteration(True)
-        elif action in self._SIMPLE_COMMANDS:
+        if action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]
-
-            if effectiveCount != 1:
-                with self._qpart:
-                    for _ in range(effectiveCount):
-                        cmdFunc(self, action)
-            else:
-                cmdFunc(self, action)
-
+            cmdFunc(self, action, effectiveCount)
             raise StopIteration(True)
         elif action == _g:
             ev = yield
@@ -771,80 +755,94 @@ class Normal(BaseCommandMode):
 
         assert 0  # must StopIteration on if
 
+    def _repeat(self, count, func):
+        """ Repeat action 1 or more times.
+        If more than one - do it as 1 undoble action
+        """
+        if count != 1:
+            with self._qpart:
+                for _ in range(count):
+                    func()
+        else:
+            func()
+
     #
     # Simple commands
     #
 
-    def cmdInsertMode(self, cmd):
+    def cmdInsertMode(self, cmd, count):
         self.switchMode(Insert)
 
-    def cmdReplaceMode(self, cmd):
+    def cmdReplaceMode(self, cmd, count):
         self.switchMode(Replace)
         self._qpart.setOverwriteMode(True)
 
-    def cmdReplaceCharMode(self, cmd):
+    def cmdReplaceCharMode(self, cmd, count):
         self.switchMode(ReplaceChar)
         self._qpart.setOverwriteMode(True)
 
-    def cmdAppendAfterLine(self, cmd):
+    def cmdAppendAfterLine(self, cmd, count):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.EndOfLine)
         self._qpart.setTextCursor(cursor)
         self.switchMode(Insert)
 
-    def cmdAppendAfterChar(self, cmd):
+    def cmdAppendAfterChar(self, cmd, count):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.Right)
         self._qpart.setTextCursor(cursor)
         self.switchMode(Insert)
 
-    def cmdUndo(self, cmd):
-        self._qpart.undo()
+    def cmdUndo(self, cmd, count):
+        for _ in range(count):
+            self._qpart.undo()
 
-    def cmdRedo(self, cmd):
-        self._qpart.redo()
+    def cmdRedo(self, cmd, count):
+        for _ in range(count):
+            self._qpart.redo()
 
-    def cmdNewLineBelow(self, cmd):
+    def cmdNewLineBelow(self, cmd, count):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.EndOfLine)
         self._qpart.setTextCursor(cursor)
-        self._qpart._insertNewBlock()
+        self._repeat(count, self._qpart._insertNewBlock)
         self.switchMode(Insert)
 
-    def cmdNewLineAbove(self, cmd):
+    def cmdNewLineAbove(self, cmd, count):
         cursor = self._qpart.textCursor()
-        cursor.movePosition(QTextCursor.StartOfLine)
+        def insert():
+            cursor.movePosition(QTextCursor.StartOfLine)
+            self._qpart.setTextCursor(cursor)
+            self._qpart._insertNewBlock()
+            cursor.movePosition(QTextCursor.Up)
+            self._qpart._indenter.autoIndentBlock(cursor.block())
+        self._repeat(count, insert)
         self._qpart.setTextCursor(cursor)
-        self._qpart._insertNewBlock()
-        cursor.movePosition(QTextCursor.Up)
-        self._qpart.setTextCursor(cursor)
-        self._qpart._indenter.autoIndentBlock(cursor.block())
         self.switchMode(Insert)
 
-    def cmdInternalPaste(self, cmd):
+    def cmdInternalPaste(self, cmd, count):
         if not Vim.internalClipboard:
             return
 
         if isinstance(Vim.internalClipboard, basestring):
-            self._qpart.textCursor().insertText(Vim.internalClipboard)
+            self._repeat(count,
+                lambda: self._qpart.textCursor().insertText(Vim.internalClipboard))
         elif isinstance(Vim.internalClipboard, list):
             currentLineIndex = self._qpart.cursorPosition[0]
-            self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(Vim.internalClipboard))
+            self._repeat(count,
+                lambda: self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(Vim.internalClipboard)))
 
-    def cmdVisualMode(self, cmd):
+    def cmdVisualMode(self, cmd, count):
         self.switchMode(Visual)
 
-    def cmdVisualLinesMode(self, cmd):
+    def cmdVisualLinesMode(self, cmd, count):
         self.switchMode(VisualLines)
 
-    #
-    # Special cases
-    #
-    def cmdDelete(self, count, back):
+    def cmdDelete(self, cmd, count):
         """ x
         """
         cursor = self._qpart.textCursor()
-        direction = QTextCursor.Left if back else QTextCursor.Right
+        direction = QTextCursor.Left if cmd == _X else QTextCursor.Right
         for _ in range(count):
             cursor.movePosition(direction, QTextCursor.KeepAnchor)
 
@@ -852,7 +850,7 @@ class Normal(BaseCommandMode):
             Vim.internalClipboard = cursor.selectedText()
             cursor.removeSelectedText()
 
-    def cmdDeleteUntilEndOfLine(self, count, change):
+    def cmdDeleteUntilEndOfLine(self, cmd, count):
         """ C and D
         """
         cursor = self._qpart.textCursor()
@@ -861,12 +859,14 @@ class Normal(BaseCommandMode):
         cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
         Vim.internalClipboard = cursor.selectedText()
         cursor.removeSelectedText()
-        if change:
+        if cmd == _C:
             self.switchMode(Insert)
 
 
     _SIMPLE_COMMANDS = {_A: cmdAppendAfterLine,
                         _a: cmdAppendAfterChar,
+                        _C: cmdDeleteUntilEndOfLine,
+                        _D: cmdDeleteUntilEndOfLine,
                         _i: cmdInsertMode,
                         _r: cmdReplaceCharMode,
                         _R: cmdReplaceMode,
@@ -877,7 +877,8 @@ class Normal(BaseCommandMode):
                         _p: cmdInternalPaste,
                         _u: cmdUndo,
                         _U: cmdRedo,
-                        # C, D, x, X are implemented as special cases
+                        _x: cmdDelete,
+                        _X: cmdDelete,
                        }
 
     #

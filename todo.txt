@@ -1,6 +1,7 @@
 fixme:
   . repeats command
   visual block mode + rectangular selection
+  replace char count times + a + o
 
 todo:
   switch hihglighting language        2
