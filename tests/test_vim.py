@@ -900,5 +900,16 @@ class Repeat(_Test):
                           'lazy dog',
                           'back'])
 
+    def test_07(self):
+        """ Repeat dw
+        """
+        self.click('dw')
+        self.click('j0.')
+        self.assertEqual(self.qpart.lines[:],
+                         ['quick brown fox',
+                          'over the',
+                          'lazy dog',
+                          'back'])
+
 if __name__ == '__main__':
     unittest.main()

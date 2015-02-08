@@ -776,15 +776,15 @@ class Normal(BaseCommandMode):
         else:
             func()
 
-    def _saveLastEditCmd(self, func, count):
-        def doCmd(count=count):
-            func(count)
-
-        self._vim.lastEditCmdFunc = func
-
     def _saveLastEditSimpleCmd(self, cmd, count):
         def doCmd(count=count):
             self._SIMPLE_COMMANDS[cmd](self, cmd, count)
+
+        self._vim.lastEditCmdFunc = doCmd
+
+    def _saveLastEditCompositeCmd(self, cmd, motion, searchChar, count):
+        def doCmd(count=count):
+            self._COMPOSITE_COMMANDS[cmd](self, cmd, motion, searchChar, count)
 
         self._vim.lastEditCmdFunc = doCmd
 
@@ -963,6 +963,8 @@ class Normal(BaseCommandMode):
                 Vim.internalClipboard = selText
                 self._qpart.textCursor().removeSelectedText()
 
+        self._saveLastEditCompositeCmd(cmd, motion, searchChar, count)
+
     def cmdCompositeChange(self, cmd, motion, searchChar, count):
         # TODO deletion and next insertion should be undo-ble as 1 action
         self.cmdCompositeDelete(cmd, motion, searchChar, count)
@@ -994,6 +996,8 @@ class Normal(BaseCommandMode):
         self._qpart._indenter.onChangeSelectedBlocksIndent(increase=False, withSpace=False)
         self._resetSelection(moveToAncor=True)
 
+        self._saveLastEditCompositeCmd(cmd, motion, searchChar, count)
+
     def cmdCompositeIndent(self, cmd, motion, searchChar, count):
         if motion == _Greater:
             pass  # current line is already selected
@@ -1003,6 +1007,8 @@ class Normal(BaseCommandMode):
         self._qpart._indenter.onChangeSelectedBlocksIndent(increase=True, withSpace=False)
         self._resetSelection(moveToAncor=True)
 
+        self._saveLastEditCompositeCmd(cmd, motion, searchChar, count)
+
     def cmdCompositeAutoIndent(self, cmd, motion, searchChar, count):
         if motion == _Equal:
             pass  # current line is already selected
@@ -1011,6 +1017,8 @@ class Normal(BaseCommandMode):
 
         self._qpart._indenter.onAutoIndentTriggered()
         self._resetSelection(moveToAncor=True)
+
+        self._saveLastEditCompositeCmd(cmd, motion, searchChar, count)
 
     def cmdCompositeScrollView(self, cmd, motion, searchChar, count):
         if motion == _z:
