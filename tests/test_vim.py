@@ -828,5 +828,77 @@ class VisualLines(_Test):
         self.assertEqual(self.qpart.lines[0],
                          'slow')
 
+
+class Repeat(_Test):
+    def test_01(self):
+        """ Repeat o
+        """
+        self.click('o')
+        self.click(Qt.Key_Escape)
+        self.click('j2.')
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          '',
+                          'jumps over the',
+                          '',
+                          '',
+                          'lazy dog',
+                          'back'])
+
+    def test_02(self):
+        """ Repeat o. Use count from previous command
+        """
+        self.click('2o')
+        self.click(Qt.Key_Escape)
+        self.click('j.')
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          '',
+                          '',
+                          'jumps over the',
+                          '',
+                          '',
+                          'lazy dog',
+                          'back'])
+
+    def test_03(self):
+        """ Repeat O
+        """
+        self.click('O')
+        self.click(Qt.Key_Escape)
+        self.click('2j2.')
+        self.assertEqual(self.qpart.lines[:],
+                         ['',
+                          'The quick brown fox',
+                          '',
+                          '',
+                          'jumps over the',
+                          'lazy dog',
+                          'back'])
+
+    def test_04(self):
+        """ Repeat p
+        """
+        self.click('ylp.')
+        self.assertEqual(self.qpart.lines[0],
+                         'TTThe quick brown fox')
+
+    def test_05(self):
+        """ Repeat p
+        """
+        self.click('x...')
+        self.assertEqual(self.qpart.lines[0],
+                         'quick brown fox')
+
+    def test_06(self):
+        """ Repeat D
+        """
+        self.click('Dj.')
+        self.assertEqual(self.qpart.lines[:],
+                         ['',
+                          '',
+                          'lazy dog',
+                          'back'])
+
 if __name__ == '__main__':
     unittest.main()

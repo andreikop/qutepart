@@ -33,6 +33,7 @@ _Home = Qt.Key_Home
 _End = Qt.Key_End
 _PageDown = Qt.Key_PageDown
 _PageUp = Qt.Key_PageUp
+_Period = Qt.Key_Period
 
 
 def code(ev):
@@ -87,6 +88,8 @@ class Vim(QObject):
         self._processingKeyPress = False
 
         self.updateIndication()
+
+        self.lastEditCmdFunc = None
 
     def indication(self):
         return self._mode.color, self._mode.text()
@@ -699,6 +702,13 @@ class Normal(BaseCommandMode):
             searchChar = ev.text()
             self._moveCursor(action, effectiveCount, searchChar=searchChar, select=False)
             raise StopIteration(True)
+        elif action == _Period:  # repeat command
+            if self._vim.lastEditCmdFunc is not None:
+                if typedCount:
+                    self._vim.lastEditCmdFunc(typedCount)
+                else:
+                    self._vim.lastEditCmdFunc()
+            raise StopIteration(True)
         elif action in self._MOTIONS:
             self._moveCursor(action, typedCount, select=False)
             raise StopIteration(True)
@@ -766,6 +776,18 @@ class Normal(BaseCommandMode):
         else:
             func()
 
+    def _saveLastEditCmd(self, func, count):
+        def doCmd(count=count):
+            func(count)
+
+        self._vim.lastEditCmdFunc = func
+
+    def _saveLastEditSimpleCmd(self, cmd, count):
+        def doCmd(count=count):
+            self._SIMPLE_COMMANDS[cmd](self, cmd, count)
+
+        self._vim.lastEditCmdFunc = doCmd
+
     #
     # Simple commands
     #
@@ -806,6 +828,9 @@ class Normal(BaseCommandMode):
         cursor.movePosition(QTextCursor.EndOfLine)
         self._qpart.setTextCursor(cursor)
         self._repeat(count, self._qpart._insertNewBlock)
+
+        self._saveLastEditSimpleCmd(cmd, count)
+
         self.switchMode(Insert)
 
     def cmdNewLineAbove(self, cmd, count):
@@ -818,6 +843,9 @@ class Normal(BaseCommandMode):
             self._qpart._indenter.autoIndentBlock(cursor.block())
         self._repeat(count, insert)
         self._qpart.setTextCursor(cursor)
+
+        self._saveLastEditSimpleCmd(cmd, count)
+
         self.switchMode(Insert)
 
     def cmdInternalPaste(self, cmd, count):
@@ -831,6 +859,8 @@ class Normal(BaseCommandMode):
             currentLineIndex = self._qpart.cursorPosition[0]
             self._repeat(count,
                 lambda: self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(Vim.internalClipboard)))
+
+        self._saveLastEditSimpleCmd(cmd, count)
 
     def cmdVisualMode(self, cmd, count):
         self.switchMode(Visual)
@@ -850,6 +880,8 @@ class Normal(BaseCommandMode):
             Vim.internalClipboard = cursor.selectedText()
             cursor.removeSelectedText()
 
+        self._saveLastEditSimpleCmd(cmd, count)
+
     def cmdDeleteUntilEndOfLine(self, cmd, count):
         """ C and D
         """
@@ -861,6 +893,8 @@ class Normal(BaseCommandMode):
         cursor.removeSelectedText()
         if cmd == _C:
             self.switchMode(Insert)
+
+        self._saveLastEditSimpleCmd(cmd, count)
 
 
     _SIMPLE_COMMANDS = {_A: cmdAppendAfterLine,
