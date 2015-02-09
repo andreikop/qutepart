@@ -892,6 +892,9 @@ class Normal(BaseCommandMode):
         self._saveLastEditSimpleCmd(cmd, count)
 
     def cmdVisualMode(self, cmd, count):
+        cursor = self._qpart.textCursor()
+        cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
+        self._qpart.setTextCursor(cursor)
         self.switchMode(Visual)
 
     def cmdVisualLinesMode(self, cmd, count):

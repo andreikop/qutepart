@@ -685,7 +685,7 @@ class Visual(_Test):
     def test_02(self):
         """Append with a
         """
-        self.click("vlllA")
+        self.click("vllA")
         self.click("asdf ")
         self.assertEqual(self.qpart.lines[0],
                          'The asdf quick brown fox')
@@ -694,7 +694,7 @@ class Visual(_Test):
         """Replace with r
         """
         self.qpart.cursorPosition = (0, 16)
-        self.click("v9l")
+        self.click("v8l")
         self.click("rz")
         self.assertEqual(self.qpart.lines[0:2],
                          ['The quick brown zzz',
