@@ -84,6 +84,7 @@ class Vim(QObject):
         self._mode = Normal(self, qpart)
 
         self._qpart.selectionChanged.connect(self._onSelectionChanged)
+        self._qpart.document().modificationChanged.connect(self._onModificationChanged)
 
         self._processingKeyPress = False
 
@@ -128,6 +129,9 @@ class Vim(QObject):
             else:
                 self.setMode(Normal(self, self._qpart))
 
+    def _onModificationChanged(self, modified):
+        if not modified and isinstance(self._mode, Insert):
+            self.setMode(Normal(self, self._qpart))
 
 
 class Mode:
