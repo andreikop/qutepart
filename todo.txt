@@ -2,6 +2,9 @@ fixme:
   . repeats command
   visual block mode + rectangular selection
   replace char count times + a + o
+  close completion on save
+  neighbour parenthes badly highlighted
+  blink if having focus
 
 todo:
   switch hihglighting language        2

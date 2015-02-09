@@ -120,6 +120,9 @@ class Vim(QObject):
     def inInsertMode(self):
         return isinstance(self._mode, Insert)
 
+    def mode(self):
+        return self._mode
+
     def setMode(self, mode):
         self._mode = mode
 
@@ -473,11 +476,13 @@ class BaseVisual(BaseCommandMode):
         action = code(ev)
         if action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]
-            self.switchMode(Normal)
             for _ in range(count):
                 cmdFunc(self, action)
             if action not in (_v, _V):  # if not switched to another visual mode
                 self._resetSelection()
+            if self._vim.mode() is self:  # if the command didn't switch the mode
+                self.switchMode(Normal)
+
             raise StopIteration(True)
         elif action == _Esc:
             self._resetSelection()
