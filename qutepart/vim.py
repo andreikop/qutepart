@@ -1,7 +1,7 @@
 import sys
 
 from PyQt4.QtCore import Qt, pyqtSignal, QObject
-from PyQt4.QtGui import QColor, QTextCursor
+from PyQt4.QtGui import QColor, QTextCursor, QTextEdit
 
 
 """ This magic code sets variables like _a and _A in the global scope
@@ -88,6 +88,9 @@ class Vim(QObject):
 
         self._processingKeyPress = False
 
+        self._originalCursorWidth = self._qpart.cursorWidth()
+        self._qpart.setCursorWidth(0)
+
         self.updateIndication()
 
         self.lastEditCmdFunc = None
@@ -119,7 +122,29 @@ class Vim(QObject):
 
     def setMode(self, mode):
         self._mode = mode
+
+        if isinstance(self._mode, Normal):
+            self._qpart.setCursorWidth(0)  # extra selection is drawn
+        else:
+            self._qpart.setCursorWidth(self._originalCursorWidth)
+
+        self._qpart._updateExtraSelections()
+
         self.updateIndication()
+
+    def extraSelections(self):
+        """ In normal mode - QTextEdit.ExtraSelection which highlightes the cursor
+        """
+        if not isinstance(self._mode, Normal):
+            return []
+
+        selection = QTextEdit.ExtraSelection()
+        selection.format.setBackground(QColor('#ffbb00'))
+        selection.format.setForeground(QColor('#000000'))
+        selection.cursor = self._qpart.textCursor()
+        selection.cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
+
+        return [selection]
 
     def _onSelectionChanged(self):
         if not self._processingKeyPress:
@@ -454,6 +479,10 @@ class BaseVisual(BaseCommandMode):
             if action not in (_v, _V):  # if not switched to another visual mode
                 self._resetSelection()
             raise StopIteration(True)
+        elif action == _Esc:
+            self._resetSelection()
+            self.switchMode(Normal)
+            raise StopIteration(True)
         elif action == _g:
             ev = yield
             if code(ev) == _g:
@@ -544,9 +573,6 @@ class BaseVisual(BaseCommandMode):
 
     def cmdInsertMode(self, cmd):
         self.switchMode(Insert)
-
-    def cmdNormalMode(self, cmd):
-        self.switchMode(Normal)
 
     def cmdAppendAfterChar(self, cmd):
         cursor = self._qpart.textCursor()
@@ -642,7 +668,6 @@ class BaseVisual(BaseCommandMode):
                             _V: cmdVisualLinesMode,
                             _X: cmdDeleteLines,
                             _y: cmdYank,
-                            _Esc: cmdNormalMode,
                             _Less: cmdUnIndent,
                             _Greater: cmdIndent,
                             _Equal: cmdAutoIndent,

@@ -1128,7 +1128,7 @@ class Qutepart(QPlainTextEdit):
     def _currentLineExtraSelections(self):
         """QTextEdit.ExtraSelection, which highlightes current line
         """
-        lineColor = QColor('#ffff99')
+        lineColor = QColor('#ffffa3')
         def makeSelection(cursor):
             selection = QTextEdit.ExtraSelection()
             selection.format.setBackground(lineColor)
@@ -1157,6 +1157,9 @@ class Qutepart(QPlainTextEdit):
                         self._rectangularSelection.selections() + \
                         bracketSelections + \
                         self._userExtraSelections
+
+        if self._vim is not None:
+            allSelections += self._vim.extraSelections()
 
         QPlainTextEdit.setExtraSelections(self, allSelections)
 
