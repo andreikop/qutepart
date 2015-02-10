@@ -555,24 +555,43 @@ class BaseVisual(BaseCommandMode):
         end = max(startLine, endLine)
         return start, end
 
+    def _selectRangeForRepeat(self, repeatLineCount):
+        start = self._qpart.cursorPosition[0]
+        self._qpart.selectedPosition = ((start, 0),
+                                        (start + repeatLineCount - 1, 0))
+        cursor = self._qpart.textCursor()
+        cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)  # expand until the end of line
+        self._qpart.setTextCursor(cursor)
+
+    def _saveLastEditLinesCmd(self, cmd, lineCount):
+        self._vim.lastEditCmdFunc = lambda: self._SIMPLE_COMMANDS[cmd](self, cmd, lineCount)
+
     #
     # Simple commands
     #
 
-    def cmdDelete(self, cmd):
+    def cmdDelete(self, cmd, repeatLineCount=None):
+        if repeatLineCount is not None:
+            self._selectRangeForRepeat(repeatLineCount)
+
         cursor = self._qpart.textCursor()
         if cursor.selectedText():
             if self._selectLines:
                 start, end  = self._selectedLinesRange()
+                self._saveLastEditLinesCmd(cmd, end - start + 1)
                 Vim.internalClipboard = self._qpart.lines[start:end + 1]
                 del self._qpart.lines[start:end + 1]
             else:
                 Vim.internalClipboard = cursor.selectedText()
                 cursor.removeSelectedText()
 
-    def cmdDeleteLines(self, cmd):
-        cursor = self._qpart.textCursor()
+    def cmdDeleteLines(self, cmd, repeatLineCount=None):
+        if repeatLineCount is not None:
+            self._selectRangeForRepeat(repeatLineCount)
+
         start, end  = self._selectedLinesRange()
+        self._saveLastEditLinesCmd(cmd, end - start + 1)
+
         Vim.internalClipboard = self._qpart.lines[start:end + 1]
         del self._qpart.lines[start:end + 1]
 

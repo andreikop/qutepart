@@ -911,5 +911,23 @@ class Repeat(_Test):
                           'lazy dog',
                           'back'])
 
+    def test_08(self):
+        """ Repeat Visual x
+        """
+        self.qpart.lines.append('one more')
+        self.click('Vjx')
+        self.click('.')
+        self.assertEqual(self.qpart.lines[:],
+                         ['one more'])
+
+    def test_09(self):
+        """ Repeat visual X
+        """
+        self.qpart.lines.append('one more')
+        self.click('vjX')
+        self.click('.')
+        self.assertEqual(self.qpart.lines[:],
+                         ['one more'])
+
 if __name__ == '__main__':
     unittest.main()

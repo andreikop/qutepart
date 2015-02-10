@@ -5,6 +5,7 @@ fixme:
   close completion on save
   neighbour parenthes badly highlighted
   blink if having focus
+  Enter jumps to the first non-space char of the next line
 
 todo:
   switch hihglighting language        2
