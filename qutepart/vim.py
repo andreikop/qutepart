@@ -1,6 +1,6 @@
 import sys
 
-from PyQt4.QtCore import Qt, pyqtSignal, QObject
+from PyQt4.QtCore import Qt, pyqtSignal, QObject, QTimer
 from PyQt4.QtGui import QColor, QTextCursor, QTextEdit
 
 
@@ -95,6 +95,12 @@ class Vim(QObject):
 
         self.lastEditCmdFunc = None
 
+        self._cursorUnderlined = True
+        self._cursorUnderlineBlinkTimer = QTimer(self)
+        self._cursorUnderlineBlinkTimer.timeout.connect(self._onCursorUnderlineBlinkTimer)
+        self._cursorUnderlineBlinkTimer.setInterval(650)
+        self._cursorUnderlineBlinkTimer.start()
+
     def indication(self):
         return self._mode.color, self._mode.text()
 
@@ -131,7 +137,7 @@ class Vim(QObject):
         else:
             self._qpart.setCursorWidth(self._originalCursorWidth)
 
-        self._qpart._updateExtraSelections()
+        self._qpart._updateVimExtraSelections()
 
         self.updateIndication()
 
@@ -142,8 +148,10 @@ class Vim(QObject):
             return []
 
         selection = QTextEdit.ExtraSelection()
-        selection.format.setBackground(QColor('#ffcc00'))
+        selection.format.setBackground(QColor('#ffcc22'))
         selection.format.setForeground(QColor('#000000'))
+        if self._cursorUnderlined:
+            selection.format.setFontUnderline(True)
         selection.cursor = self._qpart.textCursor()
         selection.cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
 
@@ -160,6 +168,11 @@ class Vim(QObject):
     def _onModificationChanged(self, modified):
         if not modified and isinstance(self._mode, Insert):
             self.setMode(Normal(self, self._qpart))
+
+    def _onCursorUnderlineBlinkTimer(self):
+        if isinstance(self._mode, Normal):
+            self._cursorUnderlined = not self._cursorUnderlined
+            self._qpart._updateVimExtraSelections()
 
 
 class Mode:

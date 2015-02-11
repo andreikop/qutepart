@@ -278,6 +278,7 @@ class Qutepart(QPlainTextEdit):
 
         self._bookmarks = qutepart.bookmarks.Bookmarks(self, self._markArea)
 
+        self._nonVimExtraSelections = []
         self._userExtraSelections = []  # we draw bracket highlighting, current line and extra selections by user
         self._userExtraSelectionFormat = QTextCharFormat()
         self._userExtraSelectionFormat.setBackground(QBrush(QColor('#ffee00')))
@@ -1153,15 +1154,23 @@ class Qutepart(QPlainTextEdit):
                                                                      self.textCursor().block(),
                                                                      cursorColumnIndex)
 
-        allSelections = self._currentLineExtraSelections() + \
-                        self._rectangularSelection.selections() + \
-                        bracketSelections + \
-                        self._userExtraSelections
+        selections = self._currentLineExtraSelections() + \
+                     self._rectangularSelection.selections() + \
+                     bracketSelections + \
+                     self._userExtraSelections
 
-        if self._vim is not None:
-            allSelections += self._vim.extraSelections()
+        self._nonVimExtraSelections = selections
+
+        if self._vim is None:
+            allSelections = selections
+        else:
+            allSelections = selections + self._vim.extraSelections()
 
         QPlainTextEdit.setExtraSelections(self, allSelections)
+
+    def _updateVimExtraSelections(self):
+        QPlainTextEdit.setExtraSelections(self, self._nonVimExtraSelections + self._vim.extraSelections())
+
 
     def _onShortcutIndent(self):
         if self.textCursor().hasSelection():
