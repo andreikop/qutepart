@@ -1,5 +1,4 @@
 fixme:
-  . repeats command
   visual block mode + rectangular selection
   replace char count times + a + o
   close completion on save

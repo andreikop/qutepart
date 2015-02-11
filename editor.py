@@ -57,6 +57,10 @@ def main():
 
     qpart = qutepart.Qutepart()
 
+    font = qpart.font()
+    font.setPointSize(12)
+    qpart.setFont(font)
+
     qpart.vimModeEnabled = True
 
     layout.addWidget(qpart)

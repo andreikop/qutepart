@@ -142,7 +142,7 @@ class Vim(QObject):
             return []
 
         selection = QTextEdit.ExtraSelection()
-        selection.format.setBackground(QColor('#ffbb00'))
+        selection.format.setBackground(QColor('#ffcc00'))
         selection.format.setForeground(QColor('#000000'))
         selection.cursor = self._qpart.textCursor()
         selection.cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
