@@ -441,12 +441,13 @@ class BaseCommandMode(Mode):
 
             block = block.previous()
 
-    def _resetSelection(self, moveToAncor=False):
+    def _resetSelection(self, moveToTop=False):
         """ Reset selection.
-        If moveToStart is True - move cursor to the ancor position
+        If moveToTop is True - move cursor to the top position
         """
-        index = 0 if moveToAncor else 1
-        self._qpart.cursorPosition = self._qpart.selectedPosition[index]
+        ancor, pos = self._qpart.selectedPosition
+        dst = min(ancor, pos) if moveToTop else pos
+        self._qpart.cursorPosition = dst
 
 
 
@@ -479,7 +480,7 @@ class BaseVisual(BaseCommandMode):
             for _ in range(count):
                 cmdFunc(self, action)
             if action not in (_v, _V):  # if not switched to another visual mode
-                self._resetSelection()
+                self._resetSelection(moveToTop=True)
             if self._vim.mode() is self:  # if the command didn't switch the mode
                 self.switchMode(Normal)
 
@@ -668,14 +669,41 @@ class BaseVisual(BaseCommandMode):
             cursor.removeSelectedText()
         self.switchMode(Insert)
 
-    def cmdUnIndent(self, cmd):
+    def cmdUnIndent(self, cmd, repeatLineCount=None):
+        if repeatLineCount is not None:
+            self._selectRangeForRepeat(repeatLineCount)
+        else:
+            start, end  = self._selectedLinesRange()
+            self._saveLastEditLinesCmd(cmd, end - start + 1)
+
         self._qpart._indenter.onChangeSelectedBlocksIndent(increase=False, withSpace=False)
 
-    def cmdIndent(self, cmd):
+        if repeatLineCount:
+            self._resetSelection(moveToTop=True)
+
+    def cmdIndent(self, cmd, repeatLineCount=None):
+        if repeatLineCount is not None:
+            self._selectRangeForRepeat(repeatLineCount)
+        else:
+            start, end  = self._selectedLinesRange()
+            self._saveLastEditLinesCmd(cmd, end - start + 1)
+
         self._qpart._indenter.onChangeSelectedBlocksIndent(increase=True, withSpace=False)
 
-    def cmdAutoIndent(self, cmd):
+        if repeatLineCount:
+            self._resetSelection(moveToTop=True)
+
+    def cmdAutoIndent(self, cmd, repeatLineCount=None):
+        if repeatLineCount is not None:
+            self._selectRangeForRepeat(repeatLineCount)
+        else:
+            start, end  = self._selectedLinesRange()
+            self._saveLastEditLinesCmd(cmd, end - start + 1)
+
         self._qpart._indenter.onAutoIndentTriggered()
+
+        if repeatLineCount:
+            self._resetSelection(moveToTop=True)
 
     _SIMPLE_COMMANDS = {
                             _A: cmdAppendAfterChar,
@@ -1050,7 +1078,7 @@ class Normal(BaseCommandMode):
             self._moveCursor(motion, count, select=True, searchChar=searchChar)
 
         self._qpart._indenter.onChangeSelectedBlocksIndent(increase=False, withSpace=False)
-        self._resetSelection(moveToAncor=True)
+        self._resetSelection(moveToTop=True)
 
         self._saveLastEditCompositeCmd(cmd, motion, searchChar, count)
 
@@ -1061,7 +1089,7 @@ class Normal(BaseCommandMode):
             self._moveCursor(motion, count, select=True, searchChar=searchChar)
 
         self._qpart._indenter.onChangeSelectedBlocksIndent(increase=True, withSpace=False)
-        self._resetSelection(moveToAncor=True)
+        self._resetSelection(moveToTop=True)
 
         self._saveLastEditCompositeCmd(cmd, motion, searchChar, count)
 
@@ -1072,7 +1100,7 @@ class Normal(BaseCommandMode):
             self._moveCursor(motion, count, select=True, searchChar=searchChar)
 
         self._qpart._indenter.onAutoIndentTriggered()
-        self._resetSelection(moveToAncor=True)
+        self._resetSelection(moveToTop=True)
 
         self._saveLastEditCompositeCmd(cmd, motion, searchChar, count)
 

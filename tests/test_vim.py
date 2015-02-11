@@ -929,5 +929,19 @@ class Repeat(_Test):
         self.assertEqual(self.qpart.lines[:],
                          ['one more'])
 
+    def test_10(self):
+        """ Repeat Visual >
+        """
+        self.qpart.lines.append('one more')
+        self.click('Vj>')
+        self.click('3j')
+        self.click('.')
+        self.assertEqual(self.qpart.lines[:],
+                         ['    The quick brown fox',
+                          '    jumps over the',
+                          'lazy dog',
+                          '    back',
+                          '    one more'])
+
 if __name__ == '__main__':
     unittest.main()
