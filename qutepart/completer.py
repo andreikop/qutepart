@@ -344,6 +344,7 @@ class Completer(QObject):
         self._wordSet = None
 
         qpart.textChanged.connect(self._onTextChanged)
+        qpart.document().modificationChanged.connect(self._onModificationChanged)
 
     def terminate(self):
         """Object deleted. Cancel timer
@@ -356,6 +357,10 @@ class Completer(QObject):
     def _onTextChanged(self):
         """Text in the qpart changed. Update word set"""
         self._globalUpdateWordSetTimer.schedule(self._updateWordSet)
+
+    def _onModificationChanged(self, modified):
+        if not modified:
+            self._closeCompletion()
 
     def _updateWordSet(self):
         """Make a set of words, which shall be completed, from text
