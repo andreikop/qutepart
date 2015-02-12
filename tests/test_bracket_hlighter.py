@@ -66,7 +66,7 @@ class Test(unittest.TestCase):
         self._verify(bh.extraSelections(self.qpart, secondBlock, 19),
                      [(31, 32, True), (4, 5, True)])
         self._verify(bh.extraSelections(self.qpart, secondBlock, 20),
-                     [(31, 32, True), (4, 5, True)])
+                     [(32, 33, False)])
         self._verify(bh.extraSelections(self.qpart, secondBlock, 21),
                      [(32, 33, False)])
 

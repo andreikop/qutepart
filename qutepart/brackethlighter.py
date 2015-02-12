@@ -133,14 +133,14 @@ class BracketHighlighter:
         """
         blockText = block.text()
 
-        if columnIndex > 0 and \
-           blockText[columnIndex - 1] in self._ALL_BRACKETS and \
-           qpart.isCode(block, columnIndex - 1):
-            return self._highlightBracket(blockText[columnIndex - 1], qpart, block, columnIndex - 1)
-        elif columnIndex < len(blockText) and \
+        if columnIndex < len(blockText) and \
              blockText[columnIndex] in self._ALL_BRACKETS and \
              qpart.isCode(block, columnIndex):
             return self._highlightBracket(blockText[columnIndex], qpart, block, columnIndex)
+        elif columnIndex > 0 and \
+           blockText[columnIndex - 1] in self._ALL_BRACKETS and \
+           qpart.isCode(block, columnIndex - 1):
+            return self._highlightBracket(blockText[columnIndex - 1], qpart, block, columnIndex - 1)
         else:
             self.currentMatchedBrackets = None
             return []
