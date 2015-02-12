@@ -3,6 +3,8 @@ fixme:
   replace char count times + a + o
   Enter jumps to the first non-space char of the next line
   cursor not visible on the last line
+  dB doesn't work
+  P to paste before
 
 todo:
   switch hihglighting language        2

@@ -312,6 +312,9 @@ class Qutepart(QPlainTextEdit):
         if self._highlighter is not None:
             self._highlighter.terminate()
 
+        if self._vim is not None:
+            self._vim.terminate()
+
     def _initActions(self):
         """Init shortcuts for text editing
         """
@@ -597,6 +600,7 @@ class Qutepart(QPlainTextEdit):
                 self.vimModeEnabledChanged.emit(True)
         else:
             if self._vim is not None:
+                self._vim.terminate()
                 self._vim = None
                 self.vimModeEnabledChanged.emit(False)
 
@@ -1170,7 +1174,6 @@ class Qutepart(QPlainTextEdit):
 
     def _updateVimExtraSelections(self):
         QPlainTextEdit.setExtraSelections(self, self._nonVimExtraSelections + self._vim.extraSelections())
-
 
     def _onShortcutIndent(self):
         if self.textCursor().hasSelection():

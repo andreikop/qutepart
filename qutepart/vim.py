@@ -101,6 +101,12 @@ class Vim(QObject):
         self._cursorUnderlineBlinkTimer.setInterval(650)
         self._cursorUnderlineBlinkTimer.start()
 
+    def terminate(self):
+        self._cursorUnderlineBlinkTimer.stop()
+        self._qpart.selectionChanged.disconnect(self._onSelectionChanged)
+        self._qpart.document().modificationChanged.disconnect(self._onModificationChanged)
+        self._cursorUnderlineBlinkTimer.timeout.disconnect(self._onCursorUnderlineBlinkTimer)
+
     def indication(self):
         return self._mode.color, self._mode.text()
 
