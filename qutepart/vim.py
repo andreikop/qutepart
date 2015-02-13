@@ -90,6 +90,7 @@ class Vim(QObject):
 
         self._originalCursorWidth = self._qpart.cursorWidth()
         self._qpart.setCursorWidth(0)
+        self._qpart.cursorPositionChanged.connect(self._updateCursorShape)
 
         self.updateIndication()
 
@@ -106,12 +107,30 @@ class Vim(QObject):
         self._qpart.selectionChanged.disconnect(self._onSelectionChanged)
         self._qpart.document().modificationChanged.disconnect(self._onModificationChanged)
         self._cursorUnderlineBlinkTimer.timeout.disconnect(self._onCursorUnderlineBlinkTimer)
+        self._qpart.cursorPositionChanged.disconnect(self._updateCursorShape)
 
     def indication(self):
         return self._mode.color, self._mode.text()
 
     def updateIndication(self):
         self.modeIndicationChanged.emit(*self.indication())
+
+    def _updateCursorShape(self):
+        if isinstance(self._mode, Normal):
+            cursor = self._qpart.textCursor()
+            if cursor.positionInBlock() + 1 == cursor.block().length() and \
+               (not cursor.block().next().isValid()):
+                # on the last character in the document. Nothing to highlight with extra selection
+                width = self._originalCursorWidth
+            else:
+                # extra selection is drawn
+                width = 0
+        else:
+            width = self._originalCursorWidth
+
+        if width != self._qpart.cursorWidth():
+            self._qpart.setCursorWidth(width)
+            self._qpart._updateVimExtraSelections()
 
     def keyPressEvent(self, ev):
         """Check the event. Return True if processed and False otherwise
@@ -143,7 +162,7 @@ class Vim(QObject):
         else:
             self._qpart.setCursorWidth(self._originalCursorWidth)
 
-        self._qpart._updateVimExtraSelections()
+        self._updateCursorShape()
 
         self.updateIndication()
 
