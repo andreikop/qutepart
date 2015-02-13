@@ -1,9 +1,7 @@
 fixme:
   visual block mode + rectangular selection
-  replace char count times + a + o
+  replace char, append, open line count times
   Enter jumps to the first non-space char of the next line
-  cursor not visible on the last line
-  dB doesn't work
   P to paste before
 
 todo:

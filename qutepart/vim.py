@@ -395,15 +395,15 @@ class BaseCommandMode(Mode):
                         else:
                             break
         elif motion == _B:
-            cursor.movePosition(QTextCursor.WordLeft)
+            cursor.movePosition(QTextCursor.WordLeft, moveMode)
             while cursor.positionInBlock() != 0 and \
                   (not cursor.block().text()[cursor.positionInBlock() - 1].isspace()):
-                cursor.movePosition(QTextCursor.WordLeft)
+                cursor.movePosition(QTextCursor.WordLeft, moveMode)
         elif motion == _W:
-            cursor.movePosition(QTextCursor.WordRight)
+            cursor.movePosition(QTextCursor.WordRight, moveMode)
             while cursor.positionInBlock() != 0 and \
                   (not cursor.block().text()[cursor.positionInBlock() - 1].isspace()):
-                cursor.movePosition(QTextCursor.WordRight)
+                cursor.movePosition(QTextCursor.WordRight, moveMode)
         elif motion == _Percent:
             # Percent move is done only once
             if self._qpart._bracketHighlighter.currentMatchedBrackets is not None:
