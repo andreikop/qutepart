@@ -883,6 +883,9 @@ class Qutepart(QPlainTextEdit):
                 cursor.insertText(text)
 
         if event.matches(QKeySequence.InsertParagraphSeparator):
+            if self._vim is not None:
+                if self._vim.keyPressEvent(event):
+                    return
             self._insertNewBlock()
         elif event.matches(QKeySequence.Copy) and self._rectangularSelection.isActive():
             self._rectangularSelection.copy()

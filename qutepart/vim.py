@@ -34,6 +34,8 @@ _End = Qt.Key_End
 _PageDown = Qt.Key_PageDown
 _PageUp = Qt.Key_PageUp
 _Period = Qt.Key_Period
+_Enter = Qt.Key_Enter
+_Return = Qt.Key_Return
 
 
 def code(ev):
@@ -319,7 +321,8 @@ class BaseCommandMode(Mode):
                 _w, _W,
                 'gg',
                 _f, _F, _t, _T,
-                _PageDown, _PageUp
+                _PageDown, _PageUp,
+                _Enter, _Return,
                 )
 
     def _moveCursor(self, motion, count, searchChar=None, select=False):
@@ -442,6 +445,11 @@ class BaseCommandMode(Mode):
             direction = QTextCursor.Down if motion == _PageDown else QTextCursor.Up
             for _ in range(visibleLineCount):
                 cursor.movePosition(direction, moveMode)
+        elif motion in (_Enter, _Return):
+            if cursor.block().next().isValid():  # not the last line
+                for _ in range(effectiveCount):
+                    cursor.movePosition(QTextCursor.NextBlock, moveMode)
+                    moveToFirstNonSpace()
         else:
             assert 0, 'Not expected motion ' + str(motion)
 
@@ -801,7 +809,6 @@ class Normal(BaseCommandMode):
 
         # Now get the action
         action = code(ev)
-
 
         if action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]

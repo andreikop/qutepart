@@ -315,6 +315,16 @@ class Move(_Test):
             self.assertEqual(self.qpart.cursorPosition,
                              pos)
 
+    def test_19(self):
+        """ Enter, Return
+        """
+        self.qpart.lines[1] = '   indented line'
+        self.qpart.lines[2] = '     more indented line'
+        self.click(Qt.Key_Enter)
+        self.assertEqual(self.qpart.cursorPosition, (1, 3))
+        self.click(Qt.Key_Return)
+        self.assertEqual(self.qpart.cursorPosition, (2, 5))
+
 
 class Del(_Test):
     def test_01a(self):

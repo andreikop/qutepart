@@ -1,7 +1,6 @@
 fixme:
   visual block mode + rectangular selection
   replace char, append, open line count times
-  Enter jumps to the first non-space char of the next line
   P to paste before
 
 todo:
