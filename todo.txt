@@ -1,7 +1,7 @@
 fixme:
   visual block mode + rectangular selection
   replace char, append, open line count times
-  P to paste before
+  S substitute command
 
 todo:
   switch hihglighting language        2

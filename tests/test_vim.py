@@ -634,7 +634,7 @@ class CopyPaste(_Test):
 
         self.click("p")
         self.assertEqual(self.qpart.lines[0],
-                         'The quick brown fox')  # NOTE 'The  quickbrown fox' in vim
+                         'The  quickbrown fox')
 
     def test_03(self):
         """Paste lines with p
@@ -647,6 +647,22 @@ class CopyPaste(_Test):
 
         self.click("kkk")
         self.click("p")
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'jumps over the',
+                          'lazy dog',
+                          'back'])
+
+    def test_04(self):
+        """Paste lines with P
+        """
+        self.qpart.cursorPosition = (1, 2)
+        self.click("2dd")
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'back'])
+
+        self.click("P")
         self.assertEqual(self.qpart.lines[:],
                          ['The quick brown fox',
                           'jumps over the',
@@ -669,10 +685,10 @@ class CopyPaste(_Test):
 
 
     def test_08(self):
-        """ Composite yank with y
+        """ Composite yank with y, paste with P
         """
         self.click('y2w')
-        self.click('p')
+        self.click('P')
         self.assertEqual(self.qpart.lines[0],
                          'The quick The quick brown fox')
 

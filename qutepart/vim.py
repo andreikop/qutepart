@@ -979,12 +979,23 @@ class Normal(BaseCommandMode):
             return
 
         if isinstance(Vim.internalClipboard, basestring):
+            cursor = self._qpart.textCursor()
+            if cmd == _p:
+                cursor.movePosition(QTextCursor.Right)
+                self._qpart.setTextCursor(cursor)
+
             self._repeat(count,
-                lambda: self._qpart.textCursor().insertText(Vim.internalClipboard))
+                lambda: cursor.insertText(Vim.internalClipboard))
+            cursor.movePosition(QTextCursor.Left)
+            self._qpart.setTextCursor(cursor)
+
         elif isinstance(Vim.internalClipboard, list):
-            currentLineIndex = self._qpart.cursorPosition[0]
+            index = self._qpart.cursorPosition[0]
+            if cmd == _p:
+                index += 1
+
             self._repeat(count,
-                lambda: self._qpart.lines.insert(currentLineIndex + 1, '\n'.join(Vim.internalClipboard)))
+                lambda: self._qpart.lines.insert(index, '\n'.join(Vim.internalClipboard)))
 
         self._saveLastEditSimpleCmd(cmd, count)
 
@@ -1038,6 +1049,7 @@ class Normal(BaseCommandMode):
                         _o: cmdNewLineBelow,
                         _O: cmdNewLineAbove,
                         _p: cmdInternalPaste,
+                        _P: cmdInternalPaste,
                         _u: cmdUndo,
                         _U: cmdRedo,
                         _x: cmdDelete,
