@@ -148,6 +148,15 @@ class Modes(_Test):
                          'The quick brown fox')
         self.assertEqual(self.vimMode, 'visual')
 
+    def test_10(self):
+        """ Insert mode with I
+        """
+        self.qpart.lines[1] = '   indented line'
+        self.click('j8lI')
+        self.click('Z')
+        self.assertEqual(self.qpart.lines[1],
+                         '   Zindented line')
+
 
 class Move(_Test):
     def test_01(self):

@@ -926,6 +926,15 @@ class Normal(BaseCommandMode):
     def cmdInsertMode(self, cmd, count):
         self.switchMode(Insert)
 
+    def cmdInsertAtLineStartMode(self, cmd, count):
+        cursor = self._qpart.textCursor()
+        text = cursor.block().text()
+        spaceLen = len(text) - len(text.lstrip())
+        cursor.setPosition(cursor.block().position() + spaceLen)
+        self._qpart.setTextCursor(cursor)
+
+        self.switchMode(Insert)
+
     def cmdReplaceMode(self, cmd, count):
         self.switchMode(Replace)
         self._qpart.setOverwriteMode(True)
@@ -1076,6 +1085,7 @@ class Normal(BaseCommandMode):
                         _C: cmdDeleteUntilEndOfLine,
                         _D: cmdDeleteUntilEndOfLine,
                         _i: cmdInsertMode,
+                        _I: cmdInsertAtLineStartMode,
                         _r: cmdReplaceCharMode,
                         _R: cmdReplaceMode,
                         _v: cmdVisualMode,
