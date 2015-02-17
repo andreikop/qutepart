@@ -687,11 +687,14 @@ class BaseVisual(BaseCommandMode):
 
     def cmdVisualMode(self, cmd):
         if not self._selectLines:
+            self._resetSelection()
             return  # already in visual mode
+
         self.switchMode(Visual)
 
     def cmdVisualLinesMode(self, cmd):
         if self._selectLines:
+            self._resetSelection()
             return  # already in visual lines mode
 
         self.switchMode(VisualLines)
