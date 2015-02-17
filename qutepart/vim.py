@@ -762,6 +762,8 @@ class BaseVisual(BaseCommandMode):
                             _p: cmdInternalPaste,
                             _u: cmdResetSelection,
                             _x: cmdDelete,
+                            _s: cmdChange,
+                            _S: cmdReplaceSelectedLines,
                             _v: cmdVisualMode,
                             _V: cmdVisualLinesMode,
                             _X: cmdDeleteLines,
