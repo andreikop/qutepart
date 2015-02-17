@@ -483,6 +483,13 @@ class Edit(_Test):
         self.assertEqual(self.qpart.lines[0],
                          'Thepig')
 
+    def test_03(self):
+        """ Substitute with s
+        """
+        self.click('j4sz')
+        self.assertEqual(self.qpart.lines[1],
+                         'zs over the')
+
     def test_04(self):
         """Replace char with r
         """

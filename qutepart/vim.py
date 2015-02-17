@@ -999,6 +999,20 @@ class Normal(BaseCommandMode):
 
         self._saveLastEditSimpleCmd(cmd, count)
 
+    def cmdSubstitute(self, cmd, count):
+        """ s
+        """
+        cursor = self._qpart.textCursor()
+        for _ in range(count):
+            cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
+
+        if cursor.selectedText():
+            Vim.internalClipboard = cursor.selectedText()
+            cursor.removeSelectedText()
+
+        self._saveLastEditSimpleCmd(cmd, count)
+        self.switchMode(Insert)
+
     def cmdVisualMode(self, cmd, count):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
@@ -1050,6 +1064,7 @@ class Normal(BaseCommandMode):
                         _O: cmdNewLineAbove,
                         _p: cmdInternalPaste,
                         _P: cmdInternalPaste,
+                        _s: cmdSubstitute,
                         _u: cmdUndo,
                         _U: cmdRedo,
                         _x: cmdDelete,
