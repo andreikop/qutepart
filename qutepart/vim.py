@@ -165,6 +165,7 @@ class Vim(QObject):
             self._qpart.setCursorWidth(self._originalCursorWidth)
 
         self._updateCursorShape()
+        self._qpart._updateVimExtraSelections()
 
         self.updateIndication()
 
