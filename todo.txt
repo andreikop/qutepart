@@ -1,7 +1,6 @@
 fixme:
   visual block mode + rectangular selection
   replace char, append, open line count times
-  Home in Insert mode
 
 todo:
   switch hihglighting language        2

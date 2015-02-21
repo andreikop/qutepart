@@ -915,8 +915,9 @@ class Qutepart(QPlainTextEdit):
             if self._vim is not None:
                 self._vim.keyPressEvent(event)
         elif event.matches(QKeySequence.MoveToStartOfLine):
-            if self._vim is not None:
-                self._vim.keyPressEvent(event)
+            if self._vim is not None and \
+               self._vim.keyPressEvent(event):
+                return
             else:
                 self._onShortcutHome(select=False)
         elif event.matches(QKeySequence.SelectStartOfLine):
