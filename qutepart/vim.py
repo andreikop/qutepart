@@ -648,6 +648,32 @@ class BaseVisual(BaseCommandMode):
     def cmdInsertMode(self, cmd):
         self.switchMode(Insert)
 
+    def cmdJoinLines(self, cmd, repeatLineCount=None):
+        if repeatLineCount is not None:
+            self._selectRangeForRepeat(repeatLineCount)
+
+        start, end = self._selectedLinesRange()
+        count = end - start
+
+        if not count:  # nothing to join
+            return
+
+        self._saveLastEditLinesCmd(cmd, end - start + 1)
+
+        cursor = QTextCursor(self._qpart.document().findBlockByNumber(start))
+        with self._qpart:
+            for _ in range(count):
+                cursor.movePosition(QTextCursor.EndOfLine)
+                cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
+                self.moveToFirstNonSpace(cursor, QTextCursor.KeepAnchor)
+                nonEmptyBlock = cursor.block().length() > 1
+                cursor.removeSelectedText()
+                if nonEmptyBlock:
+                    cursor.insertText(' ')
+
+        self._qpart.setTextCursor(cursor)
+
+
     def cmdAppendAfterChar(self, cmd):
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.Right)
@@ -764,6 +790,7 @@ class BaseVisual(BaseCommandMode):
                             _d: cmdDelete,
                             _D: cmdDeleteLines,
                             _i: cmdInsertMode,
+                            _J: cmdJoinLines,
                             _R: cmdReplaceSelectedLines,
                             _p: cmdInternalPaste,
                             _u: cmdResetSelection,

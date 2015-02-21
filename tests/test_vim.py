@@ -839,6 +839,15 @@ class Visual(_Test):
         self.assertEqual(self.qpart.selectedText,
                          'The quick bro')
 
+    def test_11(self):
+        """ J join lines
+        """
+        self.click('jvjJ')
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox',
+                          'jumps over the lazy dog',
+                          'back'])
+
 
 class VisualLines(_Test):
     def test_01(self):
