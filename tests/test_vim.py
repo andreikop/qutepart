@@ -565,6 +565,14 @@ class Edit(_Test):
         self.assertEqual(self.qpart.lines[0],
                          ' xxx')
 
+    def test_10(self):
+        """ J join lines
+        """
+        self.click('2J')
+        self.assertEqual(self.qpart.lines[:],
+                         ['The quick brown fox jumps over the lazy dog',
+                          'back'])
+
 
 class Indent(_Test):
     def test_01(self):

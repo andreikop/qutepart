@@ -326,6 +326,12 @@ class BaseCommandMode(Mode):
                 _Enter, _Return,
                 )
 
+    @staticmethod
+    def moveToFirstNonSpace(cursor, moveMode):
+        text = cursor.block().text()
+        spaceLen = len(text) - len(text.lstrip())
+        cursor.setPosition(cursor.block().position() + spaceLen, moveMode)
+
     def _moveCursor(self, motion, count, searchChar=None, select=False):
         """ Move cursor.
         Used by Normal and Visual mode
@@ -356,10 +362,6 @@ class BaseCommandMode(Mode):
                          _G: QTextCursor.End
                         }
 
-        def moveToFirstNonSpace():
-            text = cursor.block().text()
-            spaceLen = len(text) - len(text.lstrip())
-            cursor.setPosition(cursor.block().position() + spaceLen, moveMode)
 
         if motion == _G:
             if count == 0:  # default - go to the end
@@ -369,7 +371,7 @@ class BaseCommandMode(Mode):
                 if not block.isValid():
                     return
                 cursor.setPosition(block.position(), moveMode)
-            moveToFirstNonSpace()
+            self.moveToFirstNonSpace(cursor, moveMode)
         elif motion in moveOperation:
             for _ in range(effectiveCount):
                 cursor.movePosition(moveOperation[motion], moveMode)
@@ -420,7 +422,7 @@ class BaseCommandMode(Mode):
                 cursor.setPosition(endPos, moveMode)
         elif motion == _Caret:
             # Caret move is done only once
-            moveToFirstNonSpace()
+            self.moveToFirstNonSpace(cursor, moveMode)
         elif motion in (_f, _F, _t, _T):
             if motion in (_f, _t):
                 iterator = self._iterateDocumentCharsForward(cursor.block(), cursor.columnNumber())
@@ -450,7 +452,7 @@ class BaseCommandMode(Mode):
             if cursor.block().next().isValid():  # not the last line
                 for _ in range(effectiveCount):
                     cursor.movePosition(QTextCursor.NextBlock, moveMode)
-                    moveToFirstNonSpace()
+                    self.moveToFirstNonSpace(cursor, moveMode)
         else:
             assert 0, 'Not expected motion ' + str(motion)
 
@@ -936,6 +938,26 @@ class Normal(BaseCommandMode):
 
         self.switchMode(Insert)
 
+    def cmdJoinLines(self, cmd, count):
+        cursor = self._qpart.textCursor()
+        if not cursor.block().next().isValid():  # last block
+            return
+
+        with self._qpart:
+            for _ in range(count):
+                cursor.movePosition(QTextCursor.EndOfLine)
+                cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
+                self.moveToFirstNonSpace(cursor, QTextCursor.KeepAnchor)
+                nonEmptyBlock = cursor.block().length() > 1
+                cursor.removeSelectedText()
+                if nonEmptyBlock:
+                    cursor.insertText(' ')
+
+                if not cursor.block().next().isValid():  # last block
+                    break
+
+        self._qpart.setTextCursor(cursor)
+
     def cmdReplaceMode(self, cmd, count):
         self.switchMode(Replace)
         self._qpart.setOverwriteMode(True)
@@ -1087,6 +1109,7 @@ class Normal(BaseCommandMode):
                         _D: cmdDeleteUntilEndOfLine,
                         _i: cmdInsertMode,
                         _I: cmdInsertAtLineStartMode,
+                        _J: cmdJoinLines,
                         _r: cmdReplaceCharMode,
                         _R: cmdReplaceMode,
                         _v: cmdVisualMode,
