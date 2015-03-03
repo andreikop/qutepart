@@ -198,7 +198,7 @@ class Vim(QObject):
             self.setMode(Normal(self, self._qpart))
 
     def _onCursorUnderlineBlinkTimer(self):
-        if isinstance(self._mode, Normal):
+        if isinstance(self._mode, Normal) and self._qpart.hasFocus():
             self._cursorUnderlined = not self._cursorUnderlined
             self._qpart._updateVimExtraSelections()
 
