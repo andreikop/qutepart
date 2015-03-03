@@ -1084,9 +1084,11 @@ class Normal(BaseCommandMode):
         effectiveCount = min(availableCount, count)
 
         Vim.internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount]
-        del self._qpart.lines[lineIndex:lineIndex + effectiveCount]
-        self._qpart.lines.insert(lineIndex, '')
-        self._qpart.cursorPosition = (lineIndex, 0)
+        with self._qpart:
+            del self._qpart.lines[lineIndex:lineIndex + effectiveCount]
+            self._qpart.lines.insert(lineIndex, '')
+            self._qpart.cursorPosition = (lineIndex, 0)
+            self._qpart._indenter.autoIndentBlock(self._qpart.textCursor().block())
 
         self._saveLastEditSimpleCmd(cmd, count)
         self.switchMode(Insert)
@@ -1128,6 +1130,15 @@ class Normal(BaseCommandMode):
 
         self._saveLastEditSimpleCmd(cmd, count)
 
+    def cmdYankUntilEndOfLine(self, cmd, count):
+        oldCursor = self._qpart.textCursor()
+        cursor = self._qpart.textCursor()
+        cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
+        Vim.internalClipboard = cursor.selectedText()
+        self._qpart.setTextCursor(cursor)
+        self._qpart.copy()
+        self._qpart.setTextCursor(oldCursor)
+
 
     _SIMPLE_COMMANDS = {_A: cmdAppendAfterLine,
                         _a: cmdAppendAfterChar,
@@ -1150,6 +1161,7 @@ class Normal(BaseCommandMode):
                         _U: cmdRedo,
                         _x: cmdDelete,
                         _X: cmdDelete,
+                        _Y: cmdYankUntilEndOfLine,
                        }
 
     #

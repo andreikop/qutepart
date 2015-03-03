@@ -549,12 +549,13 @@ class Edit(_Test):
     def test_08(self):
         """ Substitute with S
         """
-        self.click('j2S')
+        self.qpart.lines = ['    indented line',
+                            '    next indented line']
+        self.click('ljS')
         self.click('xyz')
         self.assertEqual(self.qpart.lines[:],
-                         ['The quick brown fox',
-                          'xyz',
-                          'back'])
+                         ['    indented line',
+                          '    xyz'])
 
     def test_09(self):
         """ % to jump to next braket
@@ -717,6 +718,14 @@ class CopyPaste(_Test):
                           'lazy dog',
                           'back'])
 
+    def test_06(self):
+        """ Yank until the end of line
+        """
+        self.click('2wYo')
+        self.click(Qt.Key_Escape)
+        self.click('P')
+        self.assertEqual(self.qpart.lines[1],
+                         'brown fox')
 
     def test_08(self):
         """ Composite yank with y, paste with P
