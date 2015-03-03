@@ -509,18 +509,17 @@ class BaseVisual(BaseCommandMode):
         ev = yield None
 
         # Get count
-        count = 0
+        typedCount = 0
 
         if ev.key() != _0:
             char = ev.text()
             while char.isdigit():
                 digit = int(char)
-                count = (count * 10) + digit
+                typedCount = (typedCount * 10) + digit
                 ev = yield
                 char = ev.text()
 
-        if count == 0:
-            count = 1
+        count = typedCount if typedCount else 1
 
         # Now get the action
         action = code(ev)
@@ -551,10 +550,10 @@ class BaseVisual(BaseCommandMode):
                 raise StopIteration(True)
 
             searchChar = ev.text()
-            self._moveCursor(action, count, searchChar=searchChar, select=True)
+            self._moveCursor(action, typedCount, searchChar=searchChar, select=True)
             raise StopIteration(True)
         elif action in self._MOTIONS:
-            self._moveCursor(action, count, select=True)
+            self._moveCursor(action, typedCount, select=True)
             if self._selectLines:
                 self._expandSelection()
             raise StopIteration(True)
