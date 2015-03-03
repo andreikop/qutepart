@@ -5616,7 +5616,7 @@ Changes:
       <itemData name="Constant" defStyleNum="dsKeyword" bold="0" spellChecking="false" />
       <itemData name="Control Structures" defStyleNum="dsKeyword" color="#A1A100" selColor="#ffffff" bold="0" italic="0" spellChecking="false" />
       <itemData name="Backslash Code" defStyleNum="dsKeyword" color="#0F0F8F" selColor="#ffffff" bold="1" italic="0" spellChecking="false" />
-      <itemData name="Other" defStyleNum="dsOthers" spellChecking="false" />
+      <itemData name="Other" defStyleNum="dsNormal" spellChecking="false" color='#006e26'/>  <!-- don't use dsOthers, because brackets are not highlighted -->
 
       <itemData name="HTML Tag" defStyleNum="dsKeyword" color="#0F0000" selColor="#ffffff" bold="1" italic="0" spellChecking="false" />
       <itemData name="HTML Comment" defStyleNum="dsComment" />
