@@ -354,10 +354,10 @@ class BaseCommandMode(Mode):
                          _Right: QTextCursor.Right,
                          _Space: QTextCursor.Right,
                          _w: QTextCursor.WordRight,
-                         _Dollar: QTextCursor.EndOfLine,
-                         _End: QTextCursor.EndOfLine,
-                         _0: QTextCursor.StartOfLine,
-                         _Home: QTextCursor.StartOfLine,
+                         _Dollar: QTextCursor.EndOfBlock,
+                         _End: QTextCursor.EndOfBlock,
+                         _0: QTextCursor.StartOfBlock,
+                         _Home: QTextCursor.StartOfBlock,
                          'gg': QTextCursor.Start,
                          _G: QTextCursor.End
                         }
@@ -582,11 +582,11 @@ class BaseVisual(BaseCommandMode):
 
 
         if pos >= anchor:
-            anchorSide = QTextCursor.StartOfLine
-            cursorSide = QTextCursor.EndOfLine
+            anchorSide = QTextCursor.StartOfBlock
+            cursorSide = QTextCursor.EndOfBlock
         else:
-            anchorSide = QTextCursor.EndOfLine
-            cursorSide = QTextCursor.StartOfLine
+            anchorSide = QTextCursor.EndOfBlock
+            cursorSide = QTextCursor.StartOfBlock
 
 
         cursor.setPosition(anchor)
@@ -609,7 +609,7 @@ class BaseVisual(BaseCommandMode):
         self._qpart.selectedPosition = ((start, 0),
                                         (start + repeatLineCount - 1, 0))
         cursor = self._qpart.textCursor()
-        cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)  # expand until the end of line
+        cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)  # expand until the end of line
         self._qpart.setTextCursor(cursor)
 
     def _saveLastEditLinesCmd(self, cmd, lineCount):
@@ -662,7 +662,7 @@ class BaseVisual(BaseCommandMode):
         cursor = QTextCursor(self._qpart.document().findBlockByNumber(start))
         with self._qpart:
             for _ in range(count):
-                cursor.movePosition(QTextCursor.EndOfLine)
+                cursor.movePosition(QTextCursor.EndOfBlock)
                 cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
                 self.moveToFirstNonSpace(cursor, QTextCursor.KeepAnchor)
                 nonEmptyBlock = cursor.block().length() > 1
@@ -971,7 +971,7 @@ class Normal(BaseCommandMode):
 
         with self._qpart:
             for _ in range(count):
-                cursor.movePosition(QTextCursor.EndOfLine)
+                cursor.movePosition(QTextCursor.EndOfBlock)
                 cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
                 self.moveToFirstNonSpace(cursor, QTextCursor.KeepAnchor)
                 nonEmptyBlock = cursor.block().length() > 1
@@ -994,7 +994,7 @@ class Normal(BaseCommandMode):
 
     def cmdAppendAfterLine(self, cmd, count):
         cursor = self._qpart.textCursor()
-        cursor.movePosition(QTextCursor.EndOfLine)
+        cursor.movePosition(QTextCursor.EndOfBlock)
         self._qpart.setTextCursor(cursor)
         self.switchMode(Insert)
 
@@ -1014,7 +1014,7 @@ class Normal(BaseCommandMode):
 
     def cmdNewLineBelow(self, cmd, count):
         cursor = self._qpart.textCursor()
-        cursor.movePosition(QTextCursor.EndOfLine)
+        cursor.movePosition(QTextCursor.EndOfBlock)
         self._qpart.setTextCursor(cursor)
         self._repeat(count, self._qpart._insertNewBlock)
 
@@ -1025,7 +1025,7 @@ class Normal(BaseCommandMode):
     def cmdNewLineAbove(self, cmd, count):
         cursor = self._qpart.textCursor()
         def insert():
-            cursor.movePosition(QTextCursor.StartOfLine)
+            cursor.movePosition(QTextCursor.StartOfBlock)
             self._qpart.setTextCursor(cursor)
             self._qpart._insertNewBlock()
             cursor.movePosition(QTextCursor.Up)
@@ -1114,13 +1114,13 @@ class Normal(BaseCommandMode):
 
         self._saveLastEditSimpleCmd(cmd, count)
 
-    def cmdDeleteUntilEndOfLine(self, cmd, count):
+    def cmdDeleteUntilEndOfBlock(self, cmd, count):
         """ C and D
         """
         cursor = self._qpart.textCursor()
         for _ in range(count - 1):
             cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor)
-        cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+        cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
         Vim.internalClipboard = cursor.selectedText()
         cursor.removeSelectedText()
         if cmd == _C:
@@ -1131,8 +1131,8 @@ class Normal(BaseCommandMode):
 
     _SIMPLE_COMMANDS = {_A: cmdAppendAfterLine,
                         _a: cmdAppendAfterChar,
-                        _C: cmdDeleteUntilEndOfLine,
-                        _D: cmdDeleteUntilEndOfLine,
+                        _C: cmdDeleteUntilEndOfBlock,
+                        _D: cmdDeleteUntilEndOfBlock,
                         _i: cmdInsertMode,
                         _I: cmdInsertAtLineStartMode,
                         _J: cmdJoinLines,
@@ -1211,10 +1211,10 @@ class Normal(BaseCommandMode):
         oldCursor = self._qpart.textCursor()
         if motion == _y:
             cursor = self._qpart.textCursor()
-            cursor.movePosition(QTextCursor.StartOfLine)
+            cursor.movePosition(QTextCursor.StartOfBlock)
             for _ in range(count - 1):
                 cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor)
-            cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+            cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
             self._qpart.setTextCursor(cursor)
             Vim.internalClipboard = [self._qpart.selectedText]
         else:
