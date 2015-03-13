@@ -23,7 +23,7 @@
   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
   Boston, MA  02110-1301, USA.
  -->
-<language name="GNU Gettext" version="2.00" kateversion="2.4" section="Markup" extensions="*.po;*.pot" mimetype="text/x-gettext-translation" author="Dominik Haumann (dhdev@gmx.de)" license="LGPL">
+<language name="GNU Gettext" version="2.01" kateversion="2.4" section="Markup" extensions="*.po;*.pot" mimetype="text/x-gettext-translation" author="Dominik Haumann (dhdev@gmx.de)" license="LGPL">
   <highlighting>
 
     <contexts>
@@ -83,7 +83,7 @@
         <DetectChar attribute = "StringTag" char="&gt;" context="#pop"/>
         <DetectChar attribute = "String" char="&quot;" context="StringWrapSub"/>
       </context>
-      <context name = "StringWrap" lineEndContext="#stay">
+      <context name = "StringWrap" attribute = "String" lineEndContext="#stay">
         <DetectChar attribute = "String" char="&quot;" context="#pop"/>
         <RegExpr String="." lookAhead="true" context="#pop#pop"/>
       </context>
@@ -97,7 +97,7 @@
         <StringDetect attribute = "StringDiffOldWrap" String="-}" context="#pop"/>
         <DetectChar attribute = "String" char="&quot;" context="StringWrapSub"/>
       </context>
-      <context name = "StringWrapSub" lineEndContext="#stay">
+      <context name = "StringWrapSub" attribute = "String" lineEndContext="#stay">
         <DetectChar attribute = "String" char="&quot;" context="#pop"/>
         <RegExpr String="." lookAhead="true" context="#pop#pop#pop"/>
       </context>
@@ -139,12 +139,12 @@
         <StringDetect attribute = "StringDiffOldWrapPrevious" String="-}" context="#pop"/>
         <DetectChar attribute = "StringPrevious" char="&quot;" context="StringWrapSubPrevious"/>
       </context>
-      <context name = "StringWrapPrevious" lineEndContext="#stay">
+      <context name = "StringWrapPrevious" attribute = "StringPrevious" lineEndContext="#stay">
         <RegExpr String="[^#]" firstNonSpace="true" lookAhead="true" context="#pop#pop"/>
         <RegExpr attribute = "StringPrevious" String="(#\|)? *&quot;" context="#pop"/>
         <RegExpr String="." lookAhead="true" context="#pop#pop"/>
       </context>
-      <context name = "StringWrapSubPrevious" lineEndContext="#stay">
+      <context name = "StringWrapSubPrevious" attribute = "StringPrevious" lineEndContext="#stay">
         <RegExpr String="[^#]" firstNonSpace="true" lookAhead="true" context="#pop#pop#pop"/>
         <RegExpr attribute = "StringPrevious" String="(#\|)? *&quot;" context="#pop"/>
         <RegExpr String="." lookAhead="true" context="#pop#pop#pop"/>

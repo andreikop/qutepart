@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Protobuf" version="2.40" kateversion="2.4" section="Sources" extensions="*.proto" mimetype="text/x-protobuf" author="Slawomir Mikula (slawek.mikula@gmail.com)" license="LGPL">
+<language name="Protobuf" version="2.40" kateversion="3.4" section="Sources" extensions="*.proto" mimetype="text/x-protobuf" author="Slawomir Mikula (slawek.mikula@gmail.com)" license="LGPL">
   <highlighting>
     <list name="keywords">
       <item> message </item>
@@ -60,7 +60,7 @@
         <HlCOct attribute="Octal" context="#stay"/>
         <HlCHex attribute="Hex" context="#stay"/>
         <Int attribute="Decimal" context="#stay">
-            <StringDetect attribute="Decimal" context="#stay" String="L" insensitive="TRUE"/>
+            <StringDetect attribute="Decimal" context="#stay" String="L" insensitive="true"/>
         </Int>
         <HlCChar attribute="Char" context="#stay"/>
         <RegExpr attribute="Char" context="#stay" String="'\\u[0-9a-fA-F]{4}'"/>

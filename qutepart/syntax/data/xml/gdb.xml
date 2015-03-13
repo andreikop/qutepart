@@ -8,7 +8,7 @@ v1.0:
 -->
 
 <language name="GDB Backtrace" section="Other"
-          version="1.0" kateversion="2.4"
+          version="1.0" kateversion="3.4"
           extensions="*.kcrash;*.crash;*.bt"
           mimetype=""
           author="Milian Wolff (mail@milianw.de)" license="LGPL">

@@ -16,9 +16,9 @@
     Changelog :)
     0.02 Added highliting for interpolated variables
         -->
-<language version="0.03" kateversion="2.4"
+<language version="0.03" kateversion="2.3"
           author="Красимир Беров (k.berov@gmail.com)" license="Artistic"
-          name="TT2" section="Markup" extensions="*.tt*;" casesensitive="TRUE">
+          name="TT2" section="Markup" extensions="*.tt*;" casesensitive="true">
 <highlighting>
     <list name="control structures">
         <!-- Template directives -->
@@ -183,7 +183,7 @@
     <contexts>
         <context name="nosource" attribute="Normal Text" lineEndContext="#stay">
             <StringDetect attribute="Keyword" context="tt2source" String="[%" />
-            <RegExpr attribute="HTML Tag" context="scripts" String="&lt;\s*script(\s|&gt;)" insensitive="TRUE" />
+            <RegExpr attribute="HTML Tag" context="scripts" String="&lt;\s*script(\s|&gt;)" insensitive="true" />
             <RegExpr attribute="HTML Tag" context="htmltag" String="&lt;\s*\/?\s*[a-zA-Z_:][a-zA-Z0-9._:-]*" />
             <StringDetect attribute="HTML Comment" context="htmlcomment" String="&lt;!--" />
             <!-- Interpolated variables -->
@@ -208,13 +208,13 @@
             <AnyChar attribute="Other" context="#stay" String=";()}{:,[]" />
             <keyword attribute="Other" context="#stay" String="Others" />
             
-            <RegExpr attribute="Control Structures" context="#stay" String="\bELSIF\b" insensitive="FALSE" beginRegion="iffi1" endRegion="iffi1"/>
-            <RegExpr attribute="Control Structures" context="#stay" String="\bELSE\b" insensitive="FALSE" beginRegion="iffi1" endRegion="iffi1"/>
-            <RegExpr attribute="Control Structures" context="#stay" String="\bIF\b" insensitive="FALSE" beginRegion="iffi1"/>
-            <RegExpr attribute="Control Structures" context="#stay" String="\bEND\b" insensitive="FALSE" endRegion="iffi1"/>
+            <RegExpr attribute="Control Structures" context="#stay" String="\bELSIF\b" insensitive="false" beginRegion="iffi1" endRegion="iffi1"/>
+            <RegExpr attribute="Control Structures" context="#stay" String="\bELSE\b" insensitive="false" beginRegion="iffi1" endRegion="iffi1"/>
+            <RegExpr attribute="Control Structures" context="#stay" String="\bIF\b" insensitive="false" beginRegion="iffi1"/>
+            <RegExpr attribute="Control Structures" context="#stay" String="\bEND\b" insensitive="false" endRegion="iffi1"/>
 
-            <RegExpr attribute="Control Structures" context="#stay" String="\bFOREACH\b" insensitive="FALSE" beginRegion="foreachblock"/>
-            <RegExpr attribute="Control Structures" context="#stay" String="\bEND\b" insensitive="FALSE" endRegion="foreachblock"/>
+            <RegExpr attribute="Control Structures" context="#stay" String="\bFOREACH\b" insensitive="false" beginRegion="foreachblock"/>
+            <RegExpr attribute="Control Structures" context="#stay" String="\bEND\b" insensitive="false" endRegion="foreachblock"/>
 
             
             <keyword attribute="Keyword" context="#stay" String="keywords" />
@@ -276,7 +276,7 @@
             <keyword attribute="Keyword" context="#stay" String="keywords" />
             <keyword attribute="Function" context="#stay" String="functions" />
             <StringDetect attribute="Keyword" context="tt2source" String="[%"/>
-            <RegExpr attribute="HTML Tag" context="#pop" String="&lt;\s*\/\s*script\s*&gt;" insensitive="TRUE" />
+            <RegExpr attribute="HTML Tag" context="#pop" String="&lt;\s*\/\s*script\s*&gt;" insensitive="true" />
             
             <DetectChar attribute="String" context="doublequotestring" char="&quot;" />
             <DetectChar attribute="String" context="singlequotestring" char="&#39;" />
@@ -290,7 +290,7 @@
             <keyword attribute="Other" context="#stay" String="Others" />
         </context>
         <context name="scripts_onelinecomment" attribute="Comment" lineEndContext="#pop">
-            <RegExpr attribute="HTML Tag" context="#pop#pop" String="&lt;\s*\/\s*script\s*&gt;" insensitive="TRUE" />
+            <RegExpr attribute="HTML Tag" context="#pop#pop" String="&lt;\s*\/\s*script\s*&gt;" insensitive="true" />
         </context>
         <context name="twolinecomment" attribute="Comment" lineEndContext="#stay">
             <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" endRegion="Comment" />

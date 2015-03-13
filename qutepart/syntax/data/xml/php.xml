@@ -2,6 +2,9 @@
 <!--
 
 Changes:
+[ Version 1.46 (2015-03-02) ]
+- added yield keyword
+
 [ Version 1.43 (2013-10-11) ]
 - added missing constants for sorting
 
@@ -64,7 +67,7 @@ Changes:
   <!ENTITY types "int|integer|bool|boolean|float|double|real|string|array|object">
 ]>
 
-<language name="PHP/PHP" indenter="cstyle" version="1.44" kateversion="2.4" section="Scripts" extensions="" priority="5" mimetype="" hidden="true">
+<language name="PHP/PHP" indenter="cstyle" version="1.46" kateversion="3.4" section="Scripts" extensions="" priority="5" mimetype="" hidden="true">
   <highlighting>
     <list name="control structures">
       <item>as</item>
@@ -102,6 +105,7 @@ Changes:
       <item> exception </item>
       <item> extends </item>
       <item> final </item>
+      <item> finally </item>
       <item> function </item>
       <item> global </item>
       <item> implements </item>
@@ -124,6 +128,7 @@ Changes:
       <item> var </item>
       <item> namespace </item>
       <item> use </item>
+      <item> yield </item>
     </list>
       <!-- magic constants, see http://php.net/manual/en/language.constants.predefined.php -->
     <list name="constants">
@@ -5401,7 +5406,7 @@ Changes:
 
       <!-- Keywords -->
       <item> var </item>
-     
+
       <!-- Constants -->
       <item>OCI_DEFAULT</item>
       <item>OCI_D_FILE</item>
@@ -5559,7 +5564,7 @@ Changes:
       <context name="javascriptheredoc" attribute="Normal Text" lineEndContext="#stay" dynamic="true">
         <RegExpr attribute="Backslash Code" context="#pop" String="^%1;?$" dynamic="true" endRegion="Heredoc" />
         <IncludeRules context="commonheredoc" />
-        <IncludeRules context="##JavaScript" />
+        <IncludeRules context="Normal##JavaScript" />
       </context>
       <context name="heredoc" attribute="String" lineEndContext="#stay" dynamic="true">
         <RegExpr attribute="Backslash Code" context="#pop" String="^%1;?$" dynamic="true" endRegion="Heredoc" />
@@ -5588,7 +5593,7 @@ Changes:
       <context name="javascriptnowdoc" attribute="Normal Text" lineEndContext="#stay" dynamic="true">
         <RegExpr attribute="Backslash Code" context="#pop" String="^%1;?$" dynamic="true" endRegion="Heredoc" />
         <IncludeRules context="commonnowdoc" />
-        <IncludeRules context="##JavaScript" />
+        <IncludeRules context="Normal##JavaScript" />
       </context>
       <context name="nowdoc" attribute="String" lineEndContext="#stay" dynamic="true">
         <RegExpr attribute="Backslash Code" context="#pop" String="^%1;?$" dynamic="true" endRegion="Heredoc" />

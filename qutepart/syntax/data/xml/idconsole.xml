@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Quake Script" version="1.02" kateversion="2.1" section="Scripts" extensions="*.cfg" mimetype="">
+<language name="Quake Script" version="1.02" kateversion="2.2" section="Scripts" extensions="*.cfg" mimetype="">
 
 <highlighting>
 <list name="Commands">
@@ -2074,7 +2074,7 @@
                 <keyword attribute="Command" context="Bind phrase" String="BindFamily"/>
                 <keyword attribute="Command" context="Alias phrase" String="setFamily"/>
                 <keyword attribute="Command" context="Echo" String="PrintsString"/>
-                <StringDetect attribute="Command" context="Alias phrase" String="alias" insensitive="TRUE"/>
+                <StringDetect attribute="Command" context="Alias phrase" String="alias" insensitive="true"/>
                 <keyword attribute="Command" context="Echo" String="PrintsString"/>
                 <DetectChar attribute="Symbol" context="#stay" char="$"/>
                 <Detect2Chars attribute="Comment" context="Comment" char="/" char1="/"/>

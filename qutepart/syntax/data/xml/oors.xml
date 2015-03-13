@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="OORS" version="1.1" kateversion="2.4" section="Sources" extensions="*.oors" author="Gernot Gebhard (gebhard@cs.uni-sb.de)" license="LGPL">
+<language name="OORS" version="1.2" kateversion="2.4" section="Sources" extensions="*.oors" author="Gernot Gebhard (gebhard@cs.uni-sb.de)" license="LGPL">
   <highlighting>
     <list name="oors">
       <item>allow</item>
@@ -54,11 +54,11 @@
         <DetectChar attribute="Normal Text" context="#pop" char="}" endRegion="Unordered" />
         <IncludeRules context="##C++" />
       </context>
-      <context name="Accessor" attribute="Directive">
+      <context name="Accessor" attribute="Directive" lineEndContext="#stay">
         <Detect2Chars attribute="Directive" context="#stay" char="$" char1="$" />
         <RegExpr attribute="Directive" context="#stay" String="\$-?[_a-zA-Z1-9][_a-zA-Z0-9]*" />
       </context>
-      <context name="Comment" attribute="Comment">
+      <context name="Comment" attribute="Comment" lineEndContext="#stay">
         <IncludeRules context="##Doxygen" />
         <Detect2Chars attribute="Comment" context="CommentStar" char="/" char1="*" />
         <Detect2Chars attribute="Comment" context="CommentSlash" char="/" char1="/" />
@@ -83,12 +83,12 @@
       <itemData name="String Char" defStyleNum="dsChar"/>
       <itemData name="Data Type" defStyleNum="dsDataType"/>
     </itemDatas>
-    <general>
-      <comments>
-        <comment name="singleLine" start="//" />
-        <comment name="multiLine" start="/*" end="*/" region="Comment"/>
-      </comments>
-      <keywords casesensitive="1" />
-    </general>
   </highlighting>
+  <general>
+    <comments>
+      <comment name="singleLine" start="//" />
+      <comment name="multiLine" start="/*" end="*/" region="Comment"/>
+    </comments>
+    <keywords casesensitive="1" />
+  </general>
 </language>

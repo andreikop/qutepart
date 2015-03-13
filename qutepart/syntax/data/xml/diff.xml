@@ -15,7 +15,7 @@
     2008-02-13: 1.11 Eduardo Robles Elvira <edulix AT gmail DOT com>
      Fixed folding.
 -->
-<language name="Diff" version="1.11" kateversion="2.1" section="Other" extensions="*.diff;*patch" mimetype="text/x-patch" firstLineGlobs="Index: *">
+<language name="Diff" version="1.12" kateversion="2.4" section="Other" extensions="*.diff;*patch" mimetype="text/x-patch" firstLineGlobs="Index: *">
 
   <highlighting>
 
@@ -25,7 +25,7 @@
         <RegExpr attribute="Header" context="Chunk" String="&chunk;" beginRegion="chunk" column="0"/>
         <RegExpr attribute="Header" context="RChunk" String="\*+$" beginRegion="chunk" column="0"/>
         <RegExpr attribute="File" context="#stay" String="Only in .*:.*$" column="0"/>
-        <RegExpr attribute="File" context="RFile" String="diff.*$" Region="chunk" column="0"/>
+        <RegExpr attribute="File" context="RFile" String="diff.*$" beginRegion="chunk" column="0"/>
         <RegExpr attribute="File" context="#stay" String="====.*$" column="0"/>
         <RegExpr attribute="File" context="File" String="(\*\*\*|\-\-\-).*$" beginRegion="chunk" column="0"/>
         <IncludeRules context="FindDiff"/>

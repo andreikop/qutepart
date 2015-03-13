@@ -4,7 +4,7 @@
 	<!ENTITY name    "[A-Za-z_:][\w.:_-]*">
 	<!ENTITY entref  "&amp;(#[0-9]+|#[xX][0-9A-Fa-f]+|&name;);">
 ]>
-<language name="Mako" version="1.0" kateversion="2.4" section="Markup" extensions="*.mako;*.mak" author="Massimiliano Torromeo (massimiliano.torromeo@gmail.com)" license="LGPL">
+<language name="Mako" version="1.0" kateversion="3.4" section="Markup" extensions="*.mako;*.mak" author="Massimiliano Torromeo (massimiliano.torromeo@gmail.com)" license="LGPL">
 
 <highlighting>
 <list name="flow">
@@ -47,7 +47,7 @@
 
 	<context name="NoMakoJS" attribute="Normal Text" lineEndContext="#stay">
 		<StringDetect attribute="MakoKeyword" context="#pop" String="&lt;/%text&gt;" endRegion="nomako" />
-		<IncludeRules context="##JavaScript" includeAttrib="true"/>
+		<IncludeRules context="Normal##JavaScript" includeAttrib="true"/>
 	</context>
 
 	<context name="FindHTML" attribute="Normal Text" lineEndContext="#stay">
@@ -57,21 +57,21 @@
 		<StringDetect attribute="CDATA" context="CDATA" String="&lt;![CDATA[" beginRegion="cdata" />
 		<RegExpr attribute="Doctype" context="Doctype" String="&lt;!DOCTYPE\s+" beginRegion="doctype" />
 		<RegExpr attribute="Processing Instruction" context="PI" String="&lt;\?[\w:-]*" beginRegion="pi" />
-		<RegExpr attribute="Element" context="CSS" String="&lt;style\b" insensitive="TRUE" beginRegion="style" />
-		<RegExpr attribute="Element" context="JS" String="&lt;script\b" insensitive="TRUE" beginRegion="script" />
-		<RegExpr attribute="Element" context="El Open" String="&lt;pre\b" insensitive="TRUE" beginRegion="pre" />
-		<RegExpr attribute="Element" context="El Open" String="&lt;div\b" insensitive="TRUE" beginRegion="div" />
-		<RegExpr attribute="Element" context="El Open" String="&lt;table\b" insensitive="TRUE" beginRegion="table" />
-		<RegExpr attribute="Element" context="El Open" String="&lt;ul\b" insensitive="TRUE" beginRegion="ul" />
-		<RegExpr attribute="Element" context="El Open" String="&lt;ol\b" insensitive="TRUE" beginRegion="ol" />
-		<RegExpr attribute="Element" context="El Open" String="&lt;dl\b" insensitive="TRUE" beginRegion="dl" />
+		<RegExpr attribute="Element" context="CSS" String="&lt;style\b" insensitive="true" beginRegion="style" />
+		<RegExpr attribute="Element" context="JS" String="&lt;script\b" insensitive="true" beginRegion="script" />
+		<RegExpr attribute="Element" context="El Open" String="&lt;pre\b" insensitive="true" beginRegion="pre" />
+		<RegExpr attribute="Element" context="El Open" String="&lt;div\b" insensitive="true" beginRegion="div" />
+		<RegExpr attribute="Element" context="El Open" String="&lt;table\b" insensitive="true" beginRegion="table" />
+		<RegExpr attribute="Element" context="El Open" String="&lt;ul\b" insensitive="true" beginRegion="ul" />
+		<RegExpr attribute="Element" context="El Open" String="&lt;ol\b" insensitive="true" beginRegion="ol" />
+		<RegExpr attribute="Element" context="El Open" String="&lt;dl\b" insensitive="true" beginRegion="dl" />
 		<RegExpr attribute="Element" context="El Open" String="&lt;&name;" />
-		<RegExpr attribute="Element" context="El Close" String="&lt;/pre\b" insensitive="TRUE" endRegion="pre" />
-		<RegExpr attribute="Element" context="El Close" String="&lt;/div\b" insensitive="TRUE" endRegion="div" />
-		<RegExpr attribute="Element" context="El Close" String="&lt;/table\b" insensitive="TRUE" endRegion="table" />
-		<RegExpr attribute="Element" context="El Close" String="&lt;/ul\b" insensitive="TRUE" endRegion="ul" />
-		<RegExpr attribute="Element" context="El Close" String="&lt;/ol\b" insensitive="TRUE" endRegion="ol" />
-		<RegExpr attribute="Element" context="El Close" String="&lt;/dl\b" insensitive="TRUE" endRegion="dl" />
+		<RegExpr attribute="Element" context="El Close" String="&lt;/pre\b" insensitive="true" endRegion="pre" />
+		<RegExpr attribute="Element" context="El Close" String="&lt;/div\b" insensitive="true" endRegion="div" />
+		<RegExpr attribute="Element" context="El Close" String="&lt;/table\b" insensitive="true" endRegion="table" />
+		<RegExpr attribute="Element" context="El Close" String="&lt;/ul\b" insensitive="true" endRegion="ul" />
+		<RegExpr attribute="Element" context="El Close" String="&lt;/ol\b" insensitive="true" endRegion="ol" />
+		<RegExpr attribute="Element" context="El Close" String="&lt;/dl\b" insensitive="true" endRegion="dl" />
 		<RegExpr attribute="Element" context="El Close" String="&lt;/&name;" />
 		<!-- as long as kde gives DTDs the text/html mimetype--><IncludeRules context="FindDTDRules" />
 		<IncludeRules context="FindEntityRefs" />
@@ -176,7 +176,7 @@
 	</context>
 
 	<context name="CSS content" attribute="Normal Text" lineEndContext="#stay">
-		<RegExpr attribute="Element" context="El Close 2" String="&lt;/style\b" insensitive="TRUE" endRegion="style" />
+		<RegExpr attribute="Element" context="El Close 2" String="&lt;/style\b" insensitive="true" endRegion="style" />
 		<IncludeRules context="##CSS" includeAttrib="true"/>
 	</context>
 
@@ -188,15 +188,15 @@
 	</context>
 
 	<context name="JS content" attribute="Normal Text" lineEndContext="#stay">
-		<RegExpr attribute="Element" context="El Close 2" String="&lt;/script\b" insensitive="TRUE" endRegion="script" />
-		<RegExpr attribute="Comment" context="JS comment close" String="//(?=.*&lt;/script\b)" insensitive="TRUE" />
+		<RegExpr attribute="Element" context="El Close 2" String="&lt;/script\b" insensitive="true" endRegion="script" />
+		<RegExpr attribute="Comment" context="JS comment close" String="//(?=.*&lt;/script\b)" insensitive="true" />
 		<RegExpr attribute="MakoKeyword" context="NoMakoJS" String="&lt;%text(?:\s+[^&gt;]*)?&gt;" beginRegion="nomako" />
 		<IncludeRules context="FindMako" />
-		<IncludeRules context="##JavaScript" includeAttrib="true"/>
+		<IncludeRules context="Normal##JavaScript" includeAttrib="true"/>
 	</context>
 
 	<context name="JS comment close" attribute="Comment" lineEndContext="#pop">
-		<RegExpr attribute="Element" context="El Close 3" String="&lt;/script\b" insensitive="TRUE" endRegion="script" />
+		<RegExpr attribute="Element" context="El Close 3" String="&lt;/script\b" insensitive="true" endRegion="script" />
 		<IncludeRules context="##Alerts" />
 	</context>
 

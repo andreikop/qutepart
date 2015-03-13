@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE  language SYSTEM "language.dtd">
-<language name="ASP" version="1.04" kateversion="2.1" section="Markup" extensions="*.asp;" mimetype="text/x-asp-src;text/x-asp-src" author="Antonio Salazar (savedfastcool@gmail.com)" license="LGPL">
+<language name="ASP" version="1.04" kateversion="2.3" section="Markup" extensions="*.asp;" mimetype="text/x-asp-src;text/x-asp-src" author="Antonio Salazar (savedfastcool@gmail.com)" license="LGPL">
     <highlighting>
         <list name="control structures">
             <item>select</item>
@@ -232,15 +232,15 @@
             <contexts>
             <context name="nosource" attribute="Normal Text" lineEndContext="#stay">
                 <StringDetect attribute="Keyword" context="aspsource" String="&lt;%" />
-                <RegExpr attribute="HTML Tag" context="aspsource" String="&lt;\s*script\s*language=&quot;VBScript&quot;[^&gt;]*&gt;" insensitive="TRUE" />
-                <RegExpr attribute="HTML Tag" context="scripts" String="&lt;\s*script(\s|&gt;)" insensitive="TRUE" />
+                <RegExpr attribute="HTML Tag" context="aspsource" String="&lt;\s*script\s*language=&quot;VBScript&quot;[^&gt;]*&gt;" insensitive="true" />
+                <RegExpr attribute="HTML Tag" context="scripts" String="&lt;\s*script(\s|&gt;)" insensitive="true" />
                 <RegExpr attribute="HTML Tag" context="htmltag" String="&lt;\s*\/?\s*[a-zA-Z_:][a-zA-Z0-9._:-]*" />
                 <StringDetect attribute="HTML Comment" context="htmlcomment" String="&lt;!--" />
             </context>
 
             <context name="aspsource" attribute="ASP Text" lineEndContext="#stay">
                 <StringDetect attribute="Keyword" context="#pop" String="%&gt;" />
-                <RegExpr attribute="HTML Tag" context="#pop" String="&lt;\s*\/\s*script\s*&gt;" insensitive="TRUE" />
+                <RegExpr attribute="HTML Tag" context="#pop" String="&lt;\s*\/\s*script\s*&gt;" insensitive="true" />
                 <DetectChar attribute="Comment" context="asp_onelinecomment" char="'" />
                 <DetectChar attribute="String" context="doublequotestring" char="&quot;" />
                 <DetectChar attribute="String" context="singlequotestring" char="&#39;" />
@@ -254,36 +254,36 @@
                 <AnyChar attribute="Other" context="#stay" String=";()}{:,[]" />
                 <keyword attribute="Other" context="#stay" String="Others" />
 
-                <RegExpr attribute="Control Structures" context="#stay" String="\belseif\b" insensitive="TRUE" beginRegion="iffi1" endRegion="iffi1"/>
-                <RegExpr attribute="Control Structures" context="#stay" String="\belse\b" insensitive="TRUE" beginRegion="iffi1" endRegion="iffi1"/>
-                <RegExpr attribute="Control Structures" context="#stay" String="\bif\b" insensitive="TRUE" beginRegion="iffi1"/>
-                <RegExpr attribute="Control Structures" context="#stay" String="\bend if\b" insensitive="TRUE" endRegion="iffi1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\belseif\b" insensitive="true" beginRegion="iffi1" endRegion="iffi1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\belse\b" insensitive="true" beginRegion="iffi1" endRegion="iffi1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\bif\b" insensitive="true" beginRegion="iffi1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\bend if\b" insensitive="true" endRegion="iffi1"/>
 
-                <RegExpr attribute="Keyword" context="#stay" String="\bexit function\b" insensitive="TRUE" />
-                <RegExpr attribute="Keyword" context="#stay" String="\bfunction\b" insensitive="TRUE" beginRegion="funendfun1"/>
-                <RegExpr attribute="Keyword" context="#stay" String="\bend function\b" insensitive="TRUE" endRegion="funendfun1"/>
+                <RegExpr attribute="Keyword" context="#stay" String="\bexit function\b" insensitive="true" />
+                <RegExpr attribute="Keyword" context="#stay" String="\bfunction\b" insensitive="true" beginRegion="funendfun1"/>
+                <RegExpr attribute="Keyword" context="#stay" String="\bend function\b" insensitive="true" endRegion="funendfun1"/>
 
-                <RegExpr attribute="Keyword" context="#stay" String="\bexit sub\b" insensitive="TRUE" />
-                <RegExpr attribute="Keyword" context="#stay" String="\bsub\b" insensitive="TRUE" beginRegion="subendsub1"/>
-                <RegExpr attribute="Keyword" context="#stay" String="\bend sub\b" insensitive="TRUE" endRegion="subendsub1"/>
+                <RegExpr attribute="Keyword" context="#stay" String="\bexit sub\b" insensitive="true" />
+                <RegExpr attribute="Keyword" context="#stay" String="\bsub\b" insensitive="true" beginRegion="subendsub1"/>
+                <RegExpr attribute="Keyword" context="#stay" String="\bend sub\b" insensitive="true" endRegion="subendsub1"/>
 
-                <RegExpr attribute="Keyword" context="#stay" String="\bclass\b" insensitive="TRUE" beginRegion="classendclass1"/>
-                <RegExpr attribute="Keyword" context="#stay" String="\bend class\b" insensitive="TRUE" endRegion="classendclass1"/>
+                <RegExpr attribute="Keyword" context="#stay" String="\bclass\b" insensitive="true" beginRegion="classendclass1"/>
+                <RegExpr attribute="Keyword" context="#stay" String="\bend class\b" insensitive="true" endRegion="classendclass1"/>
 
-                <RegExpr attribute="Control Structures" context="#stay" String="\bexit do\b" insensitive="TRUE" />
-                <RegExpr attribute="Control Structures" context="#stay" String="\bdo(\s+(while))?\b" insensitive="TRUE" beginRegion="doloop1"/>
-                <RegExpr attribute="Control Structures" context="#stay" String="\bloop\b" insensitive="TRUE" endRegion="doloop1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\bexit do\b" insensitive="true" />
+                <RegExpr attribute="Control Structures" context="#stay" String="\bdo(\s+(while))?\b" insensitive="true" beginRegion="doloop1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\bloop\b" insensitive="true" endRegion="doloop1"/>
 
-                <RegExpr attribute="Control Structures" context="#stay" String="\bexit while\b" insensitive="TRUE" />
-                <RegExpr attribute="Control Structures" context="#stay" String="\bwhile\b" insensitive="TRUE" beginRegion="whilewend1"/>
-                <RegExpr attribute="Control Structures" context="#stay" String="\bwend\b" insensitive="TRUE" endRegion="whilewend1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\bexit while\b" insensitive="true" />
+                <RegExpr attribute="Control Structures" context="#stay" String="\bwhile\b" insensitive="true" beginRegion="whilewend1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\bwend\b" insensitive="true" endRegion="whilewend1"/>
 
-                <RegExpr attribute="Control Structures" context="#stay" String="\bexit for\b" insensitive="TRUE" />
-                <RegExpr attribute="Control Structures" context="#stay" String="\bfor\b" insensitive="TRUE" beginRegion="fornext1"/>
-                <RegExpr attribute="Control Structures" context="#stay" String="\bnext\b" insensitive="TRUE" endRegion="fornext1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\bexit for\b" insensitive="true" />
+                <RegExpr attribute="Control Structures" context="#stay" String="\bfor\b" insensitive="true" beginRegion="fornext1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\bnext\b" insensitive="true" endRegion="fornext1"/>
 
-                <RegExpr attribute="Control Structures" context="#stay" String="\bselect case\b" insensitive="TRUE" beginRegion="selcase1"/>
-                <RegExpr attribute="Control Structures" context="#stay" String="\bend select\b" insensitive="TRUE" endRegion="selcase1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\bselect case\b" insensitive="true" beginRegion="selcase1"/>
+                <RegExpr attribute="Control Structures" context="#stay" String="\bend select\b" insensitive="true" endRegion="selcase1"/>
 
                 <keyword attribute="Keyword" context="#stay" String="keywords" />
                 <keyword attribute="Control Structures" context="#stay" String="control structures" />
@@ -340,7 +340,7 @@
                 <keyword attribute="Keyword" context="#stay" String="keywords" />
                 <keyword attribute="Function" context="#stay" String="functions" />
                 <StringDetect attribute="Keyword" context="aspsource" String="&lt;%"/>
-                <RegExpr attribute="HTML Tag" context="#pop" String="&lt;\s*\/\s*script\s*&gt;" insensitive="TRUE" />
+                <RegExpr attribute="HTML Tag" context="#pop" String="&lt;\s*\/\s*script\s*&gt;" insensitive="true" />
 
                 <DetectChar attribute="String" context="doublequotestring" char="&quot;" />
                 <DetectChar attribute="String" context="singlequotestring" char="&#39;" />
@@ -354,7 +354,7 @@
                 <keyword attribute="Other" context="#stay" String="Others" />
             </context>
             <context name="scripts_onelinecomment" attribute="Comment" lineEndContext="#pop">
-                <RegExpr attribute="HTML Tag" context="#pop#pop" String="&lt;\s*\/\s*script\s*&gt;" insensitive="TRUE" />
+                <RegExpr attribute="HTML Tag" context="#pop#pop" String="&lt;\s*\/\s*script\s*&gt;" insensitive="true" />
             </context>
             <context name="twolinecomment" attribute="Comment" lineEndContext="#stay">
                 <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" endRegion="Comment" />

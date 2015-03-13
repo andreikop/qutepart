@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="AWK" version="0.92" kateversion="2.3" section="Scripts"
+<language name="AWK" version="0.93" kateversion="3.3" section="Scripts"
   extensions="*.awk" mimetype="text/x-awk" indenter="cstyle"
   license="LGPL">
 <!-- patched by igli#kate@irc:chat.freenode.net -->
@@ -87,7 +87,7 @@
 	<keyword String="special" attribute="Error" context="#stay"/>
 </context>
 
-<context name="base">
+<context name="base" attribute="Normal" lineEndContext="#stay">
 	<DetectSpaces />
 	<DetectChar char="#" context="Comment" attribute="Comment"/>
 	<DetectChar char="~" context="Match" attribute="Operator"/>
@@ -125,7 +125,7 @@
 	<IncludeRules context="regex"/>
 	<DetectChar char="/" context="#pop#pop" attribute="Regex Op"/>
 </context>
-<context name="regex">
+<context name="regex" attribute="Normal" lineEndContext="#stay">
 	<HlCStringChar attribute="Escape" context="#stay"/>
 	<DetectChar char="\" context="Regex Escape" attribute="Regex Op"/>
 	<Detect2Chars char="[" char1="^" context="RegexChar" attribute="Regex Op"/>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
 
-<language name="Motorola 68k (VASM/Devpac)" section="Assembler" version="1.01" kateversion="2.4"  extensions="*.s;*.i;*.S;*.I" author="Miro Kropacek (miro.kropacek@gmail.com)" license="LGPL">
+<language name="Motorola 68k (VASM/Devpac)" section="Assembler" version="1.02" kateversion="2.4"  extensions="*.s;*.i;*.S;*.I" author="Miro Kropacek (miro.kropacek@gmail.com)" license="LGPL">
 
   <highlighting>
     <list name="Data Registers">
@@ -149,7 +149,7 @@
       <item>dbra</item>
       <item>dbt</item>
       <item>dbvc</item>
-      <item>dbvc</item>
+      <item>dbvs</item>
       <item>divs</item>
       <item>divsl</item>
       <item>divu</item>
@@ -231,7 +231,7 @@
       <item>subq</item>
       <item>subx</item>
       <item>svc</item>
-      <item>svc</item>
+      <item>svs</item>
       <item>swap</item>
       <item>tas</item>
       <item>trapcc</item>

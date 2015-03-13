@@ -11,9 +11,10 @@
 <language
     name="ISO C++"
     section="Sources"
-    version="2.1"
-    kateversion="2.4"
+    version="2.5"
+    kateversion="3.4"
     indenter="cstyle"
+    style="C++"
     mimetype="text/x-c++src;text/x-c++hdr;text/x-chdr"
     extensions="*.c++;*.cxx;*.cpp;*.cc;*.C;*.h;*.hh;*.H;*.h++;*.hxx;*.hpp;*.hcc;*.moc"
     author="Alex Turbov (i.zaufi@gmail.com)"
@@ -230,8 +231,8 @@
         <DetectIdentifier />
         <!-- Match comments -->
         <IncludeRules context="##Doxygen" />
-        <IncludeRules context="AlignedComments" />
-        <Detect2Chars attribute="Comment" context="Commentar 2" char="/" char1="*" beginRegion="Comment" />
+        <Detect2Chars attribute="Comment" context="Comment 1" char="/" char1="/" />
+        <Detect2Chars attribute="Comment" context="Comment 2" char="/" char1="*" beginRegion="Comment" />
         <!-- Match scope regions -->
         <DetectChar attribute="Symbol" context="#stay" char="{" beginRegion="Brace1" />
         <DetectChar attribute="Symbol" context="#stay" char="}" endRegion="Brace1" />
@@ -333,7 +334,7 @@
         <IncludeRules context="DetectNSEnd" />
       </context>
 
-      <context name="Commentar 1" attribute="Comment" lineEndContext="#pop">
+      <context name="Comment 1" attribute="Comment" lineEndContext="#pop">
         <LineContinue attribute="Comment" context="#stay" />
         <DetectSpaces />
         <IncludeRules context="##Alerts" />
@@ -341,7 +342,7 @@
         <DetectIdentifier />
       </context>
 
-      <context name="Commentar 2" attribute="Comment" lineEndContext="#stay">
+      <context name="Comment 2" attribute="Comment" lineEndContext="#stay">
         <DetectSpaces />
         <LineContinue attribute="Comment" context="#stay" />
         <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" endRegion="Comment" />
@@ -351,24 +352,31 @@
       </context>
 
       <context name="AfterHash" attribute="Error" lineEndContext="#pop">
-        <!-- define, elif, else, endif, error, if, ifdef, ifndef, include, include_next, line, pragma, undef, warning -->
+        <RegExpr attribute="Preprocessor" context="Include" String="#\s*(?:include|include_next)" insensitive="true" firstNonSpace="true" />
+
+        <!-- define, elif, else, endif, error, if, ifdef, ifndef, line, pragma, undef, warning -->
         <RegExpr attribute="Preprocessor" context="Preprocessor" String="(#|%\:|\?\?=)\s*if(?:def|ndef)?(?=(?:\(|\s+)\S)" beginRegion="PP" firstNonSpace="true" insensitive="false" />
         <RegExpr attribute="Preprocessor" context="Preprocessor" String="(#|%\:|\?\?=)\s*endif" endRegion="PP" firstNonSpace="true" insensitive="false" />
         <!-- Switch to seperate context for multiline #defines -->
         <RegExpr attribute="Preprocessor" context="Define" String="(#|%\:|\?\?=)\s*(cmake)?define.*((?=\\))" firstNonSpace="true" lookAhead="true" insensitive="false" />
-        <RegExpr attribute="Preprocessor" context="Preprocessor" String="(#|%\:|\?\?=)\s*(?:el(?:se|if)|include(?:_next)?|(cmake)?define|undef|line|error|warning|pragma)" insensitive="false" firstNonSpace="true" />
+        <RegExpr attribute="Preprocessor" context="Preprocessor" String="(#|%\:|\?\?=)\s*(?:el(?:se|if)|(cmake)?define|undef|line|error|warning|pragma)" insensitive="false" firstNonSpace="true" />
         <RegExpr attribute="Preprocessor" context="Preprocessor" String="(#|%\:|\?\?=)\s+[0-9]+" firstNonSpace="true" insensitive="false" />
+      </context>
+
+      <context attribute="Preprocessor" lineEndContext="#pop" name="Include">
+        <LineContinue attribute="Preprocessor" context="#stay"/>
+        <RangeDetect attribute="Prep. Lib" context="#stay" char="&quot;" char1="&quot;"/>
+        <RangeDetect attribute="Prep. Lib" context="#stay" char="&lt;" char1="&gt;"/>
+        <IncludeRules context="Preprocessor" />
       </context>
 
       <context name="Preprocessor" attribute="Preprocessor" lineEndContext="#pop">
         <LineContinue attribute="Preprocessor" context="#stay" />
         <keyword attribute="Standard Macros" context="#stay" String="StdMacros" />
         <IncludeRules context="GNUMacros##GCCExtensions" />
-        <RangeDetect attribute="Prep. Lib" context="#stay" char="&quot;" char1="&quot;" />
-        <RangeDetect attribute="Prep. Lib" context="#stay" char="&lt;" char1="&gt;" />
         <IncludeRules context="##Doxygen" />
-        <Detect2Chars attribute="Comment" context="Commentar/Preprocessor" char="/" char1="*" beginRegion="Comment2" />
-        <IncludeRules context="AlignedComments" />
+        <Detect2Chars attribute="Comment" context="Comment/Preprocessor" char="/" char1="*" beginRegion="Comment2" />
+        <Detect2Chars attribute="Comment" context="Comment 1" char="/" char1="/" />
       </context>
 
       <context name="Define" attribute="Preprocessor" lineEndContext="#pop">
@@ -378,7 +386,7 @@
         <IncludeRules context="GNUMacros##GCCExtensions" />
       </context>
 
-      <context name="Commentar/Preprocessor" attribute="Comment" lineEndContext="#stay">
+      <context name="Comment/Preprocessor" attribute="Comment" lineEndContext="#stay">
         <DetectSpaces />
         <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" endRegion="Comment2" />
         <DetectIdentifier />
@@ -390,12 +398,12 @@
         <IncludeRules context="##Modelines" />
         <DetectIdentifier />
         <IncludeRules context="##Doxygen" />
-        <IncludeRules context="AlignedComments" />
+        <Detect2Chars attribute="Comment" context="Comment 1" char="/" char1="/" />
         <!-- Do not try to detect "C" style comments inside outscoped text
              to prevent incorrect highlighting in case of overlapped (or not closed properly)
              comment block...
 
-             <Detect2Chars attribute="Comment" context="Commentar 2" char="/" char1="*" beginRegion="Comment" />
+             <Detect2Chars attribute="Comment" context="Comment 2" char="/" char1="*" beginRegion="Comment" />
         -->
         <RegExpr attribute="Comment" context="Outscoped intern" String="(#|%\:|\?\?=)\s*if" beginRegion="PP" firstNonSpace="true" insensitive="false" />
         <LineContinue context="#stay" />
@@ -425,30 +433,10 @@
         <IncludeRules context="##Modelines" />
         <DetectIdentifier />
         <IncludeRules context="##Doxygen" />
-        <IncludeRules context="AlignedComments" />
-        <Detect2Chars attribute="Comment" context="Commentar 2" char="/" char1="*" beginRegion="Comment" />
+        <Detect2Chars attribute="Comment" context="Comment 1" char="/" char1="/" />
+        <Detect2Chars attribute="Comment" context="Comment 2" char="/" char1="*" beginRegion="Comment" />
         <RegExpr attribute="Comment" context="Outscoped intern" String="(#|%\:|\?\?=)\s*if" beginRegion="PP" firstNonSpace="true" insensitive="false" />
         <RegExpr attribute="Comment" context="#pop" String="(#|%\:|\?\?=)\s*endif" endRegion="PP" firstNonSpace="true" insensitive="false" />
-      </context>
-
-      <context name="AlignedComments" lineEndContext="#stay" attribute="Comment">
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="0" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="4" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="8" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="12" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="16" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="20" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="24" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="28" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="32" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="36" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="40" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="44" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="48" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="52" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="56" char="/" char1="/" />
-        <Detect2Chars attribute="Region Marker" context="Commentar 1" column="60" char="/" char1="/" />
-        <Detect2Chars attribute="Comment" context="Commentar 1" char="/" char1="/" />
       </context>
     </contexts>
 

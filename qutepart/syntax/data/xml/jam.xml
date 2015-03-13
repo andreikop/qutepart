@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 -->
-<language name="Jam" version="0.3" kateversion="2.3" section="Other" extensions="Jam*;*.jam" mimetype="text/x-jam;text/x-Jamfile;text/x-Jamrules;text/x-Jambase">
+<language name="Jam" version="0.4" kateversion="2.4" section="Other" extensions="Jam*;*.jam" mimetype="text/x-jam;text/x-Jamfile;text/x-Jamrules;text/x-Jambase">
   <!--
   Changelog
     0.2
@@ -110,7 +110,7 @@ IN THE SOFTWARE.
         <StringDetect attribute="Keyword" context="OnPreStment" String="on"/>
         <StringDetect attribute="Keyword" context="Rule" String="return"/>
         <StringDetect attribute="Keyword" context="CaseCond" String="case"/>
-        <keyword attribute="Keyword" context="VarAssign" String="keywordLocal"/>
+        <keyword attribute="Keyword" context="#stay" String="keywordLocal"/>
         <keyword attribute="Keyword" context="#stay" String="keywords"/>
         <keyword attribute="Operator" context="Block" String="tokenBlockOpen" beginRegion="block" weakDelimiter=":;{}()[].!+,-&lt;=&gt;%&amp;/?^|~\*,"/>
         <RegExpr attribute="VarAssign" context="VarAssign" String="[^\t ]+[\t ]*[\+\?]?=" lookAhead="true"/>
@@ -300,7 +300,7 @@ IN THE SOFTWARE.
         <IncludeRules context="Comment"/>
       </context>
 
-      <context attribute="String" lineEndContext="Error" name="String">
+      <context attribute="String" lineEndContext="#stay" name="String">
         <StringDetect attribute="VariableDelimiter" context="Variable" String="$("/>
         <StringDetect attribute="EscapeSeq" context="#stay" String="\&quot;"/>
         <StringDetect attribute="EscapeSeq" context="#stay" String="\"/>

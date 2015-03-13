@@ -850,9 +850,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
         <!-- The NASM's CPU directive -->
         <RegExpr attribute="NASM Keywords" context="#stay" String="cpu (pentium|ppro|p2|p3|katmai|p4|willamette|prescott|ia64)*"/>
         <!-- hexadecimal numbers -->
-        <RegExpr attribute="BaseN" context="#stay" insensitive="TRUE" String="(^|[ \t,]+)((\$|0x){1}[0-9]+[a-f0-9]*|[0-9]+[a-f0-9]*h)([ \t,]+|$)"/>
+        <RegExpr attribute="BaseN" context="#stay" insensitive="true" String="(^|[ \t,]+)((\$|0x){1}[0-9]+[a-f0-9]*|[0-9]+[a-f0-9]*h)([ \t,]+|$)"/>
         <!-- octal and binary numbers -->
-        <RegExpr attribute="BaseN" context="#stay" insensitive="TRUE" String="(^|[ \t,]+)([0-7]+(q|o)|[01]+b)([ \t,]+|$)"/>
+        <RegExpr attribute="BaseN" context="#stay" insensitive="true" String="(^|[ \t,]+)([0-7]+(q|o)|[01]+b)([ \t,]+|$)"/>
         <DetectChar attribute="Number" context="#stay" char="$"/>
         <HlCOct attribute="BaseN" context="#stay"/>
         <HlCHex attribute="BaseN" context="#stay"/>

@@ -56,7 +56,7 @@
         <Detect2Chars attribute="Comment" context="Commentar 1" char="/" char1="/"/>
         <Detect2Chars attribute="Comment" context="Commentar 2" char="/" char1="*"/>
         <AnyChar attribute="Symbol" context="#stay" String="!%&amp;()+,-&lt;=&gt;?[]^{|}~"/>
-        <StringDetect attribute="Comment" context="Some Context3" String="#if 0" insensitive="FALSE"/>
+        <StringDetect attribute="Comment" context="Some Context3" String="#if 0" insensitive="false"/>
         <DetectChar attribute="Preprocessor" context="Preprocessor" char="#" column="0"/>
       </context>
       <context attribute="String" lineEndContext="#stay" name="String">

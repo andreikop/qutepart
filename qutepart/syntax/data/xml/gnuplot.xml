@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Gnuplot" version="0.1" kateversion="2.1" section="Scripts" extensions="*.gnuplot;*.gp;*.gplt" casesensitive="1" >
+<language name="Gnuplot" version="0.1" kateversion="2.2" section="Scripts" extensions="*.gnuplot;*.gp;*.gplt" casesensitive="1" >
   <highlighting>
    <list name="set_no_keywords">
        <item> noarrow </item>

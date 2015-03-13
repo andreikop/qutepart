@@ -1597,66 +1597,66 @@
     <AnyChar attribute="Symbol" context="#stay" String="+-*=/\?~{}[]():."/>
 
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="PROCEDURE" insensitive="TRUE"
-                  beginRegion="P1" firstNonSpace="TRUE"/>
+                  String="PROCEDURE" insensitive="true"
+                  beginRegion="P1" firstNonSpace="true"/>
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="END PROCEDURE" insensitive="TRUE"
-                  endRegion="P1" firstNonSpace="TRUE"/>
+                  String="END PROCEDURE" insensitive="true"
+                  endRegion="P1" firstNonSpace="true"/>
 
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="FUNCTION" insensitive="TRUE"
-                  beginRegion="F1" firstNonSpace="TRUE"/>
+                  String="FUNCTION" insensitive="true"
+                  beginRegion="F1" firstNonSpace="true"/>
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="END FUNCTION" insensitive="TRUE"
-                  endRegion="F1" firstNonSpace="TRUE"/>
+                  String="END FUNCTION" insensitive="true"
+                  endRegion="F1" firstNonSpace="true"/>
 
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="CLASS" insensitive="TRUE"
-                  beginRegion="C1" firstNonSpace="TRUE"/>
+                  String="CLASS" insensitive="true"
+                  beginRegion="C1" firstNonSpace="true"/>
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="END CLASS" insensitive="TRUE"
-                  endRegion="C1" firstNonSpace="TRUE"/>
+                  String="END CLASS" insensitive="true"
+                  endRegion="C1" firstNonSpace="true"/>
 
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="METHOD" insensitive="TRUE"
-                  beginRegion="M1" firstNonSpace="TRUE"/>
+                  String="METHOD" insensitive="true"
+                  beginRegion="M1" firstNonSpace="true"/>
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="END METHOD" insensitive="TRUE"
-                  endRegion="M1" firstNonSpace="TRUE"/>
+                  String="END METHOD" insensitive="true"
+                  endRegion="M1" firstNonSpace="true"/>
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="CONSTRUCTOR" insensitive="TRUE"
-                  beginRegion="CN1" firstNonSpace="TRUE"/>
+                  String="CONSTRUCTOR" insensitive="true"
+                  beginRegion="CN1" firstNonSpace="true"/>
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="END CONSTRUCTOR" insensitive="TRUE"
-                  endRegion="CN1" firstNonSpace="TRUE"/>
+                  String="END CONSTRUCTOR" insensitive="true"
+                  endRegion="CN1" firstNonSpace="true"/>
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="DESTRUCTOR" insensitive="TRUE"
-                  beginRegion="DS1" firstNonSpace="TRUE"/>
+                  String="DESTRUCTOR" insensitive="true"
+                  beginRegion="DS1" firstNonSpace="true"/>
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="END DESTRUCTOR" insensitive="TRUE"
-                  endRegion="DS1" firstNonSpace="TRUE"/>
+                  String="END DESTRUCTOR" insensitive="true"
+                  endRegion="DS1" firstNonSpace="true"/>
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="INTERFACE" insensitive="TRUE"
-                  beginRegion="IF1" firstNonSpace="TRUE"/>
+                  String="INTERFACE" insensitive="true"
+                  beginRegion="IF1" firstNonSpace="true"/>
     <StringDetect attribute="Region Marker" context="#stay"
-                  String="END INTERFACE" insensitive="TRUE"
-                  endRegion="IF1" firstNonSpace="TRUE"/>
+                  String="END INTERFACE" insensitive="true"
+                  endRegion="IF1" firstNonSpace="true"/>
 
     <StringDetect attribute="Function" context="#stay"
-                  String="DO:" insensitive="TRUE"
-                  beginRegion="L1" firstNonSpace="FALSE"/>
+                  String="DO:" insensitive="true"
+                  beginRegion="L1" firstNonSpace="false"/>
     <StringDetect attribute="Function" context="#stay"
-                  String="REPEAT" insensitive="TRUE"
-                  beginRegion="L1" firstNonSpace="TRUE"/>
+                  String="REPEAT" insensitive="true"
+                  beginRegion="L1" firstNonSpace="true"/>
     <StringDetect attribute="Function" context="#stay"
-                  String="FOR" insensitive="TRUE"
-                  beginRegion="L1" firstNonSpace="TRUE"/>
+                  String="FOR" insensitive="true"
+                  beginRegion="L1" firstNonSpace="true"/>
     <StringDetect attribute="Function" context="#stay"
-                  String="CASE" insensitive="TRUE"
-                  beginRegion="L1" firstNonSpace="TRUE"/>
+                  String="CASE" insensitive="true"
+                  beginRegion="L1" firstNonSpace="true"/>
     <StringDetect attribute="Function" context="#stay"
-                  String="END" insensitive="TRUE"
-                  endRegion="L1" firstNonSpace="TRUE"/>
+                  String="END" insensitive="true"
+                  endRegion="L1" firstNonSpace="true"/>
 
 
   </context>

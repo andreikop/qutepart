@@ -245,14 +245,14 @@
 		</list>
 		<contexts>
                         <context name = "Base" attribute = "Normal Text" lineEndContext = "#stay">
-                                <RegExpr attribute="Keyword" context="#stay" String="\bdone\b" insensitive="TRUE" endRegion="dodone1"/>
-                                <RegExpr attribute="Keyword" context="#stay" String="\bdo\b" insensitive="TRUE" beginRegion="dodone1"/>
-                                <RegExpr attribute="Keyword" context="#stay" String="\belif\b" insensitive="TRUE" beginRegion="iffi1" endRegion="iffi1"/>
-                                <RegExpr attribute="Keyword" context="#stay" String="\bif\b" insensitive="TRUE" beginRegion="iffi1"/>
-                                <RegExpr attribute="Keyword" context="#stay" String="\bfi\b" insensitive="TRUE" endRegion="iffi1"/>
-                                <RegExpr attribute="Keyword" context="#stay" String="\bcase\b" insensitive="TRUE" beginRegion="case1"/>
-                                <RegExpr attribute="Keyword" context="#stay" String="\besac\b" insensitive="TRUE" endRegion="case1"/>
-                                <RegExpr attribute="Keyword" context="#stay" String="[^()]+\)" insensitive="TRUE" beginRegion="subcase1" column="0"/>
+                                <RegExpr attribute="Keyword" context="#stay" String="\bdone\b" insensitive="true" endRegion="dodone1"/>
+                                <RegExpr attribute="Keyword" context="#stay" String="\bdo\b" insensitive="true" beginRegion="dodone1"/>
+                                <RegExpr attribute="Keyword" context="#stay" String="\belif\b" insensitive="true" beginRegion="iffi1" endRegion="iffi1"/>
+                                <RegExpr attribute="Keyword" context="#stay" String="\bif\b" insensitive="true" beginRegion="iffi1"/>
+                                <RegExpr attribute="Keyword" context="#stay" String="\bfi\b" insensitive="true" endRegion="iffi1"/>
+                                <RegExpr attribute="Keyword" context="#stay" String="\bcase\b" insensitive="true" beginRegion="case1"/>
+                                <RegExpr attribute="Keyword" context="#stay" String="\besac\b" insensitive="true" endRegion="case1"/>
+                                <RegExpr attribute="Keyword" context="#stay" String="[^()]+\)" insensitive="true" beginRegion="subcase1" column="0"/>
                                 <Detect2Chars attribute="Keyword" context="#stay" char=";" char1=";" endRegion="subcase1"/>
                                 <DetectChar attribute="Keyword" context="#stay" char="{" beginRegion="func1"/>
                                 <DetectChar attribute="Keyword" context="#stay" char="}" endRegion="func1"/>

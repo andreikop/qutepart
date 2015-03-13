@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="4GL" version="1.02" kateversion="2.5" section="Database" extensions="*.4gl;*.4GL;*.err" mimetype="text/x-4glsrc;text/x-4glerr" author="Andrej Falout (andrej@falout.org)" license="LGPL">
+<language name="4GL" version="1.02" kateversion="2.3" section="Database" extensions="*.4gl;*.4GL;*.err" mimetype="text/x-4glsrc;text/x-4glerr" author="Andrej Falout (andrej@falout.org)" license="LGPL">
   <highlighting>
     <list name="keywords">
       <item> at </item>
@@ -274,14 +274,14 @@
         <HlCOct attribute="Octal" context="#stay"/>
         <HlCHex attribute="Hex" context="#stay"/>
         <Int attribute="Decimal" context="#stay" >
-          <StringDetect attribute="Decimal" context="#stay" String="ULL" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="LUL" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="LLU" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="UL" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="LU" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="LL" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="U" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="L" insensitive="TRUE"/>
+          <StringDetect attribute="Decimal" context="#stay" String="ULL" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LUL" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LLU" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="UL" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LU" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LL" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="U" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="L" insensitive="true"/>
         </Int>
         <HlCChar attribute="Char" context="#stay"/>
         <DetectChar attribute="String" context="String" char="&quot;"/>
@@ -291,7 +291,7 @@
 <!--        <Detect2Chars attribute="Comment" context="Comment 1" char="/" char1="/"/>
         <Detect2Chars attribute="Comment" context="Comment 2" char="/" char1="*"/>//-->
         <AnyChar attribute="Symbol" context="#stay" String="!%&amp;()+,-&lt;=&gt;?[]^|~"/>
-         <StringDetect attribute="Preprocessor" context="Comment 4" String="#if 0" insensitive="FALSE"/>
+         <StringDetect attribute="Preprocessor" context="Comment 4" String="#if 0" insensitive="false"/>
         <RegExpr attribute="Preprocessor" context="Preprocessor" String="#"/>
       </context>
       <context attribute="String" lineEndContext="#pop" name="String">

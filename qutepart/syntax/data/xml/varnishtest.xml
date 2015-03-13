@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Varnish Test Case language" version="0.1" kateversion="2.4" section="Configuration" extensions="*.vtc;" mimetype="" author="Xavier Guerrin (xavier@tuxfamily.org)" license="WTFPL">
+<language name="Varnish Test Case language" version="0.1" kateversion="3.4" section="Configuration" extensions="*.vtc;" mimetype="" author="Xavier Guerrin (xavier@tuxfamily.org)" license="WTFPL">
   <highlighting>
     <list name="vtcClientKeywords">
       <item>fatal</item>

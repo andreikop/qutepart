@@ -13,7 +13,7 @@ Notes:
 * "used" and "defined" are treated opperators and are not highlighted.
 -->
 
-<language name="Intel x86 (FASM)" section="Assembler" version="0.2" kateversion="4.4.3" extensions="*.asm;*.inc;*.fasm" mimetype="" author="rCX (rCX12@yahoo.com)" license="GPL">
+<language name="Intel x86 (FASM)" section="Assembler" version="0.2" kateversion="2.3" extensions="*.asm;*.inc;*.fasm" mimetype="" author="rCX (rCX12@yahoo.com)" license="GPL">
   <highlighting>
     <list name="registers">
       <!-- General purpose registers -->
@@ -857,9 +857,9 @@ Notes:
         <!-- Conditional instructions -->
         <RegExpr attribute="Instructions" context="#stay" String="(cmov|fcmov|j|loop|set)(a|ae|b|be|c|e|g|ge|l|le|na|nae|nb|nbe|nc|ne|ng|nge|nl|nle|no|np|ns|nz|o|p|pe|po|s|z)"/>
         <!-- hexadecimal numbers -->
-        <RegExpr attribute="BaseN" context="#stay" insensitive="TRUE" String="(^|[ \t,]+)((\$|0x){1}[0-9]+[a-f0-9]*|[a-f0-9]+h)([ \t,]+|$)"/>
+        <RegExpr attribute="BaseN" context="#stay" insensitive="true" String="(^|[ \t,]+)((\$|0x){1}[0-9]+[a-f0-9]*|[a-f0-9]+h)([ \t,]+|$)"/>
         <!-- octal and binary numbers -->
-        <RegExpr attribute="BaseN" context="#stay" insensitive="TRUE" String="(^|[ \t,]+)([0-7]+(q|o)|[01]+b)([ \t,]+|$)"/>
+        <RegExpr attribute="BaseN" context="#stay" insensitive="true" String="(^|[ \t,]+)([0-7]+(q|o)|[01]+b)([ \t,]+|$)"/>
         <DetectChar attribute="Number" context="#stay" char="$"/>
         <HlCOct attribute="BaseN" context="#stay"/>
         <HlCHex attribute="BaseN" context="#stay"/>

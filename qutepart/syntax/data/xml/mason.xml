@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language version="1.06" kateversion="2.1" name="Mason" section="Scripts" extensions="*.html;" mimetype="">
+<language version="1.06" kateversion="2.4" name="Mason" section="Scripts" extensions="*.html;" mimetype="">
 <highlighting>
 	<list name="keywords">
 		<item> sub </item>
@@ -70,19 +70,19 @@
 		<context  attribute="HTML" lineEndContext="#stay" name="HTML">
 			<RegExpr attribute="Mason Tag" context="EmbeddedPerl" String="&lt;\%method[^&gt;]*&gt;" />
 			<RegExpr attribute="Mason Tag" context="EmbeddedPerl" String="&lt;\%def[^&gt;]*&gt;" />
-			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%method&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Comment" context="Documentation" String="&lt;%doc&gt;" insensitive="FALSE" />
+			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%method&gt;" insensitive="false" />
+			<StringDetect attribute="Comment" context="Documentation" String="&lt;%doc&gt;" insensitive="false" />
 
-			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%perl&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%init&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%once&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%args&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%filter&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%cleanup&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%flags&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%attr&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%shared&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="UnparsedText" String="&lt;%text&gt;" insensitive="FALSE" />
+			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%perl&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%init&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%once&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%args&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%filter&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%cleanup&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%flags&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%attr&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="EmbeddedPerl" String="&lt;%shared&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="UnparsedText" String="&lt;%text&gt;" insensitive="false" />
 			<Detect2Chars attribute="Mason Tag" context="EmbeddedPerl" char="&lt;" char1="%" />
 			<Detect2Chars attribute="Mason Method" context="MethodCall" char="&lt;" char1="&amp;" />
 			<StringDetect attribute="Mason Tag" context="#stay" String="&lt;/&amp;&gt;" />
@@ -91,17 +91,17 @@
 
 		<context attribute="normal" lineEndContext="#stay" name="EmbeddedPerl">
 			<Detect2Chars attribute="Mason Tag" context="#pop" char="%" char1="&gt;" />
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%perl&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%method&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%def&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%init&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%once&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%args&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%filter&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%cleanup&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%flags&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%attr&gt;" insensitive="FALSE" />
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%shared&gt;" insensitive="FALSE" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%perl&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%method&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%def&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%init&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%once&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%args&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%filter&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%cleanup&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%flags&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%attr&gt;" insensitive="false" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%shared&gt;" insensitive="false" />
 			<keyword attribute="Keyword" context="#stay" String="keywords"/>
 			<keyword attribute="Data Type" context="#stay" String="types"/>
 			<HlCOct attribute="Octal" context="#stay"/>
@@ -133,7 +133,7 @@
 		</context>
 		
 		<context attribute="String" lineEndContext="#stay" name="UnparsedText">
-			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%text&gt;" insensitive="FALSE" />
+			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%text&gt;" insensitive="false" />
 		</context>
 		
 		<context attribute="Data Type" lineEndContext="#pop" name="Variable">
@@ -199,7 +199,7 @@
 		</context>
 
 		<context attribute="Comment" lineEndContext="#stay" name="Documentation">
-			<StringDetect attribute="Comment" context="#pop" String="&lt;/%doc&gt;" insensitive="FALSE" />
+			<StringDetect attribute="Comment" context="#pop" String="&lt;/%doc&gt;" insensitive="false" />
 		</context>
 
 		<context attribute="Mason Method" lineEndContext="#stay" name="MethodCall">

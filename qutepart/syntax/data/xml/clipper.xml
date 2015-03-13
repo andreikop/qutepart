@@ -408,22 +408,22 @@
 
     <contexts>
       <context attribute="Normal Text" lineEndContext="#stay" name="Normal">
-        <RegExpr attribute="Keyword" context="#stay" String="\bfunction\b" insensitive="TRUE" beginRegion="regFunction" />
-        <RegExpr attribute="Keyword" context="#stay" String="^return\b" insensitive="TRUE" endRegion="regFunction" />
-	<RegExpr attribute="Keyword" context="#stay" String="\bbegin\s+sequence\b" insensitive="TRUE" beginRegion="regSequence" />
-	<RegExpr attribute="Keyword" context="#stay" String="\bend\s+sequence\b" insensitive="TRUE" endRegion="regSequence" />
-        <RegExpr attribute="Keyword" context="#stay" String="\bdo\s+case\b" insensitive="TRUE" beginRegion="regDoCase" />
-        <RegExpr attribute="Keyword" context="#stay" String="\bendcase\b" insensitive="TRUE" endRegion="regDoCase" />
-	<RegExpr attribute="Keyword" context="#stay" String="\bdo\s+while\b" insensitive="TRUE" beginRegion="regDoWhile" />
-	<RegExpr attribute="Keyword" context="#stay" String="\benddo\b" insensitive="TRUE" endRegion="regDoWhile" />
-        <RegExpr attribute="Keyword" context="#stay" String="\bfor\b" insensitive="TRUE" beginRegion="regFor" />
-        <RegExpr attribute="Keyword" context="#stay" String="\bnext\b" insensitive="TRUE" endRegion="regFor" />
-        <RegExpr attribute="Keyword" context="#stay" String="\bif\b" insensitive="TRUE" beginRegion="regIf" />
-        <RegExpr attribute="Keyword" context="#stay" String="\belseif\b" insensitive="TRUE" endRegion="regIf" beginRegion="regIf" />
-	<RegExpr attribute="Keyword" context="#stay" String="\belse\b" insensitive="TRUE" endRegion="regIf" beginRegion="regIf" />
-        <RegExpr attribute="Keyword" context="#stay" String="\bendif\b" insensitive="TRUE" endRegion="regIf" />
-	<RegExpr attribute="Keyword" context="#stay" String="\bswitch\b" insensitive="TRUE" beginRegion="regSwitch" />
-	<RegExpr attribute="Keyword" context="#stay" String="\bendswitch\b" insensitive="TRUE" endRegion="regSwitch" />
+        <RegExpr attribute="Keyword" context="#stay" String="\bfunction\b" insensitive="true" beginRegion="regFunction" />
+        <RegExpr attribute="Keyword" context="#stay" String="^return\b" insensitive="true" endRegion="regFunction" />
+	<RegExpr attribute="Keyword" context="#stay" String="\bbegin\s+sequence\b" insensitive="true" beginRegion="regSequence" />
+	<RegExpr attribute="Keyword" context="#stay" String="\bend\s+sequence\b" insensitive="true" endRegion="regSequence" />
+        <RegExpr attribute="Keyword" context="#stay" String="\bdo\s+case\b" insensitive="true" beginRegion="regDoCase" />
+        <RegExpr attribute="Keyword" context="#stay" String="\bendcase\b" insensitive="true" endRegion="regDoCase" />
+	<RegExpr attribute="Keyword" context="#stay" String="\bdo\s+while\b" insensitive="true" beginRegion="regDoWhile" />
+	<RegExpr attribute="Keyword" context="#stay" String="\benddo\b" insensitive="true" endRegion="regDoWhile" />
+        <RegExpr attribute="Keyword" context="#stay" String="\bfor\b" insensitive="true" beginRegion="regFor" />
+        <RegExpr attribute="Keyword" context="#stay" String="\bnext\b" insensitive="true" endRegion="regFor" />
+        <RegExpr attribute="Keyword" context="#stay" String="\bif\b" insensitive="true" beginRegion="regIf" />
+        <RegExpr attribute="Keyword" context="#stay" String="\belseif\b" insensitive="true" endRegion="regIf" beginRegion="regIf" />
+	<RegExpr attribute="Keyword" context="#stay" String="\belse\b" insensitive="true" endRegion="regIf" beginRegion="regIf" />
+        <RegExpr attribute="Keyword" context="#stay" String="\bendif\b" insensitive="true" endRegion="regIf" />
+	<RegExpr attribute="Keyword" context="#stay" String="\bswitch\b" insensitive="true" beginRegion="regSwitch" />
+	<RegExpr attribute="Keyword" context="#stay" String="\bendswitch\b" insensitive="true" endRegion="regSwitch" />
         
 	<keyword attribute="Keyword" context="#stay" String="keywords"/>
         <keyword attribute="Command" context="#stay" String="commands"/>

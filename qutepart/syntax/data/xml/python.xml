@@ -13,7 +13,7 @@
 <!-- v2.06 decorator names can (and often do) contain periods -->
 <!-- v2.07 add support for %prog and co, see bug 142832 -->
 <!-- v2.08 add missing overloaders, new Python 3 statements, builtins, and keywords -->
-<language name="Python" version="2.22" style="python" kateversion="2.4" section="Scripts" extensions="*.py;*.pyw;SConstruct;SConscript" mimetype="application/x-python;text/x-python" casesensitive="1" author="Michael Bueker" license="" firstLineGlobs="*python*">
+<language name="Python" version="2.24" style="python" kateversion="3.4" section="Scripts" extensions="*.py;*.pyw;SConstruct;SConscript" mimetype="application/x-python;text/x-python" casesensitive="1" author="Michael Bueker" license="" firstLineGlobs="*python*">
 	<highlighting>
 		<list name="prep">
 			<item> import </item>
@@ -326,14 +326,13 @@
 				<keyword attribute="Preprocessor" String="prep" context="#stay"/>
 				<keyword attribute="Definition Keyword" String="defs" context="#stay"/>
 				<keyword attribute="Operator" String="operators" context="#stay"/>
-				<keyword attribute="Command Keyword" String="commands" context="#stay"/>
 				<keyword attribute="Flow Control Keyword" String="flow" context="#stay"/>
 				<keyword attribute="Builtin Function" String="builtinfuncs" context="#stay"/>
 				<keyword attribute="Special Variable" String="specialvars" context="#stay"/>
 				<keyword attribute="Extensions" String="bindings" context="#stay"/>
 				<keyword attribute="Exceptions" String="exceptions" context="#stay"/>
 				<keyword attribute="Overloaders" String="overloaders" context="#stay"/>
-				<RegExpr attribute="Normal" String="[a-zA-Z_][a-zA-Z_0-9]{2,}" context="#stay"/>
+				<RegExpr attribute="Normal Text" String="[a-zA-Z_][a-zA-Z_0-9]{2,}" context="#stay"/>
 
 				<RegExpr attribute="Complex" String=" ((([0-9]*\.[0-9]+|[0-9]+\.)|([0-9]+|([0-9]*\.[0-9]+|[0-9]+\.))[eE](\+|-)?[0-9]+)|[0-9]+)[jJ]" context="#stay"/>
 				<Float attribute="Float" context="#stay" />
@@ -361,7 +360,7 @@
 				<DetectSpaces/>
 				<LineContinue attribute="Normal Text" context="CheckForStringNext"/>
 			</context>
-			
+
 			<context name="CheckForStringNext" attribute="Normal Text" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
 				<DetectSpaces/>
 				<LineContinue attribute="Normal Text" context="CheckForStringNext"/>
@@ -378,10 +377,10 @@
 				<StringDetect attribute="String" String="u&quot;&quot;&quot;" insensitive="true" context="Tripple Q-string" beginRegion="Tripple Q-region"/>
 				<!-- ' -->
 				<DetectChar attribute="String" char="'" context="Single A-string"/>
-				<Detect2Chars attribute="String" char="u" char1="'" insensitive="true" context="Single A-string"/>
+				<StringDetect attribute="String" String="u'" insensitive="true" context="Single A-string"/>
 				<!-- " -->
 				<DetectChar attribute="String" char="&quot;" context="Single Q-string"/>
-				<Detect2Chars attribute="String" char="u" char1="&quot;" insensitive="true" context="Single Q-string"/>
+				<StringDetect attribute="String" String="u&quot;" insensitive="true" context="Single Q-string"/>
 
 				<!-- ''' -->
 				<StringDetect attribute="Raw String" String="r'''" insensitive="true" context="Raw Tripple A-string" beginRegion="Tripple A-region"/>
@@ -407,10 +406,10 @@
 				<StringDetect attribute="Comment" String="u&quot;&quot;&quot;" insensitive="true" firstNonSpace="true" context="Tripple Q-comment" beginRegion="Tripple Q-region"/>
 				<!-- ' -->
 				<DetectChar attribute="Comment" char="'" firstNonSpace="true" context="Single A-comment"/>
-				<Detect2Chars attribute="Comment" char="u" char1="'" insensitive="true" firstNonSpace="true" context="Single A-comment"/>
+				<StringDetect attribute="Comment" String="u'" insensitive="true" firstNonSpace="true" context="Single A-comment"/>
 				<!-- " -->
 				<DetectChar attribute="Comment" char="&quot;" firstNonSpace="true" context="Single Q-comment"/>
-				<Detect2Chars attribute="Comment" char="u" char1="&quot;" insensitive="true" firstNonSpace="true" context="Single Q-comment"/>
+				<StringDetect attribute="Comment" String="u&quot;" insensitive="true" firstNonSpace="true" context="Single Q-comment"/>
 
 				<!-- ''' -->
 				<StringDetect attribute="Comment" String="r'''" insensitive="true" firstNonSpace="true" context="Tripple A-comment" beginRegion="Tripple A-region"/>
@@ -432,14 +431,14 @@
 				<IncludeRules context="StringVariants" />
 				<IncludeRules context="Normal" />
 			</context>
-			
+
 			<context name="List" attribute="Normal Text" lineEndContext="#stay" noIndentationBasedFolding="true">
 				<DetectSpaces/>
 				<DetectChar attribute="Normal Text" char="]" context="#pop" endRegion="List"/>
 				<IncludeRules context="StringVariants" />
 				<IncludeRules context="Normal" />
 			</context>
-			
+
 			<context name="Tuple" attribute="Normal Text" lineEndContext="#stay" noIndentationBasedFolding="true">
 				<DetectSpaces/>
 				<DetectChar attribute="Normal Text" char=")" context="#pop" endRegion="Tuple"/>

@@ -3,10 +3,10 @@
 <!--
   Copyright (C) 2005 Carl A Joslin <carl.joslin@joslin.dyndns.org>
 -->
-<language name="Email" version="1.00" kateversion="2.4" extensions="*.eml" section="Other" mimetype="message/rfc822" casesensitive="0" author="Carl A Joslin (carl.joslin@joslin.dyndns.org)" license="GPL">
+<language name="Email" version="1.01" kateversion="2.3" extensions="*.eml" section="Other" mimetype="message/rfc822" casesensitive="0" author="Carl A Joslin (carl.joslin@joslin.dyndns.org)" license="GPL">
   <highlighting>
     <contexts>      
-      <context name="headder" attribute="Normal Text" lineEndContext="#stay" casesensitive="0">
+      <context name="headder" attribute="Normal Text" lineEndContext="#stay">
         <RegExpr attribute="rfc-main" context="#stay" String="^[Tt]o:.*$"/>
         <RegExpr attribute="rfc-main" context="#stay" String="^[Ff]rom:.*$"/>
         <RegExpr attribute="rfc-main" context="#stay" String="^[Cc][Cc]:.*$"/>
@@ -79,22 +79,22 @@
     </contexts>
     <itemDatas>
       <itemData name="Normal Text" defStyleNum="dsNormal"/>
-      <itemData name="rfc" color="darkgreen"/>
+      <itemData name="rfc" color="darkgreen" defStyleNum="dsNormal"/>
       <itemData name="rfc-main" bold="1" color="darkgreen" defStyleNum="dsAlert"/>
-      <itemData name="common" color="gold"/>
-      <itemData name="other" color="red"/>
-      <itemData name="email" color="blue"/>
+      <itemData name="common" color="gold" defStyleNum="dsComment"/>
+      <itemData name="other" color="red" defStyleNum="dsNormal"/>
+      <itemData name="email" color="blue" defStyleNum="dsNormal"/>
       <itemData name="string" defStyleNum="dsString"/>
       
       <itemData name="base64" defStyleNum="dsRegionMarker"/>
       <itemData name="marker" defStyleNum="dsAlert"/>
       
-      <itemData name="indent1" bold="1" color="red"/>
-      <itemData name="indent2" bold="1" color="green"/>
-      <itemData name="indent3" bold="1" color="blue"/>
-      <itemData name="indent4" bold="1" color="cyan"/>
-      <itemData name="indent5" bold="1" color="magenta"/>
-      <itemData name="indent6" bold="1" color="yellow"/>
+      <itemData name="indent1" bold="1" color="red" defStyleNum="dsNormal"/>
+      <itemData name="indent2" bold="1" color="green" defStyleNum="dsNormal"/>
+      <itemData name="indent3" bold="1" color="blue" defStyleNum="dsNormal"/>
+      <itemData name="indent4" bold="1" color="cyan" defStyleNum="dsNormal"/>
+      <itemData name="indent5" bold="1" color="magenta" defStyleNum="dsNormal"/>
+      <itemData name="indent6" bold="1" color="yellow" defStyleNum="dsNormal"/>
       
       
       <itemData name="sign" defStyleNum="dsComment"/>

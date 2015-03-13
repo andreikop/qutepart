@@ -2,7 +2,7 @@
 <!DOCTYPE language SYSTEM "language.dtd">
 <!-- author: Giancarlo Niccolai (giancarlo@niccolai.ws) -->
 <!-- This file is released under GPL license 2.0 or any later version at your choice. -->
-<language name="Inform" version="1.23" kateversion="2.3" section="Sources" extensions="*.inf;*.h" mimetype="text/x-inform-src" author="Giancarlo Niccolai (giancarlo@niccolai.ws)" license="GPL">
+<language name="Inform" version="1.23" kateversion="2.4" section="Sources" extensions="*.inf;*.h" mimetype="text/x-inform-src" author="Giancarlo Niccolai (giancarlo@niccolai.ws)" license="GPL">
 <highlighting>
    <list name="keywords">
       <item> if </item>
@@ -284,7 +284,7 @@
 
          <RegExpr String=" *object | *class " attribute="Pragma"
             context="ClassDecl"
-            insensitive="TRUE" beginRegion="reg_class" column="0"/>
+            insensitive="true" beginRegion="reg_class" column="0"/>
 
          <keyword attribute="Pragma" context="#stay" String="pragmas" />
          <keyword attribute="Pragma" context="#stay" String="inline_pragmas" />
@@ -340,7 +340,7 @@
      </context>
 
      <context name="ClassDecl_1" attribute="Normal Text" lineEndContext="#stay">
-         <RegExpr String="^[\t ]*has " attribute="Keyword" context="has_decl" insensitive="TRUE"/>
+         <RegExpr String="^[\t ]*has " attribute="Keyword" context="has_decl" insensitive="true"/>
          <keyword String="ClassDeclOps" attribute="Keyword" context="#stay" />
          <RegExpr String="[a-zA-Z_]+\w*" context = "prop_def"
             attribute="Function"/>

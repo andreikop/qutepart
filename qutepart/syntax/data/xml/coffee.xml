@@ -3,7 +3,7 @@
 
 <language name="CoffeeScript"
           version="1.4"
-          kateversion="2.4"
+          kateversion="3.4"
           section="Scripts"
           extensions="Cakefile;*.coffee;*.coco"
           mimetype="text/x-coffeescript;application/x-coffeescript"
@@ -223,7 +223,7 @@
       <context name="Javascript" attribute="Javascript" lineEndContext="#stay" noIndentationBasedFolding="1">
         <DetectChar attribute="Javascript" context="#pop" char="`" endRegion="Javascript"/>
         <!-- NOTE: This hides errors where a backtick is embedded in a JS string. -->
-        <IncludeRules context="##JavaScript" includeAttrib="true"/>
+        <IncludeRules context="Normal##JavaScript" includeAttrib="true"/>
       </context>
     </contexts>
     <!-- Style mappings. -->

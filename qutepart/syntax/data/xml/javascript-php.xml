@@ -9,7 +9,7 @@
 
 
 
-<language name="JavaScript/PHP" hidden="true" version="1.22" kateversion="2.4" section="Other" extensions=""
+<language name="JavaScript/PHP" hidden="true" version="1.22" kateversion="3.4" section="Other" extensions=""
           mimetype="" indenter="cstyle"
           author="Anders Lund (anders@alweb.dk), Joseph Wenninger (jowenn@kde.org), Whitehawk Stormchaser (zerokode@gmx.net)" license="">
   <highlighting>
@@ -70,6 +70,18 @@
       <item> undefined </item>
     </list>
     <contexts>
+
+      <!-- Shebang: ("#!") Detect shebang and fallthrough to Normal -->
+      <!-- Based on the similar clause from prolog.xml, which notes the following BUG:
+        If the file starts with whitespace and a shebang on a line other than the first line,
+        this rule will still match it as a shebang, even tough the shebang is only valid on
+        the very first line.
+      -->
+      <context name="Shebang" lineEndContext="Normal" attribute="Syntax Error" fallthrough="true" fallthroughContext="Normal" >
+<IncludeRules context="FindPHP" />
+        <Detect2Chars column="0" char="#" char1="!" context="Comment" attribute="Comment" />
+      </context>
+
       <context attribute="Normal Text" lineEndContext="#stay" name="Normal">
 <IncludeRules context="FindPHP" />
         <DetectSpaces/>

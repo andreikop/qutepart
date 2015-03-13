@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="ActionScript 2.0" version="1.0" kateversion="2.4" section="Sources" extensions="*.as" mimetype="text/x-actionscript" license="LGPL" author="Aaron Miller (armantic101@gmail.com)"> 
+<language name="ActionScript 2.0" version="1.0" kateversion="2.3" section="Sources" extensions="*.as" mimetype="text/x-actionscript" license="LGPL" author="Aaron Miller (armantic101@gmail.com)">
   <highlighting>
     
     <list name="properties">
@@ -259,14 +259,14 @@
         <HlCOct attribute="Octal" context="#stay"/>
         <HlCHex attribute="Hex" context="#stay"/>
         <Int attribute="Decimal" context="#stay">
-          <StringDetect attribute="Decimal" context="#stay" String="ULL" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="LUL" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="LLU" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="UL" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="LU" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="LL" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="U" insensitive="TRUE"/>
-          <StringDetect attribute="Decimal" context="#stay" String="L" insensitive="TRUE"/>
+          <StringDetect attribute="Decimal" context="#stay" String="ULL" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LUL" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LLU" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="UL" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LU" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="LL" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="U" insensitive="true"/>
+          <StringDetect attribute="Decimal" context="#stay" String="L" insensitive="true"/>
         </Int>
         <HlCChar attribute="Char" context="#stay"/>
         <RegExpr attribute="Decimal" context="#stay" String="//\s*BEGIN.*$" beginRegion="Region1"/>
