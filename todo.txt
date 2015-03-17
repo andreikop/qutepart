@@ -1,4 +1,6 @@
 fixme:
+
+vim todo:
   visual block mode + rectangular selection
   replace char, append, open line count times
 

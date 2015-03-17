@@ -552,6 +552,11 @@ class BaseVisual(BaseCommandMode):
             searchChar = ev.text()
             self._moveCursor(action, typedCount, searchChar=searchChar, select=True)
             raise StopIteration(True)
+        elif action == _z:
+            ev = yield
+            if code(ev) == _z:
+                self._qpart.centerCursor()
+            raise StopIteration(True)
         elif action in self._MOTIONS:
             self._moveCursor(action, typedCount, select=True)
             if self._selectLines:
