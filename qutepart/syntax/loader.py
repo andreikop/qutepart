@@ -535,6 +535,7 @@ def _loadSyntaxDescription(root, syntax):
 
 
 def loadSyntax(syntax, filePath, formatConverterFunction = None):
+    _logger.debug("Loading syntax %s", filePath)
     with open(filePath, 'r') as definitionFile:
         try:
             root = xml.etree.ElementTree.parse(definitionFile).getroot()
