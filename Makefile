@@ -20,6 +20,7 @@ bump-version:
 	enki rpm/python-qutepart.spec +2
 
 changelog-update:
+	enki ChangeLog
 	cd debian && \
 		$(ENV) dch --check-dirname-regex qutepart -v $(VERSION)-1~ubuntuseries1 -b --distribution ubuntuseries
 	enki rpm/python-qutepart.spec +60

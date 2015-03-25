@@ -26,7 +26,7 @@ import qutepart.vim
 import qutepart.bookmarks
 
 
-VERSION = (2, 1, 2)
+VERSION = (2, 2, 0)
 
 
 logger = logging.getLogger('qutepart')
