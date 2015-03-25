@@ -14,6 +14,7 @@ Component has been created for [Enki editor](http://enki-editor.org) as replacem
 * Autocompletion based on document content
 * Marking too long lines with red line
 * Rectangular selection and copy-paste
+* Vim mode
 
 ## Building and installation on Linux
 
