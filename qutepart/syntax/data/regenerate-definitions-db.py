@@ -69,6 +69,9 @@ def main():
         dictionary.clear()
         dictionary.update(newDictionary)
 
+    # Fix up php first line pattern. It contains <?php, but it is generated from html, and html doesn't contain it
+    firstLineToXmlFileName['<?php*'] = 'html-php.xml'
+
     result = {}
     result['syntaxNameToXmlFileName'] = syntaxNameToXmlFileName
     result['mimeTypeToXmlFileName'] = mimeTypeToXmlFileName

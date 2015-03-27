@@ -10,7 +10,7 @@
 
 
 
-<language name="PHP (HTML)" version="2.1" kateversion="3.4" section="Scripts" extensions="*.php;*.php3;*.wml;*.phtml;*.phtm;*.inc" mimetype="text/x-php4-src;text/x-php3-src;text/vnd.wap.wml;application/x-php"  author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL" priority="10" firstLineGlobs="&lt;!doctype html*;&lt;html*;&lt;?php*">
+<language name="PHP (HTML)" version="2.1" kateversion="3.4" section="Scripts" extensions="*.php;*.php3;*.wml;*.phtml;*.phtm;*.inc" mimetype="text/x-php4-src;text/x-php3-src;text/vnd.wap.wml;application/x-php"  author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL" priority="10" firstLineGlobs="&lt;!doctype html*;&lt;html*">
 
 <highlighting>
 <contexts>
