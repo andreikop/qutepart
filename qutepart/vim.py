@@ -104,17 +104,18 @@ class Vim(QObject):
         self._cursorUnderlineBlinkTimer.setInterval(650)
         self._cursorUnderlineBlinkTimer.start()
 
-        # Do not remove this connects. Bad things happen on different platforms
-        self.destroyed.connect(self.terminate)
-        self._qpart.destroyed.connect(self.terminate)
-        self._qpart.document().destroyed.connect(self.terminate)
-
     def terminate(self):
         self._cursorUnderlineBlinkTimer.stop()
         self._qpart.selectionChanged.disconnect(self._onSelectionChanged)
-        self._qpart.document().modificationChanged.disconnect(self._onModificationChanged)
+        try:
+            self._qpart.document().modificationChanged.disconnect(self._onModificationChanged)
+        except TypeError:
+            pass
         self._cursorUnderlineBlinkTimer.timeout.disconnect(self._onCursorUnderlineBlinkTimer)
-        self._qpart.cursorPositionChanged.disconnect(self._updateCursorShape)
+        try:
+            self._qpart.cursorPositionChanged.disconnect(self._updateCursorShape)
+        except TypeError:
+            pass
 
     def indication(self):
         return self._mode.color, self._mode.text()
