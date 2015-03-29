@@ -117,6 +117,8 @@ class Vim(QObject):
         except TypeError:
             pass
 
+        self._qpart.setCursorWidth(self._originalCursorWidth)  # restore
+
     def indication(self):
         return self._mode.color, self._mode.text()
 
