@@ -107,7 +107,9 @@ def main():
     if ns.quit:
         QTimer.singleShot(0, app.quit)
 
-    return app.exec_()
+    app.exec_()
+
+    qpart.terminate()
 
 
 if __name__ == '__main__':

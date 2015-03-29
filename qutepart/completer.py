@@ -346,12 +346,7 @@ class Completer(QObject):
         qpart.installEventFilter(self)
         qpart.textChanged.connect(self._onTextChanged)
 
-        # Do not remove this connects. Bad things happen on different platforms
-        self.destroyed.connect(self.del_)
-        self._qpart.destroyed.connect(self.del_)
-        self._qpart.document().destroyed.connect(self.del_)
-
-    def del_(self):
+    def terminate(self):
         """Object deleted. Cancel timer
         """
         self._globalUpdateWordSetTimer.cancel(self._updateWordSet)

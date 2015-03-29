@@ -285,6 +285,18 @@ class Qutepart(QPlainTextEdit):
         self._updateLineNumberAreaWidth(0)
         self._updateExtraSelections()
 
+    def terminate(self):
+        """ Terminate Qutepart instance.
+        This method MUST be called before application stop to avoid crashes and
+        some other interesting effects
+        Call it on close to free memory and stop background highlighting
+        """
+        self.text = ''
+        self._completer.terminate()
+
+        if self._highlighter is not None:
+            self._highlighter.terminate()
+
     def _initActions(self):
         """Init shortcuts for text editing
         """
@@ -632,7 +644,7 @@ class Qutepart(QPlainTextEdit):
         This method might take long time, if document is big. Don't call it if you don't have to (i.e. in destructor)
         """
         if self._highlighter is not None:
-            self._highlighter.del_()
+            self._highlighter.terminate()
             self._highlighter = None
             self.languageChanged.emit(None)
 
@@ -1256,8 +1268,6 @@ class Qutepart(QPlainTextEdit):
         else:
             super(Qutepart, self).insertFromMimeData(source)
 
-    def del_(self):
-        self._completer.del_()
 
 def iterateBlocksFrom(block):
     """Generator, which iterates QTextBlocks from block until the End of a document
