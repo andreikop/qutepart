@@ -58,6 +58,15 @@ class Test(unittest.TestCase):
         self.qpart.document().undo()
         self.assertEqual(self.qpart.text, 'abcd')
 
+    def test_alt_does_not_type(self):
+        """ By default when Alt+Key is pressed - text is inserted.
+        Qutepart ignores this key pressings
+        """
+        QTest.keyClick(self.qpart, Qt.Key_A, Qt.AltModifier)
+        self.assertEqual(self.qpart.text, '')
+        QTest.keyClick(self.qpart, Qt.Key_A)
+        self.assertEqual(self.qpart.text, 'a')
+
 
 if __name__ == '__main__':
     unittest.main()

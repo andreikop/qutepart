@@ -878,7 +878,10 @@ class Qutepart(QPlainTextEdit):
                     action.trigger()
                     break
             else:
-                super(Qutepart, self).keyPressEvent(event)
+                if event.text() and event.modifiers() == Qt.AltModifier:
+                    return
+                else:
+                    super(Qutepart, self).keyPressEvent(event)
 
     def mousePressEvent(self, mouseEvent):
         pass  # suppress docstring for non-public method
