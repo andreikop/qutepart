@@ -3,13 +3,9 @@ import sys
 import unittest
 import time
 
-
-import sip
-sip.setapi('QString', 2)
-
-from PyQt4.QtCore import Qt, QTimer
-from PyQt4.QtGui import QApplication
-from PyQt4.QtTest import QTest
+from qutepart.qt import Qt, QTimer
+from qutepart.qt import QApplication
+from qutepart.qt import QTest
 
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

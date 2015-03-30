@@ -6,8 +6,8 @@ import unittest
 
 import base
 
-from PyQt4.QtCore import Qt, QTimer, QPoint
-from PyQt4.QtTest import QTest
+from qutepart.qt import Qt, QTimer, QPoint
+from qutepart.qt import QTest
 
 
 from qutepart import Qutepart, iterateBlocksFrom

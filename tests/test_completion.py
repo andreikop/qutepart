@@ -6,9 +6,9 @@ import unittest
 
 import base
 
-from PyQt4.QtCore import Qt, QPoint
-from PyQt4.QtGui import QMainWindow
-from PyQt4.QtTest import QTest
+from qutepart.qt import Qt, QPoint
+from qutepart.qt import QMainWindow
+from qutepart.qt import QTest
 
 from qutepart import Qutepart
 import qutepart.completer

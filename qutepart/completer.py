@@ -4,8 +4,9 @@
 import re
 import time
 
-from PyQt4.QtCore import pyqtSignal, QAbstractItemModel, QEvent, QModelIndex, QObject, QSize, Qt, QTimer, Qt
-from PyQt4.QtGui import QCursor, QListView, QStyle
+from qutepart.qt import pyqtSignal, QAbstractItemModel, QEvent, QModelIndex, QObject, QSize, Qt, QTimer, Qt
+from qutepart.qt import QListView
+from qutepart.qt import QCursor, QStyle
 
 from qutepart.htmldelegate import HTMLDelegate
 
