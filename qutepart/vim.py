@@ -566,7 +566,21 @@ class BaseVisual(BaseCommandMode):
                 self._qpart.centerCursor()
             raise StopIteration(True)
         elif action in self._MOTIONS:
-            self._moveCursor(action, typedCount, select=True)
+            if self._selectLines and action in (_k, _Up, _j, _Down):
+                """ There is a bug in visual mode:
+                If a line is wrapped, cursor moves up, but stays on same line. Then selection is expanded
+                and cursor returns to previous position. So user can't move the cursor up.
+                So, in Visual mode we move cursor up until it moved to previous line
+                The same bug when moving down
+                """
+                cursorLine = self._qpart.cursorPosition[0]
+                if (action in (_k, _Up) and cursorLine > 0) or \
+                   (action in (_j, _Down) and (cursorLine + 1) < len(self._qpart.lines)):
+                    while self._qpart.cursorPosition[0] == cursorLine:
+                        self._moveCursor(action, typedCount, select=True)
+            else:
+                self._moveCursor(action, typedCount, select=True)
+
             if self._selectLines:
                 self._expandSelection()
             raise StopIteration(True)
