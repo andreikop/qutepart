@@ -2619,6 +2619,8 @@ ContextSwitcher_getNextContextStack(ContextSwitcher* self, ContextStack* context
                 fprintf(stderr, "qutepart: Max context stack depth %d reached\n", QUTEPART_MAX_CONTEXT_STACK_DEPTH);
                 messageShown = true;
             }
+            Py_XDECREF(newContextStack);
+            return contextStack;
         }
     }
 
@@ -2851,6 +2853,13 @@ Context_parseBlock(Context* self,
                 {
                     ASSIGN_VALUE(ContextStack, *pContextStack, newContextStack);
                     break; // while
+                }
+                else if (0 == result.length)
+                {
+                    // Parsed didn't switch context or consume character. The same situation will occur on next step
+                    fprintf(stderr, "qutepart: loop detected\n");
+                    currentColumnIndex ++;  // parsing bug. But avoid freeze
+                    countOfNotMatchedSymbols ++;
                 }
             }
         }
