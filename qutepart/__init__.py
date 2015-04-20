@@ -8,6 +8,13 @@ import platform
 
 import sip
 
+try:
+    sip.setapi('QString', 2)
+except ValueError:
+    assert 0, 'Qutepart supports only QString API v2. '\
+              'Use next code:\n\timport sip\n\tsip.setapi("QString", 2)\n'\
+              'before importing Qutepart'
+
 from PyQt4.QtCore import QRect, Qt, QEvent, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, \
                         QDialog, QFont, \
@@ -27,13 +34,6 @@ from qutepart.indenter import Indenter
 import qutepart.vim
 import qutepart.bookmarks
 
-
-try:
-    sip.setapi('QString', 2)
-except ValueError:
-    assert 0, 'Qutepart supports only QString API v2. '\
-              'Use next code:\n\timport sip\n\tsip.setapi("QString", 2)\n'\
-              'before importing Qutepart'
 
 
 VERSION = (2, 2, 0)
