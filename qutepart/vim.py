@@ -1,6 +1,6 @@
 import sys
 
-from PyQt4.QtCore import Qt, pyqtSignal, QObject, QTimer
+from PyQt4.QtCore import Qt, pyqtSignal, QObject
 from PyQt4.QtGui import QColor, QTextCursor, QTextEdit
 
 
@@ -90,57 +90,22 @@ class Vim(QObject):
 
         self._processingKeyPress = False
 
-        self._originalCursorWidth = self._qpart.cursorWidth()
-        self._qpart.setCursorWidth(0)
-        self._qpart.cursorPositionChanged.connect(self._updateCursorShape)
-
         self.updateIndication()
 
         self.lastEditCmdFunc = None
 
-        self._cursorUnderlined = True
-        self._cursorUnderlineBlinkTimer = QTimer(self)
-        self._cursorUnderlineBlinkTimer.timeout.connect(self._onCursorUnderlineBlinkTimer)
-        self._cursorUnderlineBlinkTimer.setInterval(650)
-        self._cursorUnderlineBlinkTimer.start()
-
     def terminate(self):
-        self._cursorUnderlineBlinkTimer.stop()
         self._qpart.selectionChanged.disconnect(self._onSelectionChanged)
         try:
             self._qpart.document().modificationChanged.disconnect(self._onModificationChanged)
         except TypeError:
             pass
-        self._cursorUnderlineBlinkTimer.timeout.disconnect(self._onCursorUnderlineBlinkTimer)
-        try:
-            self._qpart.cursorPositionChanged.disconnect(self._updateCursorShape)
-        except TypeError:
-            pass
-
-        self._qpart.setCursorWidth(self._originalCursorWidth)  # restore
 
     def indication(self):
         return self._mode.color, self._mode.text()
 
     def updateIndication(self):
         self.modeIndicationChanged.emit(*self.indication())
-
-    def _updateCursorShape(self):
-        if isinstance(self._mode, Normal):
-            cursor = self._qpart.textCursor()
-            if cursor.positionInBlock() + 1 == cursor.block().length() and \
-               (not cursor.block().next().isValid()):
-                # on the last character in the document. Nothing to highlight with extra selection
-                width = self._originalCursorWidth
-            else:
-                # extra selection is drawn
-                width = 0
-        else:
-            width = self._originalCursorWidth
-
-        if width != self._qpart.cursorWidth():
-            self._qpart.setCursorWidth(width)
-            self._qpart._updateVimExtraSelections()
 
     def keyPressEvent(self, ev):
         """Check the event. Return True if processed and False otherwise
@@ -167,12 +132,6 @@ class Vim(QObject):
     def setMode(self, mode):
         self._mode = mode
 
-        if isinstance(self._mode, Normal):
-            self._qpart.setCursorWidth(0)  # extra selection is drawn
-        else:
-            self._qpart.setCursorWidth(self._originalCursorWidth)
-
-        self._updateCursorShape()
         self._qpart._updateVimExtraSelections()
 
         self.updateIndication()
@@ -186,8 +145,6 @@ class Vim(QObject):
         selection = QTextEdit.ExtraSelection()
         selection.format.setBackground(QColor('#ffcc22'))
         selection.format.setForeground(QColor('#000000'))
-        if self._cursorUnderlined:
-            selection.format.setFontUnderline(True)
         selection.cursor = self._qpart.textCursor()
         selection.cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
 
@@ -204,11 +161,6 @@ class Vim(QObject):
     def _onModificationChanged(self, modified):
         if not modified and isinstance(self._mode, Insert):
             self.setMode(Normal(self, self._qpart))
-
-    def _onCursorUnderlineBlinkTimer(self):
-        if isinstance(self._mode, Normal) and self._qpart.hasFocus():
-            self._cursorUnderlined = not self._cursorUnderlined
-            self._qpart._updateVimExtraSelections()
 
 
 class Mode:
