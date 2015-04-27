@@ -31,13 +31,13 @@ dist/${ARCHIVE}:
 
 
 deb-obs: dist/${ARCHIVE}
-	rm -rf build-obs
-	mkdir build-obs
-	cp dist/${ARCHIVE} build-obs/${DEBIGAN_ORIG_ARCHIVE}
-	cd build-obs && tar -xf ${DEBIGAN_ORIG_ARCHIVE}
-	cp -r debian build-obs/${PACKAGE_NAME}-${VERSION}
-	sed -i s/ubuntuseries/obs/g build-obs/${PACKAGE_NAME}-${VERSION}/debian/changelog
-	cd build-obs/${PACKAGE_NAME}-${VERSION} && $(ENV) debuild -us -uc -S
+	rm -rf build
+	mkdir build
+	cp dist/${ARCHIVE} build/${DEBIGAN_ORIG_ARCHIVE}
+	cd build && tar -xf ${DEBIGAN_ORIG_ARCHIVE}
+	cp -r debian build/${PACKAGE_NAME}-${VERSION}
+	sed -i s/ubuntuseries/obs/g build/${PACKAGE_NAME}-${VERSION}/debian/changelog
+	cd build/${PACKAGE_NAME}-${VERSION} && $(ENV) debuild -us -uc -S
 
 obs_home_hlamer_enki:
 	osc co home:hlamer:enki python-qutepart
@@ -47,9 +47,9 @@ put-obs: obs_home_hlamer_enki deb-obs
 	rm -f obs_home_hlamer_enki/python-qutepart/*
 	cp rpm/python-qutepart.spec obs_home_hlamer_enki/python-qutepart
 	cp dist/${ARCHIVE} obs_home_hlamer_enki/python-qutepart
-	cp build-obs/*.debian.tar.gz obs_home_hlamer_enki/python-qutepart
-	cp build-obs/*.orig.tar.gz obs_home_hlamer_enki/python-qutepart
-	cp build-obs/*.dsc obs_home_hlamer_enki/python-qutepart
+	cp build/*.debian.tar.gz obs_home_hlamer_enki/python-qutepart
+	cp build/*.orig.tar.gz obs_home_hlamer_enki/python-qutepart
+	cp build/*.dsc obs_home_hlamer_enki/python-qutepart
 	cd obs_home_hlamer_enki/python-qutepart && \
 		osc addremove && \
 		osc ci -m 'update by the publish script'
