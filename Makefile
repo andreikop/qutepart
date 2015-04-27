@@ -9,6 +9,9 @@ ENV=DEBFULLNAME="$(AUTHOR)" DEBEMAIL=$(AUTHOR_EMAIL) EDITOR=enki
 
 DEBIGAN_ORIG_ARCHIVE=${DEB_PACKAGE_NAME}_${VERSION}.orig.tar.gz
 
+DEB_BUILD_DIR=build/deb
+OBS_REPO_DIR=build/${OBS_REPO_DIR}
+
 
 all install:
 	@echo This Makefile does not build and install the project.
@@ -31,26 +34,26 @@ dist/${ARCHIVE}:
 
 
 deb-obs: dist/${ARCHIVE}
-	rm -rf build
-	mkdir build
-	cp dist/${ARCHIVE} build/${DEBIGAN_ORIG_ARCHIVE}
-	cd build && tar -xf ${DEBIGAN_ORIG_ARCHIVE}
-	cp -r debian build/${PACKAGE_NAME}-${VERSION}
-	sed -i s/ubuntuseries/obs/g build/${PACKAGE_NAME}-${VERSION}/debian/changelog
-	cd build/${PACKAGE_NAME}-${VERSION} && $(ENV) debuild -us -uc -S
+	rm -rf ${DEB_BUILD_DIR}
+	mkdir ${DEB_BUILD_DIR}
+	cp dist/${ARCHIVE} ${DEB_BUILD_DIR}/${DEBIGAN_ORIG_ARCHIVE}
+	cd ${DEB_BUILD_DIR} && tar -xf ${DEBIGAN_ORIG_ARCHIVE}
+	cp -r debian ${DEB_BUILD_DIR}/${PACKAGE_NAME}-${VERSION}
+	sed -i s/ubuntuseries/obs/g ${DEB_BUILD_DIR}/${PACKAGE_NAME}-${VERSION}/debian/changelog
+	cd ${DEB_BUILD_DIR}/${PACKAGE_NAME}-${VERSION} && $(ENV) debuild -us -uc -S
 
-obs_home_hlamer_enki:
+${OBS_REPO_DIR}:
 	osc co home:hlamer:enki python-qutepart
-	mv home\:hlamer\:enki obs_home_hlamer_enki
+	mv home\:hlamer\:enki ${OBS_REPO_DIR}
 
-put-obs: obs_home_hlamer_enki deb-obs
-	rm -f obs_home_hlamer_enki/python-qutepart/*
-	cp rpm/python-qutepart.spec obs_home_hlamer_enki/python-qutepart
-	cp dist/${ARCHIVE} obs_home_hlamer_enki/python-qutepart
-	cp build/*.debian.tar.gz obs_home_hlamer_enki/python-qutepart
-	cp build/*.orig.tar.gz obs_home_hlamer_enki/python-qutepart
-	cp build/*.dsc obs_home_hlamer_enki/python-qutepart
-	cd obs_home_hlamer_enki/python-qutepart && \
+put-obs: ${OBS_REPO_DIR} deb-obs
+	rm -f ${OBS_REPO_DIR}/python-qutepart/*
+	cp rpm/python-qutepart.spec ${OBS_REPO_DIR}/python-qutepart
+	cp dist/${ARCHIVE} ${OBS_REPO_DIR}/python-qutepart
+	cp ${DEB_BUILD_DIR}/*.debian.tar.gz ${OBS_REPO_DIR}/python-qutepart
+	cp ${DEB_BUILD_DIR}/*.orig.tar.gz ${OBS_REPO_DIR}/python-qutepart
+	cp ${DEB_BUILD_DIR}/*.dsc ${OBS_REPO_DIR}/python-qutepart
+	cd ${OBS_REPO_DIR}/python-qutepart && \
 		osc addremove && \
 		osc ci -m 'update by the publish script'
 
