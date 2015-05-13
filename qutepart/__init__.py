@@ -457,7 +457,10 @@ class Qutepart(QPlainTextEdit):
     def textForSaving(self):
         """Get text with correct EOL symbols. Use this method for saving a file to storage
         """
-        return self.eol.join(self.text.splitlines())
+        lines = self.text.splitlines()
+        if self.text.endswith('\n'):  # splitlines ignores last \n
+            lines.append('')
+        return self.eol.join(lines) + self.eol
 
     @property
     def selectedText(self):
