@@ -72,7 +72,7 @@ def _checkDependencies():
         print "Failed to find Python headers."
         print "Try to install python-dev package"
         print "If not standard directories are used, pass parameters"
-        print "\tpython setup.py install --lib-dir=c://github/pcre-8.32/build --include-dir=c://github/pcre-8.32/build"
+        print "\tpython setup.py install --lib-dir=c://github/pcre-8.32/build/Release --include-dir=c://github/pcre-8.32/build"
         print "\tpython setup.py install --lib-dir=/usr/local/lib --include-dir=/usr/local/include"
         print "--lib-dir= and --include-dir= may be used multiple times"
         return False
@@ -85,7 +85,7 @@ def _checkDependencies():
         print "Failed to find pcre library."
         print "Try to install libpcre{version}-dev package, or go to http://pcre.org"
         print "If not standard directories are used, pass parameters:"
-        print "\tpython setup.py install --lib-dir=c://github/pcre-8.32/build --include-dir=c://github/pcre-8.32/build"
+        print "\tpython setup.py install --lib-dir=c://github/pcre-8.32/build/Release --include-dir=c://github/pcre-8.32/build"
         print "or"
         print "\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include"
         print "--lib-dir= and --include-dir= may be used multiple times"
