@@ -114,7 +114,11 @@ class SyntaxHighlighter(QObject):
         self._onContentsChange(0, 0, charsAdded, zeroTimeout=self._wasChangedJustBefore())
 
     def terminate(self):
-        self._document.contentsChange.disconnect(self._onContentsChange)
+        try:
+            self._document.contentsChange.disconnect(self._onContentsChange)
+        except TypeError:
+            pass
+
         self._globalTimer.unScheduleCallback(self._onContinueHighlighting)
         block = self._document.firstBlock()
         while block.isValid():
