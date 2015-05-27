@@ -5,6 +5,7 @@ import os
 import platform
 
 from setuptools import setup, Extension
+
 import distutils.ccompiler
 import distutils.sysconfig
 

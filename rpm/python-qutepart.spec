@@ -11,6 +11,7 @@ Source0:        https://github.com/hlamer/qutepart/archive/v%{version}.tar.gz#/q
 
 BuildRequires:  pcre-devel
 BuildRequires:  python-devel
+BuildRequires:  python-setuptools
 Requires:       python >= 2.7
 Requires:       pcre
 
