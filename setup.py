@@ -4,7 +4,7 @@ import sys
 import os
 import platform
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 import distutils.ccompiler
 import distutils.sysconfig
 

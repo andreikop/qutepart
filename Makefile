@@ -10,7 +10,7 @@ ENV=DEBFULLNAME="$(AUTHOR)" DEBEMAIL=$(AUTHOR_EMAIL) EDITOR=enki
 DEBIGAN_ORIG_ARCHIVE=${DEB_PACKAGE_NAME}_${VERSION}.orig.tar.gz
 
 DEB_BUILD_DIR=build/deb
-OBS_REPO_DIR=build/${OBS_REPO_DIR}
+OBS_REPO_DIR=build/obs_home_hlamer_enki
 
 
 all install:
@@ -19,7 +19,7 @@ all install:
 	@exit -1
 
 bump-version:
-	enki qutepart/__init__.py +29
+	enki qutepart/__init__.py +39
 	enki rpm/python-qutepart.spec +2
 
 changelog-update:
