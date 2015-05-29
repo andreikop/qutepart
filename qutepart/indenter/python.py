@@ -36,7 +36,7 @@ class IndentAlgPython(IndentAlgBase):
 
             try:
                 foundBlock, foundColumn = self.findBracketBackward(block,
-                                                                   len(block.text().rstrip()) - 2,
+                                                                   len(block.text()[:column].rstrip()) - 2,
                                                                    lineStripped[-2])
             except ValueError:
                 pass
