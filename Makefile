@@ -43,6 +43,7 @@ deb-obs: dist/${ARCHIVE}
 	cd ${DEB_BUILD_DIR}/${PACKAGE_NAME}-${VERSION} && $(ENV) debuild -us -uc -S
 
 ${OBS_REPO_DIR}:
+	mkdir -p build
 	osc co home:hlamer:enki python-qutepart
 	mv home\:hlamer\:enki ${OBS_REPO_DIR}
 

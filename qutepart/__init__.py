@@ -36,7 +36,7 @@ import qutepart.bookmarks
 
 
 
-VERSION = (2, 2, 1)
+VERSION = (2, 2, 2)
 
 
 logger = logging.getLogger('qutepart')
