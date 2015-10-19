@@ -2,6 +2,7 @@
 =========================================================
 """
 
+import sys
 import os.path
 import logging
 import platform
@@ -15,7 +16,7 @@ except ValueError:
               'Use next code:\n\timport sip\n\tsip.setapi("QString", 2)\n'\
               'before importing Qutepart'
 
-from PyQt4.QtCore import QRect, Qt, QEvent, pyqtSignal
+from PyQt4.QtCore import QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, \
                         QDialog, QFont, \
                         QIcon, QKeySequence, QPainter, QPen, QPalette, \
@@ -24,15 +25,24 @@ from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, \
                         QTextBlock, QTextEdit, QTextFormat
 
 from qutepart.syntax import SyntaxManager
-from qutepart.syntaxhlighter import SyntaxHighlighter
-from qutepart.brackethlighter import BracketHighlighter
-from qutepart.completer import Completer
-from qutepart.lines import Lines
-from qutepart.rectangularselection import RectangularSelection
-import qutepart.sideareas
-from qutepart.indenter import Indenter
-import qutepart.vim
-import qutepart.bookmarks
+
+if 'sphinx-build' not in sys.argv[0]:
+    """When building documentation on rtfd.org, Qt is not available and is mocked
+    in conf.py. But mocked Qt doesn't allow to create some global variables.
+    Therefore this code is not executed when building docs
+    """
+    from qutepart.syntaxhlighter import SyntaxHighlighter
+    from qutepart.brackethlighter import BracketHighlighter
+    from qutepart.completer import Completer
+    from qutepart.lines import Lines
+    from qutepart.rectangularselection import RectangularSelection
+    import qutepart.sideareas
+    from qutepart.indenter import Indenter
+    import qutepart.vim
+    import qutepart.bookmarks
+
+    def setPositionInBlock(cursor, positionInBlock, anchor=QTextCursor.MoveAnchor):
+        return cursor.setPosition(cursor.block().position() + positionInBlock, anchor)
 
 
 
@@ -64,9 +74,6 @@ if not hasattr(QTextCursor, 'positionInBlock'):
         return cursor.position() - cursor.block().position()
     QTextCursor.positionInBlock = _positionInBlock
 
-
-def setPositionInBlock(cursor, positionInBlock, anchor=QTextCursor.MoveAnchor):
-    return cursor.setPosition(cursor.block().position() + positionInBlock, anchor)
 
 
 class Qutepart(QPlainTextEdit):

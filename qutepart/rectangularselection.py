@@ -1,5 +1,5 @@
 from PyQt4.QtCore import Qt, QMimeData
-from PyQt4.QtGui import QApplication, QKeyEvent, QKeySequence, QPalette, QTextCursor, QTextEdit, QWidget
+from PyQt4.QtGui import QApplication, QKeyEvent, QKeySequence, QPalette, QTextCursor, QTextEdit
 
 
 class RectangularSelection:
@@ -10,10 +10,9 @@ class RectangularSelection:
     MIME_TYPE = 'text/rectangular-selection'
 
     # any of this modifiers with mouse select text
-    # if hasattr(Qt, 'AltModifier') to make the docs buildable on rtfd.org
     MOUSE_MODIFIERS = (Qt.AltModifier | Qt.ControlModifier,
                        Qt.AltModifier | Qt.ShiftModifier,
-                       Qt.AltModifier) if hasattr(Qt, 'AltModifier') else None
+                       Qt.AltModifier)
 
     _MAX_SIZE = 256
 

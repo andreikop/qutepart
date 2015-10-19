@@ -4,24 +4,25 @@ Uses syntax module for doing the job
 
 import time
 
-
 from PyQt4.QtCore import QObject, QTimer
 from PyQt4.QtGui import QApplication, QBrush, QColor, QFont, \
                         QTextBlockUserData, QTextCharFormat, QTextLayout
 
 import qutepart.syntax
 
-"""PyQt does not define proper comparison for QTextLayout.FormatRange
-Define it to check correctly, if formats has changed.
-It is important for the performance
-"""
+
 def _cmpFormatRanges(a, b):
+    """PyQt does not define proper comparison for QTextLayout.FormatRange
+    Define it to check correctly, if formats has changed.
+    It is important for the performance
+    """
     if a.format == b.format and \
        a.start == b.start and \
        a.length == b.length:
         return 0
     else:
         return cmp(id(a), id(b))
+
 
 def _formatRangeListsEqual(a, b):
     if len(a) != len(b):
@@ -87,6 +88,7 @@ class GlobalTimer:
 Pyside crashes, if this variable is a class field
 """
 _gLastChangeTime = -777.
+
 
 class SyntaxHighlighter(QObject):
 
