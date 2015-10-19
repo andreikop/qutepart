@@ -7,14 +7,20 @@ import os.path
 import logging
 import platform
 
-import sip
 
-try:
-    sip.setapi('QString', 2)
-except ValueError:
-    assert 0, 'Qutepart supports only QString API v2. '\
-              'Use next code:\n\timport sip\n\tsip.setapi("QString", 2)\n'\
-              'before importing Qutepart'
+if 'sphinx-build' not in sys.argv[0]:
+    """When building documentation on rtfd.org, Qt is not available and is mocked
+    in conf.py. But mocked Qt doesn't allow to create some global variables.
+    Therefore this code is not executed when building docs
+    """
+    import sip
+    try:
+        sip.setapi('QString', 2)
+    except ValueError:
+        assert 0, 'Qutepart supports only QString API v2. '\
+                  'Use next code:\n\timport sip\n\tsip.setapi("QString", 2)\n'\
+                  'before importing Qutepart'
+
 
 from PyQt4.QtCore import QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, \
@@ -27,10 +33,7 @@ from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, \
 from qutepart.syntax import SyntaxManager
 
 if 'sphinx-build' not in sys.argv[0]:
-    """When building documentation on rtfd.org, Qt is not available and is mocked
-    in conf.py. But mocked Qt doesn't allow to create some global variables.
-    Therefore this code is not executed when building docs
-    """
+    # See explanation near `import sip` above
     from qutepart.syntaxhlighter import SyntaxHighlighter
     from qutepart.brackethlighter import BracketHighlighter
     from qutepart.completer import Completer
