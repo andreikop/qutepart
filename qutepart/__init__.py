@@ -157,10 +157,12 @@ class Qutepart(QPlainTextEdit):
     It is enabled, if ``completionEnabled`` is ``True``.
     ``completionThreshold`` is count of typed symbols, after which completion is shown.
 
-    ** Linters support **
+    **Linters support**
+
     * ``lintMarks`` Linter messages as {lineNumber: (type, text)} dictionary. Cleared on any edit operation. Type is one of `Qutepart.LINT_ERROR, Qutepart.LINT_WARNING, Qutepart.LINT_NOTE)
 
-    ** Vim mode**
+    **Vim mode**
+
     ``vimModeEnabled`` - read-write property switches Vim mode. See also ``vimModeEnabledChanged``.
     ``vimModeIndication`` - An application shall display a label, which shows current Vim mode. This read-only property contains (QColor, str) to be displayed on the label. See also ``vimModeIndicationChanged``.
 
