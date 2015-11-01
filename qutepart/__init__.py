@@ -886,9 +886,11 @@ class Qutepart(QPlainTextEdit):
                    not cursor.hasSelection() and \
                    cursor.positionInBlock() == spaceAtStartLen
 
+        def atEnd():
+            return cursor.positionInBlock() == cursor.block().length() - 1
+
         def shouldAutoIndent(event):
-            atEnd = cursor.positionInBlock() == cursor.block().length() - 1
-            return atEnd and \
+            return atEnd() and \
                    event.text() and \
                    event.text() in self._indenter.triggerCharacters()
 
@@ -904,7 +906,8 @@ class Qutepart(QPlainTextEdit):
             delete char, and type char. Actions are undone separately. This is
             workaround for the Qt bug"""
             with self:
-                cursor.deleteChar()
+                if not atEnd():
+                    cursor.deleteChar()
                 cursor.insertText(text)
 
         if event.matches(QKeySequence.InsertParagraphSeparator):
@@ -966,7 +969,7 @@ class Qutepart(QPlainTextEdit):
                     break
             else:
                 if event.text() and event.modifiers() == Qt.AltModifier:
-                    return
+                    return  # alt+letter is a shortcut. Not mine
                 else:
                     self._lastKeyPressProcessedByParent = True
                     super(Qutepart, self).keyPressEvent(event)

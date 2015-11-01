@@ -108,6 +108,15 @@ class Modes(_Test):
         self.click(Qt.Key_Insert)
         self.assertEqual(self.vimMode, 'insert')
 
+    def test_05a(self):
+        """ Replace mode - at end of line
+        """
+        self.click('$')
+        self.click('R')
+        self.click('asdf')
+        self.assertEqual(self.qpart.lines[0],
+                         'The quick brown foxasdf')
+
     def test_06(self):
         """ Visual mode
         """
