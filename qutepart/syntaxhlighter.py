@@ -4,7 +4,7 @@ Uses syntax module for doing the job
 
 import time
 
-from PyQt4.QtCore import QObject, QTimer
+from PyQt4.QtCore import QObject, QTimer, Qt
 from PyQt4.QtGui import QApplication, QBrush, QColor, QFont, \
                         QTextBlockUserData, QTextCharFormat, QTextLayout
 
@@ -174,8 +174,16 @@ class SyntaxHighlighter(QObject):
             return None  # Do not apply default format. Performance optimization
 
         qtFormat = QTextCharFormat()
-        qtFormat.setForeground(QBrush(QColor(format.color)))
-        qtFormat.setBackground(QBrush(QColor(format.background)))
+
+        foregroundColor = QColor(format.color)
+        backgroundColor = QColor(format.background)
+
+        if foregroundColor != Qt.black:
+            qtFormat.setForeground(foregroundColor)
+
+        if backgroundColor != Qt.white:
+            qtFormat.setBackground(backgroundColor)
+
         qtFormat.setFontItalic(format.italic)
         qtFormat.setFontWeight(QFont.Bold if format.bold else QFont.Normal)
         qtFormat.setFontUnderline(format.underline)
