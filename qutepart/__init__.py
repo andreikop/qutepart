@@ -49,7 +49,7 @@ if 'sphinx-build' not in sys.argv[0]:
 
 
 
-VERSION = (2, 2, 2)
+VERSION = (2, 2, 3)
 
 
 logger = logging.getLogger('qutepart')
