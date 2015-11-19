@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
-import os
-import sys
 import unittest
 
 import base
 
 from PyQt4.QtCore import Qt
-from PyQt4.QtTest import QTest
+from PyQt4.QtGui import QApplication
 
 from qutepart import Qutepart
 from qutepart.brackethlighter import BracketHighlighter
@@ -47,7 +45,7 @@ class Test(unittest.TestCase):
         self.qpart.detectSyntax(language = 'Python')
 
         while self.qpart.isHighlightingInProgress():
-            QTest.qWait(20)
+            QApplication.instance().processEvents()
 
         firstBlock = self.qpart.document().firstBlock()
         secondBlock = firstBlock.next()
