@@ -22,7 +22,7 @@ class Test(unittest.TestCase):
         self.qpart = Qutepart()
 
     def tearDown(self):
-        del self.qpart
+        self.qpart.terminate()
 
     def _verify(self, actual, expected):
         converted = []

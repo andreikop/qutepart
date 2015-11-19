@@ -24,7 +24,7 @@ class Test(unittest.TestCase):
 
     def tearDown(self):
         self.qpart.hide()
-        del self.qpart
+        self.qpart.terminate()
 
     def test_real_to_visible(self):
         self.qpart.text = 'abcdfg'

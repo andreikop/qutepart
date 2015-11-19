@@ -20,7 +20,7 @@ class Test(unittest.TestCase):
         self.qpart = Qutepart()
 
     def tearDown(self):
-        del self.qpart
+        self.qpart.terminate()
 
     def test_overwrite_edit(self):
         self.qpart.show()

@@ -30,7 +30,7 @@ class _Test(unittest.TestCase):
 
     def tearDown(self):
         self.qpart.hide()
-        del self.qpart
+        self.qpart.terminate()
 
     def _onVimModeChanged(self, color, mode):
         self.vimMode = mode
