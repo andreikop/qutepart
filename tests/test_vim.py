@@ -10,6 +10,7 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtTest import QTest
 
 from qutepart import Qutepart
+from qutepart.vim import _globalClipboard
 
 
 class _Test(unittest.TestCase):
@@ -353,7 +354,7 @@ class Del(_Test):
 
         self.assertEqual(self.qpart.lines[0],
                          'The  brown fox')
-        self.assertEqual(self.qpart._vim.internalClipboard, 'k')
+        self.assertEqual(_globalClipboard.value, 'k')
 
     def test_01b(self):
         """Delete with x. Use count
@@ -363,7 +364,7 @@ class Del(_Test):
 
         self.assertEqual(self.qpart.lines[0],
                          'The  brown fox')
-        self.assertEqual(self.qpart._vim.internalClipboard, 'quick')
+        self.assertEqual(_globalClipboard.value, 'quick')
 
     def test_02(self):
         """Composite delete with d. Left and right
@@ -399,7 +400,7 @@ class Del(_Test):
         self.click('dj')
         self.assertEqual(self.qpart.lines[:],
                          [''])
-        self.assertEqual(self.qpart._vim.internalClipboard,
+        self.assertEqual(_globalClipboard.value,
                          ['lazy dog',
                           'back'])
 
@@ -415,7 +416,7 @@ class Del(_Test):
         self.assertEqual(self.qpart.lines[:],
                          ['The quick brown fox',
                           'back'])
-        self.assertEqual(self.qpart._vim.internalClipboard,
+        self.assertEqual(_globalClipboard.value,
                          ['jumps over the',
                           'lazy dog'])
 
@@ -426,7 +427,7 @@ class Del(_Test):
         """
         self.click('3dw')
         self.assertEqual(self.qpart.lines[0], 'fox')
-        self.assertEqual(self.qpart._vim.internalClipboard,
+        self.assertEqual(_globalClipboard.value,
                          'The quick brown ')
 
     def test_06(self):

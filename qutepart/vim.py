@@ -72,13 +72,18 @@ MODE_COLORS = {NORMAL: QColor('#33cc33'),
                REPLACE_CHAR: QColor('#ff3300')}
 
 
+class _GlobalClipboard:
+    def __init__(self):
+        self.value = ''
+
+_globalClipboard = _GlobalClipboard()
+
+
 class Vim(QObject):
     """Vim mode implementation.
     Listens events and does actions
     """
     modeIndicationChanged = pyqtSignal(QColor, str)
-
-    internalClipboard = ''  # delete commands save text to this clipboard
 
     def __init__(self, qpart):
         QObject.__init__(self)
@@ -607,10 +612,10 @@ class BaseVisual(BaseCommandMode):
             if self._selectLines:
                 start, end  = self._selectedLinesRange()
                 self._saveLastEditLinesCmd(cmd, end - start + 1)
-                Vim.internalClipboard = self._qpart.lines[start:end + 1]
+                _globalClipboard.value = self._qpart.lines[start:end + 1]
                 del self._qpart.lines[start:end + 1]
             else:
-                Vim.internalClipboard = cursor.selectedText()
+                _globalClipboard.value = cursor.selectedText()
                 cursor.removeSelectedText()
 
     def cmdDeleteLines(self, cmd, repeatLineCount=None):
@@ -620,7 +625,7 @@ class BaseVisual(BaseCommandMode):
         start, end  = self._selectedLinesRange()
         self._saveLastEditLinesCmd(cmd, end - start + 1)
 
-        Vim.internalClipboard = self._qpart.lines[start:end + 1]
+        _globalClipboard.value = self._qpart.lines[start:end + 1]
         del self._qpart.lines[start:end + 1]
 
     def cmdInsertMode(self, cmd):
@@ -660,7 +665,7 @@ class BaseVisual(BaseCommandMode):
 
     def cmdReplaceSelectedLines(self, cmd):
         start, end = self._selectedLinesRange()
-        Vim.internalClipboard = self._qpart.lines[start:end + 1]
+        _globalClipboard.value = self._qpart.lines[start:end + 1]
 
         lastLineLen = len(self._qpart.lines[end])
         self._qpart.selectedPosition = ((start, 0), (end, lastLineLen))
@@ -672,7 +677,7 @@ class BaseVisual(BaseCommandMode):
         self._qpart.cursorPosition = self._qpart.selectedPosition[0]
 
     def cmdInternalPaste(self, cmd):
-        if not Vim.internalClipboard:
+        if not _globalClipboard.value:
             return
 
         with self._qpart:
@@ -684,11 +689,11 @@ class BaseVisual(BaseCommandMode):
             else:
                 cursor.removeSelectedText()
 
-            if isinstance(Vim.internalClipboard, str):
-                self._qpart.textCursor().insertText(Vim.internalClipboard)
-            elif isinstance(Vim.internalClipboard, list):
+            if isinstance(_globalClipboard.value, str):
+                self._qpart.textCursor().insertText(_globalClipboard.value)
+            elif isinstance(_globalClipboard.value, list):
                 currentLineIndex = self._qpart.cursorPosition[0]
-                text = '\n'.join(Vim.internalClipboard)
+                text = '\n'.join(_globalClipboard.value)
                 index = currentLineIndex if self._selectLines else currentLineIndex + 1
                 self._qpart.lines.insert(index, text)
 
@@ -709,9 +714,9 @@ class BaseVisual(BaseCommandMode):
     def cmdYank(self, cmd):
         if self._selectLines:
             start, end = self._selectedLinesRange()
-            Vim.internalClipboard = self._qpart.lines[start:end + 1]
+            _globalClipboard.value = self._qpart.lines[start:end + 1]
         else:
-            Vim.internalClipboard = self._qpart.selectedText
+            _globalClipboard.value = self._qpart.selectedText
 
         self._qpart.copy()
 
@@ -719,9 +724,9 @@ class BaseVisual(BaseCommandMode):
         cursor = self._qpart.textCursor()
         if cursor.selectedText():
             if self._selectLines:
-                Vim.internalClipboard = cursor.selectedText().splitlines()
+                _globalClipboard.value = cursor.selectedText().splitlines()
             else:
-                Vim.internalClipboard = cursor.selectedText()
+                _globalClipboard.value = cursor.selectedText()
             cursor.removeSelectedText()
         self.switchMode(Insert)
 
@@ -1017,27 +1022,27 @@ class Normal(BaseCommandMode):
         self.switchMode(Insert)
 
     def cmdInternalPaste(self, cmd, count):
-        if not Vim.internalClipboard:
+        if not _globalClipboard.value:
             return
 
-        if isinstance(Vim.internalClipboard, str):
+        if isinstance(_globalClipboard.value, str):
             cursor = self._qpart.textCursor()
             if cmd == _p:
                 cursor.movePosition(QTextCursor.Right)
                 self._qpart.setTextCursor(cursor)
 
             self._repeat(count,
-                lambda: cursor.insertText(Vim.internalClipboard))
+                lambda: cursor.insertText(_globalClipboard.value))
             cursor.movePosition(QTextCursor.Left)
             self._qpart.setTextCursor(cursor)
 
-        elif isinstance(Vim.internalClipboard, list):
+        elif isinstance(_globalClipboard.value, list):
             index = self._qpart.cursorPosition[0]
             if cmd == _p:
                 index += 1
 
             self._repeat(count,
-                lambda: self._qpart.lines.insert(index, '\n'.join(Vim.internalClipboard)))
+                lambda: self._qpart.lines.insert(index, '\n'.join(_globalClipboard.value)))
 
         self._saveLastEditSimpleCmd(cmd, count)
 
@@ -1049,7 +1054,7 @@ class Normal(BaseCommandMode):
             cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
 
         if cursor.selectedText():
-            Vim.internalClipboard = cursor.selectedText()
+            _globalClipboard.value = cursor.selectedText()
             cursor.removeSelectedText()
 
         self._saveLastEditSimpleCmd(cmd, count)
@@ -1062,7 +1067,7 @@ class Normal(BaseCommandMode):
         availableCount = len(self._qpart.lines) - lineIndex
         effectiveCount = min(availableCount, count)
 
-        Vim.internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount]
+        _globalClipboard.value = self._qpart.lines[lineIndex:lineIndex + effectiveCount]
         with self._qpart:
             del self._qpart.lines[lineIndex:lineIndex + effectiveCount]
             self._qpart.lines.insert(lineIndex, '')
@@ -1090,7 +1095,7 @@ class Normal(BaseCommandMode):
             cursor.movePosition(direction, QTextCursor.KeepAnchor)
 
         if cursor.selectedText():
-            Vim.internalClipboard = cursor.selectedText()
+            _globalClipboard.value = cursor.selectedText()
             cursor.removeSelectedText()
 
         self._saveLastEditSimpleCmd(cmd, count)
@@ -1102,7 +1107,7 @@ class Normal(BaseCommandMode):
         for _ in range(count - 1):
             cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor)
         cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
-        Vim.internalClipboard = cursor.selectedText()
+        _globalClipboard.value = cursor.selectedText()
         cursor.removeSelectedText()
         if cmd == _C:
             self.switchMode(Insert)
@@ -1113,7 +1118,7 @@ class Normal(BaseCommandMode):
         oldCursor = self._qpart.textCursor()
         cursor = self._qpart.textCursor()
         cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
-        Vim.internalClipboard = cursor.selectedText()
+        _globalClipboard.value = cursor.selectedText()
         self._qpart.setTextCursor(cursor)
         self._qpart.copy()
         self._qpart.setTextCursor(oldCursor)
@@ -1156,7 +1161,7 @@ class Normal(BaseCommandMode):
 
             effectiveCount = min(availableCount, count)
 
-            Vim.internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
+            _globalClipboard.value = self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
             del self._qpart.lines[lineIndex:lineIndex + effectiveCount + 1]
         elif motion in (_k, _Up):
             lineIndex = self._qpart.cursorPosition[0]
@@ -1165,7 +1170,7 @@ class Normal(BaseCommandMode):
 
             effectiveCount = min(lineIndex, count)
 
-            Vim.internalClipboard = self._qpart.lines[lineIndex - effectiveCount:lineIndex + 1]
+            _globalClipboard.value = self._qpart.lines[lineIndex - effectiveCount:lineIndex + 1]
             del self._qpart.lines[lineIndex - effectiveCount:lineIndex + 1]
         elif motion == _d:  # delete whole line
             lineIndex = self._qpart.cursorPosition[0]
@@ -1173,22 +1178,22 @@ class Normal(BaseCommandMode):
 
             effectiveCount = min(availableCount, count)
 
-            Vim.internalClipboard = self._qpart.lines[lineIndex:lineIndex + effectiveCount]
+            _globalClipboard.value = self._qpart.lines[lineIndex:lineIndex + effectiveCount]
             del self._qpart.lines[lineIndex:lineIndex + effectiveCount]
         elif motion == _G:
             currentLineIndex = self._qpart.cursorPosition[0]
-            Vim.internalClipboard = self._qpart.lines[currentLineIndex:]
+            _globalClipboard.value = self._qpart.lines[currentLineIndex:]
             del self._qpart.lines[currentLineIndex:]
         elif motion == 'gg':
             currentLineIndex = self._qpart.cursorPosition[0]
-            Vim.internalClipboard = self._qpart.lines[:currentLineIndex + 1]
+            _globalClipboard.value = self._qpart.lines[:currentLineIndex + 1]
             del self._qpart.lines[:currentLineIndex + 1]
         else:
             self._moveCursor(motion, count, select=True, searchChar=searchChar)
 
             selText = self._qpart.textCursor().selectedText()
             if selText:
-                Vim.internalClipboard = selText
+                _globalClipboard.value = selText
                 self._qpart.textCursor().removeSelectedText()
 
         self._saveLastEditCompositeCmd(cmd, motion, searchChar, count)
@@ -1207,10 +1212,10 @@ class Normal(BaseCommandMode):
                 cursor.movePosition(QTextCursor.Down, QTextCursor.KeepAnchor)
             cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
             self._qpart.setTextCursor(cursor)
-            Vim.internalClipboard = [self._qpart.selectedText]
+            _globalClipboard.value = [self._qpart.selectedText]
         else:
             self._moveCursor(motion, count, select=True, searchChar=searchChar)
-            Vim.internalClipboard = self._qpart.selectedText
+            _globalClipboard.value = self._qpart.selectedText
 
         self._qpart.copy()
         self._qpart.setTextCursor(oldCursor)
