@@ -108,8 +108,7 @@
 
 #define _DECLARE_TYPE(TYPE_NAME, CONSTRUCTOR, METHODS, MEMBERS, COMMENT) \
     static PyTypeObject TYPE_NAME##Type = { \
-        PyObject_HEAD_INIT(NULL)\
-        0,\
+        PyVarObject_HEAD_INIT(NULL, 0)\
         "qutepart.syntax.cParser." #TYPE_NAME,\
         sizeof(TYPE_NAME),\
         0,\
@@ -164,7 +163,7 @@
 #define REGISTER_TYPE(TYPE_NAME) \
     TYPE_NAME##Type.tp_new = PyType_GenericNew; \
     if (PyType_Ready(&TYPE_NAME##Type) < 0) \
-        return; \
+        return NULL; \
     Py_INCREF(&TYPE_NAME##Type); \
     PyModule_AddObject(m, #TYPE_NAME, (PyObject *)&TYPE_NAME##Type);
 
@@ -175,7 +174,7 @@
     { \
         Py_XDECREF(self->abstractRuleParams); \
         RULE_TYPE_NAME##_dealloc_fields(self); \
-        self->ob_type->tp_free((PyObject*)self); \
+        Py_TYPE(self)->tp_free((PyObject*)self); \
     }; \
  \
     static PyMethodDef RULE_TYPE_NAME##_methods[] = { \
@@ -458,7 +457,7 @@ AbstractRuleParams_dealloc(AbstractRuleParams* self)
     Py_XDECREF(self->attribute);
     Py_XDECREF(self->context);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static int
@@ -489,7 +488,7 @@ AbstractRuleParams_init(AbstractRuleParams *self, PyObject *args, PyObject *kwds
     ASSIGN_PYOBJECT_FIELD(format);
 
     if (Py_None != textType)
-        self->textType = PyString_AsString(textType)[0];
+        self->textType = PyUnicode_AsUnicode(textType)[0];
     else
         self->textType = 0;
 
@@ -516,7 +515,7 @@ RuleTryMatchResult_dealloc(RuleTryMatchResult* self)
     Py_XDECREF(self->rule);
     Py_XDECREF(self->data);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyMemberDef RuleTryMatchResult_members[] = {
@@ -581,8 +580,8 @@ TextToMatchObject_internal_make(int column, PyObject* unicodeText, _RegExpMatchG
     textToMatchObject.wholeLineUnicodeTextLower = PyObject_CallMethod(unicodeText, "lower", "");
     textToMatchObject.wholeLineUtf8Text = PyUnicode_AsUTF8String(unicodeText);
     textToMatchObject.wholeLineUtf8TextLower = PyUnicode_AsUTF8String(textToMatchObject.wholeLineUnicodeTextLower);
-    textToMatchObject.utf8Text = PyString_AS_STRING(textToMatchObject.wholeLineUtf8Text);
-    textToMatchObject.utf8TextLower = PyString_AS_STRING(textToMatchObject.wholeLineUtf8TextLower);
+    textToMatchObject.utf8Text = PyBytes_AsString(textToMatchObject.wholeLineUtf8Text);
+    textToMatchObject.utf8TextLower = PyBytes_AsString(textToMatchObject.wholeLineUtf8TextLower);
 
     // text and textLen is updated in the loop
     textToMatchObject.textLen = textToMatchObject.wholeLineLen;
@@ -686,16 +685,20 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
                 _StringHash* pMask = (_StringHash*)maskForDifferenceChar[self->utf8WordLength - 1];
                 _StringHash mask = *pMask;
 
-                *(_StringHash*)self->utf8Word = *(_StringHash*)self->utf8Text & mask;
-                *(_StringHash*)self->utf8WordLower = *(_StringHash*)self->utf8TextLower & mask;
+                _StringHash* pUtf8Word = (_StringHash*)self->utf8Word;
+                _StringHash* pUtf8WordLower = (_StringHash*)self->utf8WordLower;
+                _StringHash* pUtf8Text = (_StringHash*)self->utf8Text;
+                _StringHash* pUtf8TextLower = (_StringHash*)self->utf8TextLower;
+                *pUtf8Word = *pUtf8Text & mask;
+                *pUtf8WordLower = *pUtf8TextLower & mask;
             }
             else
             {
-                *(_StringHash*)self->utf8Word = 0;
+                memset(self->utf8Word, 0, sizeof(_StringHash));
                 strncpy(self->utf8Word, self->utf8Text, self->utf8WordLength);  // without \0
                 self->utf8Word[self->utf8WordLength] = '\0';
 
-                *(_StringHash*)self->utf8WordLower = 0;
+                memset(self->utf8WordLower, 0, sizeof(_StringHash));
                 strncpy(self->utf8WordLower, self->utf8TextLower, self->utf8WordLength);  // without \0
                 self->utf8WordLower[self->utf8WordLength] = '\0';
             }
@@ -714,7 +717,7 @@ TextToMatchObject_dealloc(TextToMatchObject* self)
     Py_XDECREF(self->internal.wholeLineUnicodeText);
     Py_XDECREF(self->internal.contextData);
     TextToMatchObject_internal_free(&self->internal);
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static int
@@ -756,7 +759,7 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
                 return -1;
             }
             utf8String = PyUnicode_AsUTF8String(unicodeString);
-            memsize += PyString_GET_SIZE(utf8String) + 1; // + null char
+            memsize += PyBytes_Size(utf8String) + 1; // + null char
             Py_XDECREF(utf8String);
         }
         data = pcre_malloc(memsize);
@@ -769,8 +772,8 @@ TextToMatchObject_init(TextToMatchObject*self, PyObject *args, PyObject *kwds)
             int printedSize;
             PyObject* unicodeString = PyTuple_GET_ITEM(contextDataTuple, i);
             PyObject* utf8String = PyUnicode_AsUTF8String(unicodeString);
-            strcpy(freeSpaceForString, PyString_AS_STRING(utf8String));
-            printedSize = PyString_GET_SIZE(utf8String) + 1;
+            strcpy(freeSpaceForString, PyBytes_AsString(utf8String));
+            printedSize = PyBytes_Size(utf8String) + 1;
             charPointers[i] = freeSpaceForString;
             freeSpaceForString += printedSize;
             Py_XDECREF(utf8String);
@@ -1064,7 +1067,7 @@ DetectChar_init(DetectChar *self, PyObject *args, PyObject *kwds)
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
 
     utf8Text = PyUnicode_AsUTF8String(char_);
-    strncpy(self->utf8Char, PyString_AS_STRING(utf8Text), sizeof self->utf8Char);
+    strncpy(self->utf8Char, PyBytes_AsString(utf8Text), sizeof self->utf8Char);
     Py_XDECREF(utf8Text);
 
     return 0;
@@ -1246,9 +1249,9 @@ StringDetect_init(StringDetect *self, PyObject *args, PyObject *kwds)
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
 
     utf8String = PyUnicode_AsUTF8String(string);
-    self->stringLen = PyString_GET_SIZE(utf8String);
+    self->stringLen = PyBytes_Size(utf8String);
     self->utf8String = PyMem_Malloc(self->stringLen + 1);
-    strncpy(self->utf8String, PyString_AS_STRING(utf8String), self->stringLen + 1);
+    strncpy(self->utf8String, PyBytes_AsString(utf8String), self->stringLen + 1);
     Py_DECREF(utf8String);
 
     return 0;
@@ -1322,7 +1325,7 @@ WordDetect_init(WordDetect *self, PyObject *args, PyObject *kwds)
     ASSIGN_BOOL_FIELD(insensitive);
 
     utf8Word = PyUnicode_AsUTF8String(word);
-    self->utf8Word = strdup(PyString_AS_STRING(utf8Word));
+    self->utf8Word = strdup(PyBytes_AsString(utf8Word));
     Py_XDECREF(utf8Word);
 
     self->utf8WordLength = strlen(self->utf8Word);
@@ -1374,12 +1377,12 @@ _WordTree_init(_WordTree* self, PyObject* listOfUnicodeStrings)
 
         PyObject* unicodeWord = PyList_GetItem(listOfUnicodeStrings, i);
         PyObject* utf8Word = PyUnicode_AsUTF8String(unicodeWord);
-        wordLength = PyString_GET_SIZE(utf8Word);
+        wordLength = PyBytes_Size(utf8Word);
 
         if (wordLength <= QUTEPART_MAX_WORD_LENGTH)
             self->wordCount[wordLength]++;
         else
-            fprintf(stderr, "Too long word '%s'\n", PyString_AS_STRING(utf8Word));
+            fprintf(stderr, "Too long word '%s'\n", PyBytes_AsString(utf8Word));
 
         Py_XDECREF(utf8Word);
     }
@@ -1410,13 +1413,13 @@ _WordTree_init(_WordTree* self, PyObject* listOfUnicodeStrings)
 
         PyObject* unicodeWord = PyList_GetItem(listOfUnicodeStrings, i);
         PyObject* utf8Word = PyUnicode_AsUTF8String(unicodeWord);
-        wordLength = PyString_GET_SIZE(utf8Word);
+        wordLength = PyBytes_Size(utf8Word);
 
         wordIndex = currentWordIndex[wordLength];
         wordOffset = _WordTree_wordBufferSize(wordLength) * wordIndex;
         wordPointer = self->words[wordLength] + wordOffset;
         memset(wordPointer, 0, _WordTree_wordBufferSize(wordLength));
-        strncpy(wordPointer, PyString_AS_STRING(utf8Word), wordLength);  // copy without zero
+        strncpy(wordPointer, PyBytes_AsString(utf8Word), wordLength);  // copy without zero
         wordPointer += _WordTree_wordBufferSize(wordLength);
         currentWordIndex[wordLength]++;
 
@@ -1695,13 +1698,13 @@ RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
     utf8String = PyUnicode_AsUTF8String(string);
     if (self->abstractRuleParams->dynamic)
     {
-        self->stringLen = PyString_GET_SIZE(utf8String);
+        self->stringLen = PyBytes_Size(utf8String);
         self->utf8String = PyMem_Malloc(self->stringLen + 1);
-        strcpy(self->utf8String, PyString_AS_STRING(utf8String));
+        strcpy(self->utf8String, PyBytes_AsString(utf8String));
     }
     else
     {
-        self->regExp = _compileRegExp(PyString_AS_STRING(utf8String), self->insensitive, &(self->extra));
+        self->regExp = _compileRegExp(PyBytes_AsString(utf8String), self->insensitive, &(self->extra));
     }
     Py_DECREF(utf8String);
 
@@ -2513,7 +2516,7 @@ ContextStack_dealloc(ContextStack* self)
     for (i = 0; i < self->_size; i++)
         _RegExpMatchGroups_release(self->_data[i]);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 DECLARE_TYPE_WITHOUT_CONSTRUCTOR(ContextStack, NULL, "Context stack");
@@ -2555,7 +2558,7 @@ ContextSwitcher_dealloc(ContextSwitcher* self)
 {
     Py_XDECREF(self->_contextToSwitch);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static int
@@ -2657,7 +2660,7 @@ Context_dealloc(Context* self)
 
     PyMem_Free(self->rulesC);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static int
@@ -2711,7 +2714,7 @@ Context_setValues(Context *self, PyObject *args)
     ASSIGN_FIELD(ContextSwitcher, fallthroughContext);
     ASSIGN_BOOL_FIELD(dynamic);
     ASSIGN_PYOBJECT_FIELD(textTypePython);
-    self->textType = PyString_AsString(textTypePython)[0];
+    self->textType = PyUnicode_AsUnicode(textTypePython)[0];
 
     Py_RETURN_NONE;
 }
@@ -2753,11 +2756,12 @@ Context_appendSegment(PyObject* segmentList, int count, PyObject* format)
 }
 
 static void
-Context_appendTextType(int fromIndex, int count, char* textTypeMapData, char textType)
+Context_appendTextType(int fromIndex, int count, PyObject* textTypeMap, char textType)
 {
+    return;
     int i;
     for (i = fromIndex; i < fromIndex + count; i++)
-        textTypeMapData[i] = textType;
+        PyUnicode_WriteChar(textTypeMap, i, textType);
 }
 
 
@@ -2766,7 +2770,7 @@ Context_parseBlock(Context* self,
                    int currentColumnIndex,
                    PyObject* unicodeText,
                    PyObject* segmentList,
-                   char* textTypeMapData,
+                   PyObject* textTypeMap,
                    ContextStack** pContextStack,
                    bool* pLineContinue)
 {
@@ -2818,7 +2822,7 @@ Context_parseBlock(Context* self,
             {
                 Context_appendSegment(segmentList, countOfNotMatchedSymbols, self->format);
                 Context_appendTextType(currentColumnIndex - countOfNotMatchedSymbols, countOfNotMatchedSymbols,
-                                       textTypeMapData, self->textType);
+                                       textTypeMap, self->textType);
                 countOfNotMatchedSymbols = 0;
             }
 
@@ -2836,7 +2840,7 @@ Context_parseBlock(Context* self,
                                   result.length,
                                   format);
             Context_appendTextType(currentColumnIndex, result.length,
-                                   textTypeMapData,
+                                   textTypeMap,
                                    textType);
             currentColumnIndex += result.length;
 
@@ -2889,7 +2893,7 @@ Context_parseBlock(Context* self,
     {
         Context_appendSegment(segmentList, countOfNotMatchedSymbols, self->format);
         Context_appendTextType(currentColumnIndex - countOfNotMatchedSymbols, countOfNotMatchedSymbols,
-                               textTypeMapData, self->textType);
+                               textTypeMap, self->textType);
 
         countOfNotMatchedSymbols = 0;
     }
@@ -2923,7 +2927,7 @@ Parser_dealloc(Parser* self)
     Py_XDECREF(self->defaultContext);
     Py_XDECREF(self->defaultContextStack);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static int
@@ -3004,7 +3008,6 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     int currentColumnIndex = 0;
     int textLen;
     PyObject* textTypeMap;
-    char* textTypeMapData;
     ContextStack* contextStack;
 
     if (! PyArg_ParseTuple(args, "|OO",
@@ -3037,10 +3040,9 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     }
 
     textLen = PyUnicode_GET_SIZE(unicodeText);
-    textTypeMap = PyString_FromStringAndSize(NULL, textLen + 1);
-    textTypeMapData = PyString_AS_STRING(textTypeMap);
-    memset(textTypeMapData, ' ', textLen);
-    textTypeMapData[textLen + 1] = 0;
+    textTypeMap = PyUnicode_New(textLen, 65535);
+    if (textLen > 0)
+        PyUnicode_Fill(textTypeMap, 0, textLen, ' ');
 
     while (currentColumnIndex < textLen)
     {
@@ -3057,7 +3059,7 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
                                      currentColumnIndex,
                                      unicodeText,
                                      segmentList,
-                                     textTypeMapData,
+                                     textTypeMap,
                                      &contextStack,
                                      &lineContinue);
         currentColumnIndex += length;
@@ -3161,19 +3163,29 @@ static PyMethodDef cParser_methods[] = {
     {NULL}  /* Sentinel */
 };
 
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "cParser",           /* m_name */
+        "Accelerated code parser for Qutepart highlighter.",  /* m_doc */
+        -1,                  /* m_size */
+        cParser_methods,     /* m_methods */
+        NULL,                /* m_reload */
+        NULL,                /* m_traverse */
+        NULL,                /* m_clear */
+        NULL,                /* m_free */
+    };
+
 #ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
 #define PyMODINIT_FUNC void
 #endif
 PyMODINIT_FUNC
-initcParser(void)
+PyInit_cParser(void)
 {
     PyObject* m;
 
     _utf8CharacterLengthTable_init();
 
-    m = Py_InitModule3("cParser", cParser_methods,
-                       "Example module that creates an extension type.");
-
+    m = PyModule_Create(&moduledef);
 
     REGISTER_TYPE(AbstractRuleParams)
 
@@ -3203,4 +3215,6 @@ initcParser(void)
     REGISTER_TYPE(Context)
     REGISTER_TYPE(ContextSwitcher)
     REGISTER_TYPE(Parser)
+
+    return m;
 }

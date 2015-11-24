@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf8
 
 
@@ -25,7 +25,7 @@ class Test(unittest.TestCase):
         self.qpart = Qutepart()
 
     def tearDown(self):
-        del self.qpart
+        self.qpart.terminate()
 
     def _ws_test(self,
                  text,
@@ -48,11 +48,11 @@ class Test(unittest.TestCase):
                         try:
                             self._verify(text, expectedResult)
                         except:
-                            print "Failed params:\n\tany {}\n\tincorrect {}\n\ttabs {}\n\twidth {}".format(
+                            print("Failed params:\n\tany {}\n\tincorrect {}\n\ttabs {}\n\twidth {}".format(
                                 self.qpart.drawAnyWhitespace,
                                 self.qpart.drawIncorrectIndentation,
                                 self.qpart.indentUseTabs,
-                                self.qpart.indentWidth)
+                                self.qpart.indentWidth))
                             raise
 
     def _verify(self, text, expectedResult):

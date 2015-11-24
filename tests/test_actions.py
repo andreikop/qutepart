@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -20,7 +20,7 @@ class _BaseTest(unittest.TestCase):
         self.qpart = Qutepart()
 
     def tearDown(self):
-        del self.qpart
+        self.qpart.terminate()
 
 
 class Print(_BaseTest):

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -23,7 +23,7 @@ class Test(unittest.TestCase):
         self.qpart = Qutepart()
 
     def tearDown(self):
-        del self.qpart
+        self.qpart.terminate()
 
     def _markedBlocks(self):
         bookMarksObject = self.qpart._bookmarks

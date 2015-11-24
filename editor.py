@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -27,8 +27,10 @@ def _fixSysPath(binaryQutepart):
         qutepartDir = os.path.dirname(executablePath)
         sys.path.insert(0, qutepartDir) # do not import installed modules
         if binaryQutepart:
-            sys.path.insert(0, qutepartDir + '/build/lib.linux-i686-2.7/')  # use built modules
-            sys.path.insert(0, qutepartDir + '/build/lib.linux-x86_64-2.7/')  # use built modules
+            sys.path.insert(0, qutepartDir + '/build/lib.linux-i686-3.3/')  # use built modules
+            sys.path.insert(0, qutepartDir + '/build/lib.linux-i686-3.4/')  # use built modules
+            sys.path.insert(0, qutepartDir + '/build/lib.linux-x86_64-3.3/')  # use built modules
+            sys.path.insert(0, qutepartDir + '/build/lib.linux-x86_64-3.4/')  # use built modules
 
 
 def main():
@@ -38,7 +40,7 @@ def main():
     import qutepart  # after correct sys.path has been set
 
     with open(ns.file) as file:
-        text = unicode(file.read(), 'utf8')
+        text = file.read()
 
     if ns.debug:
         logging.getLogger('qutepart').setLevel(logging.DEBUG)

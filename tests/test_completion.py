@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -27,7 +27,7 @@ class Test(unittest.TestCase):
         self._window.menuBar().addAction(self.qpart.invokeCompletionAction)
 
     def tearDown(self):
-        del self.qpart
+        self.qpart.terminate()
 
     def test_down_selects_first(self):
         self.qpart.text = 'aaaa\nbbbb\ncccX\ndddd\ncccY'

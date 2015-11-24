@@ -75,8 +75,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'qutepart'
-copyright = u'2013, Andrei Kopats'
+project = 'qutepart'
+copyright = '2013, Andrei Kopats'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -219,8 +219,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'qutepart.tex', u'qutepart Documentation',
-   u'Andrei Kopats', 'manual'),
+  ('index', 'qutepart.tex', 'qutepart Documentation',
+   'Andrei Kopats', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -251,8 +251,8 @@ autodoc_member_order = 'bysource'
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'qutepart', u'qutepart Documentation',
-     [u'Andrei Kopats'], 1)
+    ('index', 'qutepart', 'qutepart Documentation',
+     ['Andrei Kopats'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -265,8 +265,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'qutepart', u'qutepart Documentation',
-   u'Andrei Kopats', 'qutepart', 'One line description of project.',
+  ('index', 'qutepart', 'qutepart Documentation',
+   'Andrei Kopats', 'qutepart', 'One line description of project.',
    'Miscellaneous'),
 ]
 

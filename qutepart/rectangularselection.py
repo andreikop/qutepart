@@ -81,7 +81,7 @@ class RectangularSelection:
             if char == '\t':
                 currentPos += self._qpart.indentWidth
                 # trim reminder. If width('\t') == 4,   width('abc\t') == 4
-                currentPos = currentPos / self._qpart.indentWidth * self._qpart.indentWidth
+                currentPos = currentPos // self._qpart.indentWidth * self._qpart.indentWidth
             else:
                 currentPos += 1
             yield currentPos
@@ -92,8 +92,9 @@ class RectangularSelection:
         """
         generator = self._visibleCharPositionGenerator(text)
         for i in range(realColumn):
-            val = generator.next()
-        return generator.next()
+            val = next(generator)
+        val = next(generator)
+        return val
 
     def _visibleToRealColumn(self, text, visiblePos):
         """If \t is used, real position of symbol in block and visible position differs
@@ -202,10 +203,10 @@ class RectangularSelection:
             return ''
         elif self._qpart.indentUseTabs and \
            all([char == '\t' for char in text]):  # if using tabs and only tabs in text
-            return '\t' * (diff / self._qpart.indentWidth) + \
+            return '\t' * (diff // self._qpart.indentWidth) + \
                    ' ' * (diff % self._qpart.indentWidth)
         else:
-            return ' ' * diff
+            return ' ' * int(diff)
 
     def paste(self, mimeData):
         """Paste recrangular selection.
@@ -216,7 +217,7 @@ class RectangularSelection:
         elif self._qpart.textCursor().hasSelection():
             self._qpart.textCursor().deleteChar()
 
-        text = str(mimeData.data(self.MIME_TYPE)).decode('utf8')
+        text = bytes(mimeData.data(self.MIME_TYPE)).decode('utf8')
         lines = text.splitlines()
         cursorLine, cursorCol = self._qpart.cursorPosition
         if cursorLine + len(lines) > len(self._qpart.lines):
