@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
-import os
-import sys
 import unittest
 
 import base
 
-from PyQt4.QtCore import Qt, QPoint
-from PyQt4.QtGui import QMainWindow
-from PyQt4.QtTest import QTest
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtTest import QTest
 
 from qutepart import Qutepart
 import qutepart.completer

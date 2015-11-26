@@ -1,7 +1,8 @@
 import sys
 
-from PyQt4.QtCore import Qt, pyqtSignal, QObject
-from PyQt4.QtGui import QColor, QTextCursor, QTextEdit
+from PyQt5.QtCore import Qt, pyqtSignal, QObject
+from PyQt5.QtWidgets import QTextEdit
+from PyQt5.QtGui import QColor, QTextCursor
 
 
 """ This magic code sets variables like _a and _A in the global scope

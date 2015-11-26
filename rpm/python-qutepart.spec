@@ -17,8 +17,8 @@ Requires:       pcre
 
 
 %if 0%{?fedora_version}
-BuildRequires:  python3-PyQt4
-Requires:       python3-PyQt4
+BuildRequires:  python3-PyQt5
+Requires:       python3-PyQt5
 %else
 BuildRequires:  python3-qt4
 Requires:       python3-qt4

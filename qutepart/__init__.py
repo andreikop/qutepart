@@ -22,13 +22,14 @@ if 'sphinx-build' not in sys.argv[0]:
                   'before importing Qutepart'
 
 
-from PyQt4.QtCore import QRect, Qt, pyqtSignal
-from PyQt4.QtGui import QAction, QApplication, QColor, QBrush, \
-                        QDialog, QFont, \
+from PyQt5.QtCore import QRect, Qt, pyqtSignal
+from PyQt5.QtWidgets import QAction, QApplication, QDialog, QPlainTextEdit, QTextEdit
+from PyQt5.QtPrintSupport import QPrintDialog
+from PyQt5.QtGui import QColor, QBrush, \
+                        QFont, \
                         QIcon, QKeySequence, QPainter, QPen, QPalette, \
-                        QPlainTextEdit, \
-                        QPrintDialog, QTextCharFormat, QTextCursor, \
-                        QTextBlock, QTextEdit, QTextFormat
+                        QTextCharFormat, QTextCursor, \
+                        QTextBlock, QTextFormat
 
 from qutepart.syntax import SyntaxManager
 

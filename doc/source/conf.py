@@ -16,7 +16,7 @@ import sys, os
 
 
 """
-Fake PyQt4 module, for building docs on system without PyQt (rtfd.org)
+Fake PyQt5 module, for building docs on system without PyQt (rtfd.org)
 
 http://read-the-docs.readthedocs.org/en/latest/faq.html#my-project-isn-t-building-with-autodoc
 """
@@ -38,7 +38,7 @@ class Mock(object):
         else:
             return Mock()
 
-MOCK_MODULES = ['PyQt4', 'PyQt4.QtCore', 'PyQt4.QtGui', 'PyQt4.QtWebKit']
+MOCK_MODULES = ['PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtWebKit']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 

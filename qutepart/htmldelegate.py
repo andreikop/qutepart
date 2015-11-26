@@ -3,10 +3,11 @@ htmldelegate --- QStyledItemDelegate delegate. Draws HTML
 =========================================================
 """
 
-from PyQt4.QtGui import QApplication, QAbstractTextDocumentLayout, \
-                        QStyledItemDelegate, QStyle, QStyleOptionViewItemV4, \
+from PyQt5.QtWidgets import QApplication, QStyle, QStyledItemDelegate, \
+                            QStyleOptionViewItem
+from PyQt5.QtGui import QAbstractTextDocumentLayout, \
                         QTextDocument, QPalette
-from PyQt4.QtCore import QSize
+from PyQt5.QtCore import QSize
 
 _HTML_ESCAPE_TABLE = \
 {
@@ -37,7 +38,7 @@ class HTMLDelegate(QStyledItemDelegate):
         """
         option.state &= ~QStyle.State_HasFocus  # never draw focus rect
 
-        options = QStyleOptionViewItemV4(option)
+        options = QStyleOptionViewItem(option)
         self.initStyleOption(options,index)
 
         style = QApplication.style() if options.widget is None else options.widget.style()
@@ -72,7 +73,7 @@ class HTMLDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
         """QStyledItemDelegate.sizeHint implementation
         """
-        options = QStyleOptionViewItemV4(option)
+        options = QStyleOptionViewItem(option)
         self.initStyleOption(options,index)
 
         doc = QTextDocument()
