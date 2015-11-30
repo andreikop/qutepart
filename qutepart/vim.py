@@ -192,7 +192,6 @@ class Mode:
         return mode.keyPressEvent(text)
 
 
-
 class Insert(Mode):
     color = QColor('#ff9900')
 
@@ -657,9 +656,9 @@ class BaseVisual(BaseCommandMode):
 
         self._qpart.setTextCursor(cursor)
 
-
     def cmdAppendAfterChar(self, cmd):
         cursor = self._qpart.textCursor()
+        cursor.clearSelection()
         cursor.movePosition(QTextCursor.Right)
         self._qpart.setTextCursor(cursor)
         self.switchMode(Insert)
