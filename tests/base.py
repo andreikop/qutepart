@@ -2,10 +2,6 @@ import os
 import sys
 import time
 
-
-import sip
-sip.setapi('QString', 2)
-
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtTest import QTest

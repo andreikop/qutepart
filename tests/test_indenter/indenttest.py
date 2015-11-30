@@ -1,8 +1,5 @@
 import unittest
 
-import sip
-sip.setapi('QString', 2)
-
 from PyQt5.QtCore import Qt
 from PyQt5.QtTest import QTest
 
@@ -13,7 +10,6 @@ sys.path.insert(0, topLevelPath)
 sys.path.insert(0, os.path.join(topLevelPath, 'tests'))
 
 from qutepart import Qutepart
-import qutepart
 import base
 
 

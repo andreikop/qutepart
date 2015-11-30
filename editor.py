@@ -5,9 +5,6 @@ import os
 import logging
 import argparse
 
-import sip
-sip.setapi('QString', 2)
-
 from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QVBoxLayout, QWidget
 from PyQt5.QtGui import QPalette
 
