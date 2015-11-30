@@ -16,25 +16,24 @@ def parse_arg_list(param_start):
     """Exctract values like --libdir=bla/bla/bla
     param_start must be '--libdir='
     """
-    values = [arg[len(param_start):] \
-                for arg in sys.argv \
-                if arg.startswith(param_start)]
+    values = [arg[len(param_start):]
+              for arg in sys.argv
+              if arg.startswith(param_start)]
 
     # remove recognized arguments from the sys.argv
-    otherArgs = [arg \
-                    for arg in sys.argv \
-                    if not arg.startswith(param_start)]
+    otherArgs = [arg
+                 for arg in sys.argv
+                 if not arg.startswith(param_start)]
     sys.argv = otherArgs
 
     return values
 
 
-packages=['qutepart', 'qutepart/syntax', 'qutepart/indenter']
+packages = ['qutepart', 'qutepart/syntax', 'qutepart/indenter']
 
-package_data={'qutepart' : ['icons/*.png'],
-              'qutepart/syntax' : ['data/xml/*.xml',
-                                   'data/syntax_db.json']
-             }
+package_data = {'qutepart': ['icons/*.png'],
+                'qutepart/syntax': ['data/xml/*.xml', 'data/syntax_db.json']
+                }
 
 
 include_dirs = parse_arg_list('--include-dir=')
@@ -50,11 +49,11 @@ if platform.system() == 'Windows':
     macros.append(('HAVE_PCRE_CONFIG_H', None))
 
 extension = Extension('qutepart.syntax.cParser',
-                      sources = ['qutepart/syntax/cParser.c'],
-                      libraries = ['pcre'],
+                      sources=['qutepart/syntax/cParser.c'],
+                      libraries=['pcre'],
                       include_dirs=include_dirs,
                       library_dirs=library_dirs,
-                      define_macros = macros)
+                      define_macros=macros)
 
 
 def _checkDependencies():
@@ -62,31 +61,31 @@ def _checkDependencies():
     """check if function without parameters from stdlib can be called
     There should be better way to check, if C compiler is installed
     """
-    if not compiler.has_function('rand', includes = ['stdlib.h']):
+    if not compiler.has_function('rand', includes=['stdlib.h']):
         print("It seems like C compiler is not installed or not operable.")
         return False
 
     if not compiler.has_function('rand',
-                                 includes = ['stdlib.h', 'Python.h'],
+                                 includes=['stdlib.h', 'Python.h'],
                                  include_dirs=[distutils.sysconfig.get_python_inc()],
                                  library_dirs=[os.path.join(os.path.dirname(sys.executable), 'libs')]):
         print("Failed to find Python headers.")
         print("Try to install python-dev package")
         print("If not standard directories are used, pass parameters")
-        print("\tpython setup.py install --lib-dir=c://github/pcre-8.32/build/Release --include-dir=c://github/pcre-8.32/build")
+        print("\tpython setup.py install --lib-dir=c://github/pcre-8.37/build/Release --include-dir=c://github/pcre-8.37/build")
         print("\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include")
         print("--lib-dir= and --include-dir= may be used multiple times")
         return False
 
     if not compiler.has_function('pcre_version',
-                                 includes = ['pcre.h'],
-                                 libraries = ['pcre'],
+                                 includes=['pcre.h'],
+                                 libraries=['pcre'],
                                  include_dirs=include_dirs,
                                  library_dirs=library_dirs):
         print("Failed to find pcre library.")
         print("Try to install libpcre{version}-dev package, or go to http://pcre.org")
         print("If not standard directories are used, pass parameters:")
-        print("\tpython setup.py install --lib-dir=c://github/pcre-8.32/build/Release --include-dir=c://github/pcre-8.32/build")
+        print("\tpython setup.py install --lib-dir=c://github/pcre-8.37/build/Release --include-dir=c://github/pcre-8.37/build")
         print("\tpython setup.py install --lib-dir=/my/local/lib --include-dir=/my/local/include")
         print("--lib-dir= and --include-dir= may be used multiple times")
         return False
@@ -100,12 +99,12 @@ if 'install' in sys.argv or 'build' in sys.argv or 'build_ext' in sys.argv:
             sys.exit(-1)
 
 
-setup (name='qutepart',
-       version='%s.%s.%s' % qutepart.VERSION,
-       description='Code editor component for PyQt and PySide',
-       author='Andrei Kopats',
-       author_email='hlamer@tut.by',
-       url='https://github.com/hlamer/qutepart',
-       packages = packages,
-       package_data = package_data,
-       ext_modules = [extension])
+setup(name='qutepart',
+      version='%s.%s.%s' % qutepart.VERSION,
+      description='Code editor component for PyQt5',
+      author='Andrei Kopats',
+      author_email='hlamer@tut.by',
+      url='https://github.com/hlamer/qutepart',
+      packages=packages,
+      package_data=package_data,
+      ext_modules=[extension])
