@@ -5,10 +5,8 @@ import os
 import logging
 import argparse
 
-import sip
-sip.setapi('QString', 2)
-
-from PyQt4.QtGui import QApplication, QLabel, QMainWindow, QPalette, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QVBoxLayout, QWidget
+from PyQt5.QtGui import QPalette
 
 
 def _parseCommandLine():
@@ -125,7 +123,7 @@ def main():
     window.resize(800, 600)
     window.show()
 
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
     if ns.quit:
         QTimer.singleShot(0, app.quit)
 

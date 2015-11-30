@@ -1,7 +1,8 @@
 import sys
 
-from PyQt4.QtCore import Qt, pyqtSignal, QObject
-from PyQt4.QtGui import QColor, QTextCursor, QTextEdit
+from PyQt5.QtCore import Qt, pyqtSignal, QObject
+from PyQt5.QtWidgets import QTextEdit
+from PyQt5.QtGui import QColor, QTextCursor
 
 
 """ This magic code sets variables like _a and _A in the global scope
@@ -189,7 +190,6 @@ class Mode:
         mode = modeClass(self._vim, self._qpart, *args)
         self._vim.setMode(mode)
         return mode.keyPressEvent(text)
-
 
 
 class Insert(Mode):
@@ -656,9 +656,9 @@ class BaseVisual(BaseCommandMode):
 
         self._qpart.setTextCursor(cursor)
 
-
     def cmdAppendAfterChar(self, cmd):
         cursor = self._qpart.textCursor()
+        cursor.clearSelection()
         cursor.movePosition(QTextCursor.Right)
         self._qpart.setTextCursor(cursor)
         self.switchMode(Insert)

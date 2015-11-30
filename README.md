@@ -1,4 +1,4 @@
-# Code editor component for PyQt and Pyside
+# Code editor component for PyQt5
 
 Component has been created for [Enki editor](http://enki-editor.org) as replacement for [QScintilla](http://www.riverbankcomputing.com/software/qscintilla/intro)
 
@@ -21,8 +21,10 @@ Component has been created for [Enki editor](http://enki-editor.org) as replacem
 Qutepart depends on:
 
 * Python 3
-* PyQt4 (see *Known problems* section)
+* PyQt5
 * pcre
+
+_Versions up to `2.2.3` used to work on Python 2 and PyQt4._
 
 #### 1. Install [pcre](http://www.pcre.org/) and development files
 On Debian, Ubuntu and other Linuxes install package `libpcreX-dev`, where `X` is available in your distribution pcre version.
@@ -40,16 +42,16 @@ It will probably be gcc
 ## Building and installation on Windows
 
 * Download and install the [CMake binary](http://www.cmake.org/). Tested with 2.8.12.
-* Download and install Microsoft Visual Studio Express Edition 2008 (or the full version). This version MUST be used for Python < 3.3 on Windows. Use MSVC 2010 for Python >= 3.3.
+* Download and install Microsoft Visual Studio Express Edition 2010 (or the full version).
 * Create a root directory and place the following as subdirectories in it:
-    - Download the [pcre source](http://www.pcre.org/). Tested with v. 8.33.
+    - Download the [pcre source](http://www.pcre.org/). Tested with v. 8.37.
     - Download the latest Qutepart [release](https://github.com/hlamer/qutepart/releases).
 
 #### Make pcre
-    cd <pcre-8.33 source>
+    cd <pcre-8.37 source>
     mkdir build
     cd build
-    cmake .. -DBUILD_SHARED_LIBS:BOOL=OFF -DPCRE_SUPPORT_UTF:BOOL=ON -DPCRE_SUPPORT_JIT:BOOL=ON -G "Visual Studio 9 2008"
+    cmake .. -DBUILD_SHARED_LIBS:BOOL=OFF -DPCRE_SUPPORT_UTF:BOOL=ON -DPCRE_SUPPORT_JIT:BOOL=ON -G "Visual Studio 10 2010"
     cmake --build . --config Release
 
 #### Build/install Python modules
@@ -69,19 +71,6 @@ Nothing is wrong with Katepart. Qutepart has been created to enable reusing high
 ## Author
 Andrei Kopats
 [hlamer@tut.by](mailto:hlamer@tut.by)
-
-## Known problems
-Some PyQt versions have a bug, due which exceptions about QTextBlockUserData are generated.
-The bug reproduces on:
-
-* PyQt 4.9.6 from OpenSUSE 12.3 repository
-
-The bug doesn't reproduce on:
-
-* PyQt 4.10 built from sources on OpenSUSE 12.3
-* Any PyQt from Ubuntu repositories
-
-If you have information about other versions - let know the author to update this README.
 
 
 ## Bug reports, patches

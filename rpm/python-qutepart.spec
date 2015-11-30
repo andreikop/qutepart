@@ -12,18 +12,10 @@ Source0:        https://github.com/hlamer/qutepart/archive/v%{version}.tar.gz#/q
 BuildRequires:  pcre-devel
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
+BuildRequires:  python3-qt5
 Requires:       python3
 Requires:       pcre
-
-
-%if 0%{?fedora_version}
-BuildRequires:  python3-PyQt4
-Requires:       python3-PyQt4
-%else
-BuildRequires:  python3-qt4
-Requires:       python3-qt4
-%endif
-
+Requires:       python3-qt5
 
 
 %description
@@ -38,6 +30,7 @@ Qutepart is a code editor widget for PyQt. Features:
     - Marking too long lines with red line
     - Rectangular selection and copy-paste
     - Linter marks support
+    - Vim mode
 
 
 %prep
