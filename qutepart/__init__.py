@@ -1219,16 +1219,46 @@ class Qutepart(QPlainTextEdit):
         self._onShortcutScroll(down)
 
     def _onShortcutHome(self, select):
-        """Home pressed, move cursor to the line start or to the text start
+        """Home pressed. Run a state machine:
+
+            1. Not at the line beginning. Move to the beginning of the line or
+               the beginning of the indent, whichever is closest to the current
+               cursor position.
+            2. At the line beginning. Move to the beginning of the indent.
+            3. At the beginning of the indent. Go to the beginning of the block.
+            4. At the beginning of the block. Go to the beginning of the indent.
         """
+        # Gather info for cursor state and movement.
         cursor = self.textCursor()
-        anchor = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
         text = cursor.block().text()
-        spaceAtStartLen = len(text) - len(text.lstrip())
-        if cursor.positionInBlock() == spaceAtStartLen:  # if at start of text
-            setPositionInBlock(cursor, 0, anchor)
+        indent = len(text) - len(text.lstrip())
+        anchor = QTextCursor.KeepAnchor if select else QTextCursor.MoveAnchor
+
+        # Determine current state and move based on that.
+        if cursor.positionInBlock() == indent:
+            # We're at the beginning of the indent. Go to the beginning of the
+            # block.
+            cursor.movePosition(QTextCursor.StartOfBlock, anchor)
+        elif cursor.atBlockStart():
+            # We're at the beginning of the block. Go to the beginning of the
+            # indent.
+            setPositionInBlock(cursor, indent, anchor)
         else:
-            setPositionInBlock(cursor, spaceAtStartLen, anchor)
+            # Neither of the above. There's no way I can find to directly
+            # determine if we're at the beginning of a line. So, try moving and
+            # see if the cursor location changes.
+            pos = cursor.positionInBlock()
+            cursor.movePosition(QTextCursor.StartOfLine, anchor)
+            # If we didn't move, we were already at the beginning of the line.
+            # So, move to the indent.
+            if pos == cursor.positionInBlock():
+                setPositionInBlock(cursor, indent, anchor)
+            # If we did move, check to see if the indent was closer to the
+            # cursor than the beginning of the indent. If so, move to the
+            # indent.
+            elif cursor.positionInBlock() < indent:
+                setPositionInBlock(cursor, indent, anchor)
+
         self.setTextCursor(cursor)
 
     def _selectLines(self, startBlockNumber, endBlockNumber):
