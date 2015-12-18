@@ -155,7 +155,7 @@ class SyntaxManager:
         self._loadedSyntaxesLock = threading.RLock()
         self._loadedSyntaxes = {}
         syntaxDbPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data", "syntax_db.json")
-        with open(syntaxDbPath) as syntaxDbFile:
+        with open(syntaxDbPath, encoding='utf-8') as syntaxDbFile:
             syntaxDb = json.load(syntaxDbFile)
         self._syntaxNameToXmlFileName = syntaxDb['syntaxNameToXmlFileName']
         self._mimeTypeToXmlFileName = syntaxDb['mimeTypeToXmlFileName']
