@@ -78,7 +78,7 @@ def main():
     result['extensionToXmlFileName'] = extensionToXmlFileName
     result['firstLineToXmlFileName'] = firstLineToXmlFileName
 
-    with open('syntax_db.json', 'w') as syntaxDbFile:
+    with open('syntax_db.json', 'w', encoding='utf-8') as syntaxDbFile:
         json.dump(result, syntaxDbFile, sort_keys=True, indent=4)
 
     print('Done. Do not forget to commit the changes')

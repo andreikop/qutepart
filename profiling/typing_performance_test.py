@@ -18,7 +18,7 @@ print('Language:', q.language())
 
 q.showMaximized()
 
-with open(sys.argv[1]) as file_:
+with open(sys.argv[1], encoding='utf-8') as file_:
     text = file_.read()
 
 clickTimes = {}

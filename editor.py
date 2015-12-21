@@ -37,7 +37,7 @@ def main():
 
     import qutepart  # after correct sys.path has been set
 
-    with open(ns.file) as file:
+    with open(ns.file, encoding='utf-8') as file:
         text = file.read()
 
     if ns.debug:
