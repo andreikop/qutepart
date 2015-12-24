@@ -411,7 +411,7 @@ class BaseCommandMode(Mode):
             qpartHeight = self._qpart.height()
             visibleLineCount = qpartHeight / cursorHeight
             direction = QTextCursor.Down if motion == _PageDown else QTextCursor.Up
-            for _ in range(visibleLineCount):
+            for _ in range(int(visibleLineCount)):
                 cursor.movePosition(direction, moveMode)
         elif motion in (_Enter, _Return):
             if cursor.block().next().isValid():  # not the last line
