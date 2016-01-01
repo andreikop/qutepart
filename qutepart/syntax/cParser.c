@@ -2758,7 +2758,6 @@ Context_appendSegment(PyObject* segmentList, int count, PyObject* format)
 static void
 Context_appendTextType(int fromIndex, int count, PyObject* textTypeMap, char textType)
 {
-    return;
     int i;
     for (i = fromIndex; i < fromIndex + count; i++)
         PyUnicode_WriteChar(textTypeMap, i, textType);
