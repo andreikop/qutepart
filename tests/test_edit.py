@@ -6,6 +6,7 @@ import unittest
 import base
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QKeySequence
 from PyQt5.QtTest import QTest
 
 from qutepart import Qutepart
@@ -81,6 +82,12 @@ class Test(unittest.TestCase):
     def column(self):
         """ Return the column at which the cursor is located."""
         return self.qpart.cursorPosition[1]
+    
+    def QKeySequenceToQt_Key(self, keySequence):
+        """Convert a QKeySequence to a Qt::Key, so that it can be fed to 
+           QTest.keyClick."""
+        # This is based on a simplified version of http://stackoverflow.com/questions/14034209/convert-string-representation-of-keycode-to-qtkey-or-any-int-and-back.
+        return QKeySequence(keySequence)[0]
 
     def test_home2(self):
         """ Test the operation of the home key. """
@@ -89,22 +96,25 @@ class Test(unittest.TestCase):
         self.qpart.text = '\n\n    ' + 'x'*10000
         # Move to the end of this string.
         self.qpart.cursorPosition = (100, 100)
-        # Press home. We should either move to the line beginning or indent.
-        QTest.keyClick(self.qpart, Qt.Key_Home)
+        # Press home. We should either move to the line beginning or indent. Use 
+        # a QKeySequence because there's no home key on some Macs, so use 
+        # whatever means home on that platform.
+        homeKey = self.QKeySequenceToQt_Key(QKeySequence.MoveToStartOfLine)
+        QTest.keyClick(self.qpart, homeKey)
         # There's no way I can find of determine what the line beginning should
         # be. So, just press home again if we're not at the indent.
         if self.column() != 4:
             # Press home again to move to the beginning of the indent.
-            QTest.keyClick(self.qpart, Qt.Key_Home)
+            QTest.keyClick(self.qpart, homeKey)
         # We're at the indent.
         self.assertEqual(self.column(), 4)
 
         # Move to the beginning of the line.
-        QTest.keyClick(self.qpart, Qt.Key_Home)
+        QTest.keyClick(self.qpart, homeKey)
         self.assertEqual(self.column(), 0)
 
         # Move back to the beginning of the indent.
-        QTest.keyClick(self.qpart, Qt.Key_Home)
+        QTest.keyClick(self.qpart, homeKey)
         self.assertEqual(self.column(), 4)
 
 
