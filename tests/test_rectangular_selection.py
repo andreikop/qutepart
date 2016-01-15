@@ -10,6 +10,7 @@ import base
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtTest import QTest
+from PyQt5.QtGui import QKeySequence
 
 from qutepart import Qutepart
 
@@ -242,7 +243,7 @@ class Test(unittest.TestCase):
             warning[0] = text
         self.qpart.userWarning.connect(_saveWarning)
 
-        QTest.keyClick(self.qpart, Qt.Key_End, Qt.AltModifier | Qt.ShiftModifier | Qt.ControlModifier)
+        base.keySequenceClicks(self.qpart, QKeySequence.SelectEndOfDocument, Qt.AltModifier)
 
         self.assertEqual(warning[0], 'Rectangular selection area is too big')
 
