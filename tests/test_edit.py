@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 import unittest
 
 import base
@@ -82,21 +81,6 @@ class Test(unittest.TestCase):
     def column(self):
         """ Return the column at which the cursor is located."""
         return self.qpart.cursorPosition[1]
-    
-    def keySequenceClicks(self, widget, keySequence):
-        """Use QTest.keyClick to send a QKeySequence to a widget."""
-        
-        # This is based on a simplified version of http://stackoverflow.com/questions/14034209/convert-string-representation-of-keycode-to-qtkey-or-any-int-and-back. I added code to handle the case in which the resulting key contains a modifier (for example, Shift+Home). When I execute QTest.keyClick(widget, keyWithModifier), I get the error "ASSERT: "false" in file .\qasciikey.cpp, line 495". To fix this, the following code splits the key into a key and its modifier. 
-        # Bitmask for all modifier keys.
-        modifierMask = int(Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier |
-                           Qt.MetaModifier |  Qt.KeypadModifier)
-        ks = QKeySequence(keySequence)
-        # For now, we don't handle a QKeySequence("Ctrl") or any other modified by itself. 
-        assert ks.count() > 0
-        for _, key in enumerate(ks):
-            modifiers = Qt.KeyboardModifiers(key & modifierMask)
-            key = key & ~modifierMask
-            QTest.keyClick(widget, key, modifiers)
 
     def test_home2(self):
         """ Test the operation of the home key. """
@@ -105,24 +89,24 @@ class Test(unittest.TestCase):
         self.qpart.text = '\n\n    ' + 'x'*10000
         # Move to the end of this string.
         self.qpart.cursorPosition = (100, 100)
-        # Press home. We should either move to the line beginning or indent. Use 
-        # a QKeySequence because there's no home key on some Macs, so use 
+        # Press home. We should either move to the line beginning or indent. Use
+        # a QKeySequence because there's no home key on some Macs, so use
         # whatever means home on that platform.
-        self.keySequenceClicks(self.qpart, QKeySequence.MoveToStartOfLine)
+        base.keySequenceClicks(self.qpart, QKeySequence.MoveToStartOfLine)
         # There's no way I can find of determine what the line beginning should
         # be. So, just press home again if we're not at the indent.
         if self.column() != 4:
             # Press home again to move to the beginning of the indent.
-            self.keySequenceClicks(self.qpart, QKeySequence.MoveToStartOfLine)
+            base.keySequenceClicks(self.qpart, QKeySequence.MoveToStartOfLine)
         # We're at the indent.
         self.assertEqual(self.column(), 4)
 
         # Move to the beginning of the line.
-        self.keySequenceClicks(self.qpart, QKeySequence.MoveToStartOfLine)
+        base.keySequenceClicks(self.qpart, QKeySequence.MoveToStartOfLine)
         self.assertEqual(self.column(), 0)
 
         # Move back to the beginning of the indent.
-        self.keySequenceClicks(self.qpart, QKeySequence.MoveToStartOfLine)
+        base.keySequenceClicks(self.qpart, QKeySequence.MoveToStartOfLine)
         self.assertEqual(self.column(), 4)
 
 
