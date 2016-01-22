@@ -320,7 +320,7 @@ class IndentAlgCStyle(IndentAlgBase):
                 pass
             else:
                 dbg("tryCKeywords: success 1 in line %d" % block.blockNumber())
-                return self._makeIndentFromWidth(foundColumn + 1)
+                return self._makeIndentAsColumn(foundBlock, foundColumn, 1)
         if indentation is not None:
             dbg("tryCKeywords: success in line %d" % block.blockNumber())
 
@@ -440,7 +440,7 @@ class IndentAlgCStyle(IndentAlgBase):
                     text = foundBlock.text()
                     while indentWidth < len(text) and text[indentWidth].isspace():
                         indentWidth += 1
-                    indentation = self._makeIndentFromWidth(indentWidth)
+                    indentation = self._makeIndentAsColumn(foundBlock, indentWidth)
 
             else:
                 try:
@@ -455,7 +455,7 @@ class IndentAlgCStyle(IndentAlgBase):
                         while foundColumn < len(foundBlockText) and \
                               foundBlockText[foundColumn].isspace():
                             foundColumn += 1
-                        indentation = self._makeIndentFromWidth(foundColumn)
+                        indentation = self._makeIndentAsColumn(foundBlock, foundColumn)
                     else:
                         currentBlock = foundBlock
                         indentation = self._blockIndent(currentBlock)
@@ -513,14 +513,14 @@ class IndentAlgCStyle(IndentAlgBase):
                     self._qpart.insertText((block.blockNumber(), self._firstNonSpaceColumn(block.text())), '\n')
                     self._qpart.cursorPosition = (block.blockNumber(), len(actualIndentation))
                     # indent closing anchor
-                    self._setBlockIndent(block.next(), self._makeIndentFromWidth(foundColumn))
+                    self._setBlockIndent(block.next(), self._makeIndentAsColumn(foundBlock, foundColumn))
                     indentation = actualIndentation
                 elif expectedIndentation == self._blockIndent(block.previous()):
                     # otherwise don't add a new line, just use indentation of closing anchor line
                     indentation = self._blockIndent(foundBlock)
                 else:
                     # otherwise don't add a new line, just align on closing anchor
-                    indentation = self._makeIndentFromWidth(foundColumn)
+                    indentation = self._makeIndentAsColumn(foundBlock, foundColumn)
 
                 dbg("tryMatchedAnchor: success in line %d" % foundBlock.blockNumber())
                 return indentation
@@ -618,7 +618,7 @@ class IndentAlgCStyle(IndentAlgBase):
                 text = foundBlock.text()[:foundColumn]
                 match  = re.search(r'\b(\w+)\s*$', text)
                 if match is not None:
-                    return self._makeIndentFromWidth(match.start())
+                    return self._makeIndentAsColumn(foundBlock, match.start())
         elif firstCharAfterIndent and c == '#' and self._qpart.language() in ('C', 'C++'):
             # always put preprocessor stuff upfront
             return ''

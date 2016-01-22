@@ -78,6 +78,17 @@ class IndentAlgBase(IndentAlgNone):
         else:
             return ' ' * width
 
+    def _makeIndentAsColumn(self, block, column, offset=0):
+        """ Make indent equal to column indent.
+        Shiftted by offset
+        """
+        blockText = block.text()
+        textBeforeColumn = blockText[:column]
+        tabCount = textBeforeColumn.count('\t')
+
+        visibleColumn = column + (tabCount * (self._indenter.width - 1))
+        return self._makeIndentFromWidth(visibleColumn + offset)
+
     def _setBlockIndent(self, block, indent):
         """Set blocks indent. Modify text in qpart
         """

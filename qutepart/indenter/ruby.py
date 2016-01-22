@@ -251,7 +251,7 @@ class IndentAlgRuby(IndentAlgBase):
                 if len(prevStmtInd) > foundColumn:
                     return prevStmtInd
                 else:
-                    return self._makeIndentFromWidth(foundColumn)
+                    return self._makeIndentAsColumn(foundBlock, foundColumn)
             else:
                 indent = self._blockIndent(foundBlock)
                 if shouldIndent:

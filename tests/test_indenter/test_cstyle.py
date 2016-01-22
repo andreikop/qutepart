@@ -1754,6 +1754,25 @@ class Aplist(BaseTestClass):
 
         self.verifyExpected(expected)
 
+    def test_aplist21(self):
+        """ Tabs are used """
+        origin = [
+            "\t\t fu1(argc,",
+            ""]
+        expected = [
+            "\t\t fu1(argc,",
+            "         argv",
+            ""]
+
+        self.setOrigin(origin)
+
+        self.setCursorPosition(0, 12)
+        self.enter()
+        self.type("argv")
+
+        self.verifyExpected(expected)
+
+
 class OpenPar(BaseTestClass):
     def test_openpar1(self):
         origin = [

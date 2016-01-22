@@ -60,7 +60,7 @@ class IndentAlgPython(IndentAlgBase):
         else:
             # indent this way only line, which contains 'y', not 'z'
             if foundBlock.blockNumber() == block.blockNumber():
-                return self._makeIndentFromWidth(foundColumn + 1)
+                return self._makeIndentAsColumn(foundBlock, foundColumn + 1)
 
         # finally, a raise, pass, and continue should unindent
         if lineStripped in ('continue', 'break', 'pass', 'raise', 'return') or \
