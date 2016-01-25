@@ -36,7 +36,10 @@ class ContextStack:
         """
         if len(self._contexts) - 1 < count:
             _logger.error("#pop value is too big %d", len(self._contexts))
-            return ContextStack(self._contexts[:1], self._data[:1])
+            if len(self._contexts) > 1:
+                return ContextStack(self._contexts[:1], self._data[:1])
+            else:
+                return self
 
         return ContextStack(self._contexts[:-count], self._data[:-count])
 
@@ -839,7 +842,7 @@ class Context:
                                                    contextStack.currentData())
             for rule in self.rules:
                 ruleTryMatchResult = rule.tryMatch(textToMatchObject)
-                if ruleTryMatchResult is not None:
+                if ruleTryMatchResult is not None:  # if something matched
                     _logger.debug('\tmatched rule %s at %d',
                                   rule.shortId(),
                                   currentColumnIndex)
