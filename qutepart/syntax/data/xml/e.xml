@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="E Language" version="0.22" kateversion="2.2" section="Sources" extensions="*.e" mimetype="text/x-e-src">
+<language name="E Language" version="0.23" kateversion="5.0" section="Sources" extensions="*.e" mimetype="text/x-e-src">
     <highlighting>
         <list name="Type">
             <item> FALSE </item>
@@ -149,7 +149,7 @@
             <item> sequence </item>
             <item> soft </item>
             <item> using </item>
-	</list>
+        </list>
         <list name="Cover">
             <item> address </item>
             <item> cover </item>
@@ -200,13 +200,13 @@
          </list>
         <contexts>
 
-	          <context name="out_comment" attribute="OutSide E code"  lineEndContext="#stay">
+            <context name="out_comment" attribute="OutSide E code"  lineEndContext="#stay">
                 <Detect2Chars attribute="code_begin" context="normal" char="&lt;" char1="'" />
-	          </context>
+            </context>
 
             <context name="normal" attribute="Normal Text" lineEndContext="#stay">
-              	<DetectChar attribute="Operators" context="#stay" char="{" beginRegion="Region1"/>
-              	<DetectChar attribute="Operators" context="#stay" char="}" endRegion="Region1"/>
+                <DetectChar attribute="Operators" context="#stay" char="{" beginRegion="Region1"/>
+                <DetectChar attribute="Operators" context="#stay" char="}" endRegion="Region1"/>
                 <HlCHex attribute="Integer" context="#stay" />
                 <HlCOct attribute="Integer" context="#stay" />
                 <Int attribute="Integer" context="#stay" />
@@ -217,7 +217,7 @@
                 <AnyChar attribute="Operators" context="#stay" String="'[&amp;&gt;&lt;=:+\-*\|].,;" />
                 <keyword attribute="Data Type" context="#stay"  String="Type"/>
                 <keyword attribute="Function" context="#stay"  String="Function"/>
-            		<keyword attribute="Statement" context="#stay"  String="Statement"/>
+                <keyword attribute="Statement" context="#stay"  String="Statement"/>
                 <keyword attribute="Action" context="#stay"  String="Action"/>
                 <keyword attribute="Keyword" context="#stay"  String="Generation"/>
                 <keyword attribute="Keyword" context="#stay"  String="Cover"/>
@@ -232,21 +232,21 @@
                 <DetectChar attribute="Vector" context="#pop" char="&quot;" />
             </context>
 
-	</contexts>
+        </contexts>
 
         <itemDatas>
-	          <itemData name="OutSide E code" defStyleNum="dsComment"/>
+            <itemData name="OutSide E code" defStyleNum="dsComment"/>
             <itemData name="Normal Text" defStyleNum="dsNormal" />
             <itemData name="Keyword" defStyleNum="dsKeyword" />
             <itemData name="Function" defStyleNum="dsFunction" bold="1"/>
-            <itemData name="Statement" defStyleNum="dsNormal" color="#8080FF" selColor="#00ff00" bold="1" italic="0" />
-            <itemData name="Action" defStyleNum="dsNormal" color="#FF8080" selColor="#00ff00" bold="1" italic="0" />
+            <itemData name="Statement" defStyleNum="dsBuiltIn" bold="1" italic="0" />
+            <itemData name="Action" defStyleNum="dsExtension" bold="1" italic="0" />
             <itemData name="Data Type" defStyleNum="dsDataType" />
             <itemData name="Comment" defStyleNum="dsComment" />
             <itemData name="Integer" defStyleNum="dsDecVal" />
             <itemData name="Bit" defStyleNum="dsDecVal" />
             <itemData name="Vector" defStyleNum="dsString" />
-            <itemData name="Operators" defStyleNum="dsNormal" color="#404000" selColor="#00ff00" bold="0" italic="0" />
+            <itemData name="Operators" defStyleNum="dsOperator" bold="0" italic="0" />
         </itemDatas>
 
     </highlighting>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="OORS" version="1.2" kateversion="2.4" section="Sources" extensions="*.oors" author="Gernot Gebhard (gebhard@cs.uni-sb.de)" license="LGPL">
+<language name="OORS" version="2" kateversion="2.4" section="Sources" extensions="*.oors" author="Gernot Gebhard (gebhard@cs.uni-sb.de)" license="LGPL">
   <highlighting>
     <list name="oors">
       <item>allow</item>
@@ -87,7 +87,7 @@
   <general>
     <comments>
       <comment name="singleLine" start="//" />
-      <comment name="multiLine" start="/*" end="*/" region="Comment"/>
+      <comment name="multiLine" start="/*" end="*/" />
     </comments>
     <keywords casesensitive="1" />
   </general>

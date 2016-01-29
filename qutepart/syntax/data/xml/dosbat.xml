@@ -8,7 +8,7 @@
         <!ENTITY eop      "(?=([\s\\;&quot;&#37;]|$))">         <!-- end of path -->
         <!ENTITY pathpart "[^\s\\&#37;;/:\*\?&quot;&gt;&lt;\|]"> <!-- valid character in a file name -->
 ]>
-<language name="MS-DOS Batch" version="0.30" kateversion="2.4" section="Scripts" extensions="*.bat" mimetype="application/x-dos" casesensitive="0" author="Matthew Woehlke (mw_triad@users.sourceforge.net)" license="LGPL">
+<language name="MS-DOS Batch" version="0.31" kateversion="5.0" section="Scripts" extensions="*.bat" mimetype="application/x-dos" casesensitive="0" author="Matthew Woehlke (mw_triad@users.sourceforge.net)" license="LGPL">
 
 <!-- (c) 2006, 2009, 2010 Matthew Woehlke (mw_triad@users.sourceforge.net)
     Released under the LGPL -->
@@ -290,13 +290,13 @@
       <itemData name="Keyword"      defStyleNum="dsKeyword"/>
       <itemData name="Number"       defStyleNum="dsDecVal"/>
       <itemData name="Label"        defStyleNum="dsOthers"/>
-      <itemData name="Builtin"      defStyleNum="dsKeyword"/>
+      <itemData name="Builtin"      defStyleNum="dsBuiltIn"/>
       <itemData name="Command"      defStyleNum="dsKeyword"/>
       <itemData name="Redirection"  defStyleNum="dsKeyword"/>
       <itemData name="String"       defStyleNum="dsString"/>
-      <itemData name="Escape"       defStyleNum="dsChar"/>
+      <itemData name="Escape"       defStyleNum="dsSpecialChar"/>
       <itemData name="Echoed Text"  defStyleNum="dsNormal"/>
-      <itemData name="Variable"     defStyleNum="dsOthers"/>
+      <itemData name="Variable"     defStyleNum="dsVariable"/>
       <itemData name="Path"         defStyleNum="dsNormal"/>
       <itemData name="Option"       defStyleNum="dsNormal"/>
       <itemData name="Error"        defStyleNum="dsError"/>

@@ -3,13 +3,13 @@
 <!DOCTYPE language SYSTEM "language.dtd"
 [
 <!-- Regular expresion constants: -->
-<!ENTITY LETTER "A-Za-z\0300-\0326\0330-\0366\0370-\0377">          <!-- Latin-1 letters. -->
+<!ENTITY LETTER "A-Za-z\300-\326\330-\366\370-\377">                <!-- Latin-1 letters. -->
 <!ENTITY IDENT  "[&LETTER;_][&LETTER;0-9_']*">                      <!-- OCaml identifiers. -->
 <!ENTITY MIDENT "[A-Z][&LETTER;0-9_']*">                            <!-- OCaml uppercase identifiers. -->
 <!ENTITY ESC    "(\\[ntbr'&quot;\\]|\\[0-9]{3}|\\x[0-9A-Fa-f]{2})"> <!-- OCaml character code escapes. -->
 <!ENTITY DEC    "[0-9][0-9_]*">                                     <!-- Decimal digits with underscores. -->
 ]>
-<language name="FSharp" version="0.1" kateversion="2.4" section="Sources" extensions="*.fs;*.fsi;*.fsx" mimetype="" priority="10" author="Bas Bossink (bas.bossink@gmail.com)" license="LGPL">
+<language name="FSharp" version="1.1" kateversion="5.0" section="Sources" extensions="*.fs;*.fsi;*.fsx" mimetype="" priority="10" author="Bas Bossink (bas.bossink@gmail.com)" license="LGPL">
 
   <highlighting>
     <list name="keywords">
@@ -165,13 +165,13 @@
         <RegExpr attribute="Module" lookAhead="true" context="ModuleEnv2" String="&MIDENT;\s*\."/>
         <RegExpr attribute="Constructor" context="#stay" String="&MIDENT;"/>
 
-        <!-- Interpreter directives. --> 
+        <!-- Interpreter directives. -->
         <!-- (These are lines where the first symbol is a '#' followed by an identifier. -->
-        <!-- Such lines could also be part of a method call split over two lines but     --> 
+        <!-- Such lines could also be part of a method call split over two lines but     -->
         <!-- it's unlikey anyone would code like that.)                                  -->
         <RegExpr attribute="Directive" context="#stay" String="#&IDENT;.*$" firstNonSpace="true"/>
 
-        <!-- String, character and Camlp4 "quotation" constants.              --> 
+        <!-- String, character and Camlp4 "quotation" constants.              -->
         <!-- Note: If you must modify the pattern for characters be precise:  -->
         <!-- single quotes have several meanings in Ocaml.                    -->
         <DetectChar attribute="String" context="String Constant" char="&quot;" />
@@ -179,13 +179,13 @@
         <Detect2Chars attribute="Camlp4 Quotation" context="Camlp4 Quotation Constant" char="&lt;" char1="&lt;" />
         <RegExpr attribute="Camlp4 Quotation" context="Camlp4 Quotation Constant" String="&lt;:&IDENT;&lt;" />
 
-        <!-- Identifiers and keywords. --> 
+        <!-- Identifiers and keywords. -->
         <keyword attribute="Keyword" context="#stay" String="keywords" />
         <keyword attribute="Core Data Type" context="#stay" String="core types" />
         <RegExpr attribute="Identifier" context="#stay" String="&IDENT;" />
 
         <!-- Numeric constants. -->
-        <!-- Note that they may contain underscores. --> 
+        <!-- Note that they may contain underscores. -->
         <RegExpr attribute="Hexadecimal" context="#stay" String="-?0[xX][0-9A-Fa-f_]+" />
         <RegExpr attribute="Octal" context="#stay" String="-?0[oO][0-7_]+" />
         <RegExpr attribute="Binary" context="#stay" String="-?0[bB][01_]+" />
@@ -222,24 +222,24 @@
         <keyword attribute="Region Marker" context="#pop" String="end" endRegion="struct"/>
         <IncludeRules context="Normal"/>
       </context>
-      
+
       <context attribute="Normal text" lineEndContext="#stay" name="Object">
         <keyword attribute="Region Marker" context="#pop" String="end" endRegion="object"/>
         <IncludeRules context="Normal"/>
       </context>
-      
+
       <context attribute="Normal text" lineEndContext="#stay" name="ModuleEnv" fallthrough="true" fallthroughContext="#pop">
         <DetectSpaces attribute="Normal text" context="#stay"/>
         <RegExpr attribute="Module" lookAhead="true" context="ModuleEnv2" String="&MIDENT;\s*\."/>
         <RegExpr attribute="Module" context="#pop" String="&MIDENT;"/>
       </context>
-      
+
       <context attribute="Normal text" lineEndContext="#stay" name="ModuleEnv2">
         <RegExpr attribute="Module" context="#stay" String="&MIDENT;"/>
         <DetectSpaces attribute="Normal text" context="#stay"/>
         <StringDetect attribute="Keyword" context="#pop" String="."/>
       </context>
-      
+
       <!-- Camlp4 Quotations. These are source code literals used by the Campl4 preprocessor.           -->
       <!-- The only escapes allowed in a Camlp4 quotation are for the quotation start and stop symbols. -->
       <context attribute="Camlp4 Quotation" lineEndContext="#stay" name="Camlp4 Quotation Constant">
@@ -265,7 +265,7 @@
       <itemData name="Float"  defStyleNum="dsFloat"/>
       <itemData name="Character"  defStyleNum="dsChar"/>
       <itemData name="String"  defStyleNum="dsString"/>
-      <itemData name="Escaped characters"  defStyleNum="dsChar"/>
+      <itemData name="Escaped characters"  defStyleNum="dsSpecialChar"/>
       <itemData name="Comment"  defStyleNum="dsComment"/>
       <itemData name="Camlp4 Quotation"  defStyleNum="dsString"/>
       <itemData name="Directive"  defStyleNum="dsOthers"/>

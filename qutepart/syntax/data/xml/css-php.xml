@@ -19,7 +19,7 @@ Changelog:
 - Make it spelling aware
 
 - Version 2.08, Joseph Wenninger:
-- CSS3 media queries 
+- CSS3 media queries
 
 -->
 
@@ -29,7 +29,7 @@ Changelog:
 
 
 
-<language name="CSS/PHP" hidden="true" version="2.10" kateversion="3.4" section="Other" extensions="" indenter="cstyle" mimetype="" author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL">
+<language name="CSS/PHP" hidden="true" version="2.12" kateversion="5.0" section="Other" extensions="" indenter="cstyle" mimetype="" author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL">
 
 	<highlighting>
 		<list name="properties">
@@ -220,6 +220,7 @@ Changelog:
 			<item> transition </item>
 			<item> transition-property </item>
 			<item> transition-duration </item>
+			<item> word-break </item>
 			<item> word-wrap </item>
 
 			<!-- Gecko rendering engine CSS property extensions -->
@@ -645,7 +646,7 @@ Changelog:
                     <item> not </item>
                     <item> only </item>
 		</list>
-		
+
 		<list name="media_features">
                     <item> width </item>
                     <item> min-width </item>
@@ -681,7 +682,7 @@ Changelog:
                     <item> scan </item>
                     <item> grid </item>
 		</list>
-		
+
 		<list name="pseudoclasses">
 			<item> hover </item>
 			<item> link </item>
@@ -773,7 +774,7 @@ Changelog:
 				<IncludeRules context="FindComments" />
 				<RegExpr attribute="Error" context="#stay" String="\S+" />
 			</context>
-			
+
 			<context attribute="Media" lineEndContext="#stay" name="MediaTypes">
 <IncludeRules context="FindPHP" />
                             <keyword attribute="Media" context="MediaQueries" String="mediatypes"/>
@@ -781,9 +782,9 @@ Changelog:
                             <DetectChar attribute="Media" context="#pop" char= "," lookAhead="true"/>
                             <DetectSpaces/>
                             <IncludeRules context="FindComments"/>
-                            <RegExpr attribute="Error" context="#stay" String="\S+"/> 
+                            <RegExpr attribute="Error" context="#stay" String="\S+"/>
 			</context>
-			
+
 			<context attribute="Media" lineEndContext="#stay" name="MediaQueries">
 <IncludeRules context="FindPHP" />
 			    <RegExpr attribute="Media" context="MediaQueryExpression" String="\s+and\s+\("/>
@@ -793,7 +794,7 @@ Changelog:
                             <IncludeRules context="FindComments"/>
                             <RegExpr attribute="Error" context="#stay" String="\S+"/>
 			</context>
-			
+
                         <context attribute="Media" lineEndContext="#stay" name="MediaQueryExpression">
 <IncludeRules context="FindPHP" />
                             <DetectSpaces/>
@@ -801,7 +802,7 @@ Changelog:
                             <IncludeRules context="FindComments"/>
                             <RegExpr attribute="Error" context="#stay" String="\S+"/>
                         </context>
-                        
+
                         <context attribute="Media" lineEndContext="#stay" name="MQEE" fallthrough="true" fallthroughContext="#pop">
 <IncludeRules context="FindPHP" />
                             <DetectSpaces/>
@@ -810,7 +811,7 @@ Changelog:
                             <RegExpr attribute="Media" context="#pop" String="\)\s+and\s+\("/>
                             <DetectChar attribute="Media" context="#pop#pop" char=")"/>
                         </context>
-                        
+
                         <context attribute="Media" lineEndContext="#stay" name="MQEV">
 <IncludeRules context="FindPHP" />
                         <!-- this should be seperate for different features, for now it is all the same -->
@@ -921,7 +922,7 @@ Changelog:
 					<DetectIdentifier/>
 				</context>
 
-			<context name="FindPHP">
+			<context name="FindPHP" attribute="Normal Text" lineEndContext="#stay">
 <RegExpr context="##PHP/PHP" String="&lt;\?(?:=|php)?" lookAhead="true" />
 </context>
 </contexts>
@@ -934,7 +935,7 @@ Changelog:
 				<itemData name="String"  defStyleNum="dsString"/>
 				<itemData name="Value"  defStyleNum="dsDataType" spellChecking="false"/>
 				<itemData name="Important" defStyleNum="dsKeyword" spellChecking="false"/>
-				<itemData name="Selector Attr" defStyleNum="dsChar" spellChecking="false"/>
+				<itemData name="Selector Attr" defStyleNum="dsAttribute" spellChecking="false"/>
 				<itemData name="Selector Id"  defStyleNum="dsFloat" bold="1" spellChecking="false"/>
 				<itemData name="Selector Class"  defStyleNum="dsFloat" spellChecking="false"/>
 				<itemData name="Selector Pseudo"  defStyleNum="dsDecVal" spellChecking="false"/>

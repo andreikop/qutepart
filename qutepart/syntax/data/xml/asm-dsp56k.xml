@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
 
-<language name="Motorola DSP56k" section="Assembler" version="1.01" kateversion="2.4"  extensions="*.asm;*.inc;*.ASM;*.INC" author="Miro Kropacek (miro.kropacek@gmail.com)" license="LGPL">
+<language name="Motorola DSP56k" section="Assembler" version="1.02" kateversion="5.0"  extensions="*.asm;*.inc;*.ASM;*.INC" author="Miro Kropacek (miro.kropacek@gmail.com)" license="LGPL">
 
   <highlighting>
     <list name="Data Registers">
@@ -304,13 +304,13 @@
       <itemData name="Modifier Registers" defStyleNum="dsDataType"/>
       <itemData name="Control Registers" defStyleNum="dsDataType"/>
       <itemData name="Instructions" bold="true" defStyleNum="dsKeyword"/>
-      <itemData name="Directives" bold="true" defStyleNum="dsOthers"/>
+      <itemData name="Directives" bold="true" defStyleNum="dsControlFlow"/>
       <itemData name="Memory" bold="true" defStyleNum="dsOthers"/>
       <!-- defined in contexts -->
       <itemData name="Comment" italic="false" defStyleNum="dsComment"/>
       <itemData name="Label" defStyleNum="dsFunction"/>
       <itemData name="Local label" defStyleNum="dsFunction"/>
-      <itemData name="Constant" defStyleNum="dsDataType"/>
+      <itemData name="Constant" defStyleNum="dsConstant"/>
       <itemData name="BaseN" defStyleNum="dsBaseN"/>
       <itemData name="Float" defStyleNum="dsFloat"/>
       <itemData name="Number" defStyleNum="dsDecVal"/>

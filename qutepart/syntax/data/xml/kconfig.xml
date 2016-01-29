@@ -4,7 +4,7 @@
 	<!ENTITY n "[A-Za-z0-9_]">
 	<!ENTITY n1 "[A-Za-z0-9_/.-]">
 	<!ENTITY badCom "[^ \t#A-Za-z0-9_&quot;']">
-	<!ENTITY badParam "[^ \t#A-Za-z0-9_/.&quot;'&amp;\|\(\)!=-]">
+	<!ENTITY badParam "[^ \t#A-Za-z0-9_/.&quot;'&amp;&lt;&gt;\|\(\)!=-]">
 	<!ENTITY ws "[ \t]">
 	<!ENTITY keyword "mainmenu|menu|endmenu|source|choice|endchoice|comment|config|menuconfig|help|if|endif|depends|optional|default|prompt|tristate|def_tristate|bool|boolean|def_bool|int|hex|string|select|range|visible|option|on|modules|defconfig_list|env|allnoconfig_y">
 	<!ENTITY tab "( ? ? ? ? ? ? ?\t|        )">
@@ -63,10 +63,12 @@ Newer changes in the configuration language:
 - add "visible if" property to menus
 3.15:
 - add option "allnoconfig_yes"
+4.2:
+- add <=, >=, <, > operators
 
 -->
 
-<language name="Kconfig" section="Configuration" extensions="Kconfig*" version="3.15" kateversion="3.4" casesensitive="true" priority="0" author="Martin Walch (walch.martin@web.de)" license="GPLv3">
+<language name="Kconfig" section="Configuration" extensions="Kconfig*" version="4.2" kateversion="3.4" casesensitive="true" priority="0" author="Martin Walch (walch.martin@web.de)" license="GPLv3">
 
 	<highlighting>
 		<contexts>
@@ -254,7 +256,7 @@ Newer changes in the configuration language:
 				<RegExpr String="range(?!&n;)" attribute="property" context="range" />
 				<RegExpr String="---help---|help(?!&n;)" attribute="property" context="helpEntry" beginRegion="help" />
 				<RegExpr String="option(?!&n;)" attribute="keyword" context="option" />
-				<RegExpr String="(menu|endmenu|source|choice|endchoice|comment|config|menuconfig|if|endif)(?!&n;)" attribute="property" lookAhead="true" context="#pop" endRegion="config_stmt" />
+				<RegExpr String="&ws;*(menu|endmenu|source|choice|endchoice|comment|config|menuconfig|if|endif)(?!&n;)" attribute="property" lookAhead="true" context="#pop" endRegion="config_stmt" />
 
 				<IncludeRules context="wsOrComment" />
 				<IncludeRules context="ignoreBadComChars" />
@@ -435,6 +437,10 @@ Newer changes in the configuration language:
 				<RegExpr String="\|\|" attribute="exprOp" context="#pop!nl.expr" />
 				<RegExpr String="=" attribute="exprOp" context="#pop!nl.expr" />
 				<RegExpr String="!=" attribute="exprOp" context="#pop!nl.expr" />
+				<RegExpr String="&lt;=" attribute="exprOp" context="#pop!nl.expr" />
+				<RegExpr String="&gt;=" attribute="exprOp" context="#pop!nl.expr" />
+				<RegExpr String="&lt;" attribute="exprOp" context="#pop!nl.expr" />
+				<RegExpr String="&gt;" attribute="exprOp" context="#pop!nl.expr" />
 			</context>
 
 			<context name="nl.binOpOrEnd.SQSymbolConst" attribute="symbolConst" lineEndContext="#pop!error">

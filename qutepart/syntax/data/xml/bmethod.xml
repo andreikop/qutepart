@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="B-Method" version="0.2" kateversion="3.4" section="Scientific" extensions="*.mch;*.imp;*.ref" author="Ivo Anjo (knuckles@gmail.com)" license="LGPL">
+<language name="B-Method" version="0.3" kateversion="5.0" section="Scientific" extensions="*.mch;*.imp;*.ref" author="Ivo Anjo (knuckles@gmail.com)" license="LGPL">
 
 <highlighting>
 	<list name="sections">
@@ -78,8 +78,8 @@
 	</contexts>
 	<itemDatas>
 		<itemData name="Normal Text" defStyleNum="dsNormal" spellChecking="0"/>
-		<itemData name="SectionKeyword" defStyleNum="dsKeyword" color="#ff0000" spellChecking="0"/>
-		<itemData name="OperationKeyword" defStyleNum="dsKeyword" color="#0000ff" spellChecking="0"/>
+		<itemData name="SectionKeyword" defStyleNum="dsBuiltIn" spellChecking="0"/>
+		<itemData name="OperationKeyword" defStyleNum="dsControlFlow" spellChecking="0"/>
 		<itemData name="Comment" defStyleNum="dsComment"/>
 		<itemData name="Data Type" defStyleNum="dsDataType" spellChecking="0"/>
 		<itemData name="Decimal" defStyleNum="dsDecVal" spellChecking="0"/>

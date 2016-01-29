@@ -13,7 +13,7 @@ Notes:
 * "used" and "defined" are treated opperators and are not highlighted.
 -->
 
-<language name="Intel x86 (FASM)" section="Assembler" version="0.2" kateversion="2.3" extensions="*.asm;*.inc;*.fasm" mimetype="" author="rCX (rCX12@yahoo.com)" license="GPL">
+<language name="Intel x86 (FASM)" section="Assembler" version="0.3" kateversion="5.0" extensions="*.asm;*.inc;*.fasm" mimetype="" author="rCX (rCX12@yahoo.com)" license="GPL">
   <highlighting>
     <list name="registers">
       <!-- General purpose registers -->
@@ -877,7 +877,7 @@ Notes:
     <itemDatas>
       <itemData name="Normal Text" defStyleNum="dsNormal"/>
       <itemData name="Registers" defStyleNum="dsKeyword"/>
-      <itemData name="Instructions" defStyleNum="dsKeyword"/>
+      <itemData name="Instructions" defStyleNum="dsBuiltIn"/>
       <itemData name="Comment" defStyleNum="dsComment"/>
       <itemData name="Label" defStyleNum="dsFunction"/>
       <itemData name="Data" defStyleNum="dsDataType"/>
@@ -886,7 +886,7 @@ Notes:
       <itemData name="Number" defStyleNum="dsDecVal"/>
       <itemData name="Char" defStyleNum="dsChar"/>
       <itemData name="String" defStyleNum="dsString"/>
-      <itemData name="Preprocessor" defStyleNum="dsOthers"/>
+      <itemData name="Preprocessor" defStyleNum="dsPreprocessor"/>
     </itemDatas>
   </highlighting>
   <general>

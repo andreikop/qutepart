@@ -13,8 +13,8 @@
   -->
 <language
     name="GCCExtensions"
-    version="0.4"
-    kateversion="3.4"
+    version="0.5"
+    kateversion="5.0"
     section="Sources"
     extensions="*.c++;*.cxx;*.cpp;*.cc;*.C;*.h;*.hh;*.H;*.h++;*.hxx;*.hpp;*.hcc;"
     mimetype="text/x-c++src;text/x-c++hdr;text/x-chdr;text/x-csrc"
@@ -563,10 +563,10 @@
 
   <itemDatas>
     <itemData name="Normal Text"    defStyleNum="dsNormal" spellChecking="false" />
-    <itemData name="GNU Extensions" defStyleNum="dsOthers" spellChecking="false" italic="1" />
-    <itemData name="GNU Functions"  defStyleNum="dsOthers" spellChecking="false" />
+    <itemData name="GNU Extensions" defStyleNum="dsExtension" spellChecking="false" italic="1" />
+    <itemData name="GNU Functions"  defStyleNum="dsFunction" spellChecking="false" />
     <itemData name="GNU Macros"     defStyleNum="dsOthers" spellChecking="false" />
-    <itemData name="GNU Types"      defStyleNum="dsOthers" spellChecking="false" />
+    <itemData name="GNU Types"      defStyleNum="dsDataType" spellChecking="false" />
     <itemData name="String"         defStyleNum="dsString" spellChecking="false" />
   </itemDatas>
 </highlighting>

@@ -10,7 +10,7 @@
 
 
 
-<language name="PHP (HTML)" version="2.1" kateversion="3.4" section="Scripts" extensions="*.php;*.php3;*.wml;*.phtml;*.phtm;*.inc" mimetype="text/x-php4-src;text/x-php3-src;text/vnd.wap.wml;application/x-php"  author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL" priority="10" firstLineGlobs="&lt;!doctype html*;&lt;html*">
+<language name="PHP (HTML)" version="2.1" kateversion="3.4" section="Scripts" extensions="*.php;*.php3;*.wml;*.phtml;*.phtm;*.inc" mimetype="text/x-php4-src;text/x-php3-src;text/vnd.wap.wml;application/x-php"  author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL" priority="10" firstLineGlobs="&lt;!doctype html*;&lt;html*;&lt;?php*">
 
 <highlighting>
 <contexts>
@@ -199,7 +199,7 @@
 <IncludeRules context="FindPHP" />
     <RegExpr attribute="Element" context="El Close 2" String="&lt;/script\b" insensitive="true" endRegion="script" />
     <RegExpr attribute="Comment" context="JS comment close" String="//(?=.*&lt;/script\b)" insensitive="true" />
-    <IncludeRules context="Normal##JavaScript" includeAttrib="true"/>
+    <IncludeRules context="Normal##JavaScript/PHP" includeAttrib="true"/>
   </context>
 
   <context name="JS comment close" attribute="Comment" lineEndContext="#pop">
@@ -234,7 +234,7 @@
     <IncludeRules context="FindEntityRefs" />
   </context>
 
-<context name="FindPHP">
+<context name="FindPHP" attribute="Normal Text" lineEndContext="#stay">
 <RegExpr context="##PHP/PHP" String="&lt;\?(?:=|php)?" lookAhead="true" />
 </context>
 </contexts>

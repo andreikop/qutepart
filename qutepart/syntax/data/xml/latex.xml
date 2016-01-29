@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="LaTeX" version="1.55" section="Markup" kateversion="3.4" priority="10" extensions="*.tex;*.ltx;*.dtx;*.sty;*.cls;*.bbx;*.cbx;*.lbx;*.tikz" mimetype="text/x-tex" casesensitive="1" author="Jeroen Wijnhout (Jeroen.Wijnhout@kdemail.net)+Holger Danielsson (holger.danielsson@versanet.de)+Michel Ludwig (michel.ludwig@kdemail.net)+Thomas Braun (thomas.braun@virtuell-zuhause.de)" license="LGPL" firstLineGlobs="\\documentclass">
+<language name="LaTeX" version="1.57" section="Markup" kateversion="5.0" priority="10" extensions="*.tex;*.ltx;*.dtx;*.sty;*.cls;*.bbx;*.cbx;*.lbx;*.tikz" mimetype="text/x-tex" casesensitive="1" author="Jeroen Wijnhout (Jeroen.Wijnhout@kdemail.net)+Holger Danielsson (holger.danielsson@versanet.de)+Michel Ludwig (michel.ludwig@kdemail.net)+Thomas Braun (thomas.braun@virtuell-zuhause.de)" license="LGPL" firstLineGlobs="\\documentclass">
   <highlighting>
     <contexts>
       <!-- Normal text -->
       <context name="Normal Text" attribute="Normal Text" lineEndContext="#stay">
         <RegExpr String="\\begin(?=[^a-zA-Z])" attribute="Structure" context="FindBeginEnvironment" beginRegion="block" />
         <RegExpr String="\\end(?=[^a-zA-Z])" attribute="Structure" context="FindEndEnvironment" />
-	<RegExpr String="\\(cite|citet|citep|parencite|autocite|Autocite|citetitle)\*(?=[^a-zA-Z])" attribute="Structure" context="Label"/>
-	<RegExpr String="\\(documentclass|includegraphics|include|usepackage|bibliography|bibliographystyle)(?=[^a-zA-Z])" attribute="Structure Keyword" context="FancyLabel"/>
-	<RegExpr String="\\(cites|Cites|parencites|Parencites|autocites|Autocites|supercites|footcites|Footcites)(?=[^a-zA-Z])" attribute="Structure" context="FancyLabel"/>
-	<RegExpr String="\\(cite|citet|citep|nocite|Cite|parencite|Parencite|footcite|Footcite|textcite|Textcite|supercite|autocite|Autocite|citeauthor|Citeauthor|citetitle|citeyear|citeurl|nocite|fullcite|footfullcite)(?=[^a-zA-Z])" attribute="Structure" context="Label"/>
-	<RegExpr String="\\(subref\*?|cref\*?|label|pageref|autoref|ref|vpageref|vref|pagecite|eqref)(?=[^a-zA-Z])" attribute="Structure" context="Label"/>
+        <RegExpr String="\\(cite|citet|citep|parencite|autocite|Autocite|citetitle)\*(?=[^a-zA-Z])" attribute="Structure" context="Label"/>
+        <RegExpr String="\\(documentclass|includegraphics|include|usepackage|bibliography|bibliographystyle)(?=[^a-zA-Z])" attribute="Builtin Macro" context="FancyLabel"/>
+        <RegExpr String="\\(cites|Cites|parencites|Parencites|autocites|Autocites|supercites|footcites|Footcites)(?=[^a-zA-Z])" attribute="Structure" context="FancyLabel"/>
+        <RegExpr String="\\(cite|citet|citep|nocite|Cite|parencite|Parencite|footcite|Footcite|textcite|Textcite|supercite|autocite|Autocite|citeauthor|Citeauthor|citetitle|citeyear|citeurl|nocite|fullcite|footfullcite)(?=[^a-zA-Z])" attribute="Structure" context="Label"/>
+        <RegExpr String="\\(subref\*?|cref\*?|label|pageref|autoref|ref|vpageref|vref|pagecite|eqref)(?=[^a-zA-Z])" attribute="Structure" context="Label"/>
         <RegExpr String="\\(part|chapter|section|subsection|subsubsection|paragraph|subparagraph)\*?\s*(?=[\{\[])" attribute="Structure" context="Sectioning"/>
-	<RegExpr String="\\(input|hspace|hspace\*|vspace|vspace\*|rule|special|setlength|newboolean|setboolean|setcounter|geometry|textcolor|definecolor|column)(?=[^a-zA-Z])" attribute="Keyword" context="SpecialCommand"/>
-        <RegExpr String="\\(footnote)\*?\s*(?=[\{\[])" attribute="Keyword" context="Footnoting"/>
-	<RegExpr String="\\(renewcommand|providenewcommand|newcommand)\*?(?=[^a-zA-Z])" attribute="Keyword" context="NewCommand"/>
-        <RegExpr String="\\(e|g|x)?def(?=[^a-zA-Z])" attribute="Keyword" context="DefCommand"/>
-	<RegExpr String="&lt;&lt;.*&gt;&gt;=" attribute="Normal Text" context="NoWeb" />
+        <RegExpr String="\\(input|hspace|hspace\*|vspace|vspace\*|rule|special|setlength|newboolean|setboolean|setcounter|geometry|textcolor|definecolor|column)(?=[^a-zA-Z])" attribute="Macro" context="SpecialCommand"/>
+        <RegExpr String="\\(footnote)\*?\s*(?=[\{\[])" attribute="Macro" context="Footnoting"/>
+        <RegExpr String="\\(renewcommand|providenewcommand|newcommand)\*?(?=[^a-zA-Z])" attribute="Macro" context="NewCommand"/>
+        <RegExpr String="\\(e|g|x)?def(?=[^a-zA-Z])" attribute="Macro" context="DefCommand"/>
+        <RegExpr String="&lt;&lt;.*&gt;&gt;=" attribute="Normal Text" context="NoWeb" />
         <StringDetect String="\(" attribute="Math" context="MathMode" />
         <StringDetect String="\[" attribute="Math" context="MathModeEquation" beginRegion="mathMode" />
-	<StringDetect String="\iffalse" attribute="Comment" context="Multiline Comment"/>
-	<StringDetect String="\ensuremath{" attribute="Math" context="MathModeEnsure"/>
-        <DetectChar char="\" attribute="Keyword" context="ContrSeq"/>
+        <StringDetect String="\iffalse" attribute="Comment" context="Multiline Comment"/>
+        <StringDetect String="\ensuremath{" attribute="Math" context="MathModeEnsure"/>
+        <DetectChar char="\" attribute="Macro" context="ContrSeq"/>
         <StringDetect String="$$" attribute="Math" context="MathModeDisplay" beginRegion="mathMode" />
         <DetectChar char="$" attribute="Math" context="MathMode" />
         <RegExpr String="%\s*BEGIN.*$" attribute="Region Marker" context="#stay" beginRegion="regionMarker" firstNonSpace="true" />
@@ -31,9 +31,9 @@
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
       </context>
 
-	<!-- NoWeb -->
+        <!-- NoWeb -->
       <context name="NoWeb" attribute="Normal Text" lineEndContext="#stay" >
-	<RegExpr String="^\s*@\s*" attribute="Normal Text" context="#pop" />
+        <RegExpr String="^\s*@\s*" attribute="Normal Text" context="#pop" />
       </context>
 
       <!-- LaTeX sectioning commands -->
@@ -44,33 +44,33 @@
         <DetectChar char="}" attribute="Normal Text" context="#pop"/>
         <DetectChar char="%" attribute="Comment" context="Comment"/>
       </context>
-      <context name="SectioningInside" attribute="Structure Text" lineEndContext="#stay">
+      <context name="SectioningInside" attribute="Sectioning Text" lineEndContext="#stay">
         <DetectChar char="{" attribute="Normal Text" context="SectioningInside"/>
         <DetectChar char="}" attribute="Normal Text" context="#pop"/>
-        <StringDetect String="\(" attribute="Structure Math" context="SectioningMathMode" />
-        <DetectChar char="\" attribute="Structure Keyword" context="SectioningContrSeq"/>
-        <DetectChar char="$" attribute="Structure Math" context="SectioningMathMode" />
+        <StringDetect String="\(" attribute="Sectioning Math" context="SectioningMathMode" />
+        <DetectChar char="\" attribute="Sectioning Macro" context="SectioningContrSeq"/>
+        <DetectChar char="$" attribute="Sectioning Math" context="SectioningMathMode" />
         <DetectChar char="%" attribute="Comment" context="Comment"/>
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
       </context>
-      <context name="SectioningContrSeq" attribute="Keyword" lineEndContext="#pop">
-         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
-        <RegExpr String="[a-zA-Z]+(\+?|\*{0,3})" attribute="Structure Keyword" context="#pop"/>
-        <RegExpr String="[^a-zA-Z]" attribute="Structure Keyword" context="#pop" />
+      <context name="SectioningContrSeq" attribute="Macro" lineEndContext="#pop">
+        <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
+        <RegExpr String="[a-zA-Z]+(\+?|\*{0,3})" attribute="Sectioning Macro" context="#pop"/>
+        <RegExpr String="[^a-zA-Z]" attribute="Sectioning Macro" context="#pop" />
       </context>
-      <context name="SectioningMathMode" attribute="Structure Math" lineEndContext="#stay">
+      <context name="SectioningMathMode" attribute="Sectioning Math" lineEndContext="#stay">
         <StringDetect String="$$" attribute="Error" context="#stay" />
-        <DetectChar char="$" attribute="Structure Math" context="#pop" />
-        <Detect2Chars char="\" char1=")" attribute="Structure Math" context="#pop" />
+        <DetectChar char="$" attribute="Sectioning Math" context="#pop" />
+        <Detect2Chars char="\" char1=")" attribute="Sectioning Math" context="#pop" />
         <Detect2Chars char="\" char1="]" attribute="Error" context="#stay" />
-        <DetectChar char="\" attribute="Structure Keyword Mathmode" context="SectioningMathContrSeq"/>
+        <DetectChar char="\" attribute="Sectioning Macro Mathmode" context="SectioningMathContrSeq"/>
         <DetectChar char="%" attribute="Comment" context="Comment"/>
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
       </context>
-      <context name="SectioningMathContrSeq" attribute="Structure Keyword Mathmode" lineEndContext="#pop">
+      <context name="SectioningMathContrSeq" attribute="Sectioning Macro Mathmode" lineEndContext="#pop">
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
-        <RegExpr String="[a-zA-Z]+\*?" attribute="Structure Keyword Mathmode" context="#pop"/>
-        <RegExpr String="[^a-zA-Z]" attribute="Structure Keyword Mathmode" context="#pop" />
+        <RegExpr String="[a-zA-Z]+\*?" attribute="Sectioning Macro Mathmode" context="#pop"/>
+        <RegExpr String="[^a-zA-Z]" attribute="Sectioning Macro Mathmode" context="#pop" />
       </context>
 
       <!-- LaTeX Footnote commands -->
@@ -124,14 +124,14 @@
       </context>
 
       <!-- LaTeX command in text mode -->
-      <context name="ContrSeq" attribute="Keyword" lineEndContext="#pop">
-        <StringDetect String="verb*" attribute="Keyword" context="Verb"/>
-        <RegExpr String="(Verb|verb)(?=[^a-zA-Z])" attribute="Keyword" context="Verb"/>
-        <RegExpr String="(lstinline)(?=[^a-zA-Z])" attribute="Keyword" context="Lstinline"/>
-        <RegExpr String="mint(?=[^a-zA-Z])" attribute="Keyword" context="MintParam"/>
+      <context name="ContrSeq" attribute="Macro" lineEndContext="#pop">
+        <StringDetect String="verb*" attribute="Macro" context="Verb"/>
+        <RegExpr String="(Verb|verb)(?=[^a-zA-Z])" attribute="Macro" context="Verb"/>
+        <RegExpr String="(lstinline)(?=[^a-zA-Z])" attribute="Macro" context="Lstinline"/>
+        <RegExpr String="mint(?=[^a-zA-Z])" attribute="Macro" context="MintParam"/>
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
-        <RegExpr String="[a-zA-Z@]+(\+?|\*{0,3})" attribute="Keyword" context="#pop"/>
-        <RegExpr String="[^a-zA-Z]" attribute="Keyword" context="#pop" />
+        <RegExpr String="[a-zA-Z@]+(\+?|\*{0,3})" attribute="Macro" context="#pop"/>
+        <RegExpr String="[^a-zA-Z]" attribute="Macro" context="#pop" />
       </context>
       <context name="ToEndOfLine" attribute="Normal Text" lineEndContext="#pop">
       </context>
@@ -177,7 +177,7 @@
 
       <context name="LabelOption" attribute="Normal Text" lineEndContext="#stay">
         <StringDetect String="\(" attribute="Math" context="MathMode" />
-        <DetectChar char="\" attribute="Keyword" context="ContrSeq"/>
+        <DetectChar char="\" attribute="Macro" context="ContrSeq"/>
         <DetectChar char="$" attribute="Math" context="MathMode" />
         <DetectChar char="%" attribute="Comment" context="Comment"/>
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
@@ -191,14 +191,14 @@
 
       <!-- labels from biblatex commands -->
       <context name="FancyLabel" attribute="Normal Text" lineEndContext="#stay" fallthrough="true" fallthroughContext="#pop">
-	      <RegExpr String="\s*\{\s*" attribute="Normal Text" context="FancyLabelParameter"/>
-	      <RegExpr String="\s*\[\s*" attribute="Normal Text" context="FancyLabelOption"/>
-	      <RegExpr String="\s*\(\s*" attribute="Normal Text" context="FancyLabelRoundBrackets"/>
+              <RegExpr String="\s*\{\s*" attribute="Normal Text" context="FancyLabelParameter"/>
+              <RegExpr String="\s*\[\s*" attribute="Normal Text" context="FancyLabelOption"/>
+              <RegExpr String="\s*\(\s*" attribute="Normal Text" context="FancyLabelRoundBrackets"/>
       </context>
 
       <context name="FancyLabelParameter" attribute="Environment" lineEndContext="#stay">
         <StringDetect String="\(" attribute="Math" context="MathMode" />
-        <DetectChar char="\" attribute="Keyword" context="ContrSeq"/>
+        <DetectChar char="\" attribute="Macro" context="ContrSeq"/>
         <DetectChar char="$" attribute="Math" context="MathMode" />
         <DetectChar char="%" attribute="Comment" context="Comment"/>
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
@@ -207,7 +207,7 @@
 
       <context name="FancyLabelOption" attribute="Option Text" lineEndContext="#stay">
         <StringDetect String="\(" attribute="Math" context="MathMode" />
-        <DetectChar char="\" attribute="Keyword" context="ContrSeq"/>
+        <DetectChar char="\" attribute="Macro" context="ContrSeq"/>
         <DetectChar char="$" attribute="Math" context="MathMode" />
         <DetectChar char="%" attribute="Comment" context="Comment"/>
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
@@ -215,22 +215,22 @@
       </context>
 
       <context name="FancyLabelRoundBrackets" attribute="Normal Text" lineEndContext="#stay">
-	      <StringDetect String="\(" attribute="Math" context="MathMode" />
-	      <DetectChar char="\" attribute="Keyword" context="ContrSeq"/>
-	      <DetectChar char="$" attribute="Math" context="MathMode" />
-	      <DetectChar char="%" attribute="Comment" context="Comment"/>
-	      <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
-	      <RegExpr String="\s*\)\s*" attribute="Normal Text" context="#pop"/>
+              <StringDetect String="\(" attribute="Math" context="MathMode" />
+              <DetectChar char="\" attribute="Macro" context="ContrSeq"/>
+              <DetectChar char="$" attribute="Math" context="MathMode" />
+              <DetectChar char="%" attribute="Comment" context="Comment"/>
+              <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
+              <RegExpr String="\s*\)\s*" attribute="Normal Text" context="#pop"/>
       </context>
 
       <!-- Special commands -->
       <context name="SpecialCommand" attribute="Normal Text" lineEndContext="#stay" fallthrough="true" fallthroughContext="#pop">
-	      <RegExpr String="\s*\{\s*" attribute="Normal Text" context="SpecialCommandParameterOption"/>
+              <RegExpr String="\s*\{\s*" attribute="Normal Text" context="SpecialCommandParameterOption"/>
       </context>
 
       <context name="SpecialCommandParameterOption" attribute="Option Text" lineEndContext="#stay">
         <StringDetect String="\(" attribute="Math" context="MathMode" />
-        <DetectChar char="\" attribute="Keyword" context="ContrSeq"/>
+        <DetectChar char="\" attribute="Macro" context="ContrSeq"/>
         <DetectChar char="$" attribute="Math" context="MathMode" />
         <DetectChar char="%" attribute="Comment" context="Comment"/>
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
@@ -404,18 +404,18 @@
 
       <!-- parse math environment -->
       <context name="MathModeEnv" attribute="Math" lineEndContext="#stay">
-	<RegExpr String="\\begin(?=[^a-zA-Z])" attribute="Structure" context="FindBeginEnvironment" beginRegion="block"/>
-	<RegExpr String="\\end(?=[^a-zA-Z])" attribute="Structure" context="MathFindEnd"/>
+        <RegExpr String="\\begin(?=[^a-zA-Z])" attribute="Structure" context="FindBeginEnvironment" beginRegion="block"/>
+        <RegExpr String="\\end(?=[^a-zA-Z])" attribute="Structure" context="MathFindEnd" endRegion="block"/>
         <StringDetect String="\(" attribute="Error" context="#stay" />
         <StringDetect String="\[" attribute="Error" context="#stay" />
         <StringDetect String="\)" attribute="Error" context="#stay" />
         <StringDetect String="\]" attribute="Error" context="#stay" />
-        <RegExpr String="\\(text|intertext|mbox)\s*(?=\{)" attribute="Keyword Mathmode" context="MathModeText" />
-        <DetectChar char="\" attribute="Keyword Mathmode" context="MathContrSeq"/>
+        <RegExpr String="\\(text|intertext|mbox)\s*(?=\{)" attribute="Macro Mathmode" context="MathModeText" />
+        <DetectChar char="\" attribute="Macro Mathmode" context="MathContrSeq"/>
         <StringDetect String="$$" attribute="Error" context="#stay" />
         <DetectChar char="$" attribute="Error" context="#stay" />
         <DetectChar char="%" attribute="Comment" context="Comment"/>
-	<DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
+        <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
         <RegExpr String="%\s*BEGIN.*$" attribute="Region Marker" context="#stay" beginRegion="regionMarker" firstNonSpace="true"/>
         <RegExpr String="%\s*END.*$" attribute="Region Marker" context="#stay" endRegion="regionMarker" firstNonSpace="true"/>
       </context>
@@ -436,17 +436,17 @@
 
       <!-- parse tabular text -->
       <context name="Tab" attribute="Tab" lineEndContext="#stay">
-	<DetectChar char="&amp;" attribute="Ampersand" context="#stay"/>
-	<StringDetect String="@{" attribute="Column Separator" context="Column Separator"/>
+        <DetectChar char="&amp;" attribute="Ampersand" context="#stay"/>
+        <StringDetect String="@{" attribute="Column Separator" context="Column Separator"/>
         <RegExpr String="\\end(?=\s*\{(tabularx|tabular|supertabular|mpsupertabular|xtabular|mpxtabular|longtable)\*?\})" attribute="Structure"  context="TabFindEnd"/>
-	<IncludeRules context="Normal Text" />
+        <IncludeRules context="Normal Text" />
       </context>
 
       <context name="Column Separator" attribute="Column Separator" lineEndContext="#stay">
-	      <DetectChar char="{" attribute="Column Separator" context="Column Separator"/>
-	      <DetectChar char="}" attribute="Column Separator" context="#pop"/>
-	      <RegExpr String="." attribute="Column Separator"  context="#stay"/>
-<!-- 	 the last regexp is very stupid. Suggestions are welcome! Fallthrough did not help-->
+              <DetectChar char="{" attribute="Column Separator" context="Column Separator"/>
+              <DetectChar char="}" attribute="Column Separator" context="#pop"/>
+              <RegExpr String="." attribute="Column Separator"  context="#stay"/>
+<!--          the last regexp is very stupid. Suggestions are welcome! Fallthrough did not help-->
       </context>
 
       <!-- end of tabular environment -->
@@ -485,18 +485,18 @@
 
       <!-- math mode: \ensuremath{...} !-->
       <context name="MathModeEnsure" attribute="Math" lineEndContext="#stay">
-	      <DetectChar char="{" attribute="Math" context="MathModeEnsure" />
-	      <DetectChar char="}" attribute="Math" context="#pop" />
-	      <IncludeRules context="MathModeCommon" />
+              <DetectChar char="{" attribute="Math" context="MathModeEnsure" />
+              <DetectChar char="}" attribute="Math" context="#pop" />
+              <IncludeRules context="MathModeCommon" />
       </context>
 
       <!-- math mode common -->
       <context name="MathModeCommon" attribute="Math" lineEndContext="#stay">
         <RegExpr String="\\(begin|end)\s*\{(equation|displaymath|eqnarray|subeqnarray|math|multline|gather|align|flalign|alignat|xalignat|xxalignat|IEEEeqnarray)\*?\}" attribute="Error" context="#stay"/>
-	<RegExpr String="\\begin(?=[^a-zA-Z])" attribute="Keyword Mathmode" context="#stay" beginRegion="block" />
-	<RegExpr String="\\end(?=[^a-zA-Z])" attribute="Keyword Mathmode" context="#stay" endRegion="block" />
-        <RegExpr String="\\(text|intertext|mbox)\s*(?=\{)" attribute="Keyword Mathmode" context="MathModeText" />
-        <DetectChar char="\" attribute="Keyword Mathmode" context="MathContrSeq"/>
+        <RegExpr String="\\begin(?=[^a-zA-Z])" attribute="Macro Mathmode" context="#stay" beginRegion="block" />
+        <RegExpr String="\\end(?=[^a-zA-Z])" attribute="Macro Mathmode" context="#stay" endRegion="block" />
+        <RegExpr String="\\(text|intertext|mbox)\s*(?=\{)" attribute="Macro Mathmode" context="MathModeText" />
+        <DetectChar char="\" attribute="Macro Mathmode" context="MathContrSeq"/>
         <DetectChar char="%" attribute="Comment" context="Comment"/>
         <RegExpr String="%\s*BEGIN.*$" attribute="Region Marker" context="#stay" beginRegion="regionMarker" firstNonSpace="true"/>
         <RegExpr String="%\s*END.*$" attribute="Region Marker" context="#stay" endRegion="regionMarker" firstNonSpace="true"/>
@@ -504,10 +504,10 @@
       </context>
 
       <!-- command in mathmode -->
-      <context name="MathContrSeq" attribute="Keyword Mathmode" lineEndContext="#pop">
+      <context name="MathContrSeq" attribute="Macro Mathmode" lineEndContext="#pop">
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
-        <RegExpr String="[a-zA-Z]+\*?" attribute="Keyword Mathmode" context="#pop"/>
-        <RegExpr String="[^a-zA-Z]" attribute="Keyword Mathmode" context="#pop" />
+        <RegExpr String="[a-zA-Z]+\*?" attribute="Macro Mathmode" context="#pop"/>
+        <RegExpr String="[^a-zA-Z]" attribute="Macro Mathmode" context="#pop" />
       </context>
 
       <!-- text in mathmode -->
@@ -518,7 +518,7 @@
       <context name="MathModeTextParameterStart" attribute="Normal Text" lineEndContext="#stay" >
         <RegExpr String="\\." attribute="Normal Text" context="#stay"/>
         <DetectChar char="&#xd7;" attribute="Bullet" context="#stay"/>
-	<RegExpr String="\$.*\$" minimal="true" attribute="Math" context="#stay"/>
+        <RegExpr String="\$.*\$" minimal="true" attribute="Math" context="#stay"/>
         <DetectChar char="{" attribute="Normal Text" context="MathModeTextParameter"/>
         <DetectChar char="}" attribute="Normal Text" context="#pop#pop"/>
         <DetectChar char="%" attribute="Comment" context="Comment"/>
@@ -533,39 +533,42 @@
       </context>
 
      <!--    iffalse aka multiline comment    -->
-	<context name="Multiline Comment" attribute="Comment" lineEndContext="#stay">
-		<StringDetect String="\fi" attribute="Comment" context="#pop"/>
-		<StringDetect String="\else" attribute="Comment" context="#pop"/>
-	</context>
+        <context name="Multiline Comment" attribute="Comment" lineEndContext="#stay">
+                <StringDetect String="\fi" attribute="Comment" context="#pop"/>
+                <StringDetect String="\else" attribute="Comment" context="#pop"/>
+        </context>
 
      <!-- comment -->
       <context name="Comment" attribute="Comment" lineEndContext="#pop">
-      	<RegExpr String="(FIXME|TODO):?" attribute="Alert" context="#stay"/>
-	<StringDetect String="\KileResetHL" attribute="Comment" context="Normal Text"/>
-	<StringDetect String="\KateResetHL" attribute="Comment" context="Normal Text"/>
+              <RegExpr String="(FIXME|TODO):?" attribute="Alert" context="#stay"/>
+        <StringDetect String="\KileResetHL" attribute="Comment" context="Normal Text"/>
+        <StringDetect String="\KateResetHL" attribute="Comment" context="Normal Text"/>
       </context>
     </contexts>
 
     <itemDatas>
       <itemData name="Normal Text" defStyleNum="dsNormal"/>
       <itemData name="Option Text" defStyleNum="dsNormal" spellChecking="false"/>
-      <itemData name="Keyword" defStyleNum="dsNormal" color="#800000" selColor="#60FFFF" bold="0" italic="0" spellChecking="false"/>
+      <itemData name="Macro" defStyleNum="dsFunction" spellChecking="false"/>
       <itemData name="Comment" defStyleNum="dsComment" spellChecking="false"/>
-      <itemData name="Error" defStyleNum="dsAlert" spellChecking="false"/>
-      <itemData name="Math" defStyleNum="dsNormal" color="#00A000" selColor="#FF40FF"  bold="0" italic="0" spellChecking="false"/>
-      <itemData name="Structure" defStyleNum="dsNormal" color="#F00000" selColor="#80FFD0" bold="0" italic="0" spellChecking="false"/>
-      <itemData name="Keyword Mathmode" defStyleNum="dsNormal" color="#606000" selColor="#FFD0FF" bold="0" italic="0" spellChecking="false"/>
-      <itemData name="Environment" defStyleNum="dsNormal" color="#0000D0" selColor="#FFFF90" bold="0" italic="0" spellChecking="false"/>
-      <itemData name="Verbatim" defStyleNum="dsNormal" color="#a08000" selColor="#80D0FF" bold="0" italic="0" spellChecking="false"/>
+      <itemData name="Error" defStyleNum="dsError" spellChecking="false"/>
+      <itemData name="Math" defStyleNum="dsSpecialString" spellChecking="false"/>
+      <!-- begin/end -->
+      <itemData name="Structure" defStyleNum="dsKeyword" spellChecking="false"/>
+      <itemData name="Builtin Macro" defStyleNum="dsBuiltIn" spellChecking="false"/>
+      <itemData name="Macro Mathmode" defStyleNum="dsSpecialChar" spellChecking="false"/>
+      <itemData name="Environment" defStyleNum="dsExtension" spellChecking="false"/>
+      <itemData name="Verbatim" defStyleNum="dsVerbatimString" spellChecking="false"/>
       <itemData name="Region Marker" defStyleNum="dsRegionMarker" spellChecking="false"/>
-      <itemData name="Bullet" defStyleNum="dsNormal" color="#FF00C4" bold="1" underline="1" spellChecking="false"/>
-      <itemData name="Ampersand" defStyleNum="dsNormal" color="#002793" bold="1" spellChecking="false"/>
-      <itemData name="Column Separator" defStyleNum="dsNormal" color="#002793" spellChecking="false"/>
+      <itemData name="Bullet" defStyleNum="dsInformation" spellChecking="false"/>
+      <itemData name="Ampersand" defStyleNum="dsOperator" bold="1" spellChecking="false"/>
+      <itemData name="Column Separator" defStyleNum="dsChar" spellChecking="false"/>
       <itemData name="Alert" defStyleNum="dsAlert" spellChecking="false"/>
-      <itemData name="Structure Text" defStyleNum="dsNormal" color="#000000" selColor="#FFFFFF" bold="1" italic="0"/>
-      <itemData name="Structure Keyword" defStyleNum="dsNormal" color="#800000" selColor="#60FFFF" bold="1" italic="0" spellChecking="false"/>
-      <itemData name="Structure Math" defStyleNum="dsNormal" color="#00A000" selColor="#FF40FF"  bold="1" italic="0"/>
-      <itemData name="Structure Keyword Mathmode" defStyleNum="dsNormal" color="#606000" selColor="#FFD0FF" bold="1" italic="0" spellChecking="false"/>
+      <!-- in section headers -->
+      <itemData name="Sectioning Text" defStyleNum="dsNormal" bold="1"/>
+      <itemData name="Sectioning Macro" defStyleNum="dsFunction" bold="1" spellChecking="false"/>
+      <itemData name="Sectioning Math" defStyleNum="dsSpecialString" bold="1"/>
+      <itemData name="Sectioning Macro Mathmode" defStyleNum="dsSpecialChar" bold="1" spellChecking="false"/>
     </itemDatas>
   </highlighting>
 

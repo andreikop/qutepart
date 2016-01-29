@@ -11,8 +11,8 @@
 <language
     name="ISO C++"
     section="Sources"
-    version="2.5"
-    kateversion="3.4"
+    version="4"
+    kateversion="5.0"
     indenter="cstyle"
     style="C++"
     mimetype="text/x-c++src;text/x-c++hdr;text/x-chdr"
@@ -191,7 +191,9 @@
         <!-- NOTE Order is important! -->
         <RegExpr attribute="Hex" context="#stay" String="[\+\-]?0x[0-9A-Fa-f]('?[0-9A-Fa-f]+)*([Uu][Ll]{0,2}|[Ll]{0,2}[Uu]?|_[_0-9A-Za-z]*)?\b" />
         <RegExpr attribute="Binary" context="#stay" String="0[Bb][01]('?[01]+)*([Uu][Ll]{0,2}|[Ll]{0,2}[Uu]?|_[_0-9A-Za-z]*)?\b" />
-        <RegExpr attribute="Float" context="#stay" String="[\+\-]?([0-9]+[Ee][\+\-]?[0-9]+|([0-9]+\.|\.[0-9]+|[0-9]+\.[0-9]+)([Ee][\+\-]?[0-9]+)?)[FfLl]?" />
+        <Float attribute="Float" context="#stay">
+          <AnyChar String="FfLl" attribute="Float" context="#stay"/>
+        </Float>
         <RegExpr attribute="Octal" context="#stay" String="[\+\-]?0'?[0-7]('?[0-7]+)*([Uu][Ll]{0,2}|[Ll]{0,2}[Uu]?|_[_0-9A-Za-z]*)?\b" />
         <RegExpr attribute="Decimal" context="#stay" String="[\+\-]?(0|[1-9]('?[0-9]+)*)([Uu][Ll]{0,2}|[Ll]{0,2}[Uu]?|_[_0-9A-Za-z]*)?\b" />
         <RegExpr attribute="Error" context="#stay" String="[\+\-]?(0x?|[1-9][0-9]*)[0-9A-Za-z][_0-9A-Za-z]*\b" />
@@ -444,9 +446,9 @@
       <itemData name="Normal Text"        defStyleNum="dsNormal"   spellChecking="false" />
       <itemData name="Keyword"            defStyleNum="dsKeyword"  spellChecking="false" />
       <itemData name="Data Type"          defStyleNum="dsDataType" spellChecking="false" />
-      <itemData name="Type Modifiers"     defStyleNum="dsDataType" spellChecking="false" />
-      <itemData name="Attribute"          defStyleNum="dsKeyword"  spellChecking="false" bold="false" italic="true" />
-      <itemData name="Standard Attribute" defStyleNum="dsKeyword"  spellChecking="false" bold="false" italic="true" />
+      <itemData name="Type Modifiers"     defStyleNum="dsAttribute" spellChecking="false" />
+      <itemData name="Attribute"          defStyleNum="dsAttribute" spellChecking="false" bold="false" italic="true" />
+      <itemData name="Standard Attribute" defStyleNum="dsAttribute" spellChecking="false" bold="false" italic="true" />
       <itemData name="Decimal"            defStyleNum="dsDecVal"   spellChecking="false" />
       <itemData name="Octal"              defStyleNum="dsBaseN"    spellChecking="false" />
       <itemData name="Hex"                defStyleNum="dsBaseN"    spellChecking="false" />
@@ -454,21 +456,21 @@
       <itemData name="Float"              defStyleNum="dsFloat"    spellChecking="false" />
       <itemData name="Char"               defStyleNum="dsChar"     spellChecking="false" />
       <itemData name="String"             defStyleNum="dsString"   spellChecking="true"  />
-      <itemData name="String Char"        defStyleNum="dsChar"     spellChecking="false" />
+      <itemData name="String Char"        defStyleNum="dsSpecialChar" spellChecking="false" />
       <itemData name="Comment"            defStyleNum="dsComment"  spellChecking="true"  />
       <itemData name="Symbol"             defStyleNum="dsNormal"   spellChecking="false" />
       <itemData name="Separator Symbol"   defStyleNum="dsNormal"   spellChecking="false" />
-      <itemData name="Data Members (m_*)" defStyleNum="dsNormal"   spellChecking="false" />
-      <itemData name="Globals (g_*)"      defStyleNum="dsNormal"   spellChecking="false" />
-      <itemData name="Statics (s_*)"      defStyleNum="dsNormal"   spellChecking="false" />
-      <itemData name="Types (*_t/*_type)" defStyleNum="dsNormal"   spellChecking="false" />
+      <itemData name="Data Members (m_*)" defStyleNum="dsVariable" spellChecking="false" />
+      <itemData name="Globals (g_*)"      defStyleNum="dsVariable" spellChecking="false" />
+      <itemData name="Statics (s_*)"      defStyleNum="dsVariable" spellChecking="false" />
+      <itemData name="Types (*_t/*_type)" defStyleNum="dsDataType" spellChecking="false" />
       <itemData name="CONSTS/MACROS"      defStyleNum="dsNormal"   spellChecking="false" />
-      <itemData name="Preprocessor"       defStyleNum="dsOthers"   spellChecking="false" />
-      <itemData name="Prep. Lib"          defStyleNum="dsOthers"   spellChecking="false" />
+      <itemData name="Preprocessor"       defStyleNum="dsPreprocessor" spellChecking="false" />
+      <itemData name="Prep. Lib"          defStyleNum="dsImport"   spellChecking="false" />
       <itemData name="Standard Macros"    defStyleNum="dsOthers"   spellChecking="false" />
-      <itemData name="Standard Classes"   defStyleNum="dsNormal"   spellChecking="false" color="#006000" selColor="#59ff00" />
-      <itemData name="Boost Stuff"        defStyleNum="dsNormal"   spellChecking="false" color="#23a45b" selColor="#23a45b" />
-      <itemData name="Internals"          defStyleNum="dsNormal"   spellChecking="false"/>
+      <itemData name="Standard Classes"   defStyleNum="dsBuiltIn"  spellChecking="false" />
+      <itemData name="Boost Stuff"        defStyleNum="dsExtension" spellChecking="false" />
+      <itemData name="Internals"          defStyleNum="dsNormal"   spellChecking="false" color="#808080" selColor="#808080" />
       <itemData name="Region Marker"      defStyleNum="dsRegionMarker" spellChecking="false" />
       <itemData name="Error"              defStyleNum="dsError"    spellChecking="false" />
     </itemDatas>

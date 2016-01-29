@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Fortran" version="1.13" kateversion="2.4" section="Sources" extensions="*.f;*.F;*.for;*.FOR;*.f90;*.F90;*.fpp;*.FPP;*.f95;*.F95;" mimetype="text/x-fortran-src" casesensitive="0" author="Franchin Matteo (fnch@libero.it)" license="LGPL" priority="9">
+<language name="Fortran" version="1.14" kateversion="5.0" section="Sources" extensions="*.f;*.F;*.for;*.FOR;*.f90;*.F90;*.fpp;*.FPP;*.f95;*.F95;" mimetype="text/x-fortran-src" casesensitive="0" author="Franchin Matteo (fnch@libero.it)" license="LGPL" priority="9">
 <!-- by Franchin Matteo, fnch@libero.it -->
   <highlighting>
 
@@ -561,13 +561,13 @@
       <itemData name="Comment" defStyleNum="dsComment"/>
       <itemData name="Symbol" defStyleNum="dsNormal"/>
       <itemData name="Preprocessor" defStyleNum="dsOthers"/>
-      <itemData name="Operator" defStyleNum="dsKeyword" color="#008000" selColor="#ff00ff" bold="1" italic="0"/>
-      <itemData name="Logical" defStyleNum="dsOthers" color="#800080" selColor="#ffa0a0" bold="1" italic="0"/>
-      <itemData name="IO Function" defStyleNum="dsFunction" color="#006060" selColor="#ffffff" bold="0" italic="0"/>
-      <itemData name="Elemental Procedure" defStyleNum="dsKeyword" color="#600060" selColor="#ffa0ff" bold="1" italic="0"/>
-      <itemData name="Inquiry Function" defStyleNum="dsFunction" color="#000060" selColor="#a0a0ff" bold="1" italic="1"/>
-      <itemData name="Transformational Function" defStyleNum="dsFunction" color="#600060" selColor="#ffa0ff" bold="1" italic="0"/>
-      <itemData name="Non elemental subroutine" defStyleNum="dsKeyword" color="#600060" selColor="#ffa0ff" bold="1" italic="0"/>
+      <itemData name="Operator" defStyleNum="dsOperator" bold="1" italic="0"/>
+      <itemData name="Logical" defStyleNum="dsConstant" bold="1" italic="0"/>
+      <itemData name="IO Function" defStyleNum="dsFunction" bold="0" italic="0"/>
+      <itemData name="Elemental Procedure" defStyleNum="dsBuiltIn" bold="1" italic="0"/>
+      <itemData name="Inquiry Function" defStyleNum="dsFunction" bold="1" italic="1"/>
+      <itemData name="Transformational Function" defStyleNum="dsFunction" bold="1" italic="0"/>
+      <itemData name="Non elemental subroutine" defStyleNum="dsFunction" bold="1" italic="0"/>
     </itemDatas>
   </highlighting>
   <general>

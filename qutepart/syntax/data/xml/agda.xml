@@ -3,7 +3,7 @@
   <!ENTITY charsdelim "_;.&#34;(){}@">
   <!ENTITY wordsep "(?=([&charsdelim;]|\s|$))">
 ]>
-<language name="Agda" version="1.0" kateversion="3.4" section="Sources" extensions="*.agda" mimetype="text/x-agda" author="Matthias C. M. Troffaes" license="LGPL">
+<language name="Agda" version="1.1" kateversion="5.0" section="Sources" extensions="*.agda" mimetype="text/x-agda" author="Matthias C. M. Troffaes" license="LGPL">
   <highlighting>
     <list name="reserved keywords">
       <item> abstract </item>
@@ -82,8 +82,8 @@
     </contexts>
     <itemDatas>
       <itemData name="Normal"   defStyleNum="dsNormal"   spellChecking="false" />
-      <itemData name="Comment"  defStyleNum="dsComment"  />
-      <itemData name="Pragma"   defStyleNum="dsOthers"   spellChecking="false" />
+      <itemData name="Comment"  defStyleNum="dsComment" />
+      <itemData name="Pragma"   defStyleNum="dsPreprocessor" spellChecking="false" />
       <itemData name="Hole"     defStyleNum="dsOthers"   spellChecking="false" />
       <itemData name="Keyword"  defStyleNum="dsKeyword"  spellChecking="false" />
       <itemData name="Type"     defStyleNum="dsDataType" spellChecking="false" />

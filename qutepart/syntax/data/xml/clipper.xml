@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Clipper" version="1.05" kateversion="2.3" section="Sources" extensions="*.prg;*.PRG;*.ch" mimetype="text/x-clipper-src" priority="2" author="Andrey Cherepanov (sibskull@mail.ru)" license="GPL">
+<language name="Clipper" version="1.06" kateversion="5.0" section="Sources" extensions="*.prg;*.PRG;*.ch" mimetype="text/x-clipper-src" priority="2" author="Andrey Cherepanov (sibskull@mail.ru)" license="GPL">
   <highlighting>
 
     <list name="keywords">
@@ -480,11 +480,11 @@
       <itemData name="Decimal"  	defStyleNum="dsDecVal"/>
       <itemData name="Hex"  		defStyleNum="dsBaseN"/>
       <itemData name="String"  		defStyleNum="dsString"/>
-      <itemData name="String Char"  	defStyleNum="dsChar"/>
+      <itemData name="String Char"  	defStyleNum="dsSpecialChar"/>
       <itemData name="Comment"  	defStyleNum="dsComment"/>
       <itemData name="Symbol"  		defStyleNum="dsNormal"/>
-      <itemData name="Preprocessor"  	defStyleNum="dsOthers"/>
-      <itemData name="Prep. Lib"  	defStyleNum="dsOthers"/>
+      <itemData name="Preprocessor"  	defStyleNum="dsPreprocessor"/>
+      <itemData name="Prep. Lib"  	defStyleNum="dsImport"/>
       <itemData name="Eval Block"  	defStyleNum="dsOthers"/>
       <itemData name="Region Marker" defStyleNum="dsRegionMarker"/>
     </itemDatas>

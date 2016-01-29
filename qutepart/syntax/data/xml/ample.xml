@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="AMPLE" version="0.3" kateversion="5.2" section="Scripts" extensions="*.ample;*.menu;*.startup" mimetype="text/x-amplesrc" priority="5" author="Christian Parg (cparg@gmx.de)" license="Apache &amp; LGPL" >
+<language name="AMPLE" version="0.4" kateversion="5.2" section="Scripts" extensions="*.ample;*.menu;*.startup" mimetype="text/x-amplesrc" priority="5" author="Christian Parg (cparg@gmx.de)" license="Apache &amp; LGPL" >
 <!--
 #################################################################################################
 ## AMPLE Highlight file by Christian Parg (cparg_(at)_gmx_de)
@@ -3786,18 +3786,18 @@ Note: I used this hack to extract the functions from the reference documentation
       <itemData name="Float"        defStyleNum="dsFloat"/>
       <itemData name="Char"         defStyleNum="dsChar"/>
       <itemData name="String"       defStyleNum="dsString"/>
-      <itemData name="String Char"  defStyleNum="dsChar"/>
+      <itemData name="String Char"  defStyleNum="dsSpecialChar"/>
       <itemData name="Comment"      defStyleNum="dsComment"/>
 
-      <itemData name="Reserved Variables"  defStyleNum="dsNormal" color="#FF0000" />
-      <itemData name="Base Functions"      defStyleNum="dsNormal" color="#0A7700" />
-      <itemData name="CUI Functions"       defStyleNum="dsNormal" color="#0A7700" />
-      <itemData name="Layout Functions"    defStyleNum="dsNormal" color="#007720" />
-      <itemData name="Schematic Functions" defStyleNum="dsNormal" color="#0A7701" />
-      <itemData name="DVE Functions"       defStyleNum="dsNormal" color="#0A775C" />
+      <itemData name="Reserved Variables"  defStyleNum="dsBuiltIn" />
+      <itemData name="Base Functions"      defStyleNum="dsFunction" />
+      <itemData name="CUI Functions"       defStyleNum="dsFunction" />
+      <itemData name="Layout Functions"    defStyleNum="dsFunction" />
+      <itemData name="Schematic Functions" defStyleNum="dsFunction" />
+      <itemData name="DVE Functions"       defStyleNum="dsFunction" />
 
-      <itemData name="Preprocessor" defStyleNum="dsOthers"/>
-      <itemData name="Prep. Lib"    defStyleNum="dsOthers"/>
+      <itemData name="Preprocessor" defStyleNum="dsPreprocessor"/>
+      <itemData name="Prep. Lib"    defStyleNum="dsImport"/>
       <itemData name="Alert"        defStyleNum="dsAlert" />
       <itemData name="Region Marker" defStyleNum="dsRegionMarker" />
       <itemData name="Error"        defStyleNum="dsError" />

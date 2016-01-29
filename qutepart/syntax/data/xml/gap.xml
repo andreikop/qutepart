@@ -14,7 +14,7 @@
 	-->
 
 
-<language name="GAP" section="Scientific" extensions="*.gd;*.gi;*.g" mimetype="text/gap" version="0.2" kateversion="2.4" author="Jose Joao Morais" license="GPL">
+<language name="GAP" section="Scientific" extensions="*.gd;*.gi;*.g" mimetype="text/gap" version="0.3" kateversion="5.0" author="Jose Joao Morais" license="GPL">
 
 	<highlighting>
 
@@ -7807,20 +7807,20 @@
 
 		<!-- ======== Item Data ======== -->
 		<itemDatas>
-			<itemData name="Builtin Functions"   defStyleNum="dsFunction" color="#0000ff" italic="1" bold="1" selColor="#00ff00" />
-			<itemData name="Commentary"          defStyleNum="dsComment"  color="#009900" italic="1" />
-			<itemData name="Control Statements"  defStyleNum="dsKeyword"  color="#FF0900" />
-			<itemData name="Function"            defStyleNum="dsKeyword"  color="#FF6827" />
-			<itemData name="GAP Keywords"        defStyleNum="dsKeyword"  color="#FF6827" />
-			<itemData name="Incomplete String"   defStyleNum="dsChar"     color="#a020f0" />
-			<itemData name="Logic Operators"     defStyleNum="dsKeyword"  color="#5127B2" />
-			<itemData name="Math Operators"      defStyleNum="dsKeyword"  color="#663333" />
-			<itemData name="Normal Text"         defStyleNum="dsNormal"   />
-			<itemData name="Number"              defStyleNum="dsFloat"    />
-			<itemData name="Operator1"           defStyleNum="dsNormal"   color="#2313D4" />
-			<itemData name="Operator2"           defStyleNum="dsNormal"   color="#663300" bold="1" />
-			<itemData name="String"              defStyleNum="dsString"   />
-			<itemData name="Variable"            defStyleNum="dsNormal"   />
+			<itemData name="Builtin Functions"   defStyleNum="dsBuiltIn" italic="1" bold="1" />
+			<itemData name="Commentary"          defStyleNum="dsComment" italic="1" />
+			<itemData name="Control Statements"  defStyleNum="dsControlFlow" />
+			<itemData name="Function"            defStyleNum="dsFunction"/>
+			<itemData name="GAP Keywords"        defStyleNum="dsExtension"/>
+			<itemData name="Incomplete String"   defStyleNum="dsSpecialString"/>
+			<itemData name="Logic Operators"     defStyleNum="dsConstant"/>
+			<itemData name="Math Operators"      defStyleNum="dsOthers"  />
+			<itemData name="Normal Text"         defStyleNum="dsNormal"  />
+			<itemData name="Number"              defStyleNum="dsFloat"   />
+			<itemData name="Operator1"           defStyleNum="dsOperator"/>
+			<itemData name="Operator2"           defStyleNum="dsOperator" bold="1" />
+			<itemData name="String"              defStyleNum="dsString"  />
+			<itemData name="Variable"            defStyleNum="dsVariable"/>
 		</itemDatas>
 
 	</highlighting>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
 <language name = "kdesrc-buildrc"
-       version = "0.7"
+       version = "0.9"
    kateversion = "3.5"
        section = "Configuration"
     extensions = ".kdesrc-buildrc;kdesrc-buildrc"
@@ -78,6 +78,7 @@
       <item>cxxflags</item>
       <item>dest-dir</item>
       <item>do-not-compile</item>
+      <item>git-user</item>
       <item>kdedir</item>
       <item>libpath</item>
       <item>log-dir</item>
@@ -97,17 +98,31 @@
       <item>tag</item>
     </list>
 
+    <list name="includeKeyword">
+      <item>include</item>
+    </list>
+    <list name="openModule">
+      <item>module</item>
+      <item>options</item>
+    </list>
+    <list name="openModuleSet">
+      <item>module-set</item>
+    </list>
+    <list name="openGlobal">
+      <item>global</item>
+    </list>
+
+
     <contexts>
       <context name="Root Level" attribute="Normal Text" lineEndContext="#stay">
         <DetectSpaces/>
-        <StringDetect attribute="Global Declaration" context="Global Options" String="global" beginRegion="Global Options" firstNonSpace="true" />
-        <StringDetect attribute="Module Declaration" context="ModuleSet Options" String="module-set" beginRegion="ModuleSet Options" firstNonSpace="true" />
+        <keyword String="openGlobal" attribute="Global Declaration" context="Global Options" beginRegion="Global Options" firstNonSpace="true" />
+        <keyword String="openModuleSet" attribute="Module Declaration" context="ModuleSet Options" beginRegion="ModuleSet Options" firstNonSpace="true" />
 
         <!-- Only match if a module name is given -->
-        <StringDetect attribute="Module Declaration" context="Module Decl" String="module" firstNonSpace="true" beginRegion="Module Options"/>
-        <StringDetect attribute="Module Declaration" context="Module Decl" String="options" firstNonSpace="true" beginRegion="Module Options"/>
+        <keyword String="openModule" attribute="Module Declaration" context="Module Decl" firstNonSpace="true" beginRegion="Module Options"/>
 
-        <StringDetect attribute="Option Name" context="Include Decl" String="include" firstNonSpace="true"/>
+        <keyword String="includeKeyword" attribute="Option Name" context="Include Decl" firstNonSpace="true"/>
         <DetectChar context="Comment" char="#"/>
       </context>
 

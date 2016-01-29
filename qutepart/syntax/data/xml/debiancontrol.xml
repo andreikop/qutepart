@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Debian Control" version="0.84" kateversion="2.4" section="Other" extensions="control" mimetype="">
+<language name="Debian Control" version="0.85" kateversion="5.0" section="Other" extensions="control" mimetype="">
     <highlighting>
         <contexts>
             <context attribute="Normal Text" lineEndContext="#stay" name="INIT">
@@ -51,7 +51,7 @@
             <itemData name="Keyword"  defStyleNum="dsKeyword"/>
             <itemData name="Version"  defStyleNum="dsDecVal"/>
             <itemData name="Value"  defStyleNum="dsDataType"/>
-            <itemData name="Variable" defStyleNum="dsOthers"/>
+            <itemData name="Variable" defStyleNum="dsVariable"/>
             <itemData name="Email" defStyleNum="dsOthers"/>
         </itemDatas>
     </highlighting>

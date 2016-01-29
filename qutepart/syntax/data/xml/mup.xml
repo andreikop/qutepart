@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Music Publisher" version="1.06" kateversion="2.4" section="Other" extensions="*.mup;*.not" mimetype="text/x-mup;audio/x-mup;application/x-mup;audio/x-notes" casesensitive="1" author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL">
+<language name="Music Publisher" version="1.07" kateversion="2.4" section="Other" extensions="*.mup;*.not" mimetype="text/x-mup;audio/x-mup;application/x-mup;audio/x-notes" casesensitive="1" author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL">
 
   <highlighting>
 
@@ -170,7 +170,7 @@
       <item> ifdef </item>
       <item> ifndef </item>
     </list>
-    
+
 
     <list name="mupmacrodirectives_end">
       <item> @ </item>
@@ -718,20 +718,20 @@
 	<IncludeRules context="Macro" />
       </context>
 
-      
+
       <context attribute="Note Attribute" lineEndContext="#pop" name="Bracket Hs"
       		fallthrough="true" fallthroughContext="#pop">
 	<DetectChar attribute="String" context="String" char="&quot;" />
 	<IncludeRules context="Macro" />
       </context>
-	
+
 
       <context attribute="Note" lineEndContext="#pop" name="Note Probably"
 		fallthrough="true" fallthroughContext="#pop">
 	<RegExpr attribute="Note" context="#pop" String="[a-grs]*" />
       </context>
 
-  
+
       <context attribute="Tuplet" lineEndContext="#pop" name="Tuplet"
 		fallthrough="true" fallthroughContext="#pop">
 	<RegExpr attribute="Tuplet" context="#pop" String="\s*(above|below)?\s*[0-9]{1,2}(y|n|num)?(\s*,\s*[0-9]{1,2}\.?([+][0-9]{1,2}\.?)*)?" />
@@ -752,7 +752,7 @@
 	<RegExpr attribute="Location Probably" context="#pop" String="[h-qt-z]|_[a-z][a-z_0-9]*" />
       </context>
 
-  
+
       <context attribute="Comment" lineEndContext="#pop" name="Comment">
 	<IncludeRules context="##Alerts" />
       </context>
@@ -822,12 +822,12 @@
 	<DetectChar attribute="Macro" context="#stay" char="@" endRegion="macro" />
       </context>
 
-      
+
       <context attribute="Location" lineEndContext="#pop" name="Macro Location"
 		fallthrough="true" fallthroughContext="#pop">
 	<RegExpr attribute="Location Probably" context="#pop" String=".." />
       </context>
-      
+
     </contexts>
 
     <itemDatas>

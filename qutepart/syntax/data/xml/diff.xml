@@ -15,7 +15,7 @@
     2008-02-13: 1.11 Eduardo Robles Elvira <edulix AT gmail DOT com>
      Fixed folding.
 -->
-<language name="Diff" version="1.12" kateversion="2.4" section="Other" extensions="*.diff;*patch" mimetype="text/x-patch" firstLineGlobs="Index: *">
+<language name="Diff" version="1.13" kateversion="5.0" section="Other" extensions="*.diff;*patch" mimetype="text/x-patch" firstLineGlobs="Index: *">
 
   <highlighting>
 
@@ -108,10 +108,10 @@
       <itemData name="Normal Text" defStyleNum="dsNormal"/>
       <itemData name="File"  defStyleNum="dsKeyword"/>
       <itemData name="Header"  defStyleNum="dsDataType"/>
-      <itemData name="Removed line"  defStyleNum="dsString" color="#FF0000"/>
-      <itemData name="Added line"  defStyleNum="dsOthers" color="#0000FF"/>
-      <itemData name="Changed line (old)"  defStyleNum="dsString" color="#FF0000"/>
-      <itemData name="Changed line (new)"  defStyleNum="dsOthers" color="#0000FF"/>
+      <itemData name="Removed line"  defStyleNum="dsString" />
+      <itemData name="Added line"  defStyleNum="dsVariable"/>
+      <itemData name="Changed line (old)"  defStyleNum="dsString"/>
+      <itemData name="Changed line (new)"  defStyleNum="dsVariable"/>
     </itemDatas>
 
   </highlighting>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="ColdFusion" version="1.04" kateversion="2.2" section="Markup" extensions="*.cfm;*.cfc;*.cfml;*.dbm" mimetype="text/x-coldfusion">
+<language name="ColdFusion" version="1.05" kateversion="2.2" section="Markup" extensions="*.cfm;*.cfc;*.cfml;*.dbm" mimetype="text/x-coldfusion">
 
 	<highlighting>
 
@@ -684,7 +684,7 @@
 
 		<itemDatas>
 
-			<itemData name="Normal Text" defStyleNum="dsNormal"			color="#000000" selColor="#ffffff" bold="0" italic="0" />
+			<itemData name="Normal Text" defStyleNum="dsNormal" />
 			<itemData name="Tags" defStyleNum="dsNormal"				color="#000080" selColor="#ffffff" bold="0" italic="0" />
 			<itemData name="Table Tags" defStyleNum="dsNormal"			color="#008080" selColor="#ffffff" bold="0" italic="0" />
 			<itemData name="Script Tags" defStyleNum="dsNormal"			color="#800000" selColor="#ffffff" bold="0" italic="0" />

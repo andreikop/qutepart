@@ -20,7 +20,7 @@
 	* Added FACE sementic for the new fp40 profile
 -->
 
-<language name="Cg" section="Sources" extensions="*.cg;*.cgfx" mimetype="text/x-cgsrc" version="1.11" kateversion="2.4" author="Florian Schanda (florian.schanda@schanda.de)" license="LGPL">
+<language name="Cg" section="Sources" extensions="*.cg;*.cgfx" mimetype="text/x-cgsrc" version="1.12" kateversion="5.0" author="Florian Schanda (florian.schanda@schanda.de)" license="LGPL">
 	<highlighting>
 		<list name="binding">
 			<item>POSITION</item>
@@ -265,7 +265,7 @@
 			<itemData name="Binding"      defStyleNum="dsKeyword"/>
 			<itemData name="Keyword"      defStyleNum="dsKeyword"/>
 			<itemData name="Function"     defStyleNum="dsFunction" bold="0"/>
-			<itemData name="StdFunction"  defStyleNum="dsFunction" bold="1"/>
+			<itemData name="StdFunction"  defStyleNum="dsBuiltIn" bold="1"/>
 			<itemData name="Data Type"    defStyleNum="dsDataType"/>
 			<itemData name="Decimal"      defStyleNum="dsDecVal"/>
 			<itemData name="Float"        defStyleNum="dsFloat"/>

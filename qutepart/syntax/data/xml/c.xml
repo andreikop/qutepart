@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
 <language name="C" section="Sources"
-          version="1.46" kateversion="3.4"
+          version="1.47" kateversion="5.0"
           indenter="cstyle"
           extensions="*.c;*.C;*.h"
           mimetype="text/x-csrc;text/x-c++src;text/x-chdr"
@@ -193,11 +193,11 @@
       <itemData name="Float"        defStyleNum="dsFloat" spellChecking="false"/>
       <itemData name="Char"         defStyleNum="dsChar" spellChecking="false"/>
       <itemData name="String"       defStyleNum="dsString"/>
-      <itemData name="String Char"  defStyleNum="dsChar"/>
+      <itemData name="String Char"  defStyleNum="dsSpecialChar"/>
       <itemData name="Comment"      defStyleNum="dsComment"/>
       <itemData name="Symbol"       defStyleNum="dsNormal" spellChecking="false"/>
-      <itemData name="Preprocessor" defStyleNum="dsOthers" spellChecking="false"/>
-      <itemData name="Prep. Lib"    defStyleNum="dsOthers" spellChecking="false"/> <!--,Qt::darkYellow,Qt::yellow,false,false)); -->
+      <itemData name="Preprocessor" defStyleNum="dsPreprocessor" spellChecking="false"/>
+      <itemData name="Prep. Lib"    defStyleNum="dsImport" spellChecking="false"/>
       <itemData name="Alert"        defStyleNum="dsAlert" spellChecking="false"/>
       <itemData name="Region Marker" defStyleNum="dsRegionMarker" spellChecking="false"/>
       <itemData name="Error"        defStyleNum="dsError" spellChecking="false"/>

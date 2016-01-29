@@ -27,7 +27,7 @@
  * Boston, MA  02110-1301, USA.                                       *
  **********************************************************************
  -->
-<language name="DoxygenLua" version="1.01" kateversion="2.4" section="Markup" extensions="*.dox;*.doxygen" mimetype="text/x-doxygen" author="Bruno Massa (brmassa@gmail.com)" license="LGPL">
+<language name="DoxygenLua" version="1.02" kateversion="5.0" section="Markup" extensions="*.dox;*.doxygen" mimetype="text/x-doxygen" author="Bruno Massa (brmassa@gmail.com)" license="LGPL">
   <highlighting>
     <!-- note: all tags may begin with a \ or @ char
          so if you add/change tags you have to do it twice -->
@@ -460,11 +460,11 @@
     </contexts>
     <itemDatas>
       <itemData name="Normal Text" defStyleNum="dsNormal" />
-      <itemData name="Tags"        defStyleNum="dsKeyword" color="#ca60ca" selColor="#ffffff" bold="1" italic="0" />
-      <itemData name="Word"        defStyleNum="dsKeyword" color="#0095ff" selColor="#ffffff" bold="1" italic="0" />
+      <itemData name="Tags"        defStyleNum="dsAnnotation" bold="1" italic="0" />
+      <itemData name="Word"        defStyleNum="dsCommentVar" bold="1" italic="0" />
       <itemData name="HTML Tag"    defStyleNum="dsKeyword"/>
       <itemData name="Description" defStyleNum="dsString" />
-      <itemData name="Comment"     defStyleNum="dsComment"/>
+      <itemData name="Comment"     defStyleNum="dsDocumentation"/>
       <itemData name="Region"      defStyleNum="dsRegionMarker" />
       <itemData name="Identifier"  defStyleNum="dsOthers" />
       <itemData name="HTML Comment" defStyleNum="dsComment" />

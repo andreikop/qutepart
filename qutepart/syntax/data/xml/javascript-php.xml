@@ -9,57 +9,63 @@
 
 
 
-<language name="JavaScript/PHP" hidden="true" version="1.22" kateversion="3.4" section="Other" extensions=""
+<language name="JavaScript/PHP" hidden="true" version="1.24" kateversion="5.0" section="Other" extensions=""
           mimetype="" indenter="cstyle"
           author="Anders Lund (anders@alweb.dk), Joseph Wenninger (jowenn@kde.org), Whitehawk Stormchaser (zerokode@gmx.net)" license="">
   <highlighting>
-    <list name="keywords">
+    <list name="controlflow">
       <item> break </item>
       <item> case </item>
       <item> catch </item>
-      <item> const </item>
       <item> continue </item>
       <item> debugger </item>
-      <item> default </item>
-      <item> delete </item>
       <item> do </item>
       <item> else </item>
       <item> finally </item>
       <item> for </item>
-      <item> function </item>
       <item> if </item>
+      <item> return </item>
+      <item> switch </item>
+      <item> throw </item>
+      <item> try </item>
+      <item> while </item>
+      <item> with </item>
+    </list>
+    <list name="keywords">
+      <item> const </item>
+      <item> delete </item>
+      <item> function </item>
       <item> in </item>
       <item> instanceof </item>
       <item> new </item>
-      <item> return </item>
-      <item> switch </item>
       <item> this </item>
-      <item> throw </item>
-      <item> try </item>
       <item> typeof </item>
       <item> var </item>
       <item> void </item>
-      <item> while </item>
-      <item> with </item>
     </list>
     <list name="reserved">
       <item> class </item>
       <item> enum </item>
-      <item> export </item>
       <item> extends </item>
-      <item> import </item>
       <item> super </item>
 
       <!-- The following keywords are reserved only in strict-mode -->
       <item> implements </item>
       <item> interface </item>
       <item> let </item>
-      <item> package </item>
       <item> private </item>
       <item> protected </item>
       <item> public </item>
       <item> static </item>
       <item> yield </item>
+    </list>
+    <list name="module">
+      <item> import </item>
+      <item> from </item>
+      <item> as </item>
+      <item> default </item>
+      <item> export </item>
+      <item> package </item>
     </list>
     <list name="primitives">
       <item> Infinity </item>
@@ -94,9 +100,14 @@
         <Int attribute="Decimal" context="NoRegExp" />
         <AnyChar context="NoRegExp" String="])" />
 
+        <keyword attribute="ControlFlow" String="controlflow" />
         <keyword attribute="Keyword" String="keywords" />
         <keyword attribute="Reserved" String="reserved" />
         <keyword attribute="Keyword" context="NoRegExp" String="primitives" />
+        <keyword attribute="Module" String="module" />
+
+        <DetectChar attribute="Template" context="Template" char="`" />
+        <StringDetect attribute="Template" context="RawTemplate" String="String.raw`" />
 
         <!--DetectIdentifier-->
         <RegExpr attribute="Objects" context="Object Member" String="[a-zA-Z_$][\w$]*(?=\s*\.)" />
@@ -157,15 +168,34 @@
 
       <context attribute="String" lineEndContext="#pop" name="String">
 <IncludeRules context="FindPHP" />
-        <HlCStringChar attribute="Char" />
+        <HlCStringChar attribute="Escape" />
+        <RegExpr attribute="Escape" String="\\u[0-9a-fA-F]{4}" />
         <LineContinue/>
         <DetectChar attribute="String" context="#pop" char="&quot;" />
       </context>
       <context attribute="String" lineEndContext="#pop" name="String SQ">
 <IncludeRules context="FindPHP" />
-        <HlCStringChar attribute="Char" />
+        <HlCStringChar attribute="Escape" />
+        <RegExpr attribute="Escape" String="\\u[0-9a-fA-F]{4}" />
         <LineContinue/>
         <DetectChar attribute="String" context="#pop" char="'" />
+      </context>
+
+      <context attribute="Template" lineEndContext="#stay" name="Template">
+<IncludeRules context="FindPHP" />
+        <HlCStringChar attribute="Escape" />
+        <Detect2Chars attribute="Escape" char="\" char1="`" />
+        <Detect2Chars attribute="Substitution" context="Substitution" char="$" char1="{" />
+        <DetectChar attribute="Template" context="#pop" char="`" />
+      </context>
+      <context attribute="Template" lineEndContext="#stay" name="RawTemplate">
+<IncludeRules context="FindPHP" />
+        <DetectChar attribute="Template" context="#pop" char="`" />
+      </context>
+      <context name="Substitution" attribute="Normal Text" lineEndContext="#stay">
+<IncludeRules context="FindPHP" />
+          <DetectChar attribute="Substitution" char="}" context="#pop"/>
+          <IncludeRules context="Normal"/>
       </context>
 
       <context attribute="Comment" lineEndContext="#pop" name="Comment">
@@ -211,30 +241,34 @@
         <DetectIdentifier/>
         <DetectSpaces/>
       </context>
-    <context name="FindPHP">
+    <context name="FindPHP" attribute="Normal Text" lineEndContext="#stay">
 <RegExpr context="##PHP/PHP" String="&lt;\?(?:=|php)?" lookAhead="true" />
 </context>
 </contexts>
     <itemDatas>
       <itemData name="Normal Text"  defStyleNum="dsNormal"  spellChecking="false" />
       <itemData name="Keyword"      defStyleNum="dsKeyword" spellChecking="false" />
+      <itemData name="ControlFlow"  defStyleNum="dsControlFlow" spellChecking="false" />
       <itemData name="Reserved"     defStyleNum="dsKeyword" italic="true" spellChecking="false" />
+      <itemData name="Module"       defStyleNum="dsImport" spellChecking="false" />
       <itemData name="Function"     defStyleNum="dsFunction" spellChecking="false" />
-      <itemData name="Objects"      defStyleNum="dsOthers" spellChecking="false" />
-      <itemData name="Object Member" defStyleNum="dsFunction" spellChecking="false" />
+      <itemData name="Objects"      defStyleNum="dsVariable" spellChecking="false" />
+      <itemData name="Object Member" defStyleNum="dsAttribute" spellChecking="false" />
 
       <itemData name="Decimal"      defStyleNum="dsDecVal" spellChecking="false" />
       <itemData name="Octal"        defStyleNum="dsBaseN" spellChecking="false" />
       <itemData name="Hex"          defStyleNum="dsBaseN" spellChecking="false" />
       <itemData name="Float"        defStyleNum="dsFloat" spellChecking="false" />
-      <itemData name="Char"         defStyleNum="dsChar" spellChecking="false" />
+      <itemData name="Escape"       defStyleNum="dsSpecialChar" spellChecking="false" />
       <itemData name="String"       defStyleNum="dsString" />
+      <itemData name="Template"     defStyleNum="dsVerbatimString" />
+      <itemData name="Substitution" defStyleNum="dsSpecialChar" spellChecking="false" />
 
       <itemData name="Comment"      defStyleNum="dsComment" />
-      <itemData name="Symbol"       defStyleNum="dsNormal" spellChecking="false" />
-      <itemData name="Regular Expression" defStyleNum="dsOthers" spellChecking="false" />
-      <itemData name="Pattern Internal Operator" defStyleNum="dsFloat" spellChecking="false" />
-      <itemData name="Pattern Character Class" defStyleNum="dsBaseN" spellChecking="false" />
+      <itemData name="Symbol"       defStyleNum="dsOperator" spellChecking="false" />
+      <itemData name="Regular Expression" defStyleNum="dsSpecialString" spellChecking="false" />
+      <itemData name="Pattern Internal Operator" defStyleNum="dsSpecialChar" spellChecking="false" />
+      <itemData name="Pattern Character Class" defStyleNum="dsSpecialChar" spellChecking="false" />
       <itemData name="Region Marker" defStyleNum="dsRegionMarker" spellChecking="false" />
       <itemData name="JSON"         defStyleNum="dsDataType" spellChecking="false" />
     </itemDatas>
@@ -247,6 +281,8 @@
     <keywords casesensitive="1" />
   </general>
 </language>
+
+<!-- kate: space-indent on; indent-width 2; -->
 
 
 <!-- ***** THIS FILE WAS GENERATED BY A SCRIPT - DO NOT EDIT ***** -->

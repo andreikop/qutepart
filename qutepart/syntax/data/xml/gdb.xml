@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
 
-<!-- Changelog:
-
-v1.0:
-- first Release
--->
-
 <language name="GDB Backtrace" section="Other"
           version="1.0" kateversion="3.4"
           extensions="*.kcrash;*.crash;*.bt"

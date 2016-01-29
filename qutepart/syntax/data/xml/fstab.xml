@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
 
-<language name="fstab" version="1.00" kateversion="2.4" section="Configuration" extensions="fstab;mtab" author="Diego Iastrubni (elcuco@kde.org)" license="Public Domain" >
+<language name="fstab" version="1.01" kateversion="5.0" section="Configuration" extensions="fstab;mtab" author="Diego Iastrubni (elcuco@kde.org)" license="Public Domain" >
 	<highlighting>
 		<list name="valid_fs">
 			<item> ext2 </item>
@@ -38,7 +38,7 @@
 			
 			<context name="type" attribute="Type" lineEndContext="device" >
 				<DetectChar context="comment"  char="#" firstNonSpace="1" />
-				<keyword    context="#stay"  attribute="Valid FileSystem" String="Valid FileSystem" />
+				<keyword    context="#stay"  attribute="Valid FileSystem" String="valid_fs" />
 				<RegExpr context="options" String="[\s]*"/>
 			</context>
 				
@@ -75,7 +75,7 @@
 			<itemData name="Device"     defStyleNum="dsKeyword" />
 			<itemData name="Mount Point" defStyleNum="dsDataType"  />
 			<itemData name="Type"       defStyleNum="dsFunction"  />
-			<itemData name="Options"    defStyleNum="dsKeyword"  />
+			<itemData name="Options"    defStyleNum="dsAttribute"  />
 			<itemData name="Dump"       defStyleNum="dsDecVal"  />
 			<itemData name="Pass"       defStyleNum="dsDecVal"  />
 			

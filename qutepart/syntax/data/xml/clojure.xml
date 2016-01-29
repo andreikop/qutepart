@@ -2,7 +2,7 @@
 <!DOCTYPE language SYSTEM "language.dtd">
 <!--
   This file is part of KDE's kate project.
-  
+
   copyright   : (C) 2004 by Dominik Haumann, (C) 2011 by Caspar Hasenclever
 
  **********************************************************************
@@ -18,11 +18,11 @@
  *                                                                    *
  * You should have received a copy of the GNU Library General Public  *
  * License along with this library; if not, write to the              *
- * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,       *
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,   *
  * Boston, MA  02110-1301, USA.                                       *
  **********************************************************************
  -->
-<language version="2" kateversion="2.3" name="Clojure" section="Sources" extensions="*.clj" mimetype="" author="Dominik Haumann [lisp] modified for clojure by Caspar Hasenclever" license="LGPL">
+<language version="4" kateversion="5.0" name="Clojure" section="Sources" extensions="*.clj;*.cljs" mimetype="" author="Dominik Haumann [lisp] modified for clojure by Caspar Hasenclever" license="LGPL">
   <highlighting>
     <list name="definitions">
       <item> def </item>
@@ -763,11 +763,11 @@
     <itemDatas>
       <itemData name="Normal" defStyleNum="dsNormal"/>
       <itemData name="Keyword" defStyleNum="dsKeyword"/>
-      <itemData name="Operator" defStyleNum="dsKeyword" color="#d22811"/>
-      <itemData name="Modifier" defStyleNum="dsKeyword" color="#800000"/>
-      <itemData name="Modifier2" defStyleNum="dsKeyword" color="#555555"/>
-      <itemData name="Variable" defStyleNum="dsKeyword" color="#b07e1f"/>
-      <itemData name="Definition" defStyleNum="dsKeyword" color="#d22811"/>
+      <itemData name="Operator" defStyleNum="dsOperator"/>
+      <itemData name="Modifier" defStyleNum="dsAttribute"/>
+      <itemData name="Modifier2" defStyleNum="dsAttribute"/>
+      <itemData name="Variable" defStyleNum="dsVariable" />
+      <itemData name="Definition" defStyleNum="dsBuiltIn"/>
       <itemData name="Data" defStyleNum="dsDataType"/>
       <itemData name="Decimal" defStyleNum="dsDecVal"/>
       <itemData name="BaseN" defStyleNum="dsBaseN"/>

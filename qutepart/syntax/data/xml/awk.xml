@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="AWK" version="0.93" kateversion="3.3" section="Scripts"
+<language name="AWK" version="0.94" kateversion="5.0" section="Scripts"
   extensions="*.awk" mimetype="text/x-awk" indenter="cstyle"
   license="LGPL">
 <!-- patched by igli#kate@irc:chat.freenode.net -->
@@ -183,21 +183,21 @@
     <itemDatas>
       <itemData name="Normal"   defStyleNum="dsNormal"/>
       <itemData name="Keyword"  defStyleNum="dsKeyword"/>
-      <itemData name="Builtin"  defStyleNum="dsNormal" color="#CC8822"/>
+      <itemData name="Builtin"  defStyleNum="dsBuiltIn"/>
       <itemData name="Function" defStyleNum="dsFunction"/>
       <itemData name="Decimal"  defStyleNum="dsDecVal"/>
       <itemData name="Float"    defStyleNum="dsFloat"/>
       <itemData name="String"   defStyleNum="dsString"/>
       <itemData name="Comment"  defStyleNum="dsComment"/>
-	<itemData name="Escape"   defStyleNum="dsString" color="#4A5704"/>
-   <itemData name="Field"    defStyleNum="dsDataType"/>
-	<itemData name="Error"    defStyleNum="dsError"/>
-	<itemData name="Special"  defStyleNum="dsKeyword" color="#FF9225" bold="0"/>
-	<itemData name="Operator"    defStyleNum="dsNormal" color="#FF80E0"/>
-	<itemData name="Regex"       defStyleNum="dsString" color="#4A5704"/>
-	<itemData name="Regex Op"    defStyleNum="dsOthers" color="#FF80E0"/>
-	<itemData name="CharClass"   defStyleNum="dsString" color="#008080"/>
-	<itemData name="Custom"      defStyleNum="dsString" color="#449944"/>
+      <itemData name="Escape"   defStyleNum="dsSpecialChar"/>
+      <itemData name="Field"    defStyleNum="dsDataType"/>
+      <itemData name="Error"    defStyleNum="dsError"/>
+      <itemData name="Special"  defStyleNum="dsControlFlow" bold="0"/>
+      <itemData name="Operator" defStyleNum="dsOperator"/>
+      <itemData name="Regex"    defStyleNum="dsSpecialString"/>
+      <itemData name="Regex Op" defStyleNum="dsOthers"/>
+      <itemData name="CharClass" defStyleNum="dsExtension"/>
+      <itemData name="Custom"   defStyleNum="dsOthers" />
     </itemDatas>
   </highlighting>
   <general>

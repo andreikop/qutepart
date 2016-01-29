@@ -13,9 +13,9 @@
 <!-- v2.06 decorator names can (and often do) contain periods -->
 <!-- v2.07 add support for %prog and co, see bug 142832 -->
 <!-- v2.08 add missing overloaders, new Python 3 statements, builtins, and keywords -->
-<language name="Python" version="2.24" style="python" kateversion="3.4" section="Scripts" extensions="*.py;*.pyw;SConstruct;SConscript" mimetype="application/x-python;text/x-python" casesensitive="1" author="Michael Bueker" license="" firstLineGlobs="*python*">
+<language name="Python" version="2.27" style="python" kateversion="5.0" section="Scripts" extensions="*.py;*.pyw;SConstruct;SConscript" mimetype="application/x-python;text/x-python" casesensitive="1" author="Michael Bueker" license="" firstLineGlobs="*python*">
 	<highlighting>
-		<list name="prep">
+		<list name="import">
 			<item> import </item>
 			<item> from </item>
 			<item> as </item>
@@ -52,6 +52,8 @@
 			<item> while </item>
 			<item> with </item>
 			<item> yield </item>
+			<item> async </item>
+			<item> await </item>
 		</list>
 		<list name="builtinfuncs">
 			<item> __import__ </item>
@@ -248,6 +250,11 @@
 			<item>__format__</item>
 			<item>__next__</item>
 			<item>__dir__</item>
+			<item>__await__</item>
+			<item>__aiter__</item>
+			<item>__anext__</item>
+			<item>__aenter__</item>
+			<item>__aexit__</item>
 		</list>
 		<list name="exceptions">
 			<!--
@@ -323,9 +330,9 @@
 		</list>
 		<contexts>
 			<context name="Normal" attribute="Normal Text" lineEndContext="#stay">
-				<keyword attribute="Preprocessor" String="prep" context="#stay"/>
+				<keyword attribute="Import" String="import" context="#stay"/>
 				<keyword attribute="Definition Keyword" String="defs" context="#stay"/>
-				<keyword attribute="Operator" String="operators" context="#stay"/>
+				<keyword attribute="Operator Keyword" String="operators" context="#stay"/>
 				<keyword attribute="Flow Control Keyword" String="flow" context="#stay"/>
 				<keyword attribute="Builtin Function" String="builtinfuncs" context="#stay"/>
 				<keyword attribute="Special Variable" String="specialvars" context="#stay"/>
@@ -352,8 +359,8 @@
 
 				<IncludeRules context="StringVariants" />
 
-				<AnyChar attribute="Operator" String="+*/%\|=;\!&lt;&gt;!^&amp;~-" context="#stay"/>
 				<RegExpr attribute="Decorator" String="@[_a-zA-Z][\._a-zA-Z0-9]*" firstNonSpace="true"/>
+				<AnyChar attribute="Operator" String="+*/%\|=;\!&lt;&gt;!^&amp;~-@" context="#stay"/>
 			</context>
 
 			<context name="#CheckForString" attribute="Normal Text" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop">
@@ -564,16 +571,16 @@
 		<itemDatas>
 			<itemData name="Normal Text" defStyleNum="dsNormal" spellChecking="false"/>
 			<itemData name="Definition Keyword" defStyleNum="dsKeyword" spellChecking="false"/>
-			<itemData name="Operator" defStyleNum="dsNormal" bold="1" spellChecking="false"/>
-			<itemData name="String Substitution" defStyleNum="dsOthers" color="#0057ae" selColor="#0057ae"  spellChecking="false"/>
-			<itemData name="Command Keyword" defStyleNum="dsKeyword" spellChecking="false"/>
-			<itemData name="Flow Control Keyword" defStyleNum="dsKeyword" spellChecking="false"/>
-			<itemData name="Builtin Function" defStyleNum="dsDataType" spellChecking="false"/>
-			<itemData name="Special Variable" defStyleNum="dsOthers" spellChecking="false"/>
-			<itemData name="Extensions" defStyleNum="dsOthers" color="#0095ff" selColor="#0095ff" bold="1" italic="0" spellChecking="false"/>
-			<itemData name="Exceptions" defStyleNum="dsOthers" color="#054d00" selColor="#054d00" bold="1" italic="0" spellChecking="false"/>
-			<itemData name="Overloaders" defStyleNum="dsOthers" color="#000e52" selColor="#000e52" bold="1" italic="0" spellChecking="false"/>
-			<itemData name="Preprocessor" defStyleNum="dsChar" spellChecking="false"/>
+			<itemData name="Operator" defStyleNum="dsOperator" spellChecking="false"/>
+			<itemData name="Operator Keyword" defStyleNum="dsKeyword" spellChecking="false"/>
+			<itemData name="String Substitution" defStyleNum="dsSpecialChar" spellChecking="false"/>
+			<itemData name="Flow Control Keyword" defStyleNum="dsControlFlow" spellChecking="false"/>
+			<itemData name="Builtin Function" defStyleNum="dsBuiltIn" spellChecking="false"/>
+			<itemData name="Special Variable" defStyleNum="dsVariable" spellChecking="false"/>
+			<itemData name="Extensions" defStyleNum="dsExtension" spellChecking="false"/>
+			<itemData name="Exceptions" defStyleNum="dsPreprocessor" spellChecking="false"/>
+			<itemData name="Overloaders" defStyleNum="dsFunction" spellChecking="false"/>
+			<itemData name="Import" defStyleNum="dsImport" spellChecking="false"/>
 			<itemData name="String Char" defStyleNum="dsChar" spellChecking="false"/>
 			<itemData name="Float" defStyleNum="dsFloat" spellChecking="false"/>
 			<itemData name="Int" defStyleNum="dsDecVal" spellChecking="false"/>
@@ -582,8 +589,8 @@
 			<itemData name="Complex" defStyleNum="dsOthers" spellChecking="false"/>
 			<itemData name="Comment" defStyleNum="dsComment"/>
 			<itemData name="String" defStyleNum="dsString"/>
-			<itemData name="Raw String" defStyleNum="dsString"/>
-			<itemData name="Decorator" defStyleNum="dsOthers" color="#8f6b32" selColor="#8f6b32" italic="0" spellChecking="false"/>
+			<itemData name="Raw String" defStyleNum="dsVerbatimString"/>
+			<itemData name="Decorator" defStyleNum="dsAttribute" spellChecking="false"/>
 		</itemDatas>
 	</highlighting>
 	<general>

@@ -33,7 +33,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 -->
 
-<language name="AVR Assembler" version="1.04" kateversion="2.4" section="Assembler" extensions="*.asm;*.ASM;*.asm-avr" mimetype="text/x-asm;text/x-asm-avr" author="Roland Nagy" license="GPL">
+<language name="AVR Assembler" version="1.05" kateversion="5.0" section="Assembler" extensions="*.asm;*.ASM;*.asm-avr" mimetype="text/x-asm;text/x-asm-avr" author="Roland Nagy" license="GPL">
   <highlighting>
     <list name="keywords">
       <item> adc</item>
@@ -185,7 +185,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
     <itemDatas>
       <itemData name="Normal Text"  defStyleNum="dsNormal"   />
-      <itemData name="Label"        defStyleNum="dsFunction"   />
+      <itemData name="Label"        defStyleNum="dsFunction" />
       <itemData name="Keyword"      defStyleNum="dsKeyword"  />
       <itemData name="Decimal"      defStyleNum="dsDecVal"   />
       <itemData name="Octal"        defStyleNum="dsBaseN"    />
@@ -194,10 +194,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
       <itemData name="Float"        defStyleNum="dsFloat"    />
       <itemData name="Char"         defStyleNum="dsChar"     />
       <itemData name="String"       defStyleNum="dsString"   />
-      <itemData name="String Char"  defStyleNum="dsChar"     />
+      <itemData name="String Char"  defStyleNum="dsSpecialChar" />
       <itemData name="Symbol"       defStyleNum="dsNormal"   />
       <itemData name="Comment"      defStyleNum="dsComment"  />
-      <itemData name="Preprocessor" defStyleNum="dsOthers"   />
+      <itemData name="Preprocessor" defStyleNum="dsPreprocessor" />
     </itemDatas>
   </highlighting>
 

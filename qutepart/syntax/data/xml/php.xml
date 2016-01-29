@@ -2,6 +2,9 @@
 <!--
 
 Changes:
+[ Version 1.47 (2015-03-24) ]
+- added support for binary integer literals
+
 [ Version 1.46 (2015-03-02) ]
 - added yield keyword
 
@@ -67,7 +70,7 @@ Changes:
   <!ENTITY types "int|integer|bool|boolean|float|double|real|string|array|object">
 ]>
 
-<language name="PHP/PHP" indenter="cstyle" version="1.46" kateversion="3.4" section="Scripts" extensions="" priority="5" mimetype="" hidden="true">
+<language name="PHP/PHP" indenter="cstyle" version="1.47" kateversion="3.4" section="Scripts" extensions="" priority="5" mimetype="" hidden="true">
   <highlighting>
     <list name="control structures">
       <item>as</item>
@@ -5487,6 +5490,7 @@ Changes:
         <keyword attribute="Special Variable" context="#stay" String="special-variables"/>
         <RegExpr attribute="Variable" context="#stay" String="\$+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*" />
         <RegExpr attribute="String" context="#stay" String="[0123456789]*\.\.\.[0123456789]*" />
+        <RegExpr attribute="Binary" context="#stay" String="0[bB][01]+" />
         <HlCOct attribute="Octal" context="#stay" />
         <HlCHex attribute="Hex" context="#stay" />
         <Float attribute="Float" context="#stay" />
@@ -5610,6 +5614,7 @@ Changes:
       <itemData name="Function" defStyleNum="dsFunction" spellChecking="false" />
       <itemData name="Special method" defStyleNum="dsFunction" spellChecking="false" />
       <itemData name="Decimal" defStyleNum="dsDecVal" spellChecking="false" />
+      <itemData name="Binary" defStyleNum="dsBaseN" spellChecking="false" />
       <itemData name="Octal" defStyleNum="dsBaseN" spellChecking="false" />
       <itemData name="Hex" defStyleNum="dsBaseN" spellChecking="false" />
       <itemData name="Float" defStyleNum="dsFloat" spellChecking="false" />

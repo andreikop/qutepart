@@ -658,7 +658,7 @@
         <DetectChar attribute="Pattern Internal Operator" context="#stay" char="^" />
         <Detect2Chars attribute="Pattern Character Class" context="#stay" char="\" char1="\" />
         <Detect2Chars attribute="Pattern Character Class" context="#stay" char="\" char1="]" />
-        <RegExpr attribute="Pattern Character Class" context="#stay" String="\[:^\?[a-z]+:\]" />
+        <RegExpr attribute="Pattern Character Class" context="#stay" String="\[:\^?[a-z]+:\]" />
         <DetectChar attribute="Pattern Internal Operator" context="#pop" char="]" />
       </context>
 

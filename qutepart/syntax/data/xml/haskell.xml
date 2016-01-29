@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Haskell" version="2.6" kateversion="3.4" section="Sources" extensions="*.hs;*.chs" mimetype="text/x-haskell" author="Nicolas Wu (zenzike@gmail.com)" license="LGPL" indenter="haskell" style="haskell">
+<language name="Haskell" version="3.1" kateversion="3.4" section="Sources" extensions="*.hs;*.chs" mimetype="text/x-haskell" author="Nicolas Wu (zenzike@gmail.com)" license="LGPL" indenter="haskell" style="haskell">
   <highlighting>
   <list name="keywords">
     <item> case </item>
@@ -81,6 +81,7 @@
     <item> fmap </item>
     <item> foldl </item>
     <item> foldl1 </item>
+    <item> foldMap </item>
     <item> foldr </item>
     <item> foldr1 </item>
     <item> fromDouble </item>
@@ -131,12 +132,15 @@
     <item> logBase </item>
     <item> lookup </item>
     <item> map </item>
+    <item> mappend </item>
     <item> mapM </item>
     <item> mapM_ </item>
     <item> max </item>
     <item> maxBound </item>
     <item> maximum </item>
     <item> maybe </item>
+    <item> mconcat </item>
+    <item> mempty </item>
     <item> min </item>
     <item> minBound </item>
     <item> minimum </item>
@@ -157,6 +161,7 @@
     <item> print </item>
     <item> product </item>
     <item> properFraction </item>
+    <item> pure </item>
     <item> putChar </item>
     <item> putStr </item>
     <item> putStrLn </item>
@@ -194,6 +199,7 @@
     <item> scanr1 </item>
     <item> seq </item>
     <item> sequence </item>
+    <item> sequenceA </item>
     <item> sequence_ </item>
     <item> show </item>
     <item> showChar </item>
@@ -229,6 +235,7 @@
     <item> toLower </item>
     <item> toRational </item>
     <item> toUpper </item>
+    <item> traverse </item>
     <item> truncate </item>
     <item> uncurry </item>
     <item> undefined </item>
@@ -246,15 +253,18 @@
     <item> zipWith3 </item>
   </list>
   <list name="prelude class">
+    <item> Applicative </item>
     <item> Bounded </item>
     <item> Enum </item>
     <item> Eq </item>
     <item> Floating </item>
+    <item> Foldable </item>
     <item> Fractional </item>
     <item> Functor </item>
     <item> Integral </item>
     <item> Ix </item>
     <item> Monad </item>
+    <item> Monoid </item>
     <item> Num </item>
     <item> Ord </item>
     <item> Read </item>
@@ -262,9 +272,11 @@
     <item> RealFloat </item>
     <item> RealFrac </item>
     <item> Show </item>
+    <item> Traversable </item>
   </list>
   <list name="prelude type">
     <item> Bool </item>
+    <item> ByteString </item>
     <item> Char </item>
     <item> Double </item>
     <item> Either </item>
@@ -281,7 +293,7 @@
     <item> ReadS </item>
     <item> ShowS </item>
     <item> String </item>
-    <item> ByteString </item>
+    <item> Word </item>
   </list>
   <list name="prelude data">
     <item> False </item>
@@ -294,10 +306,13 @@
     <item> LT </item>
     <item> GT </item>
   </list>
-  <list name="class">
-    <item> Applicative </item>
-    <item> Foldable </item>
-    <item> Traversable </item>
+  <list name="cpp_keywords">
+    <item> defined </item>
+    <item> if </item>
+    <item> ifdef </item>
+    <item> ifndef </item>
+    <item> include </item>
+    <item> undef </item>
   </list>
   <list name="c2hs_keywords">
     <item> qualified </item>
@@ -324,23 +339,22 @@
       <RegExpr attribute="Pragma"  context="#stay" String="\{-#.*#-\}"/>
       <StringDetect attribute="Comment" context="#stay" String="{--}"/>
       <RegExpr attribute="Comment" context="comments" String="\{-[^#]?" />
-      <RegExpr attribute="Comment" context="comment"  String="--[^\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:].*$" />
+      <RegExpr attribute="Comment" context="comment"  String="--[\-]*([^!#\$%&amp;\*\+\./&lt;=&gt;\?@&#92;\^\|\-~:]|$)" />
       <RegExpr attribute="Keyword" context="import"   String="import\s+" />
-      <RegExpr attribute="C2HS Directive"  context="c2hs directive" String="\{#"/>
-      <RegExpr attribute="C2HS Directive"  context="c2hs include" String="#"/>
+      <Detect2Chars attribute="C2HS Directive" context="c2hs directive" char="{" char1="#"/>
+      <DetectChar attribute="C Preprocessor" context="C Preprocessor" char="#" column="0"/>
 
       <keyword attribute="Keyword"          context="#stay" String="keywords" />
       <keyword attribute="Function Prelude" context="#stay" String="prelude function" />
       <keyword attribute="Type Prelude"     context="#stay" String="prelude type" />
       <keyword attribute="Data Prelude"     context="#stay" String="prelude data" />
       <keyword attribute="Class Prelude"    context="#stay" String="prelude class" />
-      <keyword attribute="Class Prelude"    context="#stay" String="class" />
 
       <RegExpr attribute="Special"          context="#stay" String="(::|=&gt;|\-&gt;|&lt;\-)" />
       <AnyChar attribute="Special"          context="#stay" String="∷⇒→←∀∃" />
-      <RegExpr attribute="Signature"        context="#stay" String="\s*[a-z][a-zA-Z0-9_']*\s*(?=::[^\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:])" />
+      <RegExpr attribute="Signature"        context="#stay" String="\s*[a-z_][a-zA-Z0-9_']*\s*(?=::([^\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:]|$))" />
       <RegExpr attribute="Signature"        context="#stay" String="\s*(\([\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:]*\))*\s*(?=::[^\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:])" />
-      <RegExpr attribute="Function"         context="#stay" String="([A-Z][a-zA-Z0-9_']*\.)*[a-z][a-zA-Z0-9_']*" />
+      <RegExpr attribute="Function"         context="#stay" String="([A-Z][a-zA-Z0-9_']*\.)*[a-z_][a-zA-Z0-9_']*" />
       <RegExpr attribute="Operator"         context="#stay" String="([A-Z][a-zA-Z0-0_']*\.)*[\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:]+" />
       <RegExpr attribute="Type"             context="#stay" String="([A-Z][a-zA-Z0-9_']*\.)*[A-Z][a-zA-Z0-9_']*" />
 
@@ -355,24 +369,23 @@
       <Detect2Chars attribute="EnumFromTo" context="#stay" char ="." char1="." />
       <AnyChar      attribute="EnumFromTo" context="#stay" String="‥" />
 
-      <DetectChar attribute="Normal" context="List or QuasiQuote" char="["/>
-    </context>
-    <context attribute="Normal" lineEndContext="#stay" name="List or QuasiQuote">
-      <RegExpr    attribute="Normal" context="Hamlet"     String="\s*[xw]?hamlet\s*\|"/>
-      <DetectChar attribute="Normal" context="QuasiQuote" char="|"/>
-      <DetectChar attribute="Normal" context="#pop"        char="]"/>
-      <IncludeRules context="code" />
+      <RegExpr attribute="Normal" context="Hamlet" String="\[[wx]?hamlet\|" />
+      <RegExpr attribute="Normal" context="QuasiQuote" String="\[[a-zA-Z_'](\w|[_'])*\|" />
     </context>
     <context attribute="Normal" lineEndContext="#stay" name="QuasiQuote">
-      <DetectChar attribute="Normal" context="#pop" char="|"/>
+      <Detect2Chars attribute="Normal" context="#pop" char="|" char1="]"/>
     </context>
     <context attribute="Normal" lineEndContext="#stay" name="Hamlet">
       <IncludeRules context="QuasiQuote"/>
       <IncludeRules context="##Hamlet" />
     </context>
-    <context attribute="Comment" lineEndContext="#pop" name="comment" />
+    <context attribute="Comment" lineEndContext="#pop" name="comment">
+      <IncludeRules context="Haddock" />
+    </context>
     <context attribute="Comment" lineEndContext="#stay" name="comments">
+      <Detect2Chars attribute="Comment" context="comment" char="{" char1="-" />
       <Detect2Chars attribute="Comment" context="#pop" char="-" char1="}" />
+      <IncludeRules context="Haddock" />
     </context>
     <context attribute="Char" lineEndContext="#pop" name="char">
       <RegExpr attribute="Char" context="#stay" String="\\." />
@@ -394,7 +407,36 @@
       <RegExpr attribute="Comment" context="comments" String="\{-[^#]?" />
       <RegExpr attribute="Comment" context="comment"  String="--[^\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:].*$" />
     </context>
-    
+
+    <!-- Haddock -->
+    <context attribute="Comment" lineEndContext="#stay" name="Haddock">
+      <RegExpr attribute="Haddock Hyperlink" context="#stay" String="'([A-Z][a-zA-Z0-9_']*\.)*[a-z_][a-zA-Z0-9_']*'" />
+      <RegExpr attribute="Haddock Module" context="#stay" String="&quot;([A-Z][a-zA-Z0-9_']*\.)*[A-Z][a-zA-Z0-9_']*&quot;" />
+      <RegExpr attribute="Haddock Emphasis" context="Start Haddock Emphasis" lookAhead="true" String="/.*/" />
+      <RegExpr attribute="Haddock Bold" context="Start Haddock Bold" lookAhead="true" String="__.*__" />
+    </context>
+    <context attribute="Haddock Emphasis" lineEndContext="#pop" name="Start Haddock Emphasis">
+      <DetectChar attribute="Haddock Emphasis" context="Haddock Emphasis" char="/" />
+    </context>
+    <context attribute="Haddock Emphasis" lineEndContext="#pop" name="Haddock Emphasis">
+      <DetectChar attribute="Haddock Emphasis" context="#pop#pop" char="/" />
+      <IncludeRules context="Haddock"/>
+    </context>
+    <context attribute="Haddock Bold" lineEndContext="#pop" name="Start Haddock Bold">
+      <Detect2Chars attribute="Haddock Bold" context="Haddock Bold" char="_" char1="_" />
+    </context>
+    <context attribute="Haddock Bold" lineEndContext="#pop" name="Haddock Bold">
+      <Detect2Chars attribute="Haddock Bold" context="#pop#pop" char="_" char1="_" />
+      <IncludeRules context="Haddock"/>
+    </context>
+
+    <!-- C Preprocessor -->
+    <context attribute="C Preprocessor" lineEndContext="#pop" name="C Preprocessor">
+      <keyword attribute="C Preprocessor Keyword" context="#stay" String="cpp_keywords" />
+      <RegExpr                          context="#stay" String=".*>$" />
+    </context>
+
+    <!-- C2Hs -->
     <context attribute="C2HS Directive" lineEndContext="#stay" name="c2hs directive">
       <Detect2Chars attribute="C2HS Directive" context="#pop" char="#" char1="}" />
       <keyword attribute="Keyword" context="#stay"          String="c2hs_keywords" />
@@ -410,10 +452,6 @@
     <context attribute="C2HS Directive" lineEndContext="#stay" name="c2hs import">
       <RegExpr attribute="Type"    context="#stay" String="([A-Z][a-zA-Z0-9_']*\.)*[A-Z][a-zA-Z0-9_']*" />
       <Detect2Chars attribute="C2HS Directive" context="#pop#pop" char="#" char1="}" />
-    </context>
-    <context attribute="C2HS Directive" lineEndContext="#pop" name="c2hs include">
-      <RegExpr attribute="Keyword" context="#stay" String="include" />
-      <RegExpr                     context="#stay" String=".*>$" />
     </context>
     <context attribute="C2HS Directive" lineEndContext="#stay" name="c2hs pointer">
       <keyword attribute="Keyword" context="#stay" String="c2hs_keywords" />
@@ -457,7 +495,15 @@
 
     <itemData name="Function Infix"   defStyleNum="dsOthers"   spellChecking="false" />
     <itemData name="EnumFromTo"       defStyleNum="dsOthers"   spellChecking="false" />
-    
+
+    <itemData name="C Preprocessor"   defStyleNum="dsOthers"   spellChecking="false" />
+    <itemData name="C Preprocessor Keyword" defStyleNum="dsOthers"   spellChecking="false" />
+
+    <itemData name="Haddock Hyperlink" defStyleNum="dsComment" spellChecking="false" underline="true" />
+    <itemData name="Haddock Module" defStyleNum="dsComment" spellChecking="false" underline="true" />
+    <itemData name="Haddock Emphasis" defStyleNum="dsComment" italic="true"/>
+    <itemData name="Haddock Bold" defStyleNum="dsComment" bold="true"/>
+
     <itemData name="C2HS Directive"   defStyleNum="dsString"   spellChecking="false" />
   </itemDatas>
   </highlighting>

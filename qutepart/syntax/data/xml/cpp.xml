@@ -11,8 +11,8 @@
 <language
     name="C++"
     section="Sources"
-    version="1.9"
-    kateversion="3.4"
+    version="2.0"
+    kateversion="5.0"
     indenter="cstyle"
     style="C++"
     mimetype="text/x-c++src;text/x-c++hdr;text/x-chdr"
@@ -1592,10 +1592,10 @@
   </contexts>
 
   <itemDatas>
-    <itemData name="Normal Text"    defStyleNum="dsNormal" spellChecking="false" />
-    <itemData name="Qt4 Macros" defStyleNum="dsKeyword" color="#0095ff" selColor="#ffffff" bold="1" italic="0" spellChecking="false" />
-    <itemData name="Qt4 Types" defStyleNum="dsDataType" spellChecking="false" />
-    <itemData name="Qt4 Classes" defStyleNum="dsOthers" spellChecking="false" />
+    <itemData name="Normal Text" defStyleNum="dsNormal" spellChecking="false" />
+    <itemData name="Qt4 Macros" defStyleNum="dsExtension" spellChecking="false" bold="1" italic="0" />
+    <itemData name="Qt4 Types" defStyleNum="dsExtension" spellChecking="false" />
+    <itemData name="Qt4 Classes" defStyleNum="dsExtension" spellChecking="false" />
     <itemData name="Qt4 Functions" defStyleNum="dsFunction" spellChecking="false" />
   </itemDatas>
 </highlighting>

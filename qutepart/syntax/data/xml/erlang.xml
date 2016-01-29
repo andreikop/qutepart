@@ -36,7 +36,7 @@
                                    - fixed highlighting problem when '@' at end of atom/variable
 -->
 
-<language name="Erlang" version="1.03" kateversion="2.4" section="Scripts" extensions="*.erl" mimetype="" author="Bill Ross (bill@emailme.net.au)" license="LGPL">
+<language name="Erlang" version="1.04" kateversion="5.0" section="Scripts" extensions="*.erl" mimetype="" author="Bill Ross (bill@emailme.net.au)" license="LGPL">
   <highlighting>
     <list name="keywords">
       <!-- ====== s3.8 p 24 of erlang spec ===== -->
@@ -230,8 +230,8 @@
       <itemData name="Pragma"                    defStyleNum="dsKeyword" />
       <itemData name="Function"                  defStyleNum="dsFunction" />
       <itemData name="Separator"                 defStyleNum="dsFunction" />
-      <itemData name="Operator"                  defStyleNum="dsKeyword"  />
-      <itemData name="Variable"                  defStyleNum="dsDataType" />
+      <itemData name="Operator"                  defStyleNum="dsOperator"  />
+      <itemData name="Variable"                  defStyleNum="dsVariable" />
       <itemData name="Integer"                   defStyleNum="dsDecVal" />
       <itemData name="Number"                    defStyleNum="dsBaseN" />
       <itemData name="Float"                     defStyleNum="dsFloat" />

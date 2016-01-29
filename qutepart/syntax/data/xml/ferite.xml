@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="ferite" version="1.04" kateversion="2.4" section="Scripts" extensions="*.fe;*.feh" mimetype="text/x-ferite-src">
+<language name="ferite" version="1.05" kateversion="5.0" section="Scripts" extensions="*.fe;*.feh" mimetype="text/x-ferite-src">
   <highlighting>
     <list name="keywords">
       <item> break </item>
@@ -99,11 +99,11 @@
       <itemData name="Float"  defStyleNum="dsFloat"/>
       <itemData name="Char"  defStyleNum="dsChar"/>
       <itemData name="String"  defStyleNum="dsString"/>
-      <itemData name="String Char"  defStyleNum="dsChar"/>
+      <itemData name="String Char"  defStyleNum="dsSpecialChar"/>
       <itemData name="Comment"  defStyleNum="dsComment"/>
       <itemData name="Symbol"  defStyleNum="dsNormal"/>
-      <itemData name="Preprocessor"  defStyleNum="dsOthers"/>
-      <itemData name="Prep. Lib"  defStyleNum="dsOthers"/>
+      <itemData name="Preprocessor"  defStyleNum="dsPreprocessor"/>
+      <itemData name="Prep. Lib"  defStyleNum="dsImport"/>
       <itemData name="Alert"        defStyleNum="dsAlert" />
     </itemDatas>
   </highlighting>

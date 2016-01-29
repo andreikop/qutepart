@@ -10,7 +10,7 @@ Change log:
 
 Author of version 1.02: Sebastian Vuorinen
 -->
-<language name="Eiffel" version="1.02" kateversion="2.3" section="Sources" extensions="*.e" mimetype="text/x-eiffel-src" author="Sebastian Vuorinen" license="">
+<language name="Eiffel" version="1.03" kateversion="5.0" section="Sources" extensions="*.e" mimetype="text/x-eiffel-src" author="Sebastian Vuorinen" license="">
 	<highlighting>
 		<list name="keywords">
 			<item> agent </item>
@@ -104,7 +104,7 @@ Author of version 1.02: Sebastian Vuorinen
 			<itemData name="Normal Text" defStyleNum="dsNormal" />
 
 			<itemData name="Keyword"     defStyleNum="dsKeyword" />
-			<itemData name="Predefined entities" defStyleNum="dsOthers" />
+			<itemData name="Predefined entities" defStyleNum="dsConstant" />
 			<itemData name="Assertions"  defStyleNum="dsOthers" />
 
 			<itemData name="Decimal"     defStyleNum="dsDecVal" />

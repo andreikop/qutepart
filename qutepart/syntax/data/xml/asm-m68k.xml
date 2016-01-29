@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
 
-<language name="Motorola 68k (VASM/Devpac)" section="Assembler" version="1.02" kateversion="2.4"  extensions="*.s;*.i;*.S;*.I" author="Miro Kropacek (miro.kropacek@gmail.com)" license="LGPL">
+<language name="Motorola 68k (VASM/Devpac)" section="Assembler" version="1.05" kateversion="5.0"  extensions="*.s;*.i;*.S;*.I" author="Miro Kropacek (miro.kropacek@gmail.com)" license="LGPL">
 
   <highlighting>
     <list name="Data Registers">
@@ -624,14 +624,14 @@
       <itemData name="FPU Registers" defStyleNum="dsDataType"/>
       <itemData name="Instructions (CPU)" bold="true" defStyleNum="dsKeyword"/>
       <itemData name="Instructions (FPU)" bold="true" defStyleNum="dsKeyword"/>
-      <itemData name="Directives" bold="true" defStyleNum="dsOthers"/>
+      <itemData name="Directives" bold="true" defStyleNum="dsBuiltIn"/>
       <!-- defined in contexts -->
       <itemData name="Operand sizes (CPU)" bold="true" defStyleNum="dsKeyword"/>
       <itemData name="Operand sizes (FPU)" bold="true" defStyleNum="dsKeyword"/>
       <itemData name="Comment" italic="false" defStyleNum="dsComment"/>
       <itemData name="Label" defStyleNum="dsFunction"/>
       <itemData name="Local label" defStyleNum="dsFunction"/>
-      <itemData name="Constant" defStyleNum="dsDataType"/>
+      <itemData name="Constant" defStyleNum="dsConstant"/>
       <itemData name="BaseN" defStyleNum="dsBaseN"/>
       <itemData name="Float" defStyleNum="dsFloat"/>
       <itemData name="Number" defStyleNum="dsDecVal"/>
