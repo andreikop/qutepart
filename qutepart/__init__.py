@@ -1012,18 +1012,21 @@ class Qutepart(QPlainTextEdit):
             # Only incorrect
             if self.indentUseTabs:
                 # Find big space groups
+                firstNonSpaceColumn = len(text) - len(text.lstrip())
                 bigSpaceGroup = ' ' * self.indentWidth
                 column = 0
-                while column != -1:
+                while True:
                     column = text.find(bigSpaceGroup, column, lastNonSpaceColumn)
-                    if column != -1:
-                        for index in range(column, column + self.indentWidth):
+                    if column == -1 or column >= firstNonSpaceColumn:
+                        break
+
+                    for index in range(column, column + self.indentWidth):
+                        result[index] = True
+                    while index < lastNonSpaceColumn and \
+                          text[index] == ' ':
                             result[index] = True
-                        while index < lastNonSpaceColumn and \
-                              text[index] == ' ':
-                                result[index] = True
-                                index += 1
-                        column = index
+                            index += 1
+                    column = index
             else:
                 # Find tabs:
                 column = 0
