@@ -7,22 +7,44 @@ class ColorTheme:
     def __init__(self, textFormatClass):
         """Constructor gets TextFormat class as parameter for avoid cross-import problems
         """
-        self.format = {}
-        self.format['dsNormal'] = textFormatClass()
-        self.format['dsKeyword'] = textFormatClass(bold=True)
-        self.format['dsDataType'] = textFormatClass(color='#0057ae')
-        self.format['dsDataType'] = textFormatClass(color='#0057ae')
-        self.format['dsDecVal'] = textFormatClass(color='#b07e00')
-        self.format['dsBaseN'] = textFormatClass(color='#b07e00')
-        self.format['dsFloat'] = textFormatClass(color='#b07e00')
-        self.format['dsChar'] = textFormatClass(color='#ff80e0')
-        self.format['dsString'] = textFormatClass(color='#bf0303')
-        self.format['dsComment'] = textFormatClass(color='#888786', italic=True)
-        self.format['dsOthers'] = textFormatClass(color='#006e26')
-        self.format['dsAlert'] = textFormatClass(color='#bf0303', background='#f7e7e7', bold=True)
-        self.format['dsFunction'] = textFormatClass(color='#442886')
-        self.format['dsRegionMarker'] = textFormatClass(color='#0057ae', background='#e1eaf8')
-        self.format['dsError'] = textFormatClass(color='#bf0303', underline=True)
+        self.format = {
+            'dsNormal':         textFormatClass(),
+            'dsKeyword':        textFormatClass(bold=True),
+            'dsFunction':       textFormatClass(color='#644a9a'),
+            'dsVariable':       textFormatClass(color='#0057ad'),
+            'dsControlFlow':    textFormatClass(bold=True),
+            'dsOperator':       textFormatClass(),
+            'dsBuiltIn':        textFormatClass(color='#644a9a', bold=True),
+            'dsExtension':      textFormatClass(color='#0094fe', bold=True),
+            'dsPreprocessor':   textFormatClass(color='#00fe28'),
+            'dsAttribute':      textFormatClass(color='#0057ad'),
+
+            'dsChar':           textFormatClass(color='#914c9c'),
+            'dsSpecialChar':    textFormatClass(color='#3dade8'),
+            'dsString':         textFormatClass(color='#be0303'),
+            'dsVerbatimString': textFormatClass(color='#be0303'),
+            'dsSpecialString':  textFormatClass(color='#fe5500'),
+            'dsImport':         textFormatClass(color='#fe5500', bold=True),
+
+            'dsDataType':       textFormatClass(color='#0057ad'),
+            'dsDecVal':         textFormatClass(color='#af8000'),
+            'dsBaseN':          textFormatClass(color='#af8000'),
+            'dsFloat':          textFormatClass(color='#af8000'),
+
+            'dsConstant':       textFormatClass(bold=True),
+
+            'dsComment':        textFormatClass(color='#888786'),
+            'dsDocumentation':  textFormatClass(color='#608880'),
+            'dsAnnotation':     textFormatClass(color='#0094fe'),
+            'dsCommentVar':     textFormatClass(color='#c960c9'),
+
+            'dsRegionMarker':   textFormatClass(color='#0057ad'),
+            'dsInformation':    textFormatClass(color='#af8000'),
+            'dsWarning':        textFormatClass(color='#be0303'),
+            'dsAlert':          textFormatClass(color='#bf0303', bold=True),
+            'dsOthers':         textFormatClass(color='#006e28'),
+            'dsError':          textFormatClass(color='#bf0303', underline=True),
+        }
 
     def getFormat(self, styleName):
         """Returns TextFormat for particular style
