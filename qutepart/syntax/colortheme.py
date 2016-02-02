@@ -16,7 +16,7 @@ class ColorTheme:
             'dsOperator':       textFormatClass(),
             'dsBuiltIn':        textFormatClass(color='#644a9a', bold=True),
             'dsExtension':      textFormatClass(color='#0094fe', bold=True),
-            'dsPreprocessor':   textFormatClass(color='#00fe28'),
+            'dsPreprocessor':   textFormatClass(color='#006e28'),
             'dsAttribute':      textFormatClass(color='#0057ad'),
 
             'dsChar':           textFormatClass(color='#914c9c'),
@@ -38,10 +38,10 @@ class ColorTheme:
             'dsAnnotation':     textFormatClass(color='#0094fe'),
             'dsCommentVar':     textFormatClass(color='#c960c9'),
 
-            'dsRegionMarker':   textFormatClass(color='#0057ad'),
+            'dsRegionMarker':   textFormatClass(color='#0057ad', background='#e0e9f8'),
             'dsInformation':    textFormatClass(color='#af8000'),
             'dsWarning':        textFormatClass(color='#be0303'),
-            'dsAlert':          textFormatClass(color='#bf0303', bold=True),
+            'dsAlert':          textFormatClass(color='#bf0303', background='#f7e6e6', bold=True),
             'dsOthers':         textFormatClass(color='#006e28'),
             'dsError':          textFormatClass(color='#bf0303', underline=True),
         }
