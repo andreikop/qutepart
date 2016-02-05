@@ -104,7 +104,7 @@ class Test(unittest.TestCase):
         self.assertEqual(tryMatch(rule, 1, 'importx'), None)
 
     def test_keyword(self):
-        rule = self._getRule("javascript.xml", "Normal", 8)
+        rule = self._getRule("javascript.xml", "Normal", 9)
 
         self.assertEqual(tryMatch(rule, 0, "var"), 3)
         self.assertEqual(tryMatch(rule, 0, "vor"), None)
