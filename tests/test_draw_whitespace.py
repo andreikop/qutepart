@@ -2,18 +2,11 @@
 # encoding: utf8
 
 
-import os
-import sys
 import unittest
 
 import base
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtTest import QTest
-
 from qutepart import Qutepart
-
-
 
 
 class Test(unittest.TestCase):
@@ -81,8 +74,8 @@ class Test(unittest.TestCase):
 
     def test_3(self):
         # Spaces in tab mode
-        self._ws_test(' 1  2   3     5',
-                      '000001110111110',
+        self._ws_test('    2   3     5',
+                      '111100000000000',
                       drawIncorrect=[True], drawAny=[False], indentWidth=[3], useTab=[True])
 
     def test_4(self):
