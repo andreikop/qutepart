@@ -73,6 +73,17 @@ class Test(unittest.TestCase):
         self.qpart.decreaseIndentAction.trigger()
         self.assertEqual(self.qpart.text, '  ab\n  cd')
 
+    def test_4b(self):
+        # Indent multiline including line with zero selection
+        self.qpart.indentUseTabs = True
+
+        self.qpart.text = 'ab\ncd\nef'
+        self.qpart.position = (0, 0)
+
+        QTest.keyClick(self.qpart, Qt.Key_Down, Qt.ShiftModifier)
+        QTest.keyClick(self.qpart, Qt.Key_Tab)
+        self.assertEqual(self.qpart.text, '\tab\ncd\nef')
+
     def test_5(self):
         # (Un)indent multiline with Space
         self.qpart.indentUseTabs = False

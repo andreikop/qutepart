@@ -138,6 +138,9 @@ class Indenter:
 
         startBlock = self._qpart.document().findBlock(cursor.selectionStart())
         endBlock = self._qpart.document().findBlock(cursor.selectionEnd())
+        if(endBlock.position() == cursor.selectionEnd() and
+           endBlock.previous().isValid()):
+            endBlock = endBlock.previous()  # do not indent not selected line
 
         indentFunc = indentBlock if increase else unIndentBlock
 
@@ -155,7 +158,7 @@ class Indenter:
             newCursor.setPosition(endBlock.position() + len(endBlock.text()), QTextCursor.KeepAnchor)
             self._qpart.setTextCursor(newCursor)
         else:  # indent 1 line
-            indentFunc(cursor.block())
+            indentFunc(startBlock)
 
     def onShortcutIndentAfterCursor(self):
         """Tab pressed and no selection. Insert text after cursor

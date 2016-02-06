@@ -463,6 +463,27 @@ class BaseCommandMode(Mode):
         dst = min(ancor, pos) if moveToTop else pos
         self._qpart.cursorPosition = dst
 
+    def _expandSelection(self):
+        cursor = self._qpart.textCursor()
+        anchor = cursor.anchor()
+        pos = cursor.position()
+
+
+        if pos >= anchor:
+            anchorSide = QTextCursor.StartOfBlock
+            cursorSide = QTextCursor.EndOfBlock
+        else:
+            anchorSide = QTextCursor.EndOfBlock
+            cursorSide = QTextCursor.StartOfBlock
+
+
+        cursor.setPosition(anchor)
+        cursor.movePosition(anchorSide)
+        cursor.setPosition(pos, QTextCursor.KeepAnchor)
+        cursor.movePosition(cursorSide, QTextCursor.KeepAnchor)
+
+        self._qpart.setTextCursor(cursor)
+
 
 
 
@@ -558,27 +579,6 @@ class BaseVisual(BaseCommandMode):
             raise StopIteration(False)  # but do not ignore not-a-character keys
 
         assert 0  # must StopIteration on if
-
-    def _expandSelection(self):
-        cursor = self._qpart.textCursor()
-        anchor = cursor.anchor()
-        pos = cursor.position()
-
-
-        if pos >= anchor:
-            anchorSide = QTextCursor.StartOfBlock
-            cursorSide = QTextCursor.EndOfBlock
-        else:
-            anchorSide = QTextCursor.EndOfBlock
-            cursorSide = QTextCursor.StartOfBlock
-
-
-        cursor.setPosition(anchor)
-        cursor.movePosition(anchorSide)
-        cursor.setPosition(pos, QTextCursor.KeepAnchor)
-        cursor.movePosition(cursorSide, QTextCursor.KeepAnchor)
-
-        self._qpart.setTextCursor(cursor)
 
     def _selectedLinesRange(self):
         """ Selected lines range for line manipulation methods
@@ -1225,6 +1225,7 @@ class Normal(BaseCommandMode):
             pass  # current line is already selected
         else:
             self._moveCursor(motion, count, select=True, searchChar=searchChar)
+            self._expandSelection()
 
         self._qpart._indenter.onChangeSelectedBlocksIndent(increase=False, withSpace=False)
         self._resetSelection(moveToTop=True)
@@ -1236,6 +1237,7 @@ class Normal(BaseCommandMode):
             pass  # current line is already selected
         else:
             self._moveCursor(motion, count, select=True, searchChar=searchChar)
+            self._expandSelection()
 
         self._qpart._indenter.onChangeSelectedBlocksIndent(increase=True, withSpace=False)
         self._resetSelection(moveToTop=True)
@@ -1247,6 +1249,7 @@ class Normal(BaseCommandMode):
             pass  # current line is already selected
         else:
             self._moveCursor(motion, count, select=True, searchChar=searchChar)
+            self._expandSelection()
 
         self._qpart._indenter.onAutoIndentTriggered()
         self._resetSelection(moveToTop=True)
