@@ -61,15 +61,16 @@ def main():
     font.setPointSize(12)
     qpart.setFont(font)
 
-    qpart.vimModeEnabled = True
+    qpart.vimModeEnabled = False
 
     layout.addWidget(qpart)
 
     def onVimModeChanged(color, text):
-        palette = vimModeIndication.palette()
-        palette.setColor(QPalette.Window, color)
-        vimModeIndication.setPalette(palette)
-        vimModeIndication.setText(text)
+        if color is not None:
+            palette = vimModeIndication.palette()
+            palette.setColor(QPalette.Window, color)
+            vimModeIndication.setPalette(palette)
+            vimModeIndication.setText(text)
     qpart.vimModeIndicationChanged.connect(onVimModeChanged)
     onVimModeChanged(*qpart.vimModeIndication)
 
