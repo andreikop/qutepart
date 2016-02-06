@@ -715,7 +715,7 @@ static void
 TextToMatchObject_dealloc(TextToMatchObject* self)
 {
     Py_XDECREF(self->internal.wholeLineUnicodeText);
-    Py_XDECREF(self->internal.contextData);
+    _RegExpMatchGroups_release(self->internal.contextData);
     TextToMatchObject_internal_free(&self->internal);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }

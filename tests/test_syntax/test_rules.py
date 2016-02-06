@@ -7,8 +7,8 @@ import os.path
 
 topLevelPath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, topLevelPath)
-sys.path.insert(0, os.path.join(topLevelPath, 'build/lib.linux-x86_64-2.6/'))
-sys.path.insert(0, os.path.join(topLevelPath, 'build/lib.linux-x86_64-2.7/'))
+sys.path.insert(0, os.path.join(topLevelPath, 'build/lib.linux-x86_64-3.4/'))
+sys.path.insert(0, os.path.join(topLevelPath, 'build/lib.linux-x86_64-3.5/'))
 
 import qutepart
 
