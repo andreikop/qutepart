@@ -197,9 +197,9 @@ typedef long long int _StringHash;
 #define QUTEPART_MAX_CONTEXT_STACK_DEPTH 128
 
 typedef struct {
-    Py_ssize_t size;
+    size_t size;
     const char** data;
-    Py_ssize_t refCount;
+    unsigned int refCount;
 } _RegExpMatchGroups;
 
 typedef struct {
@@ -219,7 +219,7 @@ typedef struct {
     bool lookAhead;
     bool firstNonSpace;
     bool dynamic;
-    Py_ssize_t column;
+    unsigned int column;
 } AbstractRuleParams;
 
 
@@ -235,7 +235,7 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     PyObject* rule;
-    size_t length;
+    unsigned int length;
     PyObject* data;
 } RuleTryMatchResult;
 
@@ -248,8 +248,8 @@ typedef struct {
 
 typedef struct {
     _RegExpMatchGroups* contextData;
-    Py_ssize_t currentColumnIndex;
-    Py_ssize_t wholeLineLen;
+    unsigned int currentColumnIndex;
+    unsigned int wholeLineLen;
     PyObject* wholeLineUnicodeText;
     PyObject* wholeLineUnicodeTextLower;
     PyObject* wholeLineUtf8Text;
@@ -258,11 +258,11 @@ typedef struct {
     Py_UNICODE* unicodeTextLower;
     const char* utf8Text;
     const char* utf8TextLower;
-    Py_ssize_t textLen;
+    size_t textLen;
     bool firstNonSpace;
     bool isWordStart;
-    Py_ssize_t wordLength;
-    Py_ssize_t utf8WordLength;   // word length in bytes of utf8 code
+    size_t wordLength;
+    size_t utf8WordLength;   // word length in bytes of utf8 code
     char utf8Word[QUTEPART_MAX_WORD_LENGTH];
     char utf8WordLower[QUTEPART_MAX_WORD_LENGTH];
 } TextToMatchObject_internal;
@@ -287,7 +287,7 @@ typedef struct {
     ContextSwitcher* fallthroughContext;
     PyObject* rulesPython;
     AbstractRule** rulesC;
-    Py_ssize_t rulesSize;
+    size_t rulesSize;
     bool dynamic;
     Py_UNICODE textType;
     PyObject* textTypePython;
@@ -297,7 +297,7 @@ typedef struct {
     PyObject_HEAD
     Context* _contexts[QUTEPART_MAX_CONTEXT_STACK_DEPTH];
     _RegExpMatchGroups* _data[QUTEPART_MAX_CONTEXT_STACK_DEPTH];
-    Py_ssize_t _size;
+    size_t _size;
 } ContextStack;
 
 #define DELIMINATOR_SET_CACHE_SIZE 128
@@ -325,7 +325,7 @@ typedef struct {
  *                                _RegExpMatchGroups
  ********************************************************************************/
 static _RegExpMatchGroups*
-_RegExpMatchGroups_new(Py_ssize_t size, const char** data)
+_RegExpMatchGroups_new(size_t size, const char** data)
 {
     _RegExpMatchGroups* self = PyMem_Malloc(sizeof *self);
     self->refCount = 1;
@@ -368,7 +368,7 @@ _RegExpMatchGroups_size(_RegExpMatchGroups* self)
 }
 
 static const char*
-_RegExpMatchGroups_getItem(_RegExpMatchGroups* self, size_t index)
+_RegExpMatchGroups_getItem(_RegExpMatchGroups* self, unsigned int index)
 {
     return self->data[index];
 }
@@ -377,10 +377,10 @@ _RegExpMatchGroups_getItem(_RegExpMatchGroups* self, size_t index)
  *                                _listToDynamicallyAllocatedArray
  ********************************************************************************/
 static PyObject**
-_listToDynamicallyAllocatedArray(PyObject* list, Py_ssize_t* size)
+_listToDynamicallyAllocatedArray(PyObject* list, size_t* size)
 {
     PyObject** array;
-    Py_ssize_t i;
+    size_t i;
 
     *size = PyList_Size(list);
     array = PyMem_Malloc((sizeof (PyObject*)) * *size);
@@ -422,7 +422,7 @@ static DeliminatorSet
 _MakeDeliminatorSet(PyObject* setAsUnicodeString)
 {
     DeliminatorSet deliminatorSet;
-    Py_UNICODE i;
+    unsigned int i;
     for (i = 0; i < DELIMINATOR_SET_CACHE_SIZE; i++)
         deliminatorSet.cache[i] = _isDeliminatorNoCache(i, setAsUnicodeString);
 
@@ -564,13 +564,13 @@ _utf8TextCharacterLength(char character)
 static void
 _utf8CharacterLengthTable_init(void)
 {
-    char i;
+    unsigned char i;
     for (i = 0; i < 0xff; i++)
         _utf8CharacterLengthTable[i] = _utf8TextCharacterLength(i);
 }
 
 static TextToMatchObject_internal
-TextToMatchObject_internal_make(Py_ssize_t column, PyObject* unicodeText, _RegExpMatchGroups* contextData)
+TextToMatchObject_internal_make(unsigned int column, PyObject* unicodeText, _RegExpMatchGroups* contextData)
 {
     TextToMatchObject_internal textToMatchObject;
 
@@ -604,12 +604,12 @@ TextToMatchObject_internal_free(TextToMatchObject_internal* self)
 
 static void
 TextToMatchObject_internal_update(TextToMatchObject_internal* self,
-                                  Py_ssize_t currentColumnIndex,
+                                  unsigned int currentColumnIndex,
                                   DeliminatorSet* deliminatorSet)
 {
-    Py_ssize_t i;
-    Py_ssize_t prevTextLen;
-    Py_ssize_t step;
+    unsigned int i;
+    unsigned int prevTextLen;
+    unsigned int step;
     Py_UNICODE* wholeLineUnicodeBuffer = PyUnicode_AS_UNICODE(self->wholeLineUnicodeText);
     Py_UNICODE* wholeLineUnicodeBufferLower = PyUnicode_AS_UNICODE(self->wholeLineUnicodeTextLower);
 
@@ -624,7 +624,7 @@ TextToMatchObject_internal_update(TextToMatchObject_internal* self,
 
     for (i = 0; i < step; i++)
     {
-        Py_ssize_t firstCharacterLength = _utf8CharacterLengthTable[self->utf8Text[0]];
+        size_t firstCharacterLength = _utf8CharacterLengthTable[(unsigned char)self->utf8Text[0]];
         self->utf8Text += firstCharacterLength;
         self->utf8TextLower += firstCharacterLength;
     }
@@ -897,7 +897,7 @@ _numPlaceholderIndex(char* text)
 
 // for dynamic StringDetect and RegExpr
 // returns -1 if something goes wrong
-static size_t
+static int
 _makeDynamicSubstitutions(char* utf8String,
                           size_t stringLen,
                           char* buffer,
@@ -910,7 +910,7 @@ _makeDynamicSubstitutions(char* utf8String,
 
     for (i = 0; i < stringLen && resultLen < maxResultLen; i++)
     {
-        size_t index = _numPlaceholderIndex(&utf8String[i]);
+        int index = _numPlaceholderIndex(&utf8String[i]);
         if (index >= 0)
         {
             const char* group;
@@ -1005,7 +1005,7 @@ typedef struct {
     AbstractRule_HEAD
     /* Type-specific fields go here. */
     char utf8Char[4 + 1];  // 4 bytes of utf8 character + zero
-    size_t index;
+    unsigned int index;
 } DetectChar;
 
 
@@ -1022,7 +1022,7 @@ DetectChar_tryMatch(DetectChar* self, TextToMatchObject_internal* textToMatchObj
 
     if (self->abstractRuleParams->dynamic)
     {
-        size_t index = self->index - 1;
+        int index = self->index - 1;
         if (index >= _RegExpMatchGroups_size(textToMatchObject->contextData))
         {
             fprintf(stderr, "Invalid DetectChar index %d\n", index);
@@ -1350,8 +1350,8 @@ typedef struct {
     size_t wordCount[QUTEPART_MAX_WORD_LENGTH];
 } _WordTree;
 
-static Py_ssize_t
-_WordTree_wordBufferSize(Py_ssize_t wordLength)
+static size_t
+_WordTree_wordBufferSize(size_t wordLength)
 {
     // +1 for \0
     if (wordLength + 1 < sizeof(_StringHash))
@@ -1431,7 +1431,7 @@ _WordTree_init(_WordTree* self, PyObject* listOfUnicodeStrings)
 static void
 _WordTree_free(_WordTree* self)
 {
-    Py_ssize_t i;
+    size_t i;
     for (i = 0; i < QUTEPART_MAX_WORD_LENGTH; i++)
     {
         if (NULL != self->words[i])
@@ -1440,9 +1440,9 @@ _WordTree_free(_WordTree* self)
 }
 
 static bool
-_WordTree_contains(_WordTree* self, const char* utf8Word, Py_ssize_t wordLength)
+_WordTree_contains(_WordTree* self, const char* utf8Word, size_t wordLength)
 {
-    Py_ssize_t step;
+    size_t step;
     const char* outOfStringPointer;
     const char* wordPointer;
 
@@ -1717,9 +1717,9 @@ DECLARE_RULE_METHODS_AND_TYPE(RegExpr);
 /********************************************************************************
  *                                Int
  ********************************************************************************/
-Py_ssize_t AbstractNumberRule_countDigits(Py_UNICODE* text, Py_ssize_t textLen)
+size_t AbstractNumberRule_countDigits(Py_UNICODE* text, size_t textLen)
 {
-    Py_ssize_t i;
+    size_t i;
 
     for (i = 0; i < textLen; i++)
     {
@@ -1731,10 +1731,10 @@ Py_ssize_t AbstractNumberRule_countDigits(Py_UNICODE* text, Py_ssize_t textLen)
 }
 
 
-static Py_ssize_t
+static int
 Int_tryMatchText(TextToMatchObject_internal* textToMatchObject)
 {
-    Py_ssize_t digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText, textToMatchObject->textLen);
+    size_t digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText, textToMatchObject->textLen);
 
     if (digitCount)
         return digitCount;
@@ -1742,15 +1742,15 @@ Int_tryMatchText(TextToMatchObject_internal* textToMatchObject)
         return -1;
 }
 
-static Py_ssize_t
+static int
 Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
 {
     bool haveDigit = false;
     bool havePoint = false;
 
-    Py_ssize_t matchedLength = 0;
+    size_t matchedLength = 0;
 
-    Py_ssize_t digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText, textToMatchObject->textLen);
+    size_t digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText, textToMatchObject->textLen);
     if (digitCount)
     {
         haveDigit = true;
@@ -1764,7 +1764,8 @@ Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
         matchedLength += 1;
     }
 
-    digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText + matchedLength, textToMatchObject->textLen - matchedLength);
+    digitCount = AbstractNumberRule_countDigits(textToMatchObject->unicodeText + matchedLength,
+                                                textToMatchObject->textLen - matchedLength);
     if(digitCount)
     {
         haveDigit = true;
@@ -1813,11 +1814,11 @@ Float_tryMatchText(TextToMatchObject_internal* textToMatchObject)
 static RuleTryMatchResult_internal
 AbstractNumberRule_tryMatch(AbstractRule* self,
                             AbstractRule** childRules,
-                            Py_ssize_t childRulesSize,
+                            size_t childRulesSize,
                             bool isIntRule,
                             TextToMatchObject_internal* textToMatchObject)
 {
-    Py_ssize_t index;
+    int index;
     Py_ssize_t matchEndIndex;
 
     if ( ! textToMatchObject->isWordStart)
@@ -1834,7 +1835,7 @@ AbstractNumberRule_tryMatch(AbstractRule* self,
     matchEndIndex = textToMatchObject->currentColumnIndex + index;
     if (matchEndIndex < PyUnicode_GET_SIZE(textToMatchObject->wholeLineUnicodeText))
     {
-        Py_ssize_t i;
+        size_t i;
         bool haveMatch = false;
         Parser* parentParser;
 
@@ -1873,7 +1874,7 @@ typedef struct {
     /* Type-specific fields go here. */
     PyObject* childRulesPython;
     AbstractRule** childRulesC;
-    Py_ssize_t childRulesSize;
+    size_t childRulesSize;
 } Int;
 
 
@@ -1924,7 +1925,7 @@ typedef struct {
     /* Type-specific fields go here. */
     PyObject* childRulesPython;
     AbstractRule** childRulesC;
-    Py_ssize_t childRulesSize;
+    size_t childRulesSize;
 } Float;
 
 static void
@@ -1988,7 +1989,7 @@ _isOctChar(Py_UNICODE symbol)
 static RuleTryMatchResult_internal
 HlCOct_tryMatch(HlCOct* self, TextToMatchObject_internal* textToMatchObject)
 {
-    Py_ssize_t index = 1;
+    size_t index = 1;
 
     if (textToMatchObject->unicodeText[0] != '0')
         return MakeEmptyTryMatchResult();
@@ -2051,7 +2052,7 @@ _isHexChar(Py_UNICODE symbol)
 static RuleTryMatchResult_internal
 HlCHex_tryMatch(HlCHex* self, TextToMatchObject_internal* textToMatchObject)
 {
-    Py_ssize_t index = 2;
+    size_t index = 2;
 
     if (textToMatchObject->textLen < 3)
         return MakeEmptyTryMatchResult();
@@ -2109,10 +2110,10 @@ _charInString(Py_UNICODE character, const char* string)
     return false;
 }
 
-static Py_ssize_t
-_checkEscapedChar(Py_UNICODE* textLower, Py_ssize_t textLen)
+static int
+_checkEscapedChar(Py_UNICODE* textLower, size_t textLen)
 {
-    Py_ssize_t index = 0;
+    size_t index = 0;
     if (textLen > 1 && textLower[0] == '\\')
     {
         index = 1;
@@ -2160,7 +2161,7 @@ HlCStringChar_dealloc_fields(HlCStringChar* self)
 static RuleTryMatchResult_internal
 HlCStringChar_tryMatch(HlCStringChar* self, TextToMatchObject_internal* textToMatchObject)
 {
-    Py_ssize_t res = _checkEscapedChar(textToMatchObject->unicodeTextLower, textToMatchObject->textLen);
+    int res = _checkEscapedChar(textToMatchObject->unicodeTextLower, textToMatchObject->textLen);
     if (res != -1)
         return MakeTryMatchResult(self, res, NULL);
     else
@@ -2208,8 +2209,8 @@ HlCChar_tryMatch(HlCChar* self, TextToMatchObject_internal* textToMatchObject)
         textToMatchObject->unicodeText[0] == '\'' &&
         textToMatchObject->unicodeText[1] != '\'')
     {
-        Py_ssize_t index;
-        Py_ssize_t result = _checkEscapedChar(textToMatchObject->unicodeTextLower + 1, textToMatchObject->textLen - 1);
+        int index;
+        int result = _checkEscapedChar(textToMatchObject->unicodeTextLower + 1, textToMatchObject->textLen - 1);
         if (result != -1)
             index = 1 + result;
         else  // 1 not escaped character
@@ -2265,8 +2266,8 @@ RangeDetect_tryMatch(RangeDetect* self, TextToMatchObject_internal* textToMatchO
 {
     if (textToMatchObject->unicodeText[0] == self->char_)
     {
-        Py_ssize_t end = -1;
-        Py_ssize_t i;
+        int end = -1;
+        int i;
         for (i = 0; i < textToMatchObject->textLen; i++)
         {
             if (textToMatchObject->unicodeText[i] == self->char1_)
@@ -2373,7 +2374,7 @@ IncludeRules_dealloc_fields(IncludeRules* self)
 static RuleTryMatchResult_internal
 IncludeRules_tryMatch(IncludeRules* self, TextToMatchObject_internal* textToMatchObject)
 {
-    Py_ssize_t i;
+    size_t i;
     AbstractRule** rules = self->context->rulesC;
     for (i = 0; i < self->context->rulesSize; i++)
     {
@@ -2425,7 +2426,7 @@ DetectSpaces_dealloc_fields(DetectSpaces* self)
 static RuleTryMatchResult_internal
 DetectSpaces_tryMatch(DetectSpaces* self, TextToMatchObject_internal* textToMatchObject)
 {
-    Py_ssize_t spaceLen = 0;
+    size_t spaceLen = 0;
     while (spaceLen < textToMatchObject->textLen &&
           Py_UNICODE_ISSPACE(textToMatchObject->unicodeText[spaceLen]))
         spaceLen++;
@@ -2474,7 +2475,7 @@ DetectIdentifier_tryMatch(DetectIdentifier* self, TextToMatchObject_internal* te
 {
     if (Py_UNICODE_ISALPHA(textToMatchObject->unicodeText[0]))
     {
-        Py_ssize_t index = 1;
+        size_t index = 1;
         while (index < textToMatchObject->textLen &&
                (Py_UNICODE_ISALPHA(textToMatchObject->unicodeText[index]) ||
                 Py_UNICODE_ISDIGIT(textToMatchObject->unicodeText[index]) ||
@@ -2512,7 +2513,7 @@ DECLARE_RULE_METHODS_AND_TYPE(DetectIdentifier);
 static void
 ContextStack_dealloc(ContextStack* self)
 {
-    Py_ssize_t i;
+    size_t i;
     for (i = 0; i < self->_size; i++)
         _RegExpMatchGroups_release(self->_data[i]);
 
@@ -2522,9 +2523,9 @@ ContextStack_dealloc(ContextStack* self)
 DECLARE_TYPE_WITHOUT_CONSTRUCTOR(ContextStack, NULL, "Context stack");
 
 static ContextStack*
-ContextStack_new(Context** contexts, _RegExpMatchGroups** data, Py_ssize_t size)  // not a constructor, just C function
+ContextStack_new(Context** contexts, _RegExpMatchGroups** data, size_t size)  // not a constructor, just C function
 {
-    Py_ssize_t i;
+    size_t i;
     ContextStack* contextStack = PyObject_New(ContextStack, &ContextStackType);
 
     for (i = 0; i < size; i++)
@@ -2746,7 +2747,7 @@ static PyMethodDef Context_methods[] = {
 DECLARE_TYPE_WITH_MEMBERS(Context, Context_methods, "Parsing context");
 
 static void
-Context_appendSegment(PyObject* segmentList, Py_ssize_t count, PyObject* format)
+Context_appendSegment(PyObject* segmentList, size_t count, PyObject* format)
 {
     if (Py_None != segmentList)
     {
@@ -2756,9 +2757,9 @@ Context_appendSegment(PyObject* segmentList, Py_ssize_t count, PyObject* format)
 }
 
 static void
-Context_appendTextType(Py_ssize_t fromIndex, Py_ssize_t count, PyObject* textTypeMap, Py_UNICODE textType)
+Context_appendTextType(size_t fromIndex, size_t count, PyObject* textTypeMap, Py_UNICODE textType)
 {
-    Py_ssize_t i;
+    size_t i;
     for (i = fromIndex; i < fromIndex + count; i++)
         PyUnicode_WriteChar(textTypeMap, i, textType);
 }
@@ -2788,7 +2789,7 @@ Context_parseBlock(Context* self,
 
     while (currentColumnIndex < wholeLineLen)
     {
-        Py_ssize_t i;
+        size_t i;
         RuleTryMatchResult_internal result;
 
         Parser* parentParser = (Parser*)self->parser;
@@ -2814,7 +2815,7 @@ Context_parseBlock(Context* self,
             {
                 fprintf(stderr, "qutepart: \t");
                 PyObject_Print(self->name, stderr, 0);
-                fprintf(stderr, ": matched rule %d at %d\n", i, currentColumnIndex);
+                fprintf(stderr, ": matched rule %zu at %zu\n", i, currentColumnIndex);
             }
 
             if (countOfNotMatchedSymbols > 0)
@@ -3004,8 +3005,8 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     Context* currentContext;
     PyObject* segmentList = NULL;
     bool lineContinue = false;
-    Py_ssize_t currentColumnIndex = 0;
-    Py_ssize_t textLen;
+    size_t currentColumnIndex = 0;
+    size_t textLen;
     PyObject* textTypeMap;
     ContextStack* contextStack;
 
@@ -3045,7 +3046,7 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
 
     while (currentColumnIndex < textLen)
     {
-        Py_ssize_t length;
+        size_t length;
 
         if (self->debugOutputEnabled)
         {
