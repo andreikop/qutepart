@@ -247,6 +247,8 @@ class Qutepart(QPlainTextEdit):
         # toPlainText() takes a lot of time on long texts, therefore it is cached
         self._cachedText = None
 
+        self._fontBackup = self.font()
+
         self._eol = self._DEFAULT_EOL
         self._indenter = Indenter(self)
         self.lineLengthEdge = None
@@ -411,14 +413,21 @@ class Qutepart(QPlainTextEdit):
             return False
 
     def setFont(self, font):
-        pass # suppress dockstring for non-public method
+        pass  # suppress dockstring for non-public method
         """Set font and update tab stop width
         """
+        self._fontBackup = font
         QPlainTextEdit.setFont(self, font)
         self._updateTabStopWidth()
 
         # text on line numbers may overlap, if font is bigger, than code font
         self._lineNumberArea.setFont(font)
+
+    def showEvent(self, ev):
+        pass  # suppress dockstring for non-public method
+        """ Qt 5.big automatically changes font when adding document to workspace. Workaround this bug """
+        super().setFont(self._fontBackup)
+        return super().showEvent(ev)
 
     def _updateTabStopWidth(self):
         """Update tabstop width after font or indentation changed
