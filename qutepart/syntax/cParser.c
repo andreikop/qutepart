@@ -1401,7 +1401,7 @@ _WordTree_init(_WordTree* self, PyObject* listOfUnicodeStrings)
         }
     }
 
-    memset(currentWordIndex, 0, sizeof(int) * QUTEPART_MAX_WORD_LENGTH);
+    memset(currentWordIndex, 0, sizeof(Py_ssize_t) * QUTEPART_MAX_WORD_LENGTH);
 
     // second pass, copy data
     for (i = 0; i < totalWordCount; i++)
