@@ -506,10 +506,10 @@
         "xorg.conf": "xorg.xml"
     },
     "firstLineToXmlFileName": {
-        "*/sh*": "bash.xml",
-        "*bash": "bash.xml",
-        "*perl*": "perl.xml",
-        "*python*": "python.xml",
+        "#!*/sh*": "bash.xml",
+        "#!*bash": "bash.xml",
+        "#!*perl*": "perl.xml",
+        "#!*python*": "python.xml",
         "<!doctype html*": "html.xml",
         "<!doctype*": "xml.xml",
         "<?php*": "html-php.xml",
