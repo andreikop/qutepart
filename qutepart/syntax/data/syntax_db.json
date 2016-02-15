@@ -510,6 +510,7 @@
         "#!*bash": "bash.xml",
         "#!*perl*": "perl.xml",
         "#!*python*": "python.xml",
+        "#!*ruby*": "ruby.xml",
         "<!doctype html*": "html.xml",
         "<!doctype*": "xml.xml",
         "<?php*": "html-php.xml",
