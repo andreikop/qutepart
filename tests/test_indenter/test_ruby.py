@@ -105,7 +105,6 @@ class If(BaseTestClass):
 
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure
     def test_if30(self):
         origin = [
             "  if foo; 42 else 37 end",
@@ -123,7 +122,6 @@ class If(BaseTestClass):
 
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure
     def test_if31(self):
         origin = [
             "  if foo then 42 else 37 end",
@@ -607,7 +605,6 @@ class NoDo(BaseTestClass):
 
 
 class SingleLine(BaseTestClass):
-    @unittest.expectedFailure
     def test_singleline01(self):
         origin = [
             "  def foo() 42 end",
@@ -625,7 +622,6 @@ class SingleLine(BaseTestClass):
 
         self.verifyExpected(expected)
 
-    @unittest.expectedFailure
     def test_singleline02(self):
         origin = [
             "  def foo; 42 end",

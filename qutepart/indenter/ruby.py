@@ -8,6 +8,8 @@ rxIndent = re.compile(r'^\s*(def|if|unless|for|while|until|class|module|else|els
 # Unindent lines that match this regexp
 rxUnindent = re.compile(r'^\s*((end|when|else|elsif|rescue|ensure)\b|[\]\}])(.*)$')
 
+rxBlockEnd = re.compile(r'\s*end$')
+
 
 class Statement:
     def __init__(self, qpart, startBlock, endBlock):
@@ -277,7 +279,7 @@ class IndentAlgRuby(IndentAlgBase):
             else:
                 return None
 
-        if self.isBlockStart(prevStmt):
+        if self.isBlockStart(prevStmt) and not rxBlockEnd.search(prevStmt.content()):
             return self._increaseIndent(prevStmtInd)
         elif re.search(r'[\[\{]\s*$', prevStmtCnt) is not None:
             return self._increaseIndent(prevStmtInd)
