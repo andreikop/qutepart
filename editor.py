@@ -15,15 +15,18 @@ def _parseCommandLine():
                         help='Use binary parser. Do ./setup.py build before using this flag')
     parser.add_argument('-d, --debug', action='store_true', dest='debug', help='Enable debug output')
     parser.add_argument('-q, --quit', action='store_true', dest='quit', help='Quit just after start')
+    parser.add_argument('-l, --language', action='store_true', dest='show_language',
+                        help='Print detected language when starting')
     parser.add_argument('file', help='File to open')
 
     return parser.parse_args()
+
 
 def _fixSysPath(binaryQutepart):
     executablePath = os.path.abspath(__file__)
     if executablePath.startswith('/home'):  # if executed from the sources
         qutepartDir = os.path.dirname(executablePath)
-        sys.path.insert(0, qutepartDir) # do not import installed modules
+        sys.path.insert(0, qutepartDir)  # do not import installed modules
         if binaryQutepart:
             sys.path.insert(0, qutepartDir + '/build/lib.linux-i686-3.3/')  # use built modules
             sys.path.insert(0, qutepartDir + '/build/lib.linux-i686-3.4/')  # use built modules
@@ -76,6 +79,8 @@ def main():
 
     firstLine = text.splitlines()[0] if text else None
     qpart.detectSyntax(sourceFilePath=ns.file, firstLine=firstLine)
+    if ns.show_language:
+        print("Language:", qpart.language())
 
     qpart.lineLengthEdge = 20
 
