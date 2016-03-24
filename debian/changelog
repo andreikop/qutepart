@@ -1,3 +1,9 @@
+python-qutepart (3.0.0-1~ubuntuseries1) ubuntuseries; urgency=medium
+
+  * Migration to Python3
+
+ -- Andrei Kopats <hlamer@tut.by>  Thu, 24 Mar 2016 10:46:42 +0300
+
 python-qutepart (2.2.3-1~ubuntuseries1) ubuntuseries; urgency=medium
 
   * Vim Overwrite mode fix

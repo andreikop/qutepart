@@ -1,3 +1,6 @@
+3.0.0   Mar 24 2016
+    Migration to Python3
+
 2.2.1   May 27 2015
     Rust syntax by Rust team
     Do not strip trailing empty lines

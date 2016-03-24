@@ -34,8 +34,7 @@ if 'sphinx-build' not in sys.argv[0]:
         return cursor.setPosition(cursor.block().position() + positionInBlock, anchor)
 
 
-
-VERSION = (2, 2, 3)
+VERSION = (3, 0, 0)
 
 
 logger = logging.getLogger('qutepart')
