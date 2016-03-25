@@ -1,5 +1,5 @@
 Format: http://dep.debian.net/deps/dep5
-Upstream-Name: python-qutepart
+Upstream-Name: python3-qutepart
 Source: <https://github.com/hlamer/qutepart>
 
 Files: *

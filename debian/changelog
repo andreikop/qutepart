@@ -1,48 +1,48 @@
-python-qutepart (3.0.0-1~ubuntuseries1) ubuntuseries; urgency=medium
+python3-qutepart (3.0.0-1~ubuntuseries1) ubuntuseries; urgency=medium
 
   * Migration to Python3
 
  -- Andrei Kopats <hlamer@tut.by>  Thu, 24 Mar 2016 10:46:42 +0300
 
-python-qutepart (2.2.3-1~ubuntuseries1) ubuntuseries; urgency=medium
+python3-qutepart (2.2.3-1~ubuntuseries1) ubuntuseries; urgency=medium
 
   * Vim Overwrite mode fix
   * Italic font drawing fix
 
  -- Andrei Kopats <hlamer@tut.by>  Wed, 11 Nov 2015 09:55:26 +0300
 
-python-qutepart (2.2.2-1~ubuntuseries1) ubuntuseries; urgency=low
+python3-qutepart (2.2.2-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Fixed Python indenter exception
 
  -- Andrei Kopats <hlamer@tut.by>  Sat, 30 May 2015 21:52:32 +0300
 
-python-qutepart (2.2.1-1~ubuntuseries1) ubuntuseries; urgency=low
+python3-qutepart (2.2.1-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Rust syntax
   * Do not strip trailing empty lines
 
  -- Andrei Kopats <hlamer@tut.by>  Wed, 27 May 2015 09:34:32 +0300
 
-python-qutepart (2.2.0-1~ubuntuseries1) ubuntuseries; urgency=low
+python3-qutepart (2.2.0-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Vim mode
 
  -- Andrei Kopats <hlamer@tut.by>  Wed, 25 Mar 2015 18:36:37 +0300
 
-python-qutepart (2.1.2-1~ubuntuseries1) ubuntuseries; urgency=low
+python3-qutepart (2.1.2-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Fix CPU load management
 
  -- Andrei Kopats <hlamer@tut.by>  Mon, 18 Aug 2014 21:16:40 +0300
 
-python-qutepart (2.1.1-1~ubuntuseries1) ubuntuseries; urgency=low
+python3-qutepart (2.1.1-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Crash fix
 
  -- Andrei Kopats <hlamer@tut.by>  Mon, 04 Aug 2014 23:04:22 +0300
 
-python-qutepart (2.1.0-1~ubuntuseries1) ubuntuseries; urgency=low
+python3-qutepart (2.1.0-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Linter marks
   * API: drawWhiteSpaceTrailing -> drawIncorrectIndentation
@@ -53,7 +53,7 @@ python-qutepart (2.1.0-1~ubuntuseries1) ubuntuseries; urgency=low
 
  -- Andrei Kopats <hlamer@tut.by>  Tue, 22 Jul 2014 22:37:37 +0300
 
-python-qutepart (1.3.0-1~ubuntuseries1) ubuntuseries; urgency=low
+python3-qutepart (1.3.0-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * API: Added binaryParserAvailable flag
   * API: Added indentWithSpaceAction, unIndentWithSpaceAction
@@ -61,26 +61,26 @@ python-qutepart (1.3.0-1~ubuntuseries1) ubuntuseries; urgency=low
 
  -- Andrei Kopats <hlamer@tut.by>  Thu, 13 Mar 2014 08:52:06 +0300
 
-python-qutepart (1.1.1-1~ubuntuseries1) ubuntuseries; urgency=low
+python3-qutepart (1.1.1-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Highlight XXX alerts
   * Bugfixes
 
  -- Andrei Kopats <hlamer@tut.by>  Wed, 20 Nov 2013 08:00:15 +0300
 
-python-qutepart (1.1.0-1~ubuntuseries1) ubuntuseries; urgency=low
+python3-qutepart (1.1.0-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * API: Added settings drawWhiteSpaceTrailing and drawWhiteSpaceAnyIndentation
 
  -- Andrei Kopats <hlamer@tut.by>  Tue, 01 Oct 2013 08:02:47 +0300
 
-python-qutepart (1.0.9-1~ubuntuseries1) ubuntuseries; urgency=low
+python3-qutepart (1.0.9-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Fix gray background on short files
 
  -- Andrei Kopats <hlamer@tut.by>  Tue, 13 Aug 2013 14:26:29 +0300
 
-python-qutepart (1.0.8-1~ubuntuseries1) ubuntuseries; urgency=low
+python3-qutepart (1.0.8-1~ubuntuseries1) ubuntuseries; urgency=low
 
   * Initial release
 

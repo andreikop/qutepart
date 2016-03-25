@@ -1,8 +1,9 @@
-Source: python-qutepart
+Source: python3-qutepart
 Maintainer: Andrei Kopats <hlamer@tut.by>
-Section: python
+Section: python3
 Priority: optional
 Build-Depends: debhelper (>= 7.4.1), python3, libpcre3-dev, python3-dev, python3-pyqt5
+X-Python3-Version: >= 3.2
 Standards-Version: 3.9.4
 Homepage: https://github.com/hlamer/qutepart
 Vcs-Git: https://github.com/hlamer/qutepart
@@ -10,7 +11,7 @@ Vcs-Browser: https://github.com/hlamer/qutepart
 
 Package: python3-qutepart
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python3-pyqt5, libpcre3
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-pyqt5, libpcre3
 Description: Code editor component
  Some of the features:
   * Syntax highlighting for 196 languages

@@ -2,7 +2,7 @@ VERSION=$(shell ./setup.py --version)
 AUTHOR=$(shell ./setup.py --author)
 AUTHOR_EMAIL=$(shell ./setup.py --author-email)
 PACKAGE_NAME=$(shell ./setup.py --name)
-DEB_PACKAGE_NAME=python-$(PACKAGE_NAME)
+DEB_PACKAGE_NAME=python3-$(PACKAGE_NAME)
 ARCHIVE=$(PACKAGE_NAME)-$(VERSION).tar.gz
 
 ENV=DEBFULLNAME="$(AUTHOR)" DEBEMAIL=$(AUTHOR_EMAIL) EDITOR=enki
@@ -20,13 +20,13 @@ all install:
 
 bump-version:
 	enki qutepart/__init__.py +39
-	enki rpm/python-qutepart.spec +2
+	enki rpm/python3-qutepart.spec +2
 
 changelog-update:
 	enki ChangeLog
 	cd debian && \
 		$(ENV) dch --check-dirname-regex qutepart -v $(VERSION)-1~ubuntuseries1 -b --distribution ubuntuseries
-	enki rpm/python-qutepart.spec +60
+	enki rpm/python3-qutepart.spec +60
 
 dist/${ARCHIVE}:
 	rm -rf dist
@@ -49,7 +49,7 @@ ${OBS_REPO_DIR}:
 
 put-obs: ${OBS_REPO_DIR} deb-obs
 	rm -f ${OBS_REPO_DIR}/python-qutepart/*
-	cp rpm/python-qutepart.spec ${OBS_REPO_DIR}/python-qutepart
+	cp rpm/python3-qutepart.spec ${OBS_REPO_DIR}/python-qutepart
 	cp dist/${ARCHIVE} ${OBS_REPO_DIR}/python-qutepart
 	cp ${DEB_BUILD_DIR}/*.debian.tar.gz ${OBS_REPO_DIR}/python-qutepart
 	cp ${DEB_BUILD_DIR}/*.orig.tar.gz ${OBS_REPO_DIR}/python-qutepart
