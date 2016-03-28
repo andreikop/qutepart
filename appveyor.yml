@@ -1,49 +1,19 @@
 # ****************************************
 # appveyor.yml - Appveyor CI configuration
 # ****************************************
-# This was based on https://github.com/pyinstaller/pyinstaller/blob/develop/appveyor.yml
 environment:
   matrix:
     # We only have a pre-compiled PyQt5 for Python 3.4, so only test on that.
     - PYTHON: "C:\\Python34"
-      PYTHON_VERSION: 3.4
-      PYTHON_ARCH: 32
 
-init:
-  - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
-
-install:
-  # Prepend newly installed Python to the PATH of this build (this cannot be
-  # done from inside the powershell script as it would require to restart
-  # the parent CMD process).
-  - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
-
-  # Download and install PyQt5.
-  # See https://www.appveyor.com/docs/how-to/download-file#start-filedownload-cmdlet.
-  # Only download if we don't have a cached copy available.
-  - ps: if (!(Test-Path install-PyQt5.exe)) { Start-FileDownload 'http://downloads.sourceforge.net/project/pyqt/PyQt5/PyQt-5.5.1/PyQt5-5.5.1-gpl-Py3.4-Qt5.5.1-x32.exe?r=&ts=1458769604&use_mirror=heanet' -FileName install-PyQt5.exe }
-  - dir
-  # See https://github.com/appveyor/ci/issues/363#issuecomment-148915001.
-  - REG ADD HKCU\Software\Python\PythonCore\3.4\InstallPath /f /ve /t REG_SZ /d C:\Python34
-  - install-PyQt5.exe /S
-
-  # Download and compile PCRE.
-  - ps: if (!(Test-Path pcre-8.37.zip)) { Start-FileDownload 'ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.37.zip' }
-  # See https://sevenzip.osdn.jp/chm/cmdline/commands/extract_full.htm.
-  - 7z x pcre-8.37.zip > nul
-  - cd pcre-8.37
-  - mkdir build
-  - cd build
-  - 'cmake .. -DBUILD_SHARED_LIBS:BOOL=OFF -DPCRE_SUPPORT_UTF:BOOL=ON -DPCRE_SUPPORT_JIT:BOOL=ON -G "Visual Studio 10 2010"'
-  - cmake --build . --config Release
-  - cd ..\..
-
-  # Build/install Python modules.
-  - python setup.py install --include-dir=pcre-8.37/build --lib-dir=pcre-8.37/build/Release --force
-
-test_script:
-  - cd tests
-  - python run_all.py
+# Use this to prevent Appveyor from running MSBuild.
+build_script:
+  # Add the correct Python to the path.
+  - set PATH=%PYTHON%;%PYTHON%\Script;%PATH%
+  # Install dependencies needed by the CI script.
+  - python -m pip install -U pip wget
+  # Use a python script to do all the heavy lifting.
+  - python tests\qutepart_appveyor.py
 
 # See https://www.appveyor.com/docs/build-cache.
 cache:
