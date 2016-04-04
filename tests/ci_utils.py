@@ -35,7 +35,7 @@ if sys.platform.startswith('win'):
 elif sys.platform.startswith('linux'):
     build_os = 'Linux'
 elif sys.platform == 'darwin':
-    build_os = 'OS X'
+    build_os = 'OS_X'
 else:
     # Unsupported platform.
     assert False
@@ -65,7 +65,9 @@ def xqt(
         # output (such as the print statement above).
         sys.stdout.flush()
         sys.stderr.flush()
-        check_call(_, shell=True, **kwargs)
+        # Use bash instead of sh, so that ``source`` and other bash syntax works. See https://docs.python.org/3/library/subprocess.html#subprocess.Popen.
+        executable = '/bin/bash' if build_os == 'Linux' or build_os == 'OS_X' else None
+        check_call(_, shell=True, executable=executable, **kwargs)
 
 # A decorator for pushd.
 class pushd:
@@ -95,7 +97,7 @@ def system_identify():
         # Avoid the deprecated platform.dist().
         lib, version = platform.libc_ver()
         plat_str = '{} version {}'.format(lib, version)
-    elif build_os == 'OS X':
+    elif build_os == 'OS_X':
         release, (version, dev_stage, non_release_version), machine = \
           platform.mac_ver()
         plat_str = ('release {}, dev stage {}, non-relase version {}, machine '
