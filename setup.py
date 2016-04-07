@@ -9,7 +9,8 @@ from setuptools import setup, Extension
 import distutils.ccompiler
 import distutils.sysconfig
 
-import qutepart
+sys.path.insert(0, 'qutepart')
+import version
 
 
 def parse_arg_list(param_start):
@@ -100,7 +101,7 @@ if 'install' in sys.argv or 'build' in sys.argv or 'build_ext' in sys.argv:
 
 
 setup(name='qutepart',
-      version='%s.%s.%s' % qutepart.VERSION,
+      version='%s.%s.%s' % version.VERSION,
       description='Code editor component for PyQt5',
       author='Andrei Kopats',
       author_email='hlamer@tut.by',

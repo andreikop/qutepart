@@ -38,21 +38,21 @@ Qutepart is a code editor widget for PyQt. Features:
 
 
 %build
-%{__python} setup.py build
+python3  setup.py build
 
 
 %install
-%{__python} setup.py install --skip-build --prefix=%{_prefix} --root %{buildroot}
+python3  setup.py install --skip-build --prefix=%{_prefix} --root %{buildroot}
 
 
 %files
 %defattr(-,root,root)
 %doc LICENSE README.md
-%{python_sitearch}/qutepart*
+%{python3_sitearch}/qutepart*
 
 
 %changelog
-* Thu Mar 25 2016 Andrei Kopats <hlamer@tut.by>  3.0.0-11
+* Fri Mar 25 2016 Andrei Kopats <hlamer@tut.by>  3.0.0-11
 - Migration to Python3
 
 * Wed Nov 11 2015 Andrei Kopats <hlamer@tut.by>  2.2.3-10
@@ -66,13 +66,13 @@ Qutepart is a code editor widget for PyQt. Features:
 - Rust syntax by Rust team
 - Do not strip trailing empty lines
 
-* Mon Mar 25 2015 Andrei Kopats <hlamer@tut.by>  2.2.0-7
+* Wed Mar 25 2015 Andrei Kopats <hlamer@tut.by>  2.2.0-7
 - Vim mode
 
 * Mon Aug 18 2014 Andrei Kopats <hlamer@tut.by>  2.1.2-6
 - Fix CPU load management
 
-* Tue Aug 04 2014 Andrei Kopats <hlamer@tut.by>  2.1.1-5
+* Mon Aug 04 2014 Andrei Kopats <hlamer@tut.by>  2.1.1-5
 - Crash fix
 
 * Tue Jul 22 2014 Andrei Kopats <hlamer@tut.by>  2.1.0-4
@@ -82,7 +82,7 @@ Qutepart is a code editor widget for PyQt. Features:
 - API: Updated XML parsers. More languages are supported.
 - Better autoindentation for Python
 
-* Thu Mar 14 2014 Andrei Kopats <hlamer@tut.by>  1.3.0-3
+* Fri Mar 14 2014 Andrei Kopats <hlamer@tut.by>  1.3.0-3
 - Bugfixes and improvements
 - API: Added binaryParserAvailable flag
 - API: Added indentWithSpaceAction, unIndentWithSpaceAction

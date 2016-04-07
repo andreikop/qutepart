@@ -44,17 +44,17 @@ deb-obs: dist/${ARCHIVE}
 
 ${OBS_REPO_DIR}:
 	mkdir -p build
-	osc co home:hlamer:enki python-qutepart
-	mv home\:hlamer\:enki ${OBS_REPO_DIR}
+	osc co home:hlamer:enki-rc python3-qutepart
+	mv home\:hlamer\:enki-rc ${OBS_REPO_DIR}
 
 put-obs: ${OBS_REPO_DIR} deb-obs
-	rm -f ${OBS_REPO_DIR}/python-qutepart/*
-	cp rpm/python3-qutepart.spec ${OBS_REPO_DIR}/python-qutepart
-	cp dist/${ARCHIVE} ${OBS_REPO_DIR}/python-qutepart
-	cp ${DEB_BUILD_DIR}/*.debian.tar.gz ${OBS_REPO_DIR}/python-qutepart
-	cp ${DEB_BUILD_DIR}/*.orig.tar.gz ${OBS_REPO_DIR}/python-qutepart
-	cp ${DEB_BUILD_DIR}/*.dsc ${OBS_REPO_DIR}/python-qutepart
-	cd ${OBS_REPO_DIR}/python-qutepart && \
+	rm -f ${OBS_REPO_DIR}/python3-qutepart/*
+	cp rpm/python3-qutepart.spec ${OBS_REPO_DIR}/python3-qutepart
+	cp dist/${ARCHIVE} ${OBS_REPO_DIR}/python3-qutepart
+	cp ${DEB_BUILD_DIR}/*.debian.tar.gz ${OBS_REPO_DIR}/python3-qutepart
+	cp ${DEB_BUILD_DIR}/*.orig.tar.gz ${OBS_REPO_DIR}/python3-qutepart
+	cp ${DEB_BUILD_DIR}/*.dsc ${OBS_REPO_DIR}/python3-qutepart
+	cd ${OBS_REPO_DIR}/python3-qutepart && \
 		osc addremove && \
 		osc ci -m 'update by the publish script'
 

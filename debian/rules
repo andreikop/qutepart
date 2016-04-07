@@ -9,15 +9,13 @@
 # Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
 
-WITH_PYTHON3 = $(shell test -f /usr/bin/dh_python3 && echo "--with python3")
+export PYBUILD_NAME = qutepart
 
-PY3VERSIONS := $(shell py3versions -vr debian/control)
 
 %:
-	dh $@ ${WITH_PYTHON3}
+	dh $@ --with python3 --buildsystem=pybuild
 
-
-override_dh_auto_clean:
-	for v in $(PY3VERSIONS); do \
-		rm -rf py3-$$v; \
-	done
+#override_dh_auto_clean:
+#	for v in $(PY3VERSIONS); do \
+#		rm -rf py3-$$v; \
+#	done

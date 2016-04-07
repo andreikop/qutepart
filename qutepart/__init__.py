@@ -17,6 +17,7 @@ from PyQt5.QtGui import QColor, QBrush, \
                         QTextBlock, QTextFormat
 
 from qutepart.syntax import SyntaxManager
+import qutepart.version
 
 if 'sphinx-build' not in sys.argv[0]:
     # See explanation near `import sip` above
@@ -34,7 +35,7 @@ if 'sphinx-build' not in sys.argv[0]:
         return cursor.setPosition(cursor.block().position() + positionInBlock, anchor)
 
 
-VERSION = (3, 0, 0)
+VERSION = qutepart.version.VERSION
 
 
 logger = logging.getLogger('qutepart')
