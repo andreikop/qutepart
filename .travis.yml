@@ -22,7 +22,7 @@ matrix:
   include:
   - os: osx
     # Since OS X doesn't natively support Python, use some workarounds (see
-    # ``tests/qutepart_travis.py`` for details).
+    # ``tests/ci/qutepart_travis.py`` for details).
     language: generic
     # See https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-.travis.yml.
     # Note that pyenv requres a full version specifier; selecting only 3.3
