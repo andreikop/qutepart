@@ -22,7 +22,9 @@
 from subprocess import check_call
 import sys
 import os
+import os.path
 import platform
+from zipfile import ZipFile
 #
 # Third-party imports
 # -------------------
@@ -42,7 +44,9 @@ else:
 #
 # Support code
 # ============
-# _`xqt`: Provide a simple way to execute a system command.
+# xqt
+# ---
+# Pronounced "execute": provides a simple way to execute a system command.
 def xqt(
   # Commands to run. For example, ``'foo -param firstArg secondArg', 'bar |
   # grep alpha'``.
@@ -56,20 +60,23 @@ def xqt(
     # **dir** or **copy**). You do not need ``shell=True`` to run a batch file
     # or console-based executable.", use ``shell=True`` to both allow shell
     # commands and to support simple redirection (such as ``blah > nul``,
-    # instead of passing stdout=subprocess.DEVNULL to ``check_call``).
+    # instead of passing ``stdout=subprocess.DEVNULL`` to ``check_call``).
     for _ in cmds:
-        print(_)
         # Per http://stackoverflow.com/questions/15931526/why-subprocess-stdout-to-a-file-is-written-out-of-order,
         # the ``check_call`` below will flush stdout and stderr, causing all
         # the subprocess output to appear first, followed by all the Python
-        # output (such as the print statement above).
-        sys.stdout.flush()
-        sys.stderr.flush()
-        # Use bash instead of sh, so that ``source`` and other bash syntax works. See https://docs.python.org/3/library/subprocess.html#subprocess.Popen.
-        executable = '/bin/bash' if build_os == 'Linux' or build_os == 'OS_X' else None
+        # output (such as the print statement above). So, flush the buffers to
+        # avoid this.
+        flush_print(_)
+        # Use bash instead of sh, so that ``source`` and other bash syntax
+        # works. See https://docs.python.org/3/library/subprocess.html#subprocess.Popen.
+        executable = ('/bin/bash' if build_os == 'Linux' or build_os == 'OS_X'
+                      else None)
         check_call(_, shell=True, executable=executable, **kwargs)
-
-# A decorator for pushd.
+#
+# pushd
+# -----
+# A context manager for pushd.
 class pushd:
     def __init__(self,
       # The path to change to upon entering the context manager.
@@ -78,15 +85,17 @@ class pushd:
         self.path = path
 
     def __enter__(self):
-        print('pushd {}'.format(self.path))
+        flush_print('pushd {}'.format(self.path))
         self.cwd = os.getcwd()
         os.chdir(self.path)
 
     def __exit__(self, type_, value, traceback):
-        print('popd - returning to {}.'.format(self.cwd))
+        flush_print('popd - returning to {}.'.format(self.cwd))
         os.chdir(self.cwd)
         return False
-
+#
+# system_identify
+# ---------------
 # Report what we know about the system we're running on.
 def system_identify():
     if build_os == 'Windows':
@@ -105,17 +114,101 @@ def system_identify():
                       machine))
     system, release, version = platform.system_alias(platform.system(),
       platform.release(), platform.version())
-    print('Python {}, OS {}, platform {} {} - {}'.format(sys.version, os.name,
+    flush_print('Python {}, OS {}, platform {} {} - {}'.format(sys.version, os.name,
       system, release, version, plat_str))
+#
+# command_line_invoke
+# -------------------
+# Command line processing: invoke ``install`` or ``test`` based on command-line
+# arguments.
+def command_line_invoke(
+  # A funtion to invoke when ``argv[1] == 'install'``.
+  install,
+  # A function to invoke when ``argv[1] == 'test'``.
+  test):
 
+    assert len(sys.argv) == 2
+    if sys.argv[1] == 'install':
+        install()
+    elif sys.argv[1] == 'test':
+        test()
+    else:
+        raise RuntimeError('Unknown argument ' + sys.argv[1])
+#
+# OS_Dispatcher
+# =============
+# This class dispatches its methods to their OS-specific variants. For example,
+# when ``build_os = 'Linux'``, ``o = OS_Dispatcher(); o.foo()`` invokes
+# ``foo_Linux``.
+class OS_Dispatcher:
+    def __getattr__(self, name):
+        return self.__getattribute__(name + '_' + build_os)
+#
+# Common tools
+# ============
+# wget
+# ----
 def wget(src, dst=None):
-    print('wget {} {}'.format(src, dst if dst else ''))
+    flush_print('wget {} {}'.format(src, dst if dst else ''))
     wget_.download(src, dst)
-
+#
+# chdir
+# -----
 def chdir(path):
-    print('cd ' + path)
+    flush_print('cd ' + path)
     os.chdir(path)
-
+#
+# mkdir
+# -----
 def mkdir(path):
-    print('mkdir ' + path)
+    flush_print('mkdir ' + path)
     os.mkdir(path)
+#
+# unzip
+# -----
+# This is a thin wrapper around `ZipFile <https://docs.python.org/3/library/zipfile.html>`_.
+def unzip(
+  # The ``.zip`` file (including its extension) to unzip.
+  zip_file,
+  # The file to extract, a file of files to extract, or None to extrat all.
+  # Note that paths must use a ``/``, even on Windows.
+  file_to_extract=None,
+  # A different directory to extract to; otherwise, this uses the current
+  # working directory.
+  path=None,
+  # The password used for encrypted files.
+  pwd=None):
+
+    flush_print('unzip {} {} {} {}'.format(zip_file, file_to_extract or '',
+      path or '', '*****' if pwd else ''))
+    with ZipFile(zip_file) as zf:
+        if isinstance(file_to_extract, str):
+            zf.extract(file_to_extract, path, pwd)
+        else:
+            zf.extractall(path, file_to_extract, pwd)
+#
+# flush_print
+# -----------
+# Anything sent to ``print`` won't be printed until Python flushes its buffers,
+# which means what CI logs report may be reflect what's actually being executed
+# -- until the buffers are flushed.
+def flush_print(*args, **kwargs):
+    print(*args, **kwargs)
+    # Flush both buffers, just in case there's something in ``stdout``.
+    sys.stdout.flush()
+    sys.stderr.flush()
+#
+# isfile
+# ------
+def isfile(f):
+    _ = os.path.isfile(f)
+    flush_print('File {} {}.'.format(f, 'exists' if _ else 'does not exist'))
+    return _
+#
+# isfile
+# ------
+def isdir(f):
+    _ = os.path.isdir(f)
+    flush_print('Directory {} {}.'.format(f, 'exists' if _ else 'does not exist'))
+    return _
+

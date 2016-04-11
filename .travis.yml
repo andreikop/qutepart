@@ -22,7 +22,7 @@ matrix:
   include:
   - os: osx
     # Since OS X doesn't natively support Python, use some workarounds (see
-    # before_install_ for details).
+    # ``tests/qutepart_travis.py`` for details).
     language: generic
     # See https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-.travis.yml.
     # Note that pyenv requres a full version specifier; selecting only 3.3
@@ -36,15 +36,18 @@ matrix:
     env: PYTHON=3.5.1
 
 # Travis complains if tests are run during install, or if installation is done
-# during script. So, break the script into two pieces.
+# during script (the tests). So, break the script into two pieces.
 install:
-  # Install Python for OS X, since it's not provided by the Travis environment. It must be ``source``ed, so that the following commands run in the Python virtual environment this creates.
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source tests/osx_python_install.sh; fi
+  # Install Python for OS X, since it's not provided by the Travis environment.
+  # It must be ``source``\ ed, so that the following commands run in the Python
+  # virtual environment this creates.
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source tests/ci/osx_python_install.sh; fi
   # Install dependencies needed by the CI script.
-  - python -m pip install -U pip wget
-  - python tests/qutepart_travis.py install
+  - python -m pip install -U -r tests/ci/requirements.txt
+  # Do the install.
+  - python tests/ci/qutepart_travis.py install
 
-script: python tests/qutepart_travis.py script
+script: python tests/ci/qutepart_travis.py test
 
 cache:
   directories:

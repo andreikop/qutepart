@@ -6,16 +6,23 @@ environment:
     # We only have a pre-compiled PyQt5 for Python 3.4, so only test on that.
     - PYTHON: "C:\\Python34"
 
-# Use this to prevent Appveyor from running MSBuild.
-build_script:
+install:
   # Add the correct Python to the path.
   - set PATH=%PYTHON%;%PYTHON%\Script;%PATH%
   # Install dependencies needed by the CI script.
-  - python -m pip install -U pip wget
+  - python -m pip install -U -r tests\ci\requirements.txt
   # Use a python script to do all the heavy lifting.
-  - python tests\qutepart_appveyor.py
+  - python tests\ci\qutepart_appveyor.py install
+
+# Use this to prevent Appveyor from running MSBuild. See https://www.appveyor.com/docs/appveyor-yml
+# line 181.
+build_script:
+  - echo "Avoiding the MSBUILD step."
+
+# See https://www.appveyor.com/docs/appveyor-yml line 215.
+test_script:
+  - python tests\ci\qutepart_appveyor.py test
 
 # See https://www.appveyor.com/docs/build-cache.
 cache:
-  - install-PyQt5.exe
-  - pcre-8.37.zip
+  - \downloads
