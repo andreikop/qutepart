@@ -12,7 +12,6 @@ Source0:        https://github.com/hlamer/qutepart/archive/v%{version}.tar.gz#/q
 BuildRequires:  pcre-devel
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
-BuildRequires:  python3-qt5
 Requires:       python3
 Requires:       pcre
 Requires:       python3-qt5
@@ -38,11 +37,11 @@ Qutepart is a code editor widget for PyQt. Features:
 
 
 %build
-python3  setup.py build
+/usr/bin/python3  setup.py build
 
 
 %install
-python3  setup.py install --skip-build --prefix=%{_prefix} --root %{buildroot}
+/usr/bin/python3  setup.py install --skip-build --prefix=%{_prefix} --root %{buildroot}
 
 
 %files
