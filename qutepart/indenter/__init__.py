@@ -82,10 +82,9 @@ class Indenter:
         """Trigger characters for smart indentation"""
         return self._smartIndenter.TRIGGER_CHARACTERS
 
-    def autoIndentBlock(self, block, char = '\n'):
+    def autoIndentBlock(self, block, char='\n'):
         """Indent block after Enter pressed or trigger character typed
         """
-        cursor = QTextCursor(block)
         currentText = block.text()
         spaceAtStartLen = len(currentText) - len(currentText.lstrip())
         currentIndent = currentText[:spaceAtStartLen]
@@ -138,9 +137,10 @@ class Indenter:
 
         startBlock = self._qpart.document().findBlock(cursor.selectionStart())
         endBlock = self._qpart.document().findBlock(cursor.selectionEnd())
-        if(endBlock.position() == cursor.selectionEnd() and
+        if(cursor.selectionStart() != cursor.selectionEnd() and
+           endBlock.position() == cursor.selectionEnd() and
            endBlock.previous().isValid()):
-            endBlock = endBlock.previous()  # do not indent not selected line
+            endBlock = endBlock.previous()  # do not indent not selected line if indenting multiple lines
 
         indentFunc = indentBlock if increase else unIndentBlock
 
