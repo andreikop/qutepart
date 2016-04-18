@@ -13,8 +13,6 @@ but value from itemDatas section (style name)
 contain not a text value, but ContextSwitcher object
 """
 
-import os.path
-import sys
 import re
 import logging
 
