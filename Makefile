@@ -10,13 +10,14 @@ ENV=DEBFULLNAME="$(AUTHOR)" DEBEMAIL=$(AUTHOR_EMAIL) EDITOR=enki
 DEBIGAN_ORIG_ARCHIVE=${DEB_PACKAGE_NAME}_${VERSION}.orig.tar.gz
 
 DEB_BUILD_DIR=build/deb
+OBS_REPO=home:hlamer:enki
 OBS_REPO_DIR=build/obs_home_hlamer_enki
 
 
 all install:
 	@echo This Makefile does not build and install the project.
 	@echo Use setup.py script
-	@exit -1
+	@exit 1
 
 bump-version:
 	enki qutepart/__init__.py +39
@@ -44,8 +45,8 @@ deb-obs: dist/${ARCHIVE}
 
 ${OBS_REPO_DIR}:
 	mkdir -p build
-	osc co home:hlamer:enki-rc python3-qutepart
-	mv home\:hlamer\:enki-rc ${OBS_REPO_DIR}
+	osc co $(OBS_REPO) python3-qutepart
+	mv $(OBS_REPO) ${OBS_REPO_DIR}
 
 put-obs: ${OBS_REPO_DIR} deb-obs
 	rm -f ${OBS_REPO_DIR}/python3-qutepart/*
