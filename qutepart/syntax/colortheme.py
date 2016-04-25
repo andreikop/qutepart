@@ -24,7 +24,7 @@ class ColorTheme:
             'dsString':         textFormatClass(color='#be0303'),
             'dsVerbatimString': textFormatClass(color='#be0303'),
             'dsSpecialString':  textFormatClass(color='#fe5500'),
-            'dsImport':         textFormatClass(color='#e14b00', bold=True),
+            'dsImport':         textFormatClass(color='#b969c3'),
 
             'dsDataType':       textFormatClass(color='#0057ad'),
             'dsDecVal':         textFormatClass(color='#af8000'),
