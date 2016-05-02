@@ -182,7 +182,7 @@ class Move(_Test):
         self.assertEqual(self.qpart.cursorPosition, (3, 1))
 
         self.click("k")
-        self.assertEqual(self.qpart.cursorPosition, (2, 1))
+        self.assertIn(self.qpart.cursorPosition, ((2, 1), (2, 2)))  # (2, 1) on monospace, (2, 2) on non-monospace font
 
     def test_02(self):
         """w
