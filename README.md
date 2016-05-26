@@ -58,6 +58,8 @@ It will probably be gcc
     cd qutepart
     python setup.py install --include-dir=../pcre-8.37/build --lib-dir=../pcre-8.37/build/Release
 
+Refer to this [bug report](https://github.com/hlamer/qutepart/issues/52) for incorrect compiler selection.
+
 ## Qutepart and Katepart
 [Kate](http://kate-editor.org/) and Katepart (an editor component) is really cool software. The Kate authors and community have created, probably, the biggest set of highlighters and indenters for programming languages.
 
