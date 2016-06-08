@@ -93,9 +93,20 @@ def _checkDependencies():
 
     return True
 
+""" A hack to set compiler version for distutils on Windows.
+See https://github.com/hlamer/qutepart/issues/52
+"""
+cfgPath = os.path.abspath(os.path.join(os.path.dirname(__file__), 'setup.cfg'))
+if os.name == 'nt':
+    with open(cfgPath, 'w') as cfgFile:
+        cfgFile.write("[build_ext]\ncompiler=msvc")
+else:
+    if os.path.isfile(cfgPath):
+        os.remove(cfgPath)
+
 
 if 'install' in sys.argv or 'build' in sys.argv or 'build_ext' in sys.argv:
-    if not '--force' in sys.argv and not '--help' in sys.argv:
+    if '--force' not in sys.argv and '--help' not in sys.argv:
         if not _checkDependencies():
             sys.exit(-1)
 
