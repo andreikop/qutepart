@@ -107,8 +107,10 @@ else:
 
 if 'install' in sys.argv or 'build' in sys.argv or 'build_ext' in sys.argv:
     if '--force' not in sys.argv and '--help' not in sys.argv:
-        if not _checkDependencies():
-            sys.exit(-1)
+        # dont run _checkDependencies() for Windows
+        if platform.system() != 'Windows':
+            if not _checkDependencies():
+                sys.exit(-1)
 
 
 setup(name='qutepart',
