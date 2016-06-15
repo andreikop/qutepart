@@ -1,5 +1,5 @@
 Name:           python3-qutepart
-Version:        3.0.0
+Version:        3.0.1
 Release:        1%{?dist}
 Summary:        Code editor widget for PyQt
 Group:          Development/Libraries/Python
@@ -51,6 +51,10 @@ Qutepart is a code editor widget for PyQt. Features:
 
 
 %changelog
+* Wed Jun 15 2016 Andrei Kopats <hlamer@tut.by>  3.0.1-12
+- Changed highlighting color for Python
+- Fixed tests on Fedora 23
+
 * Fri Mar 25 2016 Andrei Kopats <hlamer@tut.by>  3.0.0-11
 - Migration to Python3
 

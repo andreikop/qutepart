@@ -20,7 +20,7 @@ all install:
 	@exit 1
 
 bump-version:
-	enki qutepart/__init__.py +39
+	enki qutepart/version.py
 	enki rpm/python3-qutepart.spec +2
 
 changelog-update:
