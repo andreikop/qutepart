@@ -8,7 +8,7 @@ import logging
 import platform
 
 from PyQt5.QtCore import QRect, Qt, pyqtSignal
-from PyQt5.QtWidgets import QAction, QApplication, QDialog, QPlainTextEdit, QTextEdit
+from PyQt5.QtWidgets import QAction, QApplication, QDialog, QPlainTextEdit, QTextEdit, QWidget
 from PyQt5.QtPrintSupport import QPrintDialog
 from PyQt5.QtGui import QColor, QBrush, \
                         QFont, \
@@ -18,6 +18,7 @@ from PyQt5.QtGui import QColor, QBrush, \
 
 from qutepart.syntax import SyntaxManager
 import qutepart.version
+
 
 if 'sphinx-build' not in sys.argv[0]:
     # See explanation near `import sip` above
@@ -63,6 +64,17 @@ if not hasattr(QTextCursor, 'positionInBlock'):
         return cursor.position() - cursor.block().position()
     QTextCursor.positionInBlock = _positionInBlock
 
+
+
+class EdgeLine(QWidget):
+    def __init__(self, editor):
+        QWidget.__init__(self, editor)
+        self.__editor = editor
+        self.setAttribute(Qt.WA_TransparentForMouseEvents)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.fillRect(event.rect(), self.__editor.lineLengthEdgeColor)
 
 
 class Qutepart(QPlainTextEdit):
@@ -131,6 +143,7 @@ class Qutepart(QPlainTextEdit):
     * ``indentUseTabs`` - If True, ``Tab`` character inserts ``\\t``, otherwise - spaces. Default is ``False``.
     * ``lineLengthEdge`` - If not ``None`` - maximal allowed line width (i.e. 80 chars). Longer lines are marked with red (see ``lineLengthEdgeColor``) line. Default is ``None``.
     * ``lineLengthEdgeColor`` - Color of line length edge line. Default is red.
+    * ``drawSolidEdge`` - Draw the edge as a solid vertical line. Default is ``False``.
 
     **Visible white spaces**
 
@@ -251,12 +264,15 @@ class Qutepart(QPlainTextEdit):
 
         self._eol = self._DEFAULT_EOL
         self._indenter = Indenter(self)
-        self.lineLengthEdge = None
-        self.lineLengthEdgeColor = Qt.red
+        self._lineLengthEdge = None
+        self._lineLengthEdgeColor = QColor(255, 0, 0, 128)
         self._atomicModificationDepth = 0
 
         self.drawIncorrectIndentation = True
         self.drawAnyWhitespace = False
+        self._drawSolidEdge = False
+        self._solidEdgeLine = EdgeLine(self)
+        self._solidEdgeLine.setVisible(False)
 
         self._rectangularSelection = RectangularSelection(self)
 
@@ -631,6 +647,40 @@ class Qutepart(QPlainTextEdit):
         else:
             return (None, None)
 
+    @property
+    def drawSolidEdge(self):
+        return self._drawSolidEdge
+
+    @drawSolidEdge.setter
+    def drawSolidEdge(self, val):
+        self._drawSolidEdge = val
+        if val:
+            self._setSolidEdgeGeometry()
+        self.viewport().update()
+        self._solidEdgeLine.setVisible(val and self._lineLengthEdge is not None)
+
+    @property
+    def lineLengthEdge(self):
+        return self._lineLengthEdge
+
+    @lineLengthEdge.setter
+    def lineLengthEdge(self, val):
+        if self._lineLengthEdge != val:
+            self._lineLengthEdge = val
+            self.viewport().update()
+            self._solidEdgeLine.setVisible(val is not None and self._drawSolidEdge)
+
+    @property
+    def lineLengthEdgeColor(self):
+        return self._lineLengthEdgeColor
+
+    @lineLengthEdgeColor.setter
+    def lineLengthEdgeColor(self, val):
+        if self._lineLengthEdgeColor != val:
+            self._lineLengthEdgeColor = val
+            if self._lineLengthEdge is not None:
+                self.viewport().update()
+
     def replaceText(self, pos, length, text):
         """Replace length symbols from ``pos`` with new text.
 
@@ -831,19 +881,38 @@ class Qutepart(QPlainTextEdit):
             self._updateLineNumberAreaWidth(0)
 
     def resizeEvent(self, event):
-        pass # suppress dockstring for non-public method
+        pass # suppress docstring for non-public method
         """QWidget.resizeEvent() implementation.
         Adjust line number area
         """
         QPlainTextEdit.resizeEvent(self, event)
 
+        lineNumberAreaWidth = self._lineNumberArea.width()
+        markAreaWidth = self._markArea.width()
         cr = self.contentsRect()
-        self._lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self._lineNumberArea.width(), cr.height()))
 
-        self._markArea.setGeometry(QRect(cr.left() + self._lineNumberArea.width(),
+        self._lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth, cr.height()))
+        self._markArea.setGeometry(QRect(cr.left() + lineNumberAreaWidth,
                                          cr.top(),
-                                         self._markArea.width(),
+                                         markAreaWidth,
                                          cr.height()))
+        self._setSolidEdgeGeometry()
+
+    def _setSolidEdgeGeometry(self):
+        """Sets the solid edge line geometry if needed"""
+        if self._lineLengthEdge is not None:
+            lineNumberAreaWidth = self._lineNumberArea.width()
+            markAreaWidth = self._markArea.width()
+            cr = self.contentsRect()
+
+            # contents margin usually gives 1
+            # cursor rectangle left edge for the very first character usually
+            # gives 4
+            x = self.fontMetrics().width('9' * self._lineLengthEdge) + \
+                lineNumberAreaWidth + markAreaWidth + \
+                self.contentsMargins().left() + \
+                self.__cursorRect(self.firstVisibleBlock(), 0, offset=0).left()
+            self._solidEdgeLine.setGeometry(QRect(x, cr.top(), 1, cr.bottom()))
 
     def _insertNewBlock(self):
         """Enter pressed.
@@ -1057,14 +1126,9 @@ class Qutepart(QPlainTextEdit):
         """
         painter = QPainter(self.viewport())
 
-        def cursorRect(block, column, offset):
-            cursor = QTextCursor(block)
-            setPositionInBlock(cursor, column)
-            return self.cursorRect(cursor).translated(offset, 0)
-
         def drawWhiteSpace(block, column, char):
-            leftCursorRect = cursorRect(block, column, 0)
-            rightCursorRect = cursorRect(block, column + 1, 0)
+            leftCursorRect = self.__cursorRect(block, column, 0)
+            rightCursorRect = self.__cursorRect(block, column + 1, 0)
             if leftCursorRect.top() == rightCursorRect.top():  # if on the same visual line
                 middleHeight = (leftCursorRect.top() + leftCursorRect.bottom()) / 2
                 if char == ' ':
@@ -1079,16 +1143,16 @@ class Qutepart(QPlainTextEdit):
 
         def effectiveEdgePos(text):
             """Position of edge in a block.
-            Defined by self.lineLengthEdge, but visible width of \t is more than 1,
+            Defined by self._lineLengthEdge, but visible width of \t is more than 1,
             therefore effective position depends on count and position of \t symbols
             Return -1 if line is too short to have edge
             """
-            if self.lineLengthEdge is None:
+            if self._lineLengthEdge is None:
                 return -1
 
             tabExtraWidth = self.indentWidth - 1
             fullWidth = len(text) + (text.count('\t') * tabExtraWidth)
-            if fullWidth <= self.lineLengthEdge:
+            if fullWidth <= self._lineLengthEdge:
                 return -1
 
             currentWidth = 0
@@ -1098,19 +1162,19 @@ class Qutepart(QPlainTextEdit):
                     currentWidth += (self.indentWidth - (currentWidth % self.indentWidth))
                 else:
                     currentWidth += 1
-                if currentWidth > self.lineLengthEdge:
+                if currentWidth > self._lineLengthEdge:
                     return pos
             else:  # line too narrow, probably visible \t width is small
                 return -1
 
         def drawEdgeLine(block, edgePos):
-            painter.setPen(QPen(QBrush(self.lineLengthEdgeColor), 0))
-            rect = cursorRect(block, edgePos, 0)
+            painter.setPen(QPen(QBrush(self._lineLengthEdgeColor), 0))
+            rect = self.__cursorRect(block, edgePos, 0)
             painter.drawLine(rect.topLeft(), rect.bottomLeft())
 
         def drawIndentMarker(block, column):
             painter.setPen(QColor(Qt.blue).lighter())
-            rect = cursorRect(block, column, offset=0)
+            rect = self.__cursorRect(block, column, offset=0)
             painter.drawLine(rect.topLeft(), rect.bottomLeft())
 
         indentWidthChars = len(self._indenter.text())
@@ -1131,7 +1195,7 @@ class Qutepart(QPlainTextEdit):
                           len(text) > indentWidthChars and \
                           text[indentWidthChars].isspace():
 
-                        if column != self.lineLengthEdge and \
+                        if column != self._lineLengthEdge and \
                            (block.blockNumber(), column) != cursorPos:  # looks ugly, if both drawn
                             """on some fonts line is drawn below the cursor, if offset is 1
                             Looks like Qt bug"""
@@ -1141,9 +1205,10 @@ class Qutepart(QPlainTextEdit):
                         column += indentWidthChars
 
                 # Draw edge, but not over a cursor
-                edgePos = effectiveEdgePos(block.text())
-                if edgePos != -1 and edgePos != cursorPos[1]:
-                    drawEdgeLine(block, edgePos)
+                if not self._drawSolidEdge:
+                    edgePos = effectiveEdgePos(block.text())
+                    if edgePos != -1 and edgePos != cursorPos[1]:
+                        drawEdgeLine(block, edgePos)
 
                 if self.drawAnyWhitespace or \
                    self.drawIncorrectIndentation:
@@ -1415,6 +1480,11 @@ class Qutepart(QPlainTextEdit):
             self._rectangularSelection.paste(source)
         else:
             super(Qutepart, self).insertFromMimeData(source)
+
+    def __cursorRect(self, block, column, offset):
+        cursor = QTextCursor(block)
+        setPositionInBlock(cursor, column)
+        return self.cursorRect(cursor).translated(offset, 0)
 
 
 def iterateBlocksFrom(block):
