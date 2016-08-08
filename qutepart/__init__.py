@@ -144,6 +144,7 @@ class Qutepart(QPlainTextEdit):
     * ``lineLengthEdge`` - If not ``None`` - maximal allowed line width (i.e. 80 chars). Longer lines are marked with red (see ``lineLengthEdgeColor``) line. Default is ``None``.
     * ``lineLengthEdgeColor`` - Color of line length edge line. Default is red.
     * ``drawSolidEdge`` - Draw the edge as a solid vertical line. Default is ``False``.
+    * ``drawIndentations`` - Draw indentations. Default is ``True``.
 
     **Visible white spaces**
 
@@ -270,6 +271,7 @@ class Qutepart(QPlainTextEdit):
 
         self.drawIncorrectIndentation = True
         self.drawAnyWhitespace = False
+        self._drawIndentations = True
         self._drawSolidEdge = False
         self._solidEdgeLine = EdgeLine(self)
         self._solidEdgeLine.setVisible(False)
@@ -658,6 +660,15 @@ class Qutepart(QPlainTextEdit):
             self._setSolidEdgeGeometry()
         self.viewport().update()
         self._solidEdgeLine.setVisible(val and self._lineLengthEdge is not None)
+
+    @property
+    def drawIndentations(self):
+        return self._drawIndentations
+
+    @drawIndentations.setter
+    def drawIndentations(self, val):
+        self._drawIndentations = val
+        self.viewport().update()
 
     @property
     def lineLengthEdge(self):
@@ -1188,21 +1199,22 @@ class Qutepart(QPlainTextEdit):
             if block.isVisible() and blockGeometry.toRect().intersects(paintEventRect):
 
                 # Draw indent markers, if good indentation is not drawn
-                text = block.text()
-                if not self.drawAnyWhitespace:
-                    column = indentWidthChars
-                    while text.startswith(self._indenter.text()) and \
-                          len(text) > indentWidthChars and \
-                          text[indentWidthChars].isspace():
+                if self._drawIndentations:
+                    text = block.text()
+                    if not self.drawAnyWhitespace:
+                        column = indentWidthChars
+                        while text.startswith(self._indenter.text()) and \
+                              len(text) > indentWidthChars and \
+                              text[indentWidthChars].isspace():
 
-                        if column != self._lineLengthEdge and \
-                           (block.blockNumber(), column) != cursorPos:  # looks ugly, if both drawn
-                            """on some fonts line is drawn below the cursor, if offset is 1
-                            Looks like Qt bug"""
-                            drawIndentMarker(block, column)
+                            if column != self._lineLengthEdge and \
+                               (block.blockNumber(), column) != cursorPos:  # looks ugly, if both drawn
+                                """on some fonts line is drawn below the cursor, if offset is 1
+                                Looks like Qt bug"""
+                                drawIndentMarker(block, column)
 
-                        text = text[indentWidthChars:]
-                        column += indentWidthChars
+                            text = text[indentWidthChars:]
+                            column += indentWidthChars
 
                 # Draw edge, but not over a cursor
                 if not self._drawSolidEdge:
