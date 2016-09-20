@@ -245,6 +245,9 @@ class Qutepart(QPlainTextEdit):
     LINT_WARNING = 'w'
     LINT_NOTE = 'n'
 
+    LEFT_MARGINS = 0
+    RIGHT_MARGINS = 1
+
     _DEFAULT_EOL = '\n'
 
     _DEFAULT_COMPLETION_THRESHOLD = 3
@@ -299,6 +302,9 @@ class Qutepart(QPlainTextEdit):
         self._vim = None
 
         self._initActions()
+
+        self._leftMargins = []
+        self._rightMargins = []
 
         self._lineNumberArea = qutepart.sideareas.LineNumberArea(self)
         self._countCache = (-1, -1)
@@ -891,6 +897,30 @@ class Qutepart(QPlainTextEdit):
         if rect.contains(self.viewport().rect()):
             self._updateLineNumberAreaWidth(0)
 
+    def updateViewport(self):
+        pass # suppress docstring for non-public method
+        """Recalculates geomerty for all the margins and the editor viewport
+        """
+        cr = self.contentsRect()
+        currentX = cr.left()
+        top = cr.top()
+        height = cr.height()
+
+        for margin in self._leftMargins:
+            if not margin.isHidden():
+                width = margin.width()
+                margin.setGeometry(QRect(currentX, top, width, height))
+                currentX += width
+
+        currentRight = cr.right()
+        for margin in reversed(self._rightMargins):
+            if not margin.isHidden():
+                width = margin.width()
+                margin.setGeometry(QRect(currentRight - width, top, width, height))
+                currentRight -= width
+
+        self._setSolidEdgeGeometry()
+
     def resizeEvent(self, event):
         pass # suppress docstring for non-public method
         """QWidget.resizeEvent() implementation.
@@ -912,15 +942,18 @@ class Qutepart(QPlainTextEdit):
     def _setSolidEdgeGeometry(self):
         """Sets the solid edge line geometry if needed"""
         if self._lineLengthEdge is not None:
-            lineNumberAreaWidth = self._lineNumberArea.width()
-            markAreaWidth = self._markArea.width()
+            leftMarginWidth = 0
+            for margin in self._leftMargins:
+                if not margin.isHidden():
+                    leftMarginWidth += margin.width()
+
             cr = self.contentsRect()
 
             # contents margin usually gives 1
             # cursor rectangle left edge for the very first character usually
             # gives 4
             x = self.fontMetrics().width('9' * self._lineLengthEdge) + \
-                lineNumberAreaWidth + markAreaWidth + \
+                leftMarginWidth + \
                 self.contentsMargins().left() + \
                 self.__cursorRect(self.firstVisibleBlock(), 0, offset=0).left()
             self._solidEdgeLine.setGeometry(QRect(x, cr.top(), 1, cr.bottom()))
@@ -1497,6 +1530,53 @@ class Qutepart(QPlainTextEdit):
         cursor = QTextCursor(block)
         setPositionInBlock(cursor, column)
         return self.cursorRect(cursor).translated(offset, 0)
+
+    def getMargins(self, side):
+        """Provides the corresponding list of margins
+        """
+        return self._leftMargins if side == Qutepart.LEFT_MARGINS else self._rightMargins
+
+    def addMargin(self, margin, side=Qutepart.LEFT_MARGINS, index=None):
+        """Adds a new margin
+        """
+        target = self.getMargins(side)
+        if index is None:
+            target.append(margin)
+        else:
+            target.insert(index, margin)
+        if margin.isVisible():
+            self.updateViewport()
+
+    def getMargin(self, name):
+        """Provides the requested margin.
+           Returns a reference to the margin if found and None otherwise
+        """
+        def getMarginByName(margins, name):
+            for index in range(len(margins)):
+                if margins[index].getName() == name:
+                    return margins[index]
+            return None
+
+        m = getMarginByName(self._leftMargins, name)
+        if m is not None:
+            return m
+        return getMarginByName(self._rightMargins, name)
+
+    def delMargin(self, name):
+        """Deletes a margin.
+           Returns True if the margin was deleted and False otherwise.
+        """
+        def delMarginByName(margins, name):
+            for index in range(len(margins)):
+                if margins[index].getName() == name:
+                    del margins[index]
+                    self.updateViewport()
+                    return True
+            return False
+
+        if delMarginByName(self._leftMargins, name):
+            return True
+        return delMarginsByName(self._rightMargins, name)
 
 
 def iterateBlocksFrom(block):
