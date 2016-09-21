@@ -390,10 +390,11 @@ class IndentAlgCStyle(IndentAlgBase):
             alignOnAnchor = len(match.group(3)) == 0 and match.group(2) != ')'
             # search for opening ", ' or (
             if match.group(2) == '"' or (alignOnSingleQuote and match.group(2) == "'"):
+                startIndex = len(match.group(1))
                 while True:
                     # start from matched closing ' or "
                     # find string opener
-                    for i in range(len(match.group(1)) - 1, 0, -1):
+                    for i in range(startIndex - 1, 0, -1):
                         # make sure it's not commented out
                         if currentBlockText[i] == match.group(2) and (i == 0 or currentBlockText[i - 1] != '\\'):
                             # also make sure that this is not a line like '#include "..."' <-- we don't want to indent here
@@ -421,6 +422,7 @@ class IndentAlgCStyle(IndentAlgBase):
                             # go to previous line
                             currentBlock = currentBlock.previous()
                             currentBlockText = currentBlock.text()
+                            startIndex = len(currentBlockText)
                     else:
                         break
 
