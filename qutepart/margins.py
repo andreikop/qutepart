@@ -2,24 +2,32 @@
 """
 
 
+from PyQt5.QtCore import QPoint, pyqtSignal
 from PyQt5.QtWidgets import QWidget
+from PyQt5.QtGui import QTextBlock
 
 
-class MarginBase(QWidget):
+class MarginBase:
     """Base class which each margin should derive from
     """
 
-    def __init__(self, qpart, name, bit_count):
+    # The parent class derives from QWidget and mixes MarginBase in at
+    # run-time. Thus the signal declaration and emmitting works here too.
+    blockClicked = pyqtSignal(QTextBlock)
+
+    def __init__(self, parent, name, bit_count):
         """qpart: reference to the editor
            name: margin identifier
            bit_count: number of bits to be used by the margin
         """
-        QWidget.__init__(self, qpart)
-        self._qpart = qpart
+        self._qpart = parent
         self._name = name
         self._bit_count = bit_count
         self._bitRange = None
         self.__allocateBits()
+
+        self._countCache = (-1, -1)
+        self._qpart.updateRequest.connect(self.__updateRequest)
 
     def __allocateBits(self):
         """Allocates the bit range depending on the required bit count
@@ -30,11 +38,10 @@ class MarginBase(QWidget):
             return
 
         # Build a list of occupied ranges
-        leftMargins = self._qpart.getMargins(self._qpart.LEFT_MARGINS)
-        rightMargins = self._qpart.getMargins(self._qpart.RIGHT_MARGINS)
+        margins = self._qpart.getMargins()
 
         occupiedRanges = []
-        for margin in leftMargins + rightMargins:
+        for margin in margins:
             bitRange = margin.getBitRange()
             if bitRange is not None:
                 # pick the right position
@@ -56,6 +63,23 @@ class MarginBase(QWidget):
             vacant = r[ 1 ] + 1
         # Not allocated, i.e. grab the tail bits
         self._bitRange = (vacant, vacant + self._bit_count - 1)
+
+    def __updateRequest(self, rect, dy):
+        """Repaint line number area if necessary
+        """
+        if dy:
+            self.scroll(0, dy)
+        elif self._countCache[0] != self._qpart.blockCount() or \
+             self._countCache[1] != self._qpart.textCursor().block().lineCount():
+
+            # if block height not added to rect, last line number sometimes is not drawn
+            blockHeight = self._qpart.blockBoundingRect(self._qpart.firstVisibleBlock()).height()
+
+            self.update(0, rect.y(), self.width(), rect.height() + blockHeight)
+            self._countCache = (self._qpart.blockCount(), self._qpart.textCursor().block().lineCount())
+
+        if rect.contains(self._qpart.viewport().rect()):
+            self._qpart.updateViewportMargins()
 
     def getName(self):
         """Provides the margin identifier
@@ -82,13 +106,15 @@ class MarginBase(QWidget):
             raise Exception( "The margin '" + self._name +
                              "' value exceeds the allocated bit range" )
 
-        current = block.userState()
-        value <<= self._bitRange[ 0 ]
-        if current in [ 0, -1 ]:
-            block.setUserState(value)
-        else:
-            block.setUserState(current | value)
+        newMarginValue = value << self._bitRange[ 0 ]
+        currentUserState = block.userState()
 
+        if currentUserState in [ 0, -1 ]:
+            block.setUserState(newMarginValue)
+        else:
+            marginMask = 2 ** self._bit_count - 1
+            otherMarginsValue = currentUserState & ~marginMask
+            block.setUserState(newMarginValue | otherMarginsValue)
 
     def getBlockValue(self, block):
         """Provides the previously set block value respecting the bits range.
@@ -123,7 +149,7 @@ class MarginBase(QWidget):
            editor viewport.
         """
         if self.isHidden():
-            QWidget.show()
+            QWidget.show(self)
             self._qpart.updateViewport()
 
     def setVisible(self, val):
@@ -132,9 +158,17 @@ class MarginBase(QWidget):
         """
         if val != self.isVisible():
             if val:
-                self.show()
+                QWidget.setVisible(self, True)
             else:
-                self.hide()
+                QWidget.setVisible(self, False)
+            self._qpart.updateViewport()
+
+    def mousePressEvent(self, mouseEvent):
+        cursor = self._qpart.cursorForPosition(QPoint(0, mouseEvent.y()))
+        block = cursor.block()
+        blockRect = self._qpart.blockBoundingGeometry(block).translated(self._qpart.contentOffset())
+        if blockRect.bottom() >= mouseEvent.y():  # clicked not lower, then end of text
+            self.blockClicked.emit(block)
 
     # Convenience methods
 
@@ -151,36 +185,5 @@ class MarginBase(QWidget):
     def isBlockMarked(self, block):
         return self.getBlockValue(block) != 0
     def toggleBlockMark(self, block):
-        self.setBlockValue(block, 1 if self.isBlockMarked(block) else 0)
-
-
-
-if __name__ == "__main__":
-    from PyQt5.QtWidgets import QApplication
-    import sys
-    app = QApplication(sys.argv)
-    class MockMargin:
-        def __init__(s, l, r):
-            s.br = (l, r)
-        def getBitRange(s):
-            return s.br
-
-    class MockQPart(QWidget):
-        LEFT_MARGINS = 0
-        RIGHT_MARGINS = 1
-        def __init__(s):
-            QWidget.__init__(s, None)
-            s.left = [ MockMargin(1, 3), MockMargin(7, 8) ]
-            s.right = [ MockMargin(4, 4) ]
-        def getMargins(s, t):
-            return s.left if t == s.LEFT_MARGINS else s.right
-
-    q = MockQPart()
-    m = MarginBase(q, "test margin", 1)
-    print(m.getName())
-    print(m.getBitRange())
-
-    m = MarginBase(q, "test margin", 2)
-    print(m.getName())
-    print(m.getBitRange())
+        self.setBlockValue(block, 0 if self.isBlockMarked(block) else 1)
 
