@@ -56,7 +56,8 @@ margin2 = MyMargin2(qpart, ...)
 qpart.addMargin(margin1)
 
 # will add the margin as the most left
-qpart.addMargin(margin2)
+# the second argument is a list index to be inserted at
+qpart.addMargin(margin2, 0)
 ```
 
 
