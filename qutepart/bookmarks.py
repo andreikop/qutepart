@@ -35,6 +35,14 @@ class Bookmarks:
 
         return action
 
+    def removeActions(self):
+        self._qpart.removeAction(self._qpart.toggleBookmarkAction)
+        self._qpart.toggleBookmarkAction = None
+        self._qpart.removeAction(self._qpart.prevBookmarkAction)
+        self._qpart.prevBookmarkAction = None
+        self._qpart.removeAction(self._qpart.nextBookmarkAction)
+        self._qpart.nextBookmarkAction = None
+
     def clear(self, startBlock, endBlock):
         """Clear bookmarks on block range including start and end
         """

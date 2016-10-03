@@ -105,6 +105,8 @@ class MarkArea(QWidget):
                              qpart.LINT_WARNING: self._loadIcon('lint-warning.png'),
                              qpart.LINT_NOTE: self._loadIcon('lint-note.png')}
 
+        self._bookmarks = Bookmarks(qpart, self)
+
     def _loadIcon(self, fileName):
         defaultSizePixmap = QPixmap(qutepart.getIconPath(fileName))
         iconSize = self._qpart.cursorRect().height()
@@ -160,3 +162,13 @@ class MarkArea(QWidget):
             QToolTip.hideText()
 
         return QWidget.mouseMoveEvent(self, event)
+
+    def clearBookmarks(self, startBlock, endBlock):
+        """Clears the bookmarks
+        """
+        self._bookmarks.clear(startBlock, endBlock)
+
+    def clear(self):
+        self._bookmarks.removeActions()
+        MarginBase.clear(self)
+

@@ -30,7 +30,6 @@ if 'sphinx-build' not in sys.argv[0]:
     import qutepart.sideareas
     from qutepart.indenter import Indenter
     import qutepart.vim
-    import qutepart.bookmarks
 
     def setPositionInBlock(cursor, positionInBlock, anchor=QTextCursor.MoveAnchor):
         return cursor.setPosition(cursor.block().position() + positionInBlock, anchor)
@@ -306,7 +305,6 @@ class Qutepart(QPlainTextEdit):
         self.addMargin(qutepart.sideareas.LineNumberArea(self))
         self._markArea = qutepart.sideareas.MarkArea(self)
 
-        self._bookmarks = qutepart.bookmarks.Bookmarks(self, self._markArea)
         self.addMargin(self._markArea)
 
         self._nonVimExtraSelections = []
@@ -1393,7 +1391,9 @@ class Qutepart(QPlainTextEdit):
                 return
 
             # if operaiton is UnDone, marks are located incorrectly
-            self._bookmarks.clear(startBlock, endBlock.next())
+            markMargin = self.getMargin("mark_area")
+            if markMargin:
+                markMargin.clearBookmarks(startBlock, endBlock.next())
 
             _moveBlock(blockToMove, startBlockNumber)
 
@@ -1404,7 +1404,9 @@ class Qutepart(QPlainTextEdit):
                 return
 
             # if operaiton is UnDone, marks are located incorrectly
-            self._bookmarks.clear(startBlock.previous(), endBlock)
+            markMargin = self.getMargin("mark_area")
+            if markMargin:
+                markMargin.clearBookmarks(startBlock, endBlock)
 
             _moveBlock(blockToMove, endBlockNumber)
 
@@ -1528,6 +1530,7 @@ class Qutepart(QPlainTextEdit):
         for index, margin in enumerate(self._margins):
             if margin.getName() == name:
                 visible = margin.isVisible()
+                margin.clear()
                 margin.deleteLater()
                 del self._margins[index]
                 if visible:

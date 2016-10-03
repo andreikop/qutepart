@@ -177,9 +177,12 @@ class MarginBase:
         """
         if self._bit_count == 0:
             return
-        for block in qutepart.iterateBlocksFrom(self._qpart.document().begin()):
+
+        block = self._qpart.document().begin()
+        while block.isValid():
             if self.getBlockValue(block):
                 self.setBlockValue(block, 0)
+            block = block.next()
 
     # Methods for 1-bit margins
     def isBlockMarked(self, block):
