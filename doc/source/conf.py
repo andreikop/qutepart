@@ -38,7 +38,8 @@ class Mock(object):
         else:
             return Mock()
 
-MOCK_MODULES = ['PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtWebKit']
+MOCK_MODULES = ['PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtWebKit',
+                'PyQt5.QtWidgets', 'PyQt5.QtPrintSupport']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 
