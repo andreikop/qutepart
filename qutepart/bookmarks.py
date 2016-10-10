@@ -35,6 +35,14 @@ class Bookmarks:
 
         return action
 
+    def removeActions(self):
+        self._qpart.removeAction(self._qpart.toggleBookmarkAction)
+        self._qpart.toggleBookmarkAction = None
+        self._qpart.removeAction(self._qpart.prevBookmarkAction)
+        self._qpart.prevBookmarkAction = None
+        self._qpart.removeAction(self._qpart.nextBookmarkAction)
+        self._qpart.nextBookmarkAction = None
+
     def clear(self, startBlock, endBlock):
         """Clear bookmarks on block range including start and end
         """
@@ -43,19 +51,18 @@ class Bookmarks:
             if block == endBlock:
                 break
 
-    @staticmethod
-    def isBlockMarked(block):
+    def isBlockMarked(self, block):
         """Check if block is bookmarked
         """
-        return block.userState() == 1
+        return self._markArea.isBlockMarked(block)
 
     def _setBlockMarked(self, block, marked):
         """Set block bookmarked
         """
-        block.setUserState(1 if marked else -1)
+        self._markArea.setBlockValue(block, 1 if marked else 0)
 
     def _toggleBookmark(self, block):
-        self._setBlockMarked(block, not self.isBlockMarked(block))
+        self._markArea.toggleBlockMark(block)
         self._markArea.update()
 
     def _onToggleBookmark(self):

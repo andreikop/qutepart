@@ -32,3 +32,11 @@ API version is available as ``qutepart.VERSION``. It is a tuple ``(major, minor,
 Binary parser
 ^^^^^^^^^^^^^
 Qutepart has 2 text parsers - slower in Python, and quicker in C. If C parser has been successfully loaded, ``qutepart.binaryParserAvailable`` is True
+
+
+Margins
+^^^^^^^
+Qutepart supports margins on the left hand side of the editor pane.
+Please see the `Margins Support <CustomMargins.html# Margins Support>`__ section
+for more details.
+

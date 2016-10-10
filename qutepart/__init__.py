@@ -30,7 +30,6 @@ if 'sphinx-build' not in sys.argv[0]:
     import qutepart.sideareas
     from qutepart.indenter import Indenter
     import qutepart.vim
-    import qutepart.bookmarks
 
     def setPositionInBlock(cursor, positionInBlock, anchor=QTextCursor.MoveAnchor):
         return cursor.setPosition(cursor.block().position() + positionInBlock, anchor)
@@ -300,11 +299,13 @@ class Qutepart(QPlainTextEdit):
 
         self._initActions()
 
-        self._lineNumberArea = qutepart.sideareas.LineNumberArea(self)
-        self._countCache = (-1, -1)
+        self._margins = []
+        self._totalMarginWidth = -1
+
+        self.addMargin(qutepart.sideareas.LineNumberArea(self))
         self._markArea = qutepart.sideareas.MarkArea(self)
 
-        self._bookmarks = qutepart.bookmarks.Bookmarks(self, self._markArea)
+        self.addMargin(self._markArea)
 
         self._nonVimExtraSelections = []
         self._userExtraSelections = []  # we draw bracket highlighting, current line and extra selections by user
@@ -313,8 +314,6 @@ class Qutepart(QPlainTextEdit):
 
         self._lintMarks = {}
 
-        self.blockCountChanged.connect(self._updateLineNumberAreaWidth)
-        self.updateRequest.connect(self._updateSideAreas)
         self.cursorPositionChanged.connect(self._updateExtraSelections)
         self.textChanged.connect(self._dropUserExtraSelections)
         self.textChanged.connect(self._resetCachedText)
@@ -325,7 +324,6 @@ class Qutepart(QPlainTextEdit):
         fontFamily = fontFamilies.get(platform.system(), 'Monospace')
         self.setFont(QFont(fontFamily))
 
-        self._updateLineNumberAreaWidth(0)
         self._updateExtraSelections()
 
     def terminate(self):
@@ -439,7 +437,13 @@ class Qutepart(QPlainTextEdit):
         self._updateTabStopWidth()
 
         # text on line numbers may overlap, if font is bigger, than code font
-        self._lineNumberArea.setFont(font)
+        # Note: the line numbers margin recalculates its width and if it has
+        #       been changed then it calls updateViewport() which in turn will
+        #       update the solid edge line geometry. So there is no need of an
+        #       explicit call self._setSolidEdgeGeometry() here.
+        lineNumbersMargin = self.getMargin("line_numbers")
+        if lineNumbersMargin:
+            lineNumbersMargin.setFont(font)
 
     def showEvent(self, ev):
         pass  # suppress dockstring for non-public method
@@ -621,7 +625,7 @@ class Qutepart(QPlainTextEdit):
             self.update()
 
     def _clearLintMarks(self):
-        if self._lintMarks != {}:
+        if not self._lintMarks:
             self._lintMarks = {}
             self.update()
 
@@ -866,30 +870,33 @@ class Qutepart(QPlainTextEdit):
         return (block.blockNumber(),
                 absPosition - block.position())
 
-    def _updateLineNumberAreaWidth(self, newBlockCount):
-        """Set line number are width according to current lines count
+    def updateViewport(self):
+        pass # suppress docstring for non-public method
+        """Recalculates geometry for all the margins and the editor viewport
         """
-        self.setViewportMargins(self._lineNumberArea.width() + self._markArea.width(), 0, 0, 0)
+        cr = self.contentsRect()
+        currentX = cr.left()
+        top = cr.top()
+        height = cr.height()
 
-    def _updateSideAreas(self, rect, dy):
-        """Repaint line number area if necessary
+        totalMarginWidth = 0
+        for margin in self._margins:
+            if not margin.isHidden():
+                width = margin.width()
+                margin.setGeometry(QRect(currentX, top, width, height))
+                currentX += width
+                totalMarginWidth += width
+
+        if self._totalMarginWidth != totalMarginWidth:
+            self._totalMarginWidth = totalMarginWidth
+            self.updateViewportMargins()
+
+    def updateViewportMargins(self):
+        pass # suppress docstring for non-public method
+        """Sets the viewport margins and the solid edge geometry
         """
-        # _countCache magic taken from Qt docs Code Editor Example
-        if dy:
-            self._lineNumberArea.scroll(0, dy)
-            self._markArea.scroll(0, dy)
-        elif self._countCache[0] != self.blockCount() or \
-             self._countCache[1] != self.textCursor().block().lineCount():
-
-            # if block height not added to rect, last line number sometimes is not drawn
-            blockHeight = self.blockBoundingRect(self.firstVisibleBlock()).height()
-
-            self._lineNumberArea.update(0, rect.y(), self._lineNumberArea.width(), rect.height() + blockHeight)
-            self._lineNumberArea.update(0, rect.y(), self._markArea.width(), rect.height() + blockHeight)
-        self._countCache = (self.blockCount(), self.textCursor().block().lineCount())
-
-        if rect.contains(self.viewport().rect()):
-            self._updateLineNumberAreaWidth(0)
+        self.setViewportMargins(self._totalMarginWidth, 0, 0, 0)
+        self._setSolidEdgeGeometry()
 
     def resizeEvent(self, event):
         pass # suppress docstring for non-public method
@@ -897,30 +904,19 @@ class Qutepart(QPlainTextEdit):
         Adjust line number area
         """
         QPlainTextEdit.resizeEvent(self, event)
-
-        lineNumberAreaWidth = self._lineNumberArea.width()
-        markAreaWidth = self._markArea.width()
-        cr = self.contentsRect()
-
-        self._lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth, cr.height()))
-        self._markArea.setGeometry(QRect(cr.left() + lineNumberAreaWidth,
-                                         cr.top(),
-                                         markAreaWidth,
-                                         cr.height()))
-        self._setSolidEdgeGeometry()
+        self.updateViewport()
+        return
 
     def _setSolidEdgeGeometry(self):
         """Sets the solid edge line geometry if needed"""
         if self._lineLengthEdge is not None:
-            lineNumberAreaWidth = self._lineNumberArea.width()
-            markAreaWidth = self._markArea.width()
             cr = self.contentsRect()
 
             # contents margin usually gives 1
             # cursor rectangle left edge for the very first character usually
             # gives 4
             x = self.fontMetrics().width('9' * self._lineLengthEdge) + \
-                lineNumberAreaWidth + markAreaWidth + \
+                self._totalMarginWidth + \
                 self.contentsMargins().left() + \
                 self.__cursorRect(self.firstVisibleBlock(), 0, offset=0).left()
             self._solidEdgeLine.setGeometry(QRect(x, cr.top(), 1, cr.bottom()))
@@ -1395,7 +1391,9 @@ class Qutepart(QPlainTextEdit):
                 return
 
             # if operaiton is UnDone, marks are located incorrectly
-            self._bookmarks.clear(startBlock, endBlock.next())
+            markMargin = self.getMargin("mark_area")
+            if markMargin:
+                markMargin.clearBookmarks(startBlock, endBlock.next())
 
             _moveBlock(blockToMove, startBlockNumber)
 
@@ -1406,7 +1404,9 @@ class Qutepart(QPlainTextEdit):
                 return
 
             # if operaiton is UnDone, marks are located incorrectly
-            self._bookmarks.clear(startBlock.previous(), endBlock)
+            markMargin = self.getMargin("mark_area")
+            if markMargin:
+                markMargin.clearBookmarks(startBlock, endBlock)
 
             _moveBlock(blockToMove, endBlockNumber)
 
@@ -1497,6 +1497,46 @@ class Qutepart(QPlainTextEdit):
         cursor = QTextCursor(block)
         setPositionInBlock(cursor, column)
         return self.cursorRect(cursor).translated(offset, 0)
+
+    def getMargins(self):
+        """Provides the list of margins
+        """
+        return self._margins
+
+    def addMargin(self, margin, index=None):
+        """Adds a new margin.
+           index: index in the list of margins. Default: to the end of the list
+        """
+        if index is None:
+            self._margins.append(margin)
+        else:
+            self._margins.insert(index, margin)
+        if margin.isVisible():
+            self.updateViewport()
+
+    def getMargin(self, name):
+        """Provides the requested margin.
+           Returns a reference to the margin if found and None otherwise
+        """
+        for margin in self._margins:
+            if margin.getName() == name:
+                return margin
+        return None
+
+    def delMargin(self, name):
+        """Deletes a margin.
+           Returns True if the margin was deleted and False otherwise.
+        """
+        for index, margin in enumerate(self._margins):
+            if margin.getName() == name:
+                visible = margin.isVisible()
+                margin.clear()
+                margin.deleteLater()
+                del self._margins[index]
+                if visible:
+                    self.updateViewport()
+                return True
+        return False
 
 
 def iterateBlocksFrom(block):
