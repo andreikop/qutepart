@@ -9,9 +9,10 @@ sudo: required
 os: linux
 # See https://docs.travis-ci.com/user/languages/python.
 language: python
-# We only support Python 3.5 (where there are PyQt5 wheels available).
+# We only support Python 3.5+ (where there are PyQt5 wheels available).
 python:
   - 3.5
+  - 3.6
 
 # See https://docs.travis-ci.com/user/customizing-the-build/#Build-Matrix. This
 # manually includes additional OS X tests to the matrix of Linux tests defined
@@ -26,6 +27,9 @@ matrix:
     # Note that pyenv requres a full version specifier; selecting only 3.3
     # produces an error: ``python-build: definition not found: 3.3``.
     env: PYTHON=3.5.2
+  - os: osx
+    language: generic
+    env: PYTHON=3.6.0
 
 # Travis complains if tests are run during install, or if installation is done
 # during script (the tests). So, break the script into two pieces.
