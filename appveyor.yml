@@ -3,8 +3,8 @@
 # ****************************************
 environment:
   matrix:
-    # We only have a pre-compiled PyQt5 for Python 3.4, so only test on that.
-    - PYTHON: "C:\\Python34"
+    # We only have a pre-compiled PyQt5 for Python 3.5+, so only test on that.
+    - PYTHON: "C:\\Python35"
 
 install:
   # Add the correct Python to the path.
