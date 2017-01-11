@@ -28,7 +28,19 @@ class Travis_Dispatcher(OS_Dispatcher):
 # pcre
 # ----
     def pcre_Linux(self):
-        xqt('sudo apt-get install -y libpcre3-dev')
+        # Travis Linux notes: this fixed the error::
+        #
+        #   This application failed to start because it could not find or load the Qt platform plugin "xcb"
+        #   in "".
+        #   Available platform plugins are: eglfs, linuxfb, minimal, minimalegl, offscreen, xcb.
+        #
+        # To help debug, run ``QT_DEBUG_PLUGINS=1 python run_all.py``, which 
+        # produced (along with lots of other output)::
+        #
+        #   Cannot load library /home/travis/virtualenv/python3.5.2/lib/python3.5/site-packages/PyQt5/Qt/plugins/platforms/libqxcb.so: (libEGL.so.1: cannot open shared object file: No such file or directory)
+        #
+        # Adding the ``libegl1-mesa`` package fixes this.
+        xqt('sudo apt-get install -y libpcre3-dev libegl1-mesa')
     def pcre_OS_X(self):
         xqt('brew install pcre')
 #
