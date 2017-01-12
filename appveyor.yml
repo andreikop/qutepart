@@ -5,7 +5,9 @@ environment:
   matrix:
     # We only have a pre-compiled PyQt5 for Python 3.5+, so only test on that.
     - PYTHON: "C:\\Python35"
+    - PYTHON: "C:\\Python35-x64"
     - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python36-x64"
 
 install:
   # Add the correct Python to the path.
@@ -22,7 +24,7 @@ build: off
 test_script:
   - python tests\ci\qutepart_appveyor.py test
 
-# Taken from https://packaging.python.org/appveyor/.
+# Inspired by https://packaging.python.org/appveyor/.
 after_test:
   # See https://pip.pypa.io/en/stable/reference/pip_wheel/#options.
   #

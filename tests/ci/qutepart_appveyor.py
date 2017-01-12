@@ -17,7 +17,7 @@ import os
 #
 # Local application imports
 # -------------------------
-from utils import (xqt, pushd, wget, mkdir, chdir, build_os,
+from utils import (xqt, pushd, wget, mkdir, chdir, build_os, is_64bits,
                    system_identify, command_line_invoke, isfile, isdir)
 #
 # install
@@ -32,22 +32,27 @@ def install(should_identify=True):
         mkdir(DOWNLOADS)
 
     # Download and compile PCRE.
-    pcre_ver = 'pcre-8.38'
+    pcre_raw_ver = '8.39'
+    pcre_ver = 'pcre-' + pcre_raw_ver
     pcre_zip = pcre_ver + '.zip'
     pcre_zip_path = os.path.join(DOWNLOADS, pcre_zip)
     if not isfile(pcre_zip_path):
         # Note: Don't use ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/,
         # because this sometimes hangs during download, causing the build to
         # fail. Instead, use the more reliable SourceForge mirror.
-        wget('http://downloads.sourceforge.net/project/pcre/pcre/8.38/' +
-             pcre_zip, pcre_zip_path)
+        wget('http://downloads.sourceforge.net/project/pcre/pcre/{}/{}'.
+            format(pcre_raw_ver, pcre_zip), pcre_zip_path)
     # See https://sevenzip.osdn.jp/chm/cmdline/commands/extract_full.htm.
     xqt('7z x {} > nul'.format(pcre_zip_path))
     with pushd(pcre_ver):
         mkdir('build')
         chdir('build')
+        # Per https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2014%202015.html,
+        # add the Win64 string for 64-bit Python.
+        use_Win64 = ' Win64' if is_64bits else ''
         xqt('cmake .. -DBUILD_SHARED_LIBS:BOOL=OFF -DPCRE_SUPPORT_UTF:BOOL=ON '
-            '-DPCRE_SUPPORT_JIT:BOOL=ON -G "Visual Studio 10 2010"',
+            '-DPCRE_SUPPORT_JIT:BOOL=ON -G "Visual Studio 14 2015{}"'.
+            format(use_Win64),
           'cmake --build . --config Release')
 
     # First, build Python C extensions. Use this instead of
