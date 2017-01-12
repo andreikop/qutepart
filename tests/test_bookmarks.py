@@ -26,7 +26,7 @@ class Test(unittest.TestCase):
         self.qpart.terminate()
 
     def _markedBlocks(self):
-        bookMarksObject = self.qpart._bookmarks
+        bookMarksObject = self.qpart.getMargin("mark_area")
         return [block.blockNumber() \
                     for block in iterateBlocksFrom(self.qpart.document().firstBlock()) \
                         if bookMarksObject.isBlockMarked(block)]

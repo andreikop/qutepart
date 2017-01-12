@@ -24,50 +24,23 @@ from utils import (xqt, pushd, chdir, build_os, system_identify, wget,
 # =================
 # This provides OS-specific variants of needed installs.
 class Travis_Dispatcher(OS_Dispatcher):
-# qt5
-# ---
-    # _`qt5_Linux`: Note: the Qt version here must agree with the version used
-    # in pyqt5_configure_Linux_ and be compatible with pyqt_ver_.
-    def qt5_Linux(self):
-        # There are two Qt version strings here -- keep them in sync. See
-        # https://launchpad.net/~beineri/+archive/ubuntu/opt-qt551-trusty.
-        xqt('sudo add-apt-repository -y ppa:beineri/opt-qt551',
-          'sudo apt-get update',
-          # The base package doesn't include QWebKit -- install it also. See
-          # the details at https://launchpad.net/~beineri/+archive/ubuntu/opt-qt551/+packages.
-          # Do this now (rather than in Enki) so that PyQt5 will be built with
-          # QWebKit support.
-          'sudo apt-get install -y qt55base qt55webkit')
-
-    # _`qt5_OS_X`: Note: the Qt version here must agree with the version used
-    # in pyqt5_configure_OS_X_ and be compatible with pyqt_ver_.
-    def qt5_OS_X(self):
-        # Note: ``brew linkapps qt55`` doesn't link qmake, so it's omitted.
-        xqt('brew install qt55')
-#
-# pyqt5
-# -----
-    # See http://pyqt.sourceforge.net/Docs/PyQt5/installation.html#configuring-pyqt5.
-    configure_options = ' -c --confirm-license --no-designer-plugin'
-    # _`pyqt5_configure_Linux`: See also qt5_Linux_ for other places the Qt
-    # version must agree.
-    def pyqt5_configure_Linux(self):
-        # The environment variables set by the script are lost when the shell
-        # exits. So, run configure.py in the same bash instance.
-        xqt('source /opt/qt55/bin/qt55-env.sh; python configure.py' +
-            self.configure_options)
-    # _`pyqt5_configure_OS_X`: See also qt5_OS_X_ for other places the Qt
-    # version must agree.
-    def pyqt5_configure_OS_X(self):
-        # The path to qmake can be obtained by looking at the output of ``brew
-        # install qt55``.
-        xqt('python configure.py --qmake=/usr/local/Cellar/qt55/5.5.1/bin/qmake'
-            + self.configure_options)
 #
 # pcre
 # ----
     def pcre_Linux(self):
-        xqt('sudo apt-get install -y libpcre3-dev')
+        # Travis Linux notes: this fixed the error::
+        #
+        #   This application failed to start because it could not find or load the Qt platform plugin "xcb"
+        #   in "".
+        #   Available platform plugins are: eglfs, linuxfb, minimal, minimalegl, offscreen, xcb.
+        #
+        # To help debug, run ``QT_DEBUG_PLUGINS=1 python run_all.py``, which 
+        # produced (along with lots of other output)::
+        #
+        #   Cannot load library /home/travis/virtualenv/python3.5.2/lib/python3.5/site-packages/PyQt5/Qt/plugins/platforms/libqxcb.so: (libEGL.so.1: cannot open shared object file: No such file or directory)
+        #
+        # Adding the ``libegl1-mesa`` package fixes this.
+        xqt('sudo apt-get install -y libpcre3-dev libegl1-mesa')
     def pcre_OS_X(self):
         xqt('brew install pcre')
 #
@@ -78,44 +51,6 @@ def install(should_identify=True):
     if should_identify:
         system_identify()
     td = Travis_Dispatcher()
-    xqt(
-      # Cached Downloads
-      'sudo mkdir -p /downloads',
-      'sudo chmod a+rw /downloads')
-    sip_ver = 'sip-4.17'
-    if not isfile('/downloads/sip.tar.gz'):
-        wget('http://downloads.sourceforge.net/project/pyqt/sip/{}/{}'.
-             format(sip_ver, _gz(sip_ver)), '/downloads/sip.tar.gz')
-    # _`pyqt_ver`: Select a PyQt version. See also qt5_Linux_ and qt5_OS_X_.
-    pyqt_ver = '5.5.1'
-    pyqt_gpl_ver = 'PyQt-gpl-' + pyqt_ver
-    if not isfile('/downloads/pyqt5.tar.gz'):
-        wget('http://downloads.sourceforge.net/project/pyqt/PyQt5/PyQt-{}/{}'.
-             format(pyqt_ver, _gz(pyqt_gpl_ver)), '/downloads/pyqt5.tar.gz')
-    # Builds
-    xqt('sudo mkdir -p /builds',
-      'sudo chmod a+rw /builds')
-
-    # Qt5
-    td.qt5()
-
-    # SIP. With Linux or OS_X, don't use the package manager to install these,
-    # since they're installed for the system python, not the pyenv version
-    # we're testing with.
-    with pushd('/builds'):
-        xqt('tar xzf /downloads/sip.tar.gz --keep-newer-files')
-        chdir(sip_ver)
-        xqt('python configure.py',
-          'make',
-          'sudo make install')
-
-    # PyQt5
-    with pushd('/builds'):
-        xqt('tar xzf /downloads/pyqt5.tar.gz --keep-newer-files')
-        chdir(pyqt_gpl_ver)
-        td.pyqt5_configure()
-        xqt('make',
-          'sudo make install')
 
     # PCRE
     td.pcre()
@@ -127,13 +62,10 @@ def install(should_identify=True):
     # Install, which also builds Python C extensions. Use this instead of
     # ``build_ext`` so that Enki will have an already-installed qutepart,
     # rather than needing to regenrate the command below.
-    xqt('python setup.py install')
+    xqt('python -m pip install -e .')
 #
 # Supporting utilities
 # --------------------
-def _gz(s):
-    return s + '.tar.gz'
-
 # Avoid the error ``QXcbConnection: Could not connect to display``. The
 # DISPLAY must be set before running xvfb.
 def set_display():

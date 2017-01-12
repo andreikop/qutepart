@@ -41,6 +41,9 @@ elif sys.platform == 'darwin':
 else:
     # Unsupported platform.
     assert False
+
+# Copied from https://docs.python.org/3.5/library/platform.html#cross-platform.
+is_64bits = sys.maxsize > 2**32
 #
 # Support code
 # ============
