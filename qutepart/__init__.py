@@ -135,7 +135,7 @@ class Qutepart(QPlainTextEdit):
     * ``absSelectedPosition`` - selection coordinates as ``(startPosition, cursorPosition)`` where position is offset from the beginning of text.
     Rectangular selection is not available via API currently.
 
-    **EOL, indentation, edge**
+    **EOL, indentation, edge, current line**
 
     * ``eol`` - End Of Line character. Supported values are ``\\n``, ``\\r``, ``\\r\\n``. See comments for ``textForSaving()``
     * ``indentWidth`` - Width of ``Tab`` character, and width of one indentation level. Default is ``4``.
@@ -144,6 +144,7 @@ class Qutepart(QPlainTextEdit):
     * ``lineLengthEdgeColor`` - Color of line length edge line. Default is red.
     * ``drawSolidEdge`` - Draw the edge as a solid vertical line. Default is ``False``.
     * ``drawIndentations`` - Draw indentations. Default is ``True``.
+    * ``currentLineColor`` - Color of the current line background. If None then the current line is not highlighted. Default: #ffffa3
 
     **Visible white spaces**
 
@@ -266,6 +267,7 @@ class Qutepart(QPlainTextEdit):
         self._indenter = Indenter(self)
         self._lineLengthEdge = None
         self._lineLengthEdgeColor = QColor(255, 0, 0, 128)
+        self._currentLineColor = QColor('#ffffa3')
         self._atomicModificationDepth = 0
 
         self.drawIncorrectIndentation = True
@@ -695,6 +697,16 @@ class Qutepart(QPlainTextEdit):
             self._lineLengthEdgeColor = val
             if self._lineLengthEdge is not None:
                 self.viewport().update()
+
+    @property
+    def currentLineColor(self):
+        return self._currentLineColor
+
+    @currentLineColor.setter
+    def currentLineColor(self, val):
+        if self._currentLineColor != val:
+            self._currentLineColor = val
+            self.viewport().update()
 
     def replaceText(self, pos, length, text):
         """Replace length symbols from ``pos`` with new text.
@@ -1236,10 +1248,12 @@ class Qutepart(QPlainTextEdit):
     def _currentLineExtraSelections(self):
         """QTextEdit.ExtraSelection, which highlightes current line
         """
-        lineColor = QColor('#ffffa3')
+        if self._currentLineColor is None:
+            return []
+
         def makeSelection(cursor):
             selection = QTextEdit.ExtraSelection()
-            selection.format.setBackground(lineColor)
+            selection.format.setBackground(self._currentLineColor)
             selection.format.setProperty(QTextFormat.FullWidthSelection, True)
             cursor.clearSelection()
             selection.cursor = cursor
