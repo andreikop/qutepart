@@ -1426,7 +1426,8 @@ class Qutepart(QPlainTextEdit):
 
             self._selectLines(startBlockNumber - 1, endBlockNumber - 1)
 
-        self._markArea.update()
+        if markMargin:
+            markMargin.update()
 
     def _selectedLinesSlice(self):
         """Get slice of selected lines
