@@ -56,10 +56,13 @@ class LineNumberArea(QWidget):
         singleBlockHeight = self._qpart.cursorRect().height()
 
         boundingRect = self._qpart.blockBoundingRect(block)
+        availableWidth = self.__width - self._RIGHT_MARGIN - self._LEFT_MARGIN
+        availableHeight = self._qpart.fontMetrics().height()
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(blockNumber + 1)
-                painter.drawText(0, top, self.__width - self._RIGHT_MARGIN - self._LEFT_MARGIN, self._qpart.fontMetrics().height(),
+                painter.drawText(self._LEFT_MARGIN, top,
+                                 availableWidth, availableHeight,
                                  Qt.AlignRight, number)
                 if boundingRect.height() >= singleBlockHeight * 2:  # wrapped block
                     painter.fillRect(1, top + singleBlockHeight,
