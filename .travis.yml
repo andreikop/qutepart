@@ -20,16 +20,12 @@ python:
 matrix:
   include:
   - os: osx
-    # Since OS X doesn't natively support Python, use some workarounds (see
-    # ``tests/ci/qutepart_travis.py`` for details).
+    # Since Travis's OS X doesn't natively support Python, use some workarounds.
     language: generic
-    # See https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-.travis.yml.
-    # Note that pyenv requres a full version specifier; selecting only 3.3
-    # produces an error: ``python-build: definition not found: 3.3``.
-    env: PYTHON=3.5.2
+    - INSTALL_TYPE='macpython' VERSION=3.5.2 VENV=venv
   - os: osx
     language: generic
-    env: PYTHON=3.6.0
+    - INSTALL_TYPE='macpython' VERSION=3.6.1 VENV=venv
 
 # Travis complains if tests are run during install, or if installation is done
 # during script (the tests). So, break the script into two pieces.
@@ -43,7 +39,9 @@ install:
   # Do the install.
   - python tests/ci/qutepart_travis.py install
 
-script: python tests/ci/qutepart_travis.py test
+script:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source terryfy/test_tools.sh; fi
+  - python tests/ci/qutepart_travis.py test
 
 cache:
   directories:
