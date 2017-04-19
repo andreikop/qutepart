@@ -44,7 +44,12 @@ class Travis_Dispatcher(OS_Dispatcher):
         xqt('sh -e /etc/init.d/xvfb start')
 
     def install_OS_X(self):
-        xqt('brew install pcre')
+        # Nothing needed. PCRE is installed as a part of ``osx_python_install.sh``.
+        pass
+
+    def install_Windows(self):
+        # A dummy name to make Enki installs easier. All the real work is done in ``qutepart_appveyor.py``.
+        pass
 #
 # install
 # =======
@@ -62,13 +67,13 @@ def install():
 # Avoid the error ``QXcbConnection: Could not connect to display``. The
 # DISPLAY must be set before running xvfb.
 def set_display():
-    if build_os == 'Linux':
-        os.environ['DISPLAY'] = ':99.0'
+    os.environ['DISPLAY'] = ':99.0'
 #
 # test
 # ====
 def test():
-    set_display()
+    if build_os == 'Linux':
+        set_display()
     chdir('tests')
     # Now run the tests.
     xqt('python run_all.py')
