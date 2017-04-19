@@ -11,7 +11,7 @@ environment:
 
 install:
   # Add the correct Python to the path.
-  - set PATH=%PYTHON%;%PYTHON%\Script;%PATH%
+  - set PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
   # Install dependencies needed by the CI script.
   - python -m pip install -U -r tests\ci\requirements.txt
   # Use a python script to do all the heavy lifting.
