@@ -10,5 +10,5 @@ git clone https://github.com/MacPython/terryfy.git
 # Avoid printing the lines from the script below.
 set +v
 source terryfy/travis_tools.sh
-get_python_environment $pydist $pyver
+get_python_environment $INSTALL_TYPE $VERSION $VENV
 
