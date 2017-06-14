@@ -902,6 +902,8 @@ class Qutepart(QPlainTextEdit):
         if self._totalMarginWidth != totalMarginWidth:
             self._totalMarginWidth = totalMarginWidth
             self.updateViewportMargins()
+        else:
+            self._setSolidEdgeGeometry()
 
     def updateViewportMargins(self):
         pass # suppress docstring for non-public method
