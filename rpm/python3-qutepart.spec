@@ -51,6 +51,10 @@ Qutepart is a code editor widget for PyQt. Features:
 
 
 %changelog
+* Wed Sep 19 2017 Andrei Kopats <hlamer@tut.by>  3.1.0-13
+- Improve margins
+- Minor bug fixes
+
 * Wed Jun 15 2016 Andrei Kopats <hlamer@tut.by>  3.0.1-12
 - Changed highlighting color for Python
 - Fixed tests on Fedora 23

@@ -1,3 +1,7 @@
+3.1.0   Sep 19 2017
+    Improve margins.
+    Minor bug fixes
+
 3.0.1   Jun 15 2016
     Changed highlighting color for Python imports
     Fixed tests on Fedora 23
