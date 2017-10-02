@@ -13,6 +13,19 @@ sys.path.insert(0, 'qutepart')
 import version
 
 
+howToInstallMsg = """Qutepart installation fails to find PyQt5
+if run as `python3 setup.py install`.
+Evidently, setuptools doesn't support installing from wheel.
+Therefore, only invoke this as:
+
+Unix:
+    python3 -m pip install -e .
+
+Windows:
+    python3 setup.py build_ext --include-dir=../pcre-8.37/build --lib-dir=../pcre-8.37/build/Release
+    python3 -m pip install -e .
+"""
+
 def parse_arg_list(param_start):
     """Exctract values like --libdir=bla/bla/bla
     param_start must be '--libdir='
@@ -28,6 +41,16 @@ def parse_arg_list(param_start):
     sys.argv = otherArgs
 
     return values
+
+
+def runningOnPip():
+  # __file__ in setup gives something like /tmp/pip-DNpsLw-build/setup.py if ran from pip.
+  return 'pip' in __file__
+
+
+if not runningOnPip() and 'install' in sys.argv:
+  print(howToInstallMsg)
+  sys.exit(0)
 
 
 packages = ['qutepart', 'qutepart/syntax', 'qutepart/indenter']
@@ -55,6 +78,7 @@ extension = Extension('qutepart.syntax.cParser',
                       include_dirs=include_dirs,
                       library_dirs=library_dirs,
                       define_macros=macros)
+
 
 
 def _checkDependencies():
@@ -93,6 +117,7 @@ def _checkDependencies():
 
     return True
 
+
 """ A hack to set compiler version for distutils on Windows.
 See https://github.com/hlamer/qutepart/issues/52
 """
@@ -123,4 +148,6 @@ setup(name='qutepart',
     packages=packages,
     package_data=package_data,
     ext_modules=[extension],
+    install_requires = ['PyQt5']
+
 )

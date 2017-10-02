@@ -384,10 +384,10 @@ class Qutepart(QPlainTextEdit):
                             'unindent.png')
         self.autoIndentLineAction = createAction('Autoindent line', 'Ctrl+I',
                                                   self._indenter.onAutoIndentTriggered)
-        self.indentWithSpaceAction = createAction('Indent with 1 space', 'Shift+Space',
+        self.indentWithSpaceAction = createAction('Indent with 1 space', 'Ctrl+Shift+Space',
                         lambda: self._indenter.onChangeSelectedBlocksIndent(increase=True,
                                                                               withSpace=True))
-        self.unIndentWithSpaceAction = createAction('Unindent with 1 space', 'Shift+Backspace',
+        self.unIndentWithSpaceAction = createAction('Unindent with 1 space', 'Ctrl+Shift+Backspace',
                             lambda: self._indenter.onChangeSelectedBlocksIndent(increase=False,
                                                                                   withSpace=True))
 
