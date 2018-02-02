@@ -119,7 +119,7 @@ def _checkDependencies():
 
 
 """ A hack to set compiler version for distutils on Windows.
-See https://github.com/hlamer/qutepart/issues/52
+See https://github.com/andreikop/qutepart/issues/52
 """
 cfgPath = os.path.abspath(os.path.join(os.path.dirname(__file__), 'setup.cfg'))
 if os.name == 'nt':
@@ -143,8 +143,8 @@ setup(name='qutepart',
     version='%s.%s.%s' % version.VERSION,
     description='Code editor component for PyQt5',
     author='Andrei Kopats',
-    author_email='hlamer@tut.by',
-    url='https://github.com/hlamer/qutepart',
+    author_email='andrei.kopats@gmail.com',
+    url='https://github.com/andreikop/qutepart',
     packages=packages,
     package_data=package_data,
     ext_modules=[extension],

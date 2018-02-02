@@ -45,7 +45,7 @@ It will probably be gcc
 * Download and install Microsoft Visual Studio Express Edition 2010 (or the full version).
 * Create a root directory and place the following as subdirectories in it:
     - Download the [pcre source](http://www.pcre.org/). Tested with v. 8.37.
-    - Download the latest Qutepart [release](https://github.com/hlamer/qutepart/releases).
+    - Download the latest Qutepart [release](https://github.com/andreikop/qutepart/releases).
 
 #### Make pcre
     cd <pcre-8.37 source>
@@ -70,11 +70,11 @@ Nothing is wrong with Katepart. Qutepart has been created to enable reusing high
 
 ## Author
 Andrei Kopats
-[hlamer@tut.by](mailto:hlamer@tut.by)
+[andrei.kopats@gmail.com](mailto:andrei.kopats@gmail.com)
 
 
 ## Bug reports, patches
-[Github page](https://github.com/hlamer/qutepart)
+[Github page](https://github.com/andreikop/qutepart)
 
 ## License
 LGPL v2

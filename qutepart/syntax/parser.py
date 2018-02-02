@@ -490,7 +490,7 @@ class AbstractNumberRule(AbstractRule):
         Returns (count, matchedRule) or (None, None) if doesn't match
         """
 
-        # hlamer: This check is not described in kate docs, and I haven't found it in the code
+        # andreikop: This check is not described in kate docs, and I haven't found it in the code
         if not textToMatchObject.isWordStart:
             return None
 

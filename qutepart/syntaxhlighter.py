@@ -296,7 +296,7 @@ class SyntaxHighlighter(QObject):
         self._pendingAtLeastUntilBlockNumber = None
 
         """Emit sizeChanged when highlighting finished, because document size might change.
-        See hlamer/enki issue #191
+        See andreikop/enki issue #191
         """
         documentLayout = self._textEdit.document().documentLayout()
         documentLayout.documentSizeChanged.emit(documentLayout.documentSize())

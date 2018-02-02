@@ -1,9 +1,9 @@
 Format: http://dep.debian.net/deps/dep5
 Upstream-Name: python3-qutepart
-Source: <https://github.com/hlamer/qutepart>
+Source: <https://github.com/andreiop/qutepart>
 
 Files: *
-Copyright: 2012 Andrei Kopats <hlamer@tut.by>
+Copyright: 2012 Andrei Kopats <andrei.kopats@gmail.com>
 License: LGPL-2
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
