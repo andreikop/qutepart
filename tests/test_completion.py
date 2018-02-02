@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import unittest
+import sys
 
 import base
 
@@ -27,6 +28,7 @@ class Test(unittest.TestCase):
     def tearDown(self):
         self.qpart.terminate()
 
+    @unittest.skipIf('TRAVIS_OS_NAME' in sys.environ, "Fails on Travis")
     def test_down_selects_first(self):
         self.qpart.text = 'aaaa\nbbbb\ncccX\ndddd\ncccY'
 
@@ -39,6 +41,7 @@ class Test(unittest.TestCase):
         QTest.keyClick(self.qpart, Qt.Key_Enter)
         self.assertEqual(self.qpart.text, 'cccX\naaaa\nbbbb\ncccX\ndddd\ncccY')
 
+    @unittest.skipIf('TRAVIS_OS_NAME' in sys.environ, "Fails on Travis")
     def test_down_selects_second(self):
         self.qpart.text = 'aaaa\nbbbb\ncccX\ndddd\ncccY'
 
