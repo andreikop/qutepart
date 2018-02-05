@@ -148,6 +148,15 @@ setup(name='qutepart',
     packages=packages,
     package_data=package_data,
     ext_modules=[extension],
-    install_requires = ['PyQt5']
-
+    python_requires = '>=3.5',
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+    ],
+    install_requires = ['PyQt5'],
+    license='GNU Lesser General Public License v2 or later (LGPLv2+)',
 )
