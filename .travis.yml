@@ -30,18 +30,21 @@ matrix:
 # Travis complains if tests are run during install, or if installation is done
 # during script (the tests). So, break the script into two pieces.
 install:
-  # Install Python for OS X, since it's not provided by the Travis environment.
-  # It must be ``source``\ ed, so that the following commands run in the Python
-  # virtual environment this creates.
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source tests/ci/osx_python_install.sh; fi
-  # Install dependencies needed by the CI script.
-  - python -m pip install -U -r tests/ci/requirements.txt
-  # Do the install.
-  - python tests/ci/qutepart_travis.py install
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then tests/ci/linux_install.sh; fi
+  # source used on MacOS to preserve python venv
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source tests/ci/osx_install.sh; fi
+  - python -m pip install -e .
+
+before_script:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sh -e /etc/init.d/xvfb start; sleep 3; fi
 
 script:
+  # Source virtualenv on OS X
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source terryfy/test_tools.sh; fi
-  - python tests/ci/qutepart_travis.py test
+  # Set display on Linux
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export DISPLAY=:99.0; fi
+  - "cd tests"
+  - "python3 run_all.py"
 
 cache:
   directories:

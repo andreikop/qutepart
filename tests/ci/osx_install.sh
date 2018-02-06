@@ -12,3 +12,4 @@ set +v
 source terryfy/travis_tools.sh
 get_python_environment $INSTALL_TYPE $VERSION $VENV
 
+env
