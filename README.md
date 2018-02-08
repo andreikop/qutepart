@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/andreikop/qutepart.svg?branch=master)](https://travis-ci.org/andreikop/qutepart)
+
 # Code editor component for PyQt5
 
 Component has been created for [Enki editor](http://enki-editor.org) as replacement for [QScintilla](http://www.riverbankcomputing.com/software/qscintilla/intro)
