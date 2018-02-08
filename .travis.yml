@@ -19,6 +19,7 @@ python:
 # above.
 matrix:
   allow_failures:
+  # On linux tests crash on Travis. Probably a Qt bug. Investigation and fix is welcome
   - os: linux
   include:
   - os: osx
