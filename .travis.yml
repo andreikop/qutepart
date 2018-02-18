@@ -4,6 +4,12 @@
 #
 # Otherwise, we get errors. See https://docs.travis-ci.com/user/ci-environment/#Virtualization-environments.
 sudo: required
+addons:
+  apt:
+    sources:
+      - sourceline: "deb http://us.archive.ubuntu.com/ubuntu/ xenial main universe"
+    packages:
+      - xvfb
 
 # See https://docs.travis-ci.com/user/multi-os/.
 os: linux
