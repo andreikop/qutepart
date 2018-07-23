@@ -18,10 +18,6 @@ if run as `python3 setup.py install`.
 Evidently, setuptools doesn't support installing from wheel.
 Therefore, only invoke this as:
 
-Unix:
-    python3 -m pip install -e .
-
-Windows:
     python3 setup.py build_ext --include-dir=../pcre-8.37/build --lib-dir=../pcre-8.37/build/Release
     python3 -m pip install -e .
 """
@@ -43,12 +39,16 @@ def parse_arg_list(param_start):
     return values
 
 
+def onWindows():
+    return os.name == 'nt'
+
+
 def runningOnPip():
   # __file__ in setup gives something like /tmp/pip-DNpsLw-build/setup.py if ran from pip.
   return 'pip' in __file__
 
 
-if not runningOnPip() and 'install' in sys.argv:
+if onWindows() and (not runningOnPip()) and 'install' in sys.argv:
   print(howToInstallMsg)
   sys.exit(0)
 
@@ -86,6 +86,17 @@ def _checkDependencies():
     """check if function without parameters from stdlib can be called
     There should be better way to check, if C compiler is installed
     """
+    if not onWindows():
+      try:
+          import PyQt5
+      except:
+          print("Qutepart requires PyQt5. Install it with your package manager.")
+          print("On Debian and Debian based")
+          print("\tapt-get install python3-pyqt5")
+          print("On Fedora")
+          print("\tdnf install python3-qt5")
+          return False
+
     if not compiler.has_function('rand', includes=['stdlib.h']):
         print("It seems like C compiler is not installed or not operable.")
         return False
@@ -122,7 +133,7 @@ def _checkDependencies():
 See https://github.com/andreikop/qutepart/issues/52
 """
 cfgPath = os.path.abspath(os.path.join(os.path.dirname(__file__), 'setup.cfg'))
-if os.name == 'nt':
+if onWindows():
     with open(cfgPath, 'w') as cfgFile:
         cfgFile.write("[build_ext]\ncompiler=msvc")
 else:
@@ -134,9 +145,17 @@ if ('install' in sys.argv or
     'build' in sys.argv or
     'build_ext' in sys.argv):
     if '--force' not in sys.argv and '--help' not in sys.argv:
-        if os.name != 'nt':
+        if not onWindows():
             if not _checkDependencies():
                 sys.exit(-1)
+
+
+install_requires = []
+if onWindows():
+    """ On Windows we install PyQt5 from pip
+    On Linux we ask user to install PyQt5 from package manager
+    """
+    install_requires.append('PyQt5')
 
 
 setup(name='qutepart',
@@ -157,6 +176,6 @@ setup(name='qutepart',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    install_requires = ['PyQt5'],
+    install_requires = install_requires,
     license='GNU Lesser General Public License v2 or later (LGPLv2+)',
 )

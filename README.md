@@ -39,7 +39,7 @@ On Debian, Ubuntu and other Linuxes install package `python3-dev`, on other syst
 It will probably be gcc
 
 #### 4. Build and install the package
-`python setup.py install`
+`python3 setup.py install`
 
 ## Building and installation on Windows
 
@@ -58,7 +58,8 @@ It will probably be gcc
 
 #### Build/install Python modules
     cd qutepart
-    python setup.py install --include-dir=../pcre-8.37/build --lib-dir=../pcre-8.37/build/Release
+    python3 setup.py build_ext --include-dir=../pcre-8.37/build --lib-dir=../pcre-8.37/build/Release
+    python3 -m pip install -e .
 
 ## Qutepart and Katepart
 [Kate](http://kate-editor.org/) and Katepart (an editor component) is really cool software. The Kate authors and community have created, probably, the biggest set of highlighters and indenters for programming languages.
