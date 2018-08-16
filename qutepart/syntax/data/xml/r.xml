@@ -6,34 +6,34 @@
 	license: GPL v2
 	Kate   : http://kate.kde.org/
 	R      : http://www.r-project.org/
-	RKWard : http://rkward.sourceforge.net/
+	RKWard : http://rkward.kde.org/
 	-->
-<language version="2.08" kateversion="2.3" name="R Script" section="Scripts" extensions="*.R;*.r;*.S;*.s;*.q" mimetype="" license="GPL">
+<language version="8" kateversion="5.0" name="R Script" section="Scientific" extensions="*.R;*.r;*.S;*.s;*.q" mimetype="" license="GPLv2">
 <highlighting>
 
 	<list name="controls">
-		<item> for </item>
-		<item> in </item>
-		<item> next </item>
-		<item> break </item>
-		<item> while </item>
-		<item> repeat </item>
-		<item> if </item>
-		<item> else </item>
-		<item> switch </item>
-		<item> function </item>
+		<item>for</item>
+		<item>in</item>
+		<item>next</item>
+		<item>break</item>
+		<item>while</item>
+		<item>repeat</item>
+		<item>if</item>
+		<item>else</item>
+		<item>switch</item>
+		<item>function</item>
 	</list>
 	<list name="words">
-		<item> TRUE </item>
-		<item> FALSE </item>
-		<item> NULL </item>
-		<item> NA </item>
-		<item> NA_integer_ </item>
-		<item> NA_real_ </item>
-		<item> NA_complex_ </item>
-		<item> NA_character_ </item>
-		<item> Inf </item>
-		<item> NaN </item>
+		<item>TRUE</item>
+		<item>FALSE</item>
+		<item>NULL</item>
+		<item>NA</item>
+		<item>NA_integer_</item>
+		<item>NA_real_</item>
+		<item>NA_complex_</item>
+		<item>NA_character_</item>
+		<item>Inf</item>
+		<item>NaN</item>
 	</list>
 
 	<contexts>
@@ -52,8 +52,8 @@
 			<DetectChar attribute="Error" context="#stay" char=")"/>
 		</context>
 
-		<context attribute="In Parenthesis" lineEndContext="#stay" name="parenthesis">
-			<LineContinue attribute="Boolean" context="#stay"/>
+		<context attribute="Normal Text" lineEndContext="#stay" name="parenthesis">
+			<LineContinue attribute="Operator" context="#stay"/>
 			<DetectChar attribute="Symbol" context="#pop" char=")"/>
 
 			<RegExpr attribute="Identifier" context="#stay" String="[a-zA-Z_\.][0-9a-zA-Z_\.]*[\s]*=(?=([^=]|$))"/>
@@ -124,19 +124,19 @@
 	</contexts>
 
 	<itemDatas>
-	<!-- KDE default colors: http://accessibility.kde.org/oxygen.php?color=white -->
+		<!-- KDE default colors: http://accessibility.kde.org/oxygen.php?color=white -->
 		<itemData name="Normal Text" defStyleNum="dsNormal"/>
 		<itemData name="Symbol" defStyleNum="dsNormal"/>
 		<itemData name="Keyword" defStyleNum="dsKeyword"/>
 		<itemData name="Identifier" defStyleNum="dsDataType"/>
 		<itemData name="String" defStyleNum="dsString"/>
-		<itemData name="Headline" defStyleNum="dsNormal" color="#b00000" selColor="#b00000" bold="1" italic="0"/> <!-- KDE default color: text 5 -->
+		<itemData name="Headline" defStyleNum="dsComment" color="#b00000" selColor="#b00000" bold="1" italic="0"/> <!-- KDE default color: text 5 -->
 		<itemData name="Comment" defStyleNum="dsComment"/>
 		<itemData name="Assign" defStyleNum="dsNormal" color="#336366" selColor="#ccc099" bold="1" italic="0"/> <!-- KDE default color: text 7 -->
-		<itemData name="Control Structure" defStyleNum="dsNormal" color="#0000bf" selColor="#bfbf00"/> <!-- KDE default color: text 2 -->
+		<itemData name="Control Structure" defStyleNum="dsControlFlow"/>
 		<itemData name="Reserved Words" defStyleNum="dsOthers"/>
 		<itemData name="Error" defStyleNum="dsError"/>
-		<itemData name="Operator" defStyleNum="dsNormal"  color="#803f00" selColor="#000077" bold="0" italic="0"/> <!-- KDE default color: focussed text -->
+		<itemData name="Operator" defStyleNum="dsOperator"/>
 		<itemData name="String Char"  defStyleNum="dsChar"/>
 		<itemData name="Float" defStyleNum="dsFloat"/>
 		<itemData name="Int" defStyleNum="dsDecVal"/>

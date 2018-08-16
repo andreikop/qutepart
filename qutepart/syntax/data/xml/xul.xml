@@ -4,49 +4,49 @@
 	<!ENTITY name    "[A-Za-z_:][\w.:_-]*">
 	<!ENTITY entref  "&amp;(#[0-9]+|#[xX][0-9A-Fa-f]+|&name;);">
 ]>
-        <language name="XUL" version="0.11" kateversion="2.4" section="Markup" extensions="*.xul;*.xbl" mimetype="text/xul" casesensitive="1" author="Wilbert Berendsen (wilbert@kde.nl), Anders Lund (anders@alweb.dk), Joseph Wenninger (jowenn@kde.org), Whitehawk Stormchaser (zerokode@gmx.net), Marc Dassonneville (marc.dassonneville@gmail.com)" license="LGPL">
+        <language name="XUL" version="4" kateversion="2.4" section="Markup" extensions="*.xul;*.xbl" mimetype="text/xul" casesensitive="1" author="Wilbert Berendsen (wilbert@kde.nl), Anders Lund (anders@alweb.dk), Joseph Wenninger (jowenn@kde.org), Whitehawk Stormchaser (zerokode@gmx.net), Marc Dassonneville (marc.dassonneville@gmail.com)" license="LGPL">
 
 <highlighting>
    <list name="keywords">
-      <item> if </item>
-      <item> else </item>
-      <item> for </item>
-      <item> in </item>
-      <item> while </item>
-      <item> do </item>
-      <item> continue </item>
-      <item> break </item>
-      <item> with </item>
-      <item> try </item>
-      <item> catch </item>
-      <item> finally </item>
-      <item> switch </item>
-      <item> case </item>
-      <item> new </item>
-      <item> var </item>
-      <item> function </item>
-      <item> return </item>
-      <item> delete </item>
-      <item> true </item>
-      <item> false </item>
-      <item> void </item>
-      <item> throw </item>
-      <item> typeof </item>
-      <item> const </item>
-      <item> default </item>
+      <item>if</item>
+      <item>else</item>
+      <item>for</item>
+      <item>in</item>
+      <item>while</item>
+      <item>do</item>
+      <item>continue</item>
+      <item>break</item>
+      <item>with</item>
+      <item>try</item>
+      <item>catch</item>
+      <item>finally</item>
+      <item>switch</item>
+      <item>case</item>
+      <item>new</item>
+      <item>var</item>
+      <item>function</item>
+      <item>return</item>
+      <item>delete</item>
+      <item>true</item>
+      <item>false</item>
+      <item>void</item>
+      <item>throw</item>
+      <item>typeof</item>
+      <item>const</item>
+      <item>default</item>
    </list>
    <list name="functions">
-      <item> escape </item>
-      <item> isFinite </item>
-      <item> isNaN </item>
-      <item> Number </item>
-      <item> parseFloat </item>
-      <item> parseInt </item>
-      <item> reload </item>
-      <item> taint </item>
-      <item> unescape </item>
-      <item> untaint </item>
-      <item> write </item>
+      <item>escape</item>
+      <item>isFinite</item>
+      <item>isNaN</item>
+      <item>Number</item>
+      <item>parseFloat</item>
+      <item>parseInt</item>
+      <item>reload</item>
+      <item>taint</item>
+      <item>unescape</item>
+      <item>untaint</item>
+      <item>write</item>
    </list>
    <list name="objects">
       <item>Anchor</item>
@@ -87,30 +87,30 @@
       <item>Window</item>
    </list>
    <list name="math">
-      <item> abs </item>
-      <item> acos </item>
-      <item> asin </item>
-      <item> atan </item>
-      <item> atan2 </item>
-      <item> ceil </item>
-      <item> cos </item>
-      <item> ctg </item>
-      <item> E </item>
-      <item> exp </item>
-      <item> floor </item>
-      <item> LN2 </item>
-      <item> LN10 </item>
-      <item> log </item>
-      <item> LOG2E </item>
-      <item> LOG10E </item>
-      <item> PI </item>
-      <item> pow </item>
-      <item> round </item>
-      <item> sin </item>
-      <item> sqrt </item>
-      <item> SQRT1_2 </item>
-      <item> SQRT2 </item>
-      <item> tan </item>
+      <item>abs</item>
+      <item>acos</item>
+      <item>asin</item>
+      <item>atan</item>
+      <item>atan2</item>
+      <item>ceil</item>
+      <item>cos</item>
+      <item>ctg</item>
+      <item>E</item>
+      <item>exp</item>
+      <item>floor</item>
+      <item>LN2</item>
+      <item>LN10</item>
+      <item>log</item>
+      <item>LOG2E</item>
+      <item>LOG10E</item>
+      <item>PI</item>
+      <item>pow</item>
+      <item>round</item>
+      <item>sin</item>
+      <item>sqrt</item>
+      <item>SQRT1_2</item>
+      <item>SQRT2</item>
+      <item>tan</item>
    </list>
    <list name="events">
       <item>onAbort</item>
@@ -590,7 +590,7 @@
   <itemData name="Doctype" defStyleNum="dsDataType" bold="1" />
   <itemData name="Element" defStyleNum="dsKeyword" />
   <itemData name="Attribute" defStyleNum="dsOthers" />
-  <itemData name="Value" defStyleNum="dsString" color="#a00" />
+  <itemData name="Value" defStyleNum="dsString" />
   <itemData name="EntityRef" defStyleNum="dsDecVal" />
   <itemData name="PEntityRef" defStyleNum="dsDecVal" />
   <itemData name="Error" defStyleNum="dsError" />
@@ -603,10 +603,8 @@
   <itemData name="Data Type"    defStyleNum="dsDataType"/>
   <itemData name="Decimal"      defStyleNum="dsDecVal"/>
   <itemData name="Float"        defStyleNum="dsFloat"/>
-  <itemData name="Char"         defStyleNum="dsChar"/>
   <itemData name="String"       defStyleNum="dsString"/>
   <itemData name="String Char"  defStyleNum="dsChar"/>
-  <itemData name="Comment"      defStyleNum="dsComment"/>
   <itemData name="Symbol"       defStyleNum="dsNormal"/>
   <itemData name="Regular Expression" defStyleNum="dsOthers"   />
   <itemData name="Pattern Internal Operator" defStyleNum="dsFloat" />

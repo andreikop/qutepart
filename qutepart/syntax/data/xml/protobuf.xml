@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Protobuf" version="2.40" kateversion="3.4" section="Sources" extensions="*.proto" mimetype="text/x-protobuf" author="Slawomir Mikula (slawek.mikula@gmail.com)" license="LGPL">
+<language name="Protobuf" version="6" kateversion="5.0" section="Sources" extensions="*.proto" mimetype="text/x-protobuf" author="Slawomir Mikula (slawek.mikula@gmail.com)" license="LGPL">
   <highlighting>
     <list name="keywords">
-      <item> message </item>
-      <item> required </item>
-      <item> optional </item>
-      <item> repeated </item>
-      <item> packed </item>
-      <item> enum </item>
-      <item> default </item>
-      <item> import </item>
-      <item> public </item>
-      <item> extensions </item>
-      <item> package </item>
-      <item> option </item>
-      <item> deprecated </item>
-      <item> extend </item>
+      <item>message</item>
+      <item>required</item>
+      <item>optional</item>
+      <item>repeated</item>
+      <item>packed</item>
+      <item>enum</item>
+      <item>default</item>
+      <item>import</item>
+      <item>public</item>
+      <item>extensions</item>
+      <item>package</item>
+      <item>option</item>
+      <item>deprecated</item>
+      <item>extend</item>
     </list>
     <list name="operators">
-      <item> = </item>
-      <item> ; </item>
+      <item>=</item>
+      <item>;</item>
     </list>
     <list name="datatypes">
-      <item> double </item>
-      <item> float </item>
-      <item> int32 </item>
-      <item> int64 </item>
-      <item> uint32 </item>
-      <item> uint64 </item>
-      <item> sint32 </item>
-      <item> sint64 </item>
-      <item> fixed32 </item>
-      <item> fixed64 </item>
-      <item> sfixed32 </item>
-      <item> sfixed64 </item>
-      <item> bool </item>
-      <item> string </item>
-      <item> bytes </item>
+      <item>double</item>
+      <item>float</item>
+      <item>int32</item>
+      <item>int64</item>
+      <item>uint32</item>
+      <item>uint64</item>
+      <item>sint32</item>
+      <item>sint64</item>
+      <item>fixed32</item>
+      <item>fixed64</item>
+      <item>sfixed32</item>
+      <item>sfixed64</item>
+      <item>bool</item>
+      <item>string</item>
+      <item>bytes</item>
     </list>
 
 <contexts>
@@ -86,10 +86,6 @@
         <IncludeRules context="##Alerts" />
       </context>
 
-      <context attribute="Comment" lineEndContext="#stay" name="Commentar">
-        <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" endRegion="Comment2" />
-      </context>
-
     </contexts>
     <itemDatas>
       <itemData name="Normal Text" defStyleNum="dsNormal" spellChecking="false"/>
@@ -106,9 +102,8 @@
       <itemData name="String" defStyleNum="dsString"/>
       <itemData name="String Char" defStyleNum="dsChar"/>
 
+      <itemData name="Operator" defStyleNum="dsOperator" spellChecking="false"/>
       <itemData name="Symbol" defStyleNum="dsNormal" spellChecking="false"/>
-      <itemData name="Alert" defStyleNum="dsAlert" spellChecking="false"/>
-      <itemData name="Error" defStyleNum="dsError" spellChecking="false"/>
     </itemDatas>
   </highlighting>
   <general>

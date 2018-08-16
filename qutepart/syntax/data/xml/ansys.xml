@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Ansys" version="1.3" kateversion="5.0" section="Scientific" extensions="*.ans" author="Giovanni Bacci (giovanni@castellodilari.it)" license="LGPL" >
+<language name="Ansys" version="5" kateversion="5.0" section="Scientific" extensions="*.ans" author="Giovanni Bacci (giovanni@castellodilari.it)" license="LGPL" >
 <highlighting>
 	<list name="session_cmds">
 		<item>/BATCH</item>
@@ -1992,7 +1992,7 @@
 			<keyword attribute="AUX3cmds" context="#stay" String="aux3_cmds" firstNonSpace="true" />
 			<keyword attribute="AUX12cmds" context="#stay" String="aux12_cmds" firstNonSpace="true" />
 			<keyword attribute="AUX15cmds" context="#stay" String="aux15_cmds" firstNonSpace="true" />
-			<keyword attribute="RUNSTATScmds" context="#stay" String="runstats_cmds" firstNonSpace="true" />
+			<keyword attribute="RUNSTATcmds" context="#stay" String="runstats_cmds" firstNonSpace="true" />
 			<keyword attribute="OPTIMIZATIONcmds" context="#stay" String="optimization_cmds" firstNonSpace="true" />
 			<keyword attribute="PROBcmds" context="#stay" String="probabilistic_cmds" firstNonSpace="true" />
 			<keyword attribute="DISPLAYcmds" context="#stay" String="display_cmds" firstNonSpace="true" />
@@ -2009,18 +2009,10 @@
 		<context attribute="String" name="doublequotestring" lineEndContext="#stay" >
 			<DetectChar attribute="String" context="#pop" char="&quot;" />
 		</context>
-		<context attribute="Normal Text" name="functions" lineEndContext="#pop" >
-			<RangeDetect attribute="Normal Text" context="#pop" char="(" char1=")" />
-			<DetectChar attribute="error" context="open_parentesis" char="(" />
-		</context>
 		<context attribute="parentesis_not_closed" name="open_parentesis" lineEndContext="#pop" >
 			<DetectChar attribute="Normal Text" context="#pop" char=")" />
 		</context>
 		<context attribute="comment" name="comment" lineEndContext="#pop" />
-		<context attribute="NumFloat" name="functions_arg" lineEndContext="#pop" >
-			<DetectChar attribute="Keyword" context="#stay" char="(" />
-			<DetectChar attribute="Keyword" context="#pop" char=")" />
-		</context>
 	</contexts>
 	<itemDatas>
 		<itemData name="Normal Text" defStyleNum="dsNormal" />
@@ -2049,7 +2041,6 @@
 		<itemData name="String" defStyleNum="dsString" />
 		<itemData name="NumInt" defStyleNum="dsDecVal" />
 		<itemData name="NumFloat" defStyleNum="dsFloat" />
-		<itemData name="functions_arg" defStyleNum="dsKeyword" />
 		<itemData name="comment" defStyleNum="dsComment" />
 		<itemData name="parentesis_not_closed" defStyleNum="dsRegionMarker" />
 		<itemData name="error" defStyleNum="dsError" />

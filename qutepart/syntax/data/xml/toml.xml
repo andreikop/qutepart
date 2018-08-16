@@ -11,7 +11,7 @@
 	<!ENTITY datetime "\d\d\d\d-\d\d-\d\d(T&time;)?">
 ]>
 <!-- https://github.com/toml-lang/toml -->
-<language name="TOML" section="Configuration" extensions="*.toml" mimetype="text/x-toml" version="1.0" kateversion="5.0" author="flying-sheep@web.de" license="LGPLv2+">
+<language name="TOML" section="Configuration" extensions="*.toml" mimetype="text/x-toml" version="5" kateversion="5.0" author="flying-sheep@web.de" license="LGPLv2+">
 <highlighting>
 	<list name="bools">
 		<item>true</item>
@@ -43,7 +43,7 @@
 			<DetectChar attribute="Key" context="QuotedKey" char="&quot;"/>
 		</context>
 		<!-- values -->
-		<context attribute="Value" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop" name="Value">
+		<context attribute="Normal Text" lineEndContext="#pop" fallthrough="true" fallthroughContext="#pop" name="Value">
 			<DetectSpaces attribute="Whitespace"/>
 			<RegExpr attribute="Date"  context="#stay" String="&datetime;"/>
 			<keyword attribute="Bool" String="bools" context="#stay"/>
@@ -65,17 +65,23 @@
 		<!-- Quoted keys and Strings -->
 		<context attribute="Key" lineEndContext="#pop" name="QuotedKey">
 			<LineContinue attribute="Escape" context="#stay"/>
-			<HlCStringChar attribute="Escape" context="#stay"/>
+			<RegExpr attribute="Escape" String="\\[btnfr&quot;\\]" context="#stay" />
+			<RegExpr attribute="Escape" String="\\(u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})" context="#stay" />
+			<RegExpr attribute="Error" String="\\." context="#stay" />
 			<DetectChar attribute="Key" context="#pop" char="&quot;"/>
 		</context>
 		<context attribute="String" lineEndContext="#pop" name="String">
 			<LineContinue attribute="Escape" context="#stay"/>
-			<HlCStringChar attribute="Escape" context="#stay"/>
+			<RegExpr attribute="Escape" String="\\[btnfr&quot;\\]" context="#stay" />
+			<RegExpr attribute="Escape" String="\\(u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})" context="#stay" />
+			<RegExpr attribute="Error" String="\\." context="#stay" />
 			<DetectChar attribute="String" context="#pop" char="&quot;"/>
 		</context>
 		<context attribute="String" lineEndContext="#stay" name="MultilineString">
 			<LineContinue attribute="Escape" context="#stay"/>
-			<HlCStringChar attribute="Escape" context="#stay"/>
+			<RegExpr attribute="Escape" String="\\[btnfr&quot;\\]" context="#stay" />
+			<RegExpr attribute="Escape" String="\\(u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})" context="#stay" />
+			<RegExpr attribute="Error" String="\\." context="#stay" />
 			<StringDetect attribute="String" context="#pop" String="&quot;&quot;&quot;"/>
 		</context>
 		<context attribute="LitString" lineEndContext="#pop" name="LitString">
@@ -100,6 +106,7 @@
 		</context>
 	</contexts>
 	<itemDatas>
+		<itemData name="Normal Text" defStyleNum="dsNormal"/>
 		<itemData name="Key"         defStyleNum="dsDataType"/>
 		<itemData name="TableHeader" defStyleNum="dsKeyword"/>
 		<itemData name="Assignment"  defStyleNum="dsOperator"/>

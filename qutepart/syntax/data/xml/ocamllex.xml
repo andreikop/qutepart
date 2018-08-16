@@ -11,7 +11,7 @@
           section="Sources"
           extensions="*.mll"
           mimetype=""
-          version="2.02"
+          version="3"
           kateversion="2.4"
           priority="10"
           author="Glyn Webster (glynwebster@orcon.net.nz) and Vincent Hugot (vincent.hugot@gmail.com)"
@@ -20,13 +20,13 @@
   <highlighting>
 
     <list name="keywords">
-      <item> and </item>
-      <item> as </item>
-      <item> eof </item>
-      <item> let </item>
-      <item> parse </item>
-      <item> rule </item>
-      <item> shortest </item>
+      <item>and</item>
+      <item>as</item>
+      <item>eof</item>
+      <item>let</item>
+      <item>parse</item>
+      <item>rule</item>
+      <item>shortest</item>
     </list>
 
     <contexts>

@@ -36,40 +36,40 @@
                                    - fixed highlighting problem when '@' at end of atom/variable
 -->
 
-<language name="Erlang" version="1.04" kateversion="5.0" section="Scripts" extensions="*.erl" mimetype="" author="Bill Ross (bill@emailme.net.au)" license="LGPL">
+<language name="Erlang" version="3" kateversion="5.0" section="Scripts" extensions="*.erl" mimetype="" author="Bill Ross (bill@emailme.net.au)" license="LGPLv2">
   <highlighting>
     <list name="keywords">
       <!-- ====== s3.8 p 24 of erlang spec ===== -->
-      <item> after </item>
-      <item> begin </item>
-      <item> case </item>
-      <item> catch </item>
-      <item> cond </item>
-      <item> end </item>
-      <item> fun </item>
-      <item> if </item>
-      <item> let </item>
-      <item> of </item>
-      <item> query </item>
-      <item> receive </item>
-      <item> all_true </item>
-      <item> some_true </item>
+      <item>after</item>
+      <item>begin</item>
+      <item>case</item>
+      <item>catch</item>
+      <item>cond</item>
+      <item>end</item>
+      <item>fun</item>
+      <item>if</item>
+      <item>let</item>
+      <item>of</item>
+      <item>query</item>
+      <item>receive</item>
+      <item>all_true</item>
+      <item>some_true</item>
     </list>
     <list name="operators">
       <!-- operators: s3.9 p 24 of erlang spec -->
       <!-- see also opsymbols for the symbols -->
-      <item> div </item>
-      <item> rem </item>
-      <item> or </item>
-      <item> xor </item>
-      <item> bor </item>
-      <item> bxor </item>
-      <item> bsl </item>
-      <item> bsr </item>
-      <item> and </item>
-      <item> band </item>
-      <item> not </item>
-      <item> bnot </item>
+      <item>div</item>
+      <item>rem</item>
+      <item>or</item>
+      <item>xor</item>
+      <item>bor</item>
+      <item>bxor</item>
+      <item>bsl</item>
+      <item>bsr</item>
+      <item>and</item>
+      <item>band</item>
+      <item>not</item>
+      <item>bnot</item>
     </list>
     <list name="functions">
       <!-- all standard (erlang) functions are here, -->

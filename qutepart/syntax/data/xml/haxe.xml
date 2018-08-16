@@ -12,81 +12,81 @@
   ========================================================================
 -->
 
-<language name="Haxe" section="Sources" extensions="*.hx;*.Hx;*.hX;*.HX;" mimetype="text/x-hxsrc" version="0.1" kateversion="2.4" casesensitive="true" author="Chad Joan" license="MIT">
+<language name="Haxe" section="Sources" extensions="*.hx;*.Hx;*.hX;*.HX;" mimetype="text/x-hxsrc" version="2" kateversion="2.4" casesensitive="true" author="Chad Joan" license="MIT">
   <highlighting>
     <list name="keywords">
     
-      <item> break </item>
+      <item>break</item>
       
-      <item> case </item>
-      <item> cast </item>
-      <item> catch </item>
-      <item> class </item>
-      <item> continue </item>
+      <item>case</item>
+      <item>cast</item>
+      <item>catch</item>
+      <item>class</item>
+      <item>continue</item>
       
-      <item> default </item>
+      <item>default</item>
 
-      <item> else </item>
-      <item> enum </item>
-      <item> extends </item>
+      <item>else</item>
+      <item>enum</item>
+      <item>extends</item>
       
-      <item> false </item>
-      <item> for </item>
-      <item> function </item>
+      <item>false</item>
+      <item>for</item>
+      <item>function</item>
       
-      <item> if </item>
-      <item> implements </item>
-      <item> in </item>
-      <item> inline </item>
-      <item> interface </item>
+      <item>if</item>
+      <item>implements</item>
+      <item>in</item>
+      <item>inline</item>
+      <item>interface</item>
       
-      <item> new </item>
-      <item> null </item>
+      <item>new</item>
+      <item>null</item>
       
-      <item> override </item>
+      <item>override</item>
       
-      <item> private </item>
-      <item> public </item>
+      <item>private</item>
+      <item>public</item>
       
-      <item> return </item>
+      <item>return</item>
       
-      <item> static </item>
-      <item> super </item>
-      <item> switch </item>
+      <item>static</item>
+      <item>super</item>
+      <item>switch</item>
       
-      <item> this </item>
-      <item> throw </item>
-      <item> trace </item>
-      <item> true </item>
-      <item> try </item>
-      <item> typedef </item>
+      <item>this</item>
+      <item>throw</item>
+      <item>trace</item>
+      <item>true</item>
+      <item>try</item>
+      <item>typedef</item>
       
-      <item> untyped </item>
+      <item>untyped</item>
       
-      <item> var </item>
+      <item>var</item>
       
-      <item> while </item>
+      <item>while</item>
 
     </list>
 
     <list name="modules">
-      <item> package </item>
-      <item> import </item>
+      <item>package</item>
+      <item>import</item>
     </list>
 
     <list name="types">
-      <item> Array </item>
-      <item> Void </item>
-      <item> Bool </item>
-      <item> Int </item>
-      <item> UInt </item>
-      <item> Float </item>
-      <item> Dynamic </item>
-      <item> String </item>
-      <item> List </item>
-      <item> Error </item>
-      <item> Unknown </item>
-      <item> Type </item>
+      <item>Array</item>
+      <item>Void</item>
+      <item>Bool</item>
+      <item>Int</item>
+      <item>UInt</item>
+      <item>Float</item>
+      <item>Dynamic</item>
+      <item>String</item>
+      <item>List</item>
+      <item>Error</item>
+      <item>Unknown</item>
+      <item>Type</item>
     </list>
 
     <contexts>
@@ -100,7 +100,7 @@
       
         <DetectIdentifier attribute="Normal Text"/>
 
-        <HlCStringChar attribute="EscapeString" context="#pop"/>
+        <HlCStringChar attribute="EscapeSequence" context="#pop"/>
 
         <DetectChar attribute="RawString" context="RawString"   char="'"/>
         <DetectChar attribute="String"    context="String"      char="&quot;"/>

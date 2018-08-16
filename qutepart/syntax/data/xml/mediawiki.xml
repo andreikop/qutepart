@@ -6,7 +6,7 @@
   <!ENTITY wikiLinkWithDescription "\[\[[^]|]*\|[^]]*\]\]">
   <!ENTITY wikiLinkWithoutDescription "\[\[[^]|]*\]\]">
 ]>
-<language name="MediaWiki" section="Markup" version="1.11" kateversion="3.4" extensions="*.mediawiki" mimetype="" license="FDL" >
+<language name="MediaWiki" section="Markup" version="4" kateversion="3.4" extensions="*.mediawiki" mimetype="" license="FDL" >
   <highlighting>
     <contexts>
       <context attribute="Normal" lineEndContext="#stay" name="normal" >
@@ -160,7 +160,7 @@
         <DetectChar char=" " context="#pop" attribute="WikiTag" />
       </context>
 
-      <context attribute="dsNormal" lineEndContext="#stay" name="URLTag" >
+      <context attribute="Normal" lineEndContext="#stay" name="URLTag" >
         <IncludeRules context="FindTextDecorations" />
         <IncludeRules context="FindTemplate" />
         <DetectChar char="]" context="#pop" lookAhead="true" />
@@ -610,7 +610,7 @@
       <itemData name="ItalicUnderlined" defStyleNum="dsNormal" italic="true" underline="true" />
       <itemData name="BoldItalicUnderlined" defStyleNum="dsNormal" bold="true" italic="true" underline="true" />
       <itemData name="HtmlAttribute" defStyleNum="dsOthers" spellChecking="false" />
-      <itemData name="HtmlValue" defStyleNum="dsString" color="#a00" spellChecking="false" />
+      <itemData name="HtmlValue" defStyleNum="dsString" spellChecking="false" />
     </itemDatas>
   </highlighting>
   <general>

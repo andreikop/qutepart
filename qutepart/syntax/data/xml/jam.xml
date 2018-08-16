@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 -->
-<language name="Jam" version="0.4" kateversion="2.4" section="Other" extensions="Jam*;*.jam" mimetype="text/x-jam;text/x-Jamfile;text/x-Jamrules;text/x-Jambase">
+<language name="Jam" version="3" kateversion="2.4" section="Other" extensions="Jam*;*.jam" mimetype="text/x-jam;text/x-Jamfile;text/x-Jamrules;text/x-Jambase" author="Mildred (silkensedai@online.fr)" license="MIT">
   <!--
   Changelog
     0.2
@@ -47,44 +47,44 @@ IN THE SOFTWARE.
   -->
   <highlighting>
     <list name="keywords">
-      <item> actions </item>
-      <item> break </item>
-      <item> continue </item>
-      <item> for </item>
-      <item> in </item>
-      <item> if </item>
-      <item> else </item>
-      <item> include </item>
-      <item> local </item>
-      <item> on </item>
-      <item> return </item>
-      <item> rule </item>
-      <item> switch </item>
-      <item> case </item>
-      <item> while </item>
+      <item>actions</item>
+      <item>break</item>
+      <item>continue</item>
+      <item>for</item>
+      <item>in</item>
+      <item>if</item>
+      <item>else</item>
+      <item>include</item>
+      <item>local</item>
+      <item>on</item>
+      <item>return</item>
+      <item>rule</item>
+      <item>switch</item>
+      <item>case</item>
+      <item>while</item>
     </list>
     <list name="keywordLocal">
-      <item> local </item>
+      <item>local</item>
     </list>
     <list name="actionAttribute">
-      <item> existing </item>
-      <item> ignore </item>
-      <item> piecemeal </item>
-      <item> quietly </item>
-      <item> together </item>
-      <item> updated </item>
+      <item>existing</item>
+      <item>ignore</item>
+      <item>piecemeal</item>
+      <item>quietly</item>
+      <item>together</item>
+      <item>updated</item>
     </list>
     <list name="actionAttributeBind">
-      <item> bind </item>
+      <item>bind</item>
     </list>
-    <list name="tokenColon"><item> : </item></list>
-    <list name="tokenSemicolon"><item> ; </item></list>
-    <list name="tokenSquareOpen"><item> [ </item></list>
-    <list name="tokenSquareClose"><item> ] </item></list>
-    <list name="tokenBraceOpen"><item> ( </item></list>
-    <list name="tokenBraceClose"><item> ) </item></list>
-    <list name="tokenBlockOpen"><item> { </item></list>
-    <list name="tokenBlockClose"><item> } </item></list>
+    <list name="tokenColon"><item>:</item></list>
+    <list name="tokenSemicolon"><item>;</item></list>
+    <list name="tokenSquareOpen"><item>[</item></list>
+    <list name="tokenSquareClose"><item>]</item></list>
+    <list name="tokenBraceOpen"><item>(</item></list>
+    <list name="tokenBraceClose"><item>)</item></list>
+    <list name="tokenBlockOpen"><item>{</item></list>
+    <list name="tokenBlockClose"><item>}</item></list>
     <contexts>
 
       <context attribute="Normal" lineEndContext="#stay" name="Normal">
@@ -218,13 +218,6 @@ IN THE SOFTWARE.
         <keyword attribute="Error" context="#stay" String="tokenColon" weakDelimiter=":;{}()[].!+,-&lt;=&gt;%&amp;/?^|~\*,"/>
         <keyword attribute="Operator" context="#pop" String="tokenBlockOpen" lookAhead="true" weakDelimiter=":;{}()[].!+,-&lt;=&gt;%&amp;/?^|~\*,"/>
         <RegExpr attribute="Rule" context="VarnameList" String="[^\t ]+"/>
-      </context>
-
-      <context attribute="Error" lineEndContext="#stay" name="RuleDefinitionFull">
-        <IncludeRules context="Preprocess"/>
-        <DetectSpaces attribute="Normal"/>
-        <keyword attribute="Operator" context="VarnameList" String="tokenColon" lookAhead="true" weakDelimiter=":;{}()[].!+,-&lt;=&gt;%&amp;/?^|~\*,"/>
-        <keyword attribute="Operator" context="#pop" String="tokenBlockOpen" lookAhead="true" weakDelimiter=":;{}()[].!+,-&lt;=&gt;%&amp;/?^|~\*,"/>
       </context>
 
       <context attribute="Normal" lineEndContext="#stay" name="VarnameList">

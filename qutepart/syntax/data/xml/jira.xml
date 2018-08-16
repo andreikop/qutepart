@@ -28,7 +28,7 @@
 
   <!ENTITY url "(http:|https:|ftp:|mailto:)[^]|) ]*(?=$|[]|\s|\)])">
 ]>
-<language name="Jira" section="Markup" version="1.0" kateversion="3.0" extensions="*.jira" mimetype="" license="FDL" >
+<language name="Jira" section="Markup" version="5" kateversion="3.0" extensions="*.jira" mimetype="" license="FDL" >
   <highlighting>
 
     <!--
@@ -459,7 +459,7 @@
         <StringDetect String="lime" attribute="Lime" />
         <DetectChar char="}" attribute="Special Character" context="LimeContent" />
       </context>
-      <context name="LimeContent" attribute="Limed" lineEndContext="#stay">
+      <context name="LimeContent" attribute="Lime" lineEndContext="#stay">
         <IncludeRules context="HighlightedColorContent" />
       </context>
       <context name="ColorGreenTagColor" attribute="Normal" lineEndContext="#stay">
@@ -688,12 +688,11 @@
       <itemData name="Bold" defStyleNum="dsNormal" bold="true" />
       <itemData name="Header" defStyleNum="dsKeyword" />
       <itemData name="Italic" defStyleNum="dsNormal" italic="true" />
-      <itemData name="Keyword" defStyleNum="dsKeyword" />
       <itemData name="Special Character" defStyleNum="dsDecVal" bold="true" />
       <itemData name="Stroked Out" defStyleNum="dsNormal" strikeOut="true" />
       <itemData name="Underlined" defStyleNum="dsNormal" underline="true" />
       <itemData name="AttributeKeyword" defStyleNum="dsOthers" spellChecking="false" />
-      <itemData name="AttributeValue" defStyleNum="dsString" color="#a00" spellChecking="false" />
+      <itemData name="AttributeValue" defStyleNum="dsString" spellChecking="false" />
       <itemData name="EscapeSequence" defStyleNum="dsChar" spellChecking="false" />
 
       <!-- Colors -->

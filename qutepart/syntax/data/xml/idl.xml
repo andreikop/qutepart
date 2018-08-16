@@ -1,48 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="IDL" version="1.07" kateversion="2.4" section="Sources" extensions="*.idl" mimetype="text/x-idl-src">
+<language name="IDL" version="3" kateversion="2.4" section="Sources" extensions="*.idl" mimetype="text/x-idl-src">
   <highlighting>
     <list name="keywords">
-      <item> any </item>
-      <item> attribute </item>
-      <item> case </item>
-      <item> const </item>
-      <item> context </item>
-      <item> default </item>
-      <item> enum </item>
-      <item> exception </item>
-      <item> FALSE </item>
-      <item> fixed </item>
-      <item> public </item>
-      <item> in </item>
-      <item> inout </item>
-      <item> interface </item>
-      <item> module </item>
-      <item> Object </item>
-      <item> oneway </item>
-      <item> out </item>
-      <item> raises </item>
-      <item> readonly </item>
-      <item> sequence </item>
-      <item> struct </item>
-      <item> switch </item>
-      <item> TRUE </item>
-      <item> typedef </item>
-      <item> unsigned </item>
-      <item> union </item>
+      <item>any</item>
+      <item>attribute</item>
+      <item>case</item>
+      <item>const</item>
+      <item>context</item>
+      <item>default</item>
+      <item>enum</item>
+      <item>exception</item>
+      <item>FALSE</item>
+      <item>fixed</item>
+      <item>public</item>
+      <item>in</item>
+      <item>inout</item>
+      <item>interface</item>
+      <item>module</item>
+      <item>Object</item>
+      <item>oneway</item>
+      <item>out</item>
+      <item>raises</item>
+      <item>readonly</item>
+      <item>sequence</item>
+      <item>struct</item>
+      <item>switch</item>
+      <item>TRUE</item>
+      <item>typedef</item>
+      <item>unsigned</item>
+      <item>union</item>
     </list>
     <list name="types">
-      <item> boolean </item>
-      <item> char </item>
-      <item> double </item>
-      <item> float </item>
-      <item> long </item>
-      <item> octet </item>
-      <item> short </item>
-      <item> string </item>
-      <item> void </item>
-      <item> wchar </item>
-      <item> wstring </item>
+      <item>boolean</item>
+      <item>char</item>
+      <item>double</item>
+      <item>float</item>
+      <item>long</item>
+      <item>octet</item>
+      <item>short</item>
+      <item>string</item>
+      <item>void</item>
+      <item>wchar</item>
+      <item>wstring</item>
     </list>
     <contexts>
       <context attribute="Normal Text" lineEndContext="#stay" name="Normal">
@@ -92,10 +92,8 @@
       <itemData name="Normal Text" defStyleNum="dsNormal"/>
       <itemData name="Keyword"  defStyleNum="dsKeyword"/>
       <itemData name="Data Type"  defStyleNum="dsDataType"/>
-      <itemData name="Decimal"  defStyleNum="dsDecVal"/>
       <itemData name="Octal"  defStyleNum="dsBaseN"/>
       <itemData name="Hex"  defStyleNum="dsBaseN"/>
-      <itemData name="Float"  defStyleNum="dsFloat"/>
       <itemData name="Char"  defStyleNum="dsChar"/>
       <itemData name="String"  defStyleNum="dsString"/>
       <itemData name="String Char"  defStyleNum="dsChar"/>

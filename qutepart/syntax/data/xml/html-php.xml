@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd"
 [
-	<!ENTITY name    "[A-Za-z_:][\w.:_-]*">
-	<!ENTITY entref  "&amp;(#[0-9]+|#[xX][0-9A-Fa-f]+|&name;);">
+	<!ENTITY name          "[A-Za-z_:][\w.:_-]*">
+	<!ENTITY attributeName "[A-Za-z_:*#\(\[][\)\]\w.:_-]*">
+	<!ENTITY entref        "&amp;(#[0-9]+|#[xX][0-9A-Fa-f]+|&name;);">
 ]>
 
 
@@ -10,7 +11,9 @@
 
 
 
-<language name="PHP (HTML)" version="2.1" kateversion="3.4" section="Scripts" extensions="*.php;*.php3;*.wml;*.phtml;*.phtm;*.inc" mimetype="text/x-php4-src;text/x-php3-src;text/vnd.wap.wml;application/x-php"  author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL" priority="10" firstLineGlobs="&lt;!doctype html*;&lt;html*;&lt;?php*">
+<language name="PHP (HTML)" version="5" kateversion="3.4" section="Scripts" extensions="*.php;*.php3;*.wml;*.phtml;*.phtm;*.inc" mimetype="text/x-php4-src;text/x-php3-src;text/vnd.wap.wml;application/x-php"  author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL" priority="10"
+  firstLineGlobs="&lt;!doctype html*;&lt;html*;&lt;?php*"
+  >
 
 <highlighting>
 <contexts>
@@ -80,8 +83,8 @@
 
   <context name="FindAttributes" attribute="Other Text" lineEndContext="#stay">
 <IncludeRules context="FindPHP" />
-    <RegExpr attribute="Attribute" context="#stay" String="&name;" column="0"/>
-    <RegExpr attribute="Attribute" context="#stay" String="\s+&name;" />
+    <RegExpr attribute="Attribute" context="#stay" String="&attributeName;" column="0"/>
+    <RegExpr attribute="Attribute" context="#stay" String="\s+&attributeName;" />
     <DetectChar attribute="Attribute" context="Value" char="=" />
   </context>
 
@@ -247,7 +250,7 @@
   <itemData name="Doctype" defStyleNum="dsDataType" bold="1" spellChecking="false" />
   <itemData name="Element" defStyleNum="dsKeyword" spellChecking="false" />
   <itemData name="Attribute" defStyleNum="dsOthers" spellChecking="false" />
-  <itemData name="Value" defStyleNum="dsString" color="#a00" spellChecking="false" />
+  <itemData name="Value" defStyleNum="dsString" spellChecking="false" />
   <itemData name="EntityRef" defStyleNum="dsDecVal" spellChecking="false" />
   <itemData name="PEntityRef" defStyleNum="dsDecVal" spellChecking="false" />
   <itemData name="Error" defStyleNum="dsError" spellChecking="false" />

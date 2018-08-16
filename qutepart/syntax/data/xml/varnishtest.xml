@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Varnish Test Case language" version="0.2" kateversion="3.4" section="Configuration" extensions="*.vtc;" mimetype="" author="Xavier Guerrin (xavier@tuxfamily.org)" license="WTFPL" priority="3">
+<language name="Varnish Test Case language" version="3" kateversion="3.4" section="Configuration" extensions="*.vtc;" mimetype="" author="Xavier Guerrin (xavier@tuxfamily.org)" license="WTFPL" priority="3">
   <highlighting>
     <contexts>
       <!-- default context: define main keywords -->
@@ -224,19 +224,6 @@
       <context name="varnish_expectation_second_arg" attribute="Normal Text" lineEndContext="#pop">
         <!-- Varnish's expect takes an unsigned integer as second argument. -->
         <Int attribute="Decimal" context="common_expectation_end" />
-      </context>
-
-      <!-- Contexts to parse first argument of Varnish expectations as a string -->
-      <context name="varnish_expectation_arg1_brace-string" attribute="String" lineEndContext="#stay">
-        <DetectChar attribute="String" context="brace-string-internal" char="{" />
-        <DetectChar attribute="String" context="varnish_expectation_operator" char="}" endRegion="string_block" />
-      </context>
-      <context name="varnish_expectation_arg1_quoted-string" attribute="String" lineEndContext="#pop#pop">
-        <Detect2Chars attribute="String" context="#stay" char="\" char1="&quot;" />
-        <DetectChar   attribute="String" context="varnish_expectation_operator" char="&quot;" />
-      </context>
-      <context name="varnish_expectation_arg1_unquoted-string" attribute="String" lineEndContext="#pop#pop">
-        <RegExpr attribute="Normal Text" context="varnish_expectation_operator" String="\s" />
       </context>
 
       <!-- Define macros -->
@@ -527,19 +514,13 @@
       <itemData name="Normal Text"               defStyleNum="dsNormal" />
       <itemData name="Comment"                   defStyleNum="dsComment" />
       <itemData name="Keyword"                   defStyleNum="dsKeyword" />
-      <itemData name="Tx Keyword"                defStyleNum="dsKeyword" color="#008000" bold="0" />
       <itemData name="TxReq Keyword"             defStyleNum="dsKeyword" color="#008000" bold="0" />
       <itemData name="TxResp Keyword"            defStyleNum="dsKeyword" color="#008000" bold="0" />
       <itemData name="RxResp Keyword"            defStyleNum="dsKeyword" color="#008000" bold="0" />
       <itemData name="Action Keyword"            defStyleNum="dsKeyword" />
-      <itemData name="Operator"                  defStyleNum="dsKeyword" color="#008000" bold="0" />
       <itemData name="Comparison Operator"       defStyleNum="dsKeyword" color="#008000" bold="0" />
-      <itemData name="Arithmetic Operator"       defStyleNum="dsKeyword" color="#008000" bold="0" />
-      <itemData name="Logical Operator"          defStyleNum="dsKeyword" color="#008000" bold="0" />
       <itemData name="String"                    defStyleNum="dsString" bold="0" italic="0" />
       <itemData name="Region Marker"             defStyleNum="dsNormal" />
-      <itemData name="Storage"                   defStyleNum="dsDataType" color="#0000FF" selColor="#0000FF" bold="0" italic="0" />
-      <itemData name="TCP Property"              defStyleNum="dsDataType" color="#0000FF" selColor="#0000FF" bold="0" italic="1" />
       <itemData name="HTTP Property"             defStyleNum="dsDataType" color="#0000FF" selColor="#0000FF" bold="0" italic="0" />
       <itemData name="HTTP Header"               defStyleNum="dsDataType" color="#0D62FF" selColor="#0D62FF" bold="0" italic="0" />
       <itemData name="HTTP X- Header"            defStyleNum="dsDataType" color="#0D62FF" selColor="#0D62FF" bold="0" italic="1" />
@@ -553,7 +534,6 @@
       <itemData name="Client Identifier"         defStyleNum="dsDataType" color="#0D62FF" selColor="#0D62FF" bold="0" underline="1" />
       <itemData name="Server Identifier"         defStyleNum="dsDataType" color="#0D62FF" selColor="#0D62FF" bold="0" underline="1" />
       <itemData name="Varnish Identifier"        defStyleNum="dsDataType" color="#0D62FF" selColor="#0D62FF" bold="0" underline="1" />
-      <itemData name="LogExpect Identifier"      defStyleNum="dsDataType" color="#0D62FF" selColor="#0D62FF" bold="0" underline="1" />
       <itemData name="Sema Identifier"           defStyleNum="dsDataType" color="#0D62FF" selColor="#0D62FF" bold="0" underline="1" />
     </itemDatas>
   </highlighting>

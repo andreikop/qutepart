@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Varnish Configuration Language" version="0.3" kateversion="3.4" section="Configuration" extensions="*.vcl;" mimetype="" author="Xavier Guerrin (xavier@tuxfamily.org)" license="WTFPL">
+<language name="Varnish Configuration Language" version="3" kateversion="5.0" section="Configuration" extensions="*.vcl;" mimetype="" author="Xavier Guerrin (xavier@tuxfamily.org)" license="WTFPL">
   <highlighting>
     <list name="vclStandardSubs">
       <item>vcl_recv</item>
@@ -16,30 +16,30 @@
       <item>vcl_error</item>
     </list>
     <list name="vclConditionalKeywords">
-      <item> if </item>
-      <item> else </item>
-      <item> elsif </item>
-      <item> elseif </item>
+      <item>if</item>
+      <item>else</item>
+      <item>elsif</item>
+      <item>elseif</item>
     </list>
     <list name="vclKeywords">
-      <item> set </item>
-      <item> call </item>
-      <item> error </item>
-      <item> esi </item>
-      <item> include </item>
-      <item> remove </item>
-      <item> unset </item>
-      <item> panic </item>
-      <item> rollback </item>
-      <item> purge </item>
-      <item> synthetic </item>
+      <item>set</item>
+      <item>call</item>
+      <item>error</item>
+      <item>esi</item>
+      <item>include</item>
+      <item>remove</item>
+      <item>unset</item>
+      <item>panic</item>
+      <item>rollback</item>
+      <item>purge</item>
+      <item>synthetic</item>
     </list>
     <list name="vclStandardFunctions">
-      <item> hash_data </item>
-      <item> regsub </item>
-      <item> regsuball </item>
-      <item> ban </item>
-      <item> ban_url </item>
+      <item>hash_data</item>
+      <item>regsub</item>
+      <item>regsuball</item>
+      <item>ban</item>
+      <item>ban_url</item>
     </list>
     <list name="vclModes">
       <item>deliver</item>
@@ -313,6 +313,7 @@
       <itemData name="Keyword"                   defStyleNum="dsKeyword" />
       <itemData name="Condition Keyword"         defStyleNum="dsKeyword" />
       <itemData name="Action Keyword"            defStyleNum="dsKeyword" />
+      <itemData name="Variable"                  defStyleNum="dsVariable" />
       <itemData name="Director Type"             defStyleNum="dsDataType" />
       <itemData name="Standard VCL Function"     defStyleNum="dsFunction" />
       <itemData name="Standard VCL Sub"          defStyleNum="dsFunction" bold="1" />
@@ -321,7 +322,6 @@
       <itemData name="Arithmetic Operator"       defStyleNum="dsKeyword" color="#008000" bold="0" />
       <itemData name="Logical Operator"          defStyleNum="dsKeyword" color="#008000" bold="0" />
       <itemData name="String"                    defStyleNum="dsString" bold="0" italic="0" />
-      <itemData name="Data Type"                 defStyleNum="dsDataType" />
       <itemData name="Region Marker"             defStyleNum="dsNormal" />
       <itemData name="Probe Property"            defStyleNum="dsDataType" color="#0000FF" selColor="#0000FF" bold="1" italic="0" />
       <itemData name="Backend Property"          defStyleNum="dsDataType" color="#0000FF" selColor="#0000FF" bold="1" italic="0" />

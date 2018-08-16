@@ -1,69 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language version="1.06" kateversion="2.4" name="Mason" section="Scripts" extensions="*.html;" mimetype="">
+<language version="4" kateversion="2.4" name="Mason" section="Scripts" extensions="*.html;" mimetype="">
 <highlighting>
 	<list name="keywords">
-		<item> sub </item>
-		<item> bless </item>
-		<item> caller </item>
-		<item> cmp </item>
-		<item> print </item>
-		<item> echo </item>
-		<item> die </item>
-		<item> import </item>
-		<item> lt </item>
-		<item> le </item>
-		<item> local </item>
-		<item> defined </item>
-		<item> last </item>
-		<item> ! </item>
-		<item> || </item>
-		<item> eq </item>
-		<item> ne </item>
-		<item> use </item>
-		<item> elsif </item>
-		<item> my </item>
-		<item> foreach </item>
-		<item> wantarray </item>
-		<item> push </item>
-		<item> pop </item>
-		<item> dbmclose </item>
-		<item> dbmopen </item>
-		<item> dump </item>
-		<item> each </item>
-		<item> ge </item>
-		<item> gt </item>
-		<item> split </item>
-		<item> open </item>
-		<item> close </item>
-		<item> eval </item>
-		<item> chomp </item>
-		<item> chop </item>
-		<item> unless </item>
-		<item> undef </item>
-		<item> next </item>
-		<item> unlink </item>
-		<item> new </item>
-		<item> and </item>
-		<item> not </item>
-		<item> no </item>
-		<item> ref </item>
-		<item> redo </item>
-		<item> require </item>
-		<item> tied </item>
-		<item> tie </item>
-		<item> untie </item>
-		<item> or </item>
-		<item> xor </item>
-		<item> continue </item>
-		<item> do </item>
-		<item> else </item>
-		<item> for </item>
-		<item> goto </item>
-		<item> if </item>
-		<item> return </item>
-		<item> switch </item>
-		<item> while </item>
+		<item>sub</item>
+		<item>bless</item>
+		<item>caller</item>
+		<item>cmp</item>
+		<item>print</item>
+		<item>echo</item>
+		<item>die</item>
+		<item>import</item>
+		<item>lt</item>
+		<item>le</item>
+		<item>local</item>
+		<item>defined</item>
+		<item>last</item>
+		<item>!</item>
+		<item>||</item>
+		<item>eq</item>
+		<item>ne</item>
+		<item>use</item>
+		<item>elsif</item>
+		<item>my</item>
+		<item>foreach</item>
+		<item>wantarray</item>
+		<item>push</item>
+		<item>pop</item>
+		<item>dbmclose</item>
+		<item>dbmopen</item>
+		<item>dump</item>
+		<item>each</item>
+		<item>ge</item>
+		<item>gt</item>
+		<item>split</item>
+		<item>open</item>
+		<item>close</item>
+		<item>eval</item>
+		<item>chomp</item>
+		<item>chop</item>
+		<item>unless</item>
+		<item>undef</item>
+		<item>next</item>
+		<item>unlink</item>
+		<item>new</item>
+		<item>and</item>
+		<item>not</item>
+		<item>no</item>
+		<item>ref</item>
+		<item>redo</item>
+		<item>require</item>
+		<item>tied</item>
+		<item>tie</item>
+		<item>untie</item>
+		<item>or</item>
+		<item>xor</item>
+		<item>continue</item>
+		<item>do</item>
+		<item>else</item>
+		<item>for</item>
+		<item>goto</item>
+		<item>if</item>
+		<item>return</item>
+		<item>switch</item>
+		<item>while</item>
 	</list>
 
 	<contexts>
@@ -103,7 +103,6 @@
 			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%attr&gt;" insensitive="false" />
 			<StringDetect attribute="Mason Tag" context="#pop" String="&lt;/%shared&gt;" insensitive="false" />
 			<keyword attribute="Keyword" context="#stay" String="keywords"/>
-			<keyword attribute="Data Type" context="#stay" String="types"/>
 			<HlCOct attribute="Octal" context="#stay"/>
 			<HlCHex attribute="Hex" context="#stay"/>
 			<Int attribute="Decimal" context="#stay" />
@@ -179,7 +178,6 @@
 
 		<context attribute="normal" lineEndContext="#pop" name="PerlOneLiner">
 			<keyword attribute="Keyword" context="#stay" String="keywords"/>
-			<keyword attribute="Data Type" context="#stay" String="types"/>
 			<HlCOct attribute="Octal" context="#stay"/>
 			<HlCHex attribute="Hex" context="#stay"/>
 			<Int attribute="Decimal" context="#stay" />
@@ -214,7 +212,6 @@
 		<itemData name="Decimal"  defStyleNum="dsDecVal"/>
 		<itemData name="Octal"  defStyleNum="dsBaseN"/>
 		<itemData name="Hex"  defStyleNum="dsBaseN"/>
-		<itemData name="Float"  defStyleNum="dsFloat"/>
 		<itemData name="Char"  defStyleNum="dsChar"/>
 		<itemData name="String"  defStyleNum="dsString"/>
 		<itemData name="String Char"  defStyleNum="dsChar"/>

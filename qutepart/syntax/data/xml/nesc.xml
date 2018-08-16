@@ -1,86 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="nesC" author="Shakthi Kannan" license="GPLv2" version="1.00" kateversion="2.3" section="Sources" extensions="*.nc" mimetype="text/x-ncsrc" priority="5">
+<language name="nesC" author="Shakthi Kannan" license="GPLv2" version="3" kateversion="2.3" section="Sources" extensions="*.nc" mimetype="text/x-ncsrc" priority="5">
   <highlighting>
     <list name="keywords">
-      <item> break </item>
-      <item> case </item>
-      <item> continue </item>
-      <item> default </item>
-      <item> do </item>
-      <item> else </item>
-      <item> enum </item>
-      <item> extern </item>
-      <item> for </item>
-      <item> goto </item>
-      <item> if </item>
-      <item> inline </item>
-      <item> return </item>
-      <item> sizeof </item>
-      <item> struct </item>
-      <item> switch </item>
-      <item> typedef </item>
-      <item> union </item>
-      <item> while </item>  <item> interface </item>
-      <item> module </item>
-      <item> configuration </item>
-      <item> implementation </item>
-      <item> components </item>
-      <item> as </item>
-      <item> uses </item>
-      <item> provides </item>
-      <item> includes </item>
-      <item> command </item>
-      <item> event </item>
-      <item> async </item>
-      <item> task </item>
-      <item> norace </item>
-      <item> default </item>
-      <item> __attribute__ </item>
-      <item> atomic </item>
-      <item> call </item>
-      <item> signal </item>
-      <item> post </item>
+      <item>break</item>
+      <item>case</item>
+      <item>continue</item>
+      <item>default</item>
+      <item>do</item>
+      <item>else</item>
+      <item>enum</item>
+      <item>extern</item>
+      <item>for</item>
+      <item>goto</item>
+      <item>if</item>
+      <item>inline</item>
+      <item>return</item>
+      <item>sizeof</item>
+      <item>struct</item>
+      <item>switch</item>
+      <item>typedef</item>
+      <item>union</item>
+      <item>while</item>  <item>interface</item>
+      <item>module</item>
+      <item>configuration</item>
+      <item>implementation</item>
+      <item>components</item>
+      <item>as</item>
+      <item>uses</item>
+      <item>provides</item>
+      <item>includes</item>
+      <item>command</item>
+      <item>event</item>
+      <item>async</item>
+      <item>task</item>
+      <item>norace</item>
+      <item>default</item>
+      <item>__attribute__</item>
+      <item>atomic</item>
+      <item>call</item>
+      <item>signal</item>
+      <item>post</item>
       
     </list>
     <list name="types">
-      <item> auto </item>
-      <item> char </item>
-      <item> const </item>
-      <item> double </item>
-      <item> float </item>
-      <item> int </item>
-      <item> long </item>
-      <item> register </item>
-      <item> restrict </item>
-      <item> short </item>
-      <item> signed </item>
-      <item> static </item>
-      <item> unsigned </item>
-      <item> void </item>
-      <item> volatile </item>
-      <item> _Imaginary </item>
-      <item> _Complex </item>
-      <item> _Bool </item>
-      <item> bool </item>
-      <item> uint8_t </item>
-      <item> uint16_t </item>
-      <item> uint32_t </item>
-      <item> uint64_t </item>
-      <item> result_t </item>
-      <item> SUCCESS </item>
-      <item> FAIL </item>
-      <item> TRUE </item>
-      <item> FALSE </item>
-      <item> TOSH_INTERRUPT </item>
-      <item> TOSH_SIGNAL </item>
-      <item> TOS_MsgPtr </item>
-      <item> TOS_Msg </item>
+      <item>auto</item>
+      <item>char</item>
+      <item>const</item>
+      <item>double</item>
+      <item>float</item>
+      <item>int</item>
+      <item>long</item>
+      <item>register</item>
+      <item>restrict</item>
+      <item>short</item>
+      <item>signed</item>
+      <item>static</item>
+      <item>unsigned</item>
+      <item>void</item>
+      <item>volatile</item>
+      <item>_Imaginary</item>
+      <item>_Complex</item>
+      <item>_Bool</item>
+      <item>bool</item>
+      <item>uint8_t</item>
+      <item>uint16_t</item>
+      <item>uint32_t</item>
+      <item>uint64_t</item>
+      <item>result_t</item>
+      <item>SUCCESS</item>
+      <item>FAIL</item>
+      <item>TRUE</item>
+      <item>FALSE</item>
+      <item>TOSH_INTERRUPT</item>
+      <item>TOSH_SIGNAL</item>
+      <item>TOS_MsgPtr</item>
+      <item>TOS_Msg</item>
     </list>
     <list name="attention">
-      <item> FIXME </item>
-      <item> TODO </item>
-      <item> ### </item>
+      <item>FIXME</item>
+      <item>TODO</item>
+      <item>###</item>
     </list>
     <contexts>
       <context attribute="Normal Text" lineEndContext="#stay" name="Normal">
@@ -105,7 +105,7 @@
         </Int>
         <HlCChar attribute="Char" context="#stay"/>
         <DetectChar attribute="String" context="String" char="&quot;"/>
-	<Detect2Chars attribute="Comment" context="Commentar 1" char="/" char1="/"/>
+        <Detect2Chars attribute="Comment" context="Commentar 1" char="/" char1="/"/>
         <Detect2Chars attribute="Comment" context="Commentar 2" char="/" char1="*" beginRegion="Comment"/>
         <StringDetect attribute="Preprocessor" context="Outscoped" String="#if 0" insensitive="false"/>
         <DetectChar attribute="Preprocessor" context="Preprocessor" char="#"/>
@@ -121,22 +121,15 @@
       <context attribute="Normal Text" lineEndContext="#pop" name="Member">
         <RegExpr attribute="Function" context="#pop" String="\b[_\w][_\w\d]*(?=[\s]*)"/>
       </context>
-      
-            
-      
+
       <context attribute="Comment" lineEndContext="#pop" name="Commentar 1">
-	      <IncludeRules context="##Alerts"/>
+        <IncludeRules context="##Alerts"/>
       </context>
       <context attribute="Comment" lineEndContext="#stay" name="Commentar 2">
-	      <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" endRegion="Comment"/>
-	      <keyword attribute="Decimal" context="#stay" String="attention"/>
+        <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" endRegion="Comment"/>
+        <keyword attribute="Decimal" context="#stay" String="attention"/>
       </context>
-      
-      
-      
-      
-      
-      
+
       <context attribute="Preprocessor" lineEndContext="#pop" name="Preprocessor">
         <LineContinue attribute="Preprocessor" context="#stay"/>
         <RegExpr attribute="Preprocessor" context="Define" String="define.*((?=\\))"/>
@@ -151,8 +144,6 @@
       <context attribute="Comment" lineEndContext="#stay" name="Commentar/Preprocessor">
         <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" endRegion="Comment2"/>
       </context>
-      <context attribute="Normal Text" lineEndContext="#pop" name="Some Context"/>
-      <context attribute="Normal Text" lineEndContext="#pop" name="Some Context2"/>
       <context attribute="Comment" lineEndContext="#stay" name="Outscoped">
         <keyword attribute="Decimal" context="#stay" String="attention"/>
         <RegExpr attribute="Comment" context="Outscoped intern" String="^#if"/>

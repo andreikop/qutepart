@@ -14,7 +14,7 @@
           section="Sources"
           extensions="*.mly"
           mimetype=""
-          version="2.02"
+          version="3"
           kateversion="2.4"
           priority="10"
           author="Glyn Webster (glynwebster@orcon.net.nz) and Vincent Hugot (vincent.hugot@gmail.com)"
@@ -22,20 +22,20 @@
 
   <highlighting>
     <list name="typed symbol list keywords">
-      <item> %token </item>
-      <item> %type </item>
+      <item>%token</item>
+      <item>%type</item>
     </list>
 
     <list name="symbol list keywords">
-      <item> %left </item>
-      <item> %right </item>
-      <item> %nonassoc </item>
-      <item> %start </item>
+      <item>%left</item>
+      <item>%right</item>
+      <item>%nonassoc</item>
+      <item>%start</item>
     </list>
 
     <list name="rule keywords">
-      <item> %prec </item>
-      <item> error </item>
+      <item>%prec</item>
+      <item>error</item>
     </list>
 
     <contexts>

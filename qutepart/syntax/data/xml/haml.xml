@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Haml" version="1.1" kateversion="3.0" section="Markup"
+<language name="Haml" version="7" kateversion="5.0" section="Markup"
           extensions="*.haml"
           author="Cies Breijs (cies_at_kde_nl)" license="LGPL"
           mimetype="text/x-haml">
@@ -17,76 +17,76 @@
   <highlighting>
 
     <list name="keywords">
-      <item> BEGIN </item>
-      <item> END </item>
-      <item> and </item>
-      <item> begin </item>
-      <item> break </item>
-      <item> case </item>
-      <item> defined? </item>
-      <item> do </item>
-      <item> else </item>
-      <item> elsif </item>
-      <item> end </item>
-      <item> ensure </item>
-      <item> for </item>
-      <item> if </item>
-      <item> in </item>
-      <item> include </item>
-      <item> next </item>
-      <item> not </item>
-      <item> or </item>
-      <item> redo </item>
-      <item> rescue </item>
-      <item> retry </item>
-      <item> return </item>
-      <item> then </item>
-      <item> unless </item>
-      <item> until </item>
-      <item> when </item>
-      <item> while </item>
-      <item> yield </item>
+      <item>BEGIN</item>
+      <item>END</item>
+      <item>and</item>
+      <item>begin</item>
+      <item>break</item>
+      <item>case</item>
+      <item>defined?</item>
+      <item>do</item>
+      <item>else</item>
+      <item>elsif</item>
+      <item>end</item>
+      <item>ensure</item>
+      <item>for</item>
+      <item>if</item>
+      <item>in</item>
+      <item>include</item>
+      <item>next</item>
+      <item>not</item>
+      <item>or</item>
+      <item>redo</item>
+      <item>rescue</item>
+      <item>retry</item>
+      <item>return</item>
+      <item>then</item>
+      <item>unless</item>
+      <item>until</item>
+      <item>when</item>
+      <item>while</item>
+      <item>yield</item>
     </list>
 
     <list name="access-control">
-      <item> private_class_method </item>
-      <item> private </item>
-      <item> protected </item>
-      <item> public_class_method </item>
-      <item> public </item>
+      <item>private_class_method</item>
+      <item>private</item>
+      <item>protected</item>
+      <item>public_class_method</item>
+      <item>public</item>
     </list>
 
     <list name="attribute-definitions">
-      <item> attr_reader </item>
-      <item> attr_writer </item>
-      <item> attr_accessor </item>
+      <item>attr_reader</item>
+      <item>attr_writer</item>
+      <item>attr_accessor</item>
     </list>
 
     <list name="definitions">
-      <item> alias </item>
-      <item> module </item>
-      <item> class </item>
-      <item> def </item>
-      <item> undef </item>
+      <item>alias</item>
+      <item>module</item>
+      <item>class</item>
+      <item>def</item>
+      <item>undef</item>
     </list>
 
     <list name="pseudo-variables">
-      <item> self </item>
-      <item> super </item>
-      <item> nil </item>
-      <item> false </item>
-      <item> true </item>
-      <item> caller </item>
-      <item> __FILE__ </item>
-      <item> __LINE__ </item>
+      <item>self</item>
+      <item>super</item>
+      <item>nil</item>
+      <item>false</item>
+      <item>true</item>
+      <item>caller</item>
+      <item>__FILE__</item>
+      <item>__LINE__</item>
     </list>
 
     <list name="default-globals">
-      <item> $stdout </item>
-      <item> $defout </item>
-      <item> $stderr </item>
-      <item> $deferr </item>
-      <item> $stdin </item>
+      <item>$stdout</item>
+      <item>$defout</item>
+      <item>$stderr</item>
+      <item>$deferr</item>
+      <item>$stdin</item>
     </list>
 
     <!-- Kernel module methods.
@@ -95,72 +95,72 @@
     -->
     <list name="kernel-methods">
       <!-- backquote ` -->
-      <item> abort </item>
-      <item> at_exit </item>
-      <item> autoload </item>
-      <item> autoload? </item>
-      <item> binding </item>
-      <item> block_given? </item>
-      <item> callcc </item>
-      <item> caller </item>
-      <item> catch </item>
-      <item> chomp </item>
-      <item> chomp! </item>
-      <item> chop </item>
-      <item> chop! </item>
-      <item> eval </item>
-      <item> exec </item>
-      <item> exit </item>
-      <item> exit! </item>
-      <item> fail </item>
-      <item> fork </item>
-      <item> format </item>
-      <item> getc </item>
-      <item> gets </item>
-      <item> global_variables </item>
-      <item> gsub </item>
-      <item> gsub! </item>
-      <item> iterator? </item>
-      <item> lambda </item>
-      <item> load </item>
-      <item> local_variables </item>
-      <item> loop </item>
-      <item> method_missing </item>
-      <item> open </item>
-      <item> p </item>
-      <item> print </item>
-      <item> printf </item>
-      <item> proc </item>
-      <item> putc </item>
-      <item> puts </item>
-      <item> raise </item>
-      <item> rand </item>
-      <item> readline </item>
-      <item> readlines </item>
-      <item> require </item>
-      <item> scan </item>
-      <item> select </item>
-      <item> set_trace_func </item>
-      <item> sleep </item>
-      <item> split </item>
-      <item> sprintf </item>
-      <item> srand </item>
-      <item> sub </item>
-      <item> sub! </item>
-      <item> syscall </item>
-      <item> system </item>
-      <item> test </item>
-      <item> throw </item>
-      <item> trace_var </item>
-      <item> trap </item>
-      <item> untrace_var </item>
-      <item> warn </item>
+      <item>abort</item>
+      <item>at_exit</item>
+      <item>autoload</item>
+      <item>autoload?</item>
+      <item>binding</item>
+      <item>block_given?</item>
+      <item>callcc</item>
+      <item>caller</item>
+      <item>catch</item>
+      <item>chomp</item>
+      <item>chomp!</item>
+      <item>chop</item>
+      <item>chop!</item>
+      <item>eval</item>
+      <item>exec</item>
+      <item>exit</item>
+      <item>exit!</item>
+      <item>fail</item>
+      <item>fork</item>
+      <item>format</item>
+      <item>getc</item>
+      <item>gets</item>
+      <item>global_variables</item>
+      <item>gsub</item>
+      <item>gsub!</item>
+      <item>iterator?</item>
+      <item>lambda</item>
+      <item>load</item>
+      <item>local_variables</item>
+      <item>loop</item>
+      <item>method_missing</item>
+      <item>open</item>
+      <item>p</item>
+      <item>print</item>
+      <item>printf</item>
+      <item>proc</item>
+      <item>putc</item>
+      <item>puts</item>
+      <item>raise</item>
+      <item>rand</item>
+      <item>readline</item>
+      <item>readlines</item>
+      <item>require</item>
+      <item>scan</item>
+      <item>select</item>
+      <item>set_trace_func</item>
+      <item>sleep</item>
+      <item>split</item>
+      <item>sprintf</item>
+      <item>srand</item>
+      <item>sub</item>
+      <item>sub!</item>
+      <item>syscall</item>
+      <item>system</item>
+      <item>test</item>
+      <item>throw</item>
+      <item>trace_var</item>
+      <item>trap</item>
+      <item>untrace_var</item>
+      <item>warn</item>
     </list>
 
     <list name="attention">
-      <item> TODO </item>
-      <item> FIXME </item>
-      <item> NOTE </item>
+      <item>TODO</item>
+      <item>FIXME</item>
+      <item>NOTE</item>
     </list>
 
     <contexts>
@@ -203,7 +203,7 @@
         <RegExpr attribute="Entity" context="#stay" String="&amp;[a-zA-Z]+;" />
       </context>
 
-      <context attribute="Array" lineEndContext="#stay" name="array">
+      <context attribute="Operator" lineEndContext="#stay" name="array">
         <DetectSpaces/>
         <DetectChar attribute="Operator" context="#pop" char="]" endRegion="Array" />
         <IncludeRules context="rubysourceline" />
@@ -219,29 +219,19 @@
         <IncludeRules context="Quoted String" />
       </context>
 
-      <context attribute="String" lineEndContext="#stay" name="string">
-        <DetectIdentifier />
-        <DetectChar attribute="String" context="#pop" char="'" endRegion="String" />
-      </context>
-
-      <context attribute="String" lineEndContext="#stay" name="stringx">
-        <DetectIdentifier />
-        <DetectChar attribute="String" context="#pop" char="&quot;" endRegion="String" />
-      </context>
-
-      <context attribute="Comment" lineEndContext="#pop" name="comment0">
+<!--      <context attribute="Comment" lineEndContext="#pop" name="comment0">
         <DetectSpaces/>
         <IncludeRules context="##Alerts" />
         <DetectIdentifier/>
-<!--         <RegExpr attribute="Comment" context="#pop" String="^[^/ ]" endRegion="comment" />  attempt for multiline comments  -->
+<!- - was commented out         <RegExpr attribute="Comment" context="#pop" String="^[^/ ]" endRegion="comment" />  attempt for multiline comments  - ->
       </context>
-
-      <context attribute="Comment" lineEndContext="#pop" name="comment2">
+-->
+<!--      <context attribute="Comment" lineEndContext="#pop" name="comment2">
         <DetectSpaces/>
         <IncludeRules context="##Alerts" />
         <DetectIdentifier/>
         <RegExpr attribute="Comment" context="#pop" String="^[ ]{2}[^ /]" endRegion="comment" />
-      </context>
+      </context>-->
 
 
       <context attribute="Comment" lineEndContext="#pop" name="comment">
@@ -269,14 +259,14 @@
         <RegExpr attribute="Keyword" String="\;\s*(while|until)\b(?!.*\bdo\b)" context="#stay" beginRegion="def block"/>
         <RegExpr attribute="Keyword" String="(if|unless)\b" context="#stay" beginRegion="def block" firstNonSpace="true"/>
         <RegExpr attribute="Keyword" String="\;\s*(if|unless)\b" context="#stay" beginRegion="def block"/>
-        <RegExpr attribute="Keyword" String="\bclass\b" context="#stay" beginRegion="def block"/>
-        <RegExpr attribute="Keyword" String="\bmodule\b" context="#stay" beginRegion="def block"/>
-        <RegExpr attribute="Keyword" String="\bbegin\b" context="#stay" beginRegion="def block"/>
+        <WordDetect attribute="Keyword" String="class" context="#stay" beginRegion="def block"/>
+        <WordDetect attribute="Keyword" String="module" context="#stay" beginRegion="def block"/>
+        <WordDetect attribute="Keyword" String="begin" context="#stay" beginRegion="def block"/>
         <RegExpr attribute="Keyword" String="\bfor\b(?!.*\bdo\b)" context="#stay" beginRegion="def block"/>
-        <RegExpr attribute="Keyword" String="\bcase\b" context="#stay" beginRegion="def block"/>
-        <RegExpr attribute="Keyword" String="\bdo\b" context="#stay" beginRegion="def block"/>
-        <RegExpr attribute="Keyword" String="\bdef\b" context="#stay" beginRegion="def block"/>
-        <RegExpr attribute="Keyword" String="\bend\b" context="#stay" endRegion="def block"/>
+        <WordDetect attribute="Keyword" String="case" context="#stay" beginRegion="def block"/>
+        <WordDetect attribute="Keyword" String="do" context="#stay" beginRegion="def block"/>
+        <WordDetect attribute="Keyword" String="def" context="#stay" beginRegion="def block"/>
+        <WordDetect attribute="Keyword" String="end" context="#stay" endRegion="def block"/>
         <!-- elsif/else close the current block and start a new one -->
         <RegExpr attribute="Keyword" String="(\b|^\s*)(else|elsif|rescue|ensure)(\s+|$)" context="#stay" endRegion="def block" beginRegion="def block"/>
 
@@ -301,7 +291,7 @@
           Match them before $_.
           -->
         <RegExpr attribute="Global Variable" String="\$[a-zA-Z_0-9]+" context="#stay"/>
-        <RegExpr attribute="Global Variable" String="\$\-[a-zA-z_]\b" context="#stay"/>
+        <RegExpr attribute="Global Variable" String="\$\-[a-zA-Z_]\b" context="#stay"/>
         <!-- special-character globals -->
         <RegExpr attribute="Default globals" String="\$[\d_*`\!:?'/\\\-\&amp;]" context="#stay"/>
         <RegExpr attribute="Global Constant" String="\b[_A-Z]+[A-Z_0-9]+\b" context="#stay"/>
@@ -427,11 +417,6 @@
         <RegExpr attribute="Member" String="\W" context="#pop"/>
       </context>
 
-      <context name="Comment Line" attribute="Ruby Comment" lineEndContext="#pop">
-        <keyword attribute="Alert" String="attention" context="#stay"/>
-        <RegExpr attribute="Keyword" context="#pop#pop" String="-?%&gt;" />
-      </context>
-
       <context name="General Comment" attribute="Ruby Comment" lineEndContext="#pop">
         <keyword attribute="Dec" String="attention" context="#stay"/>
       </context>
@@ -441,8 +426,9 @@
 
 
     <itemDatas>
-    <!-- BEGIN Ruby itemData -->
+    <!-- Ruby itemData -->
       <itemData name="Ruby Normal Text" defStyleNum="dsNormal"/>
+      <itemData name="Ruby embedded in haml" defStyleNum="dsNormal"/>
 
       <itemData name="Keyword" defStyleNum="dsKeyword"/>
       <itemData name="Attribute Definition" defStyleNum="dsOthers"/>
@@ -457,17 +443,15 @@
       <itemData name="Hex" defStyleNum="dsBaseN"/>
       <itemData name="Bin" defStyleNum="dsBaseN"/>
 
-      <itemData name="Symbol" defStyleNum="dsString" color="#D40000"/>
+      <itemData name="Symbol" defStyleNum="dsDataType" />
       <itemData name="String" defStyleNum="dsString"/>
+      <itemData name="Escaped Text" defStyleNum="dsChar"/>
       <itemData name="Unquoted String" defStyleNum="dsString"/>
       <itemData name="Raw String" defStyleNum="dsString" color="#DD4A4A" selColor="#DD4A4A"/>
       <itemData name="Command" defStyleNum="dsString" color="#AA3000"/>
       <itemData name="Message" defStyleNum="dsNormal" color="#4000A7"/> <!-- #4A00C0 -->
       <itemData name="Regular Expression" defStyleNum="dsOthers" color="#4A5704"/>
       <itemData name="Substitution" defStyleNum="dsOthers"/>
-      <itemData name="Data" defStyleNum="dsNormal"/>
-      <!-- short for 'general delimited input' -->
-      <itemData name="GDL input" defStyleNum="dsOthers" />
 
       <itemData name="Default globals" defStyleNum="dsDataType" color="#C00000" bold="1"/>
       <itemData name="Global Variable" defStyleNum="dsDataType" color="#C00000"/>
@@ -481,15 +465,11 @@
 
       <itemData name="Ruby Comment" defStyleNum="dsComment"/>
       <itemData name="Blockcomment" defStyleNum="dsComment"/>
-      <itemData name="Region Marker" defStyleNum="dsNormal" color="#0000ff"/>
-      <itemData name="RDoc Value" defStyleNum="dsOthers"/>
 
       <!-- use these to mark errors and alerts things -->
       <itemData name="Error" defStyleNum="dsError" />
-      <itemData name="Alert" defStyleNum="dsAlert" />
 
       <itemData name="Delimiter" defStyleNum="dsChar"/>
-      <itemData name="Expression" defStyleNum="dsOthers"/>
       <itemData name="Operator" defStyleNum="dsChar"/>
 
      <!-- HAML itemData -->
@@ -497,16 +477,13 @@
       <itemData name="Normal Text" defStyleNum="dsNormal" />
       <itemData name="Hash" defStyleNum="dsNormal" />
       <itemData name="Comment" defStyleNum="dsComment" />
-      <itemData name="Symbol" defStyleNum="dsDataType" />
       <itemData name="Doctype" defStyleNum="dsDataType" bold="1" />
       <itemData name="Filter" defStyleNum="dsOthers" />
       <itemData name="Element Id" defStyleNum="dsFloat" bold="1" />
       <itemData name="Element Class" defStyleNum="dsFloat" />
       <itemData name="Div Id" defStyleNum="dsDecVal" bold="1" />
       <itemData name="Div Class" defStyleNum="dsDecVal" />
-      <itemData name="String" defStyleNum="dsNormal" />
       <itemData name="Tag" defStyleNum="dsKeyword" />
-      <itemData name="Keyword" defStyleNum="dsKeyword" />
       <itemData name="Entity" defStyleNum="dsDecVal" />
     </itemDatas>
   </highlighting>

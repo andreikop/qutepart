@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language version="1.03" kateversion="2.4" name="XML (Debug)" section="Markup" extensions="" mimetype="">
+<language version="7" kateversion="2.4" name="XML (Debug)" section="Markup" extensions="" mimetype="">
   <highlighting>
     <list name="AttType">
         <item>CDATA</item>
@@ -127,12 +127,12 @@
 	</context>
 
 	<context name="17:Doctype Decl PublicID qq" attribute="Error" lineEndContext="#stay">
-	  <DetectChar attribute="Value" context="19:Doctype Decl SystemID" char="&quot;(\s+|$)"/>
+	  <DetectChar attribute="Value" context="19:Doctype Decl SystemID" char="&quot;"/>
 	  <RegExpr attribute="Value" context="#stay" String="[&#x20;&#xD;&#xA;a-zA-Z0-9'()+,./:=?;!*#@$_%-]"/>
 	</context>
 
 	<context name="18:Doctype Decl PublicID q" attribute="Value" lineEndContext="#stay">
-	  <DetectChar attribute="Value" context="19:Doctype Decl SystemID" char="'(\s+|$)"/>
+	  <DetectChar attribute="Value" context="19:Doctype Decl SystemID" char="'"/>
 	  <RegExpr attribute="Value" context="#stay" String="[&#x20;&#xD;&#xA;a-zA-Z0-9()+,./:=?;!*#@$_%-]"/>
 	</context>
 
@@ -290,6 +290,7 @@
 	  <RegExpr attribute="Doctype Declaration" context="#stay" String="\s+"/>
 	</context>
 
+<!--
 	<context name="44:Enumeration" attribute="Error" lineEndContext="#stay">
 	  <RegExpr attribute="Value" context="#stay" String="(\w|[_:.-])+"/>
 	  <RegExpr attribute="Doctype Declaration" context="#stay" String="\s+"/>
@@ -299,7 +300,7 @@
 	  <DetectChar attribute="Doctype Declaration" context="44:Enumeration" char="|"/>
 	  <RegExpr attribute="Doctype Declaration" context="46:DefaultDecl" String="\)(\s+|$)"/>
 	  <RegExpr attribute="Doctype Declaration" context="#stay" String="\s+"/>
-	</context>
+	</context>-->
 
 	<context name="46:DefaultDecl" attribute="Error" lineEndContext="#stay">
 	  <RegExpr attribute="Attribute" context="39:AttDef" String="(#REQUIRED|#IMPLIED)(\s+|$)"/>
@@ -336,8 +337,7 @@
 	  <RegExpr attribute="Doctype Declaration" context="#stay" String="\s+"/>
 	</context>
 
-	<context name="51:unused" attribute="Error" lineEndContext="#stay">
-	</context>
+<!-- 	<context name="51:unused" attribute="Error" lineEndContext="#stay" /> -->
 
 	<context name="52:GEDecl EntityValueOrExternalID" attribute="Error" lineEndContext="#stay">
 	  <RegExpr attribute="Value" context="53:GEDecl EntityValue qq" String="&quot;"/>
@@ -371,12 +371,12 @@
 	</context>
 
 	<context name="56:GEDecl PublicID qq" attribute="Error" lineEndContext="#stay">
-	  <DetectChar attribute="Value" context="58:GEDecl SystemID" char="&quot;(\s+|$)"/>
+	  <DetectChar attribute="Value" context="58:GEDecl SystemID" char="&quot;"/>
 	  <RegExpr attribute="Value" context="#stay" String="[&#x20;&#xD;&#xA;a-zA-Z0-9'()+,./:=?;!*#@$_%-]"/>
 	</context>
 
 	<context name="57:GEDecl PublicID q" attribute="Value" lineEndContext="#stay">
-	  <DetectChar attribute="Value" context="58:GEDecl SystemID" char="'(\s+|$)"/>
+	  <DetectChar attribute="Value" context="58:GEDecl SystemID" char="'"/>
 	  <RegExpr attribute="Value" context="#stay" String="[&#x20;&#xD;&#xA;a-zA-Z0-9()+,./:=?;!*#@$_%-]"/>
 	</context>
 
@@ -413,12 +413,12 @@
 	</context>
 
 	<context name="64:PEDecl PublicID qq" attribute="Error" lineEndContext="#stay">
-	  <DetectChar attribute="Value" context="66:PEDecl SystemID" char="&quot;(\s+|$)"/>
+	  <DetectChar attribute="Value" context="66:PEDecl SystemID" char="&quot;"/>
 	  <RegExpr attribute="Value" context="#stay" String="[&#x20;&#xD;&#xA;a-zA-Z0-9'()+,./:=?;!*#@$_%-]"/>
 	</context>
 
 	<context name="65:PEDecl PublicID q" attribute="Value" lineEndContext="#stay">
-	  <DetectChar attribute="Value" context="66:PEDecl SystemID" char="'(\s+|$)"/>
+	  <DetectChar attribute="Value" context="66:PEDecl SystemID" char="'"/>
 	  <RegExpr attribute="Value" context="#stay" String="[&#x20;&#xD;&#xA;a-zA-Z0-9()+,./:=?;!*#@$_%-]"/>
 	</context>
 
@@ -465,12 +465,12 @@
 	</context>
 
 	<context name="74:NotationDecl PublicID qq" attribute="Error" lineEndContext="#stay">
-	  <DetectChar attribute="Value" context="76:NotationDecl SystemIDOrEnd" char="&quot;(\s+|$)"/>
+	  <DetectChar attribute="Value" context="76:NotationDecl SystemIDOrEnd" char="&quot;"/>
 	  <RegExpr attribute="Value" context="#stay" String="[&#x20;&#xD;&#xA;a-zA-Z0-9'()+,./:=?;!*#@$_%-]"/>
 	</context>
 
 	<context name="75:NotationDecl PublicID q" attribute="Value" lineEndContext="#stay">
-	  <DetectChar attribute="Value" context="76:NotationDecl SystemIDOrEnd" char="'(\s+|$)"/>
+	  <DetectChar attribute="Value" context="76:NotationDecl SystemIDOrEnd" char="'"/>
 	  <RegExpr attribute="Value" context="#stay" String="[&#x20;&#xD;&#xA;a-zA-Z0-9()+,./:=?;!*#@$_%-]"/>
 	</context>
 
@@ -579,8 +579,7 @@
       <itemData name="Doctype Declaration" defStyleNum="dsKeyword"/>
       <itemData name="Comment" defStyleNum="dsComment"/>
       <itemData name="Processing Instruction" defStyleNum="dsKeyword"/>
-      <itemData name="PI content" defStyleNum="dsOthers"/>
-      <itemData name="Stylesheet" defStyleNum="dsKeyword"/>
+      <itemData name="Processing Instruction Body" defStyleNum="dsNormal"/>
       <itemData name="Error" defStyleNum="dsError"/>
     </itemDatas>
   </highlighting>

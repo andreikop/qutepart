@@ -1,59 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Pango" version="0.1" kateversion="2.4" section="Markup" extensions="" mimetype=""  author="Jonathan Schmidt-Domniné &lt;devel@the-user.org&gt;" license="LGPL" priority="10">
+<language name="Pango" version="4" kateversion="2.4" section="Markup" extensions="" mimetype=""  author="Jonathan Schmidt-Domniné &lt;devel@the-user.org&gt;" license="LGPL" priority="10">
 
 <highlighting>
-    
+<!-- NOTE: Currently, all keyword lists are already matched in the RegExp rules
+           below. This could be heavily improved, any takers?
+
   <list name="tags">
-      <item> &lt;span </item>
-      <item> &lt;b </item>
-      <item> &lt;big </item>
-      <item> &lt;i </item>
-      <item> &lt;s </item>
-      <item> &lt;sub </item>
-      <item> &lt;sup </item>
-      <item> &lt;small </item>
-      <item> &lt;tt </item>
-      <item> &lt;u </item>
+      <item>&lt;span</item>
+      <item>&lt;b</item>
+      <item>&lt;big</item>
+      <item>&lt;i</item>
+      <item>&lt;s</item>
+      <item>&lt;sub</item>
+      <item>&lt;sup</item>
+      <item>&lt;small</item>
+      <item>&lt;tt</item>
+      <item>&lt;u</item>
   </list>
   
   <list name="endtags">
-      <item> &lt;/span&gt; </item>
-      <item> &lt;/b&gt; </item>
-      <item> &lt;/big&gt; </item>
-      <item> &lt;/i&gt; </item>
-      <item> &lt;/s&gt; </item>
-      <item> &lt;/sub&gt; </item>
-      <item> &lt;/sup&gt; </item>
-      <item> &lt;/small&gt; </item>
-      <item> &lt;/tt&gt; </item>
-      <item> &lt;/u&gt; </item>
+      <item>&lt;/span&gt;</item>
+      <item>&lt;/b&gt;</item>
+      <item>&lt;/big&gt;</item>
+      <item>&lt;/i&gt;</item>
+      <item>&lt;/s&gt;</item>
+      <item>&lt;/sub&gt;</item>
+      <item>&lt;/sup&gt;</item>
+      <item>&lt;/small&gt;</item>
+      <item>&lt;/tt&gt;</item>
+      <item>&lt;/u&gt;</item>
   </list>
   
   <list name="int_attributes">
-      <item> size= </item>
-      <item> font_size= </item>
-      <item> rise= </item>
-      <item> letter_spacing= </item>
+      <item>size=</item>
+      <item>font_size=</item>
+      <item>rise=</item>
+      <item>letter_spacing=</item>
   </list>
   
   <list name="plain_attributes">
-      <item> font= </item>
-      <item> font_desc= </item>
-      <item> font_family= </item>
-      <item> face= </item>
-      <item> lang= </item>
+      <item>font=</item>
+      <item>font_desc=</item>
+      <item>font_family=</item>
+      <item>face=</item>
+      <item>lang=</item>
   </list>
   
   <list name="color_attributes">
-      <item> strikethrough_color= </item>
-      <item> foreground= </item>
-      <item> fgcolor= </item>
-      <item> color= </item>
-      <item> background= </item>
-      <item> bgcolor= </item>
-      <item> underline_color= </item>
+      <item>strikethrough_color=</item>
+      <item>foreground=</item>
+      <item>fgcolor=</item>
+      <item>color=</item>
+      <item>background=</item>
+      <item>bgcolor=</item>
+      <item>underline_color=</item>
   </list>
+-->
 
 <contexts>
   <context name="Start" attribute="Normal Text" lineEndContext="#stay">
@@ -145,7 +148,6 @@
   <itemData name="Normal Text" defStyleNum="dsNormal" />
   <itemData name="Element" defStyleNum="dsKeyword" />
   <itemData name="Key" defStyleNum="dsOthers" />
-  <itemData name="Value" defStyleNum="dsString" color="#a00" />
   <itemData name="Decimal" defStyleNum="dsDecVal" />
   <itemData name="Color" defStyleNum="dsFloat" />
   <itemData name="String" defStyleNum="dsString" />
@@ -153,7 +155,7 @@
 </itemDatas>
 
 </highlighting>
-<general>
-<indentation mode="xml" />
-</general>
+  <general>
+    <indentation mode="xml" />
+  </general>
 </language>

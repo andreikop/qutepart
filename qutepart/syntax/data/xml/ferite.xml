@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="ferite" version="1.05" kateversion="5.0" section="Scripts" extensions="*.fe;*.feh" mimetype="text/x-ferite-src">
+<language name="ferite" version="3" kateversion="5.0" section="Scripts" extensions="*.fe;*.feh" mimetype="text/x-ferite-src">
   <highlighting>
     <list name="keywords">
-      <item> break </item>
-      <item> case </item>
-      <item> continue </item>
-      <item> else </item>
-      <item> for </item>
-      <item> if </item>
-      <item> do </item>
-      <item> function </item>
-      <item> namespace </item>
-      <item> while </item>
-      <item> class </item>
-      <item> new </item>
-      <item> uses </item>
-      <item> global </item>
-      <item> return </item>
-      <item> self </item>
-      <item> super </item>
-      <item> null </item>
-      <item> iferr </item>
-      <item> fix </item>
+      <item>break</item>
+      <item>case</item>
+      <item>continue</item>
+      <item>else</item>
+      <item>for</item>
+      <item>if</item>
+      <item>do</item>
+      <item>function</item>
+      <item>namespace</item>
+      <item>while</item>
+      <item>class</item>
+      <item>new</item>
+      <item>uses</item>
+      <item>global</item>
+      <item>return</item>
+      <item>self</item>
+      <item>super</item>
+      <item>null</item>
+      <item>iferr</item>
+      <item>fix</item>
     </list>
     <list name="types">
-      <item> number </item>
-      <item> void </item>
-      <item> string </item>
-      <item> array </item>
-      <item> object </item>
-      <item> final </item>
-      <item> static </item>
+      <item>number</item>
+      <item>void</item>
+      <item>string</item>
+      <item>array</item>
+      <item>object</item>
+      <item>final</item>
+      <item>static</item>
     </list>
     <contexts>
       <context attribute="Normal Text" lineEndContext="#stay" name="Default" >
@@ -82,8 +82,6 @@
       <context attribute="Comment" lineEndContext="#stay" name="Multiline Comment 2">
         <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" />
       </context>
-      <context attribute="Normal Text" lineEndContext="#pop" name="unknown" />
-      <context attribute="Normal Text" lineEndContext="#pop" name ="unknown 2" />
       <context attribute="Comment" lineEndContext="#stay" name="Undeffed">
           <RegExpr attribute="Alert" context="#stay" String="(FIXME|TODO)" />
           <StringDetect attribute="Comment" context="#pop" String="#endif" column="0"/>
