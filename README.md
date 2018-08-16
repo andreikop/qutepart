@@ -70,6 +70,17 @@ It will probably be gcc
 
 Nothing is wrong with Katepart. Qutepart has been created to enable reusing highlighters and indenters in projects where a KDE dependency is not acceptable.
 
+## Releasing new version
+```
+    make bump-version  # Set next version number. Commit the changes
+    make changelog-update  # Edit and commit 3 changelog files
+    git tag vx.x.x
+    git push
+    git push --tags
+    make push-obs  # upload the version to Open Suse build service
+    # make pip release TODO document this step
+```
+
 
 ## Author
 Andrei Kopats
