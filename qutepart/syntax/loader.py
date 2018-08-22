@@ -299,8 +299,13 @@ def _loadRegExpr(parentContext, xmlElement, attributeToFormatMap, formatConverte
     if string is not None:
         string = _processCraracterCodes(string)
 
-        wordStart = string.strip('(').startswith('\\b')
-        lineStart = string.strip('(').startswith('^')
+        strippedString = string.strip('(')
+
+        wordStart = strippedString.startswith('\\b')
+        lineStart = strippedString.startswith('^')
+        if len(strippedString) > 1 and strippedString[1] == '|':  # ^|blabla   This condition is not ideal but will cover majority of cases
+            wordStart = False
+            lineStart = False
     else:
         wordStart = False
         lineStart = False
