@@ -51,6 +51,9 @@ Qutepart is a code editor widget for PyQt. Features:
 
 
 %changelog
+* Mon Sep 27 2018 Andrei Kopats <andrei.kopats@gmail.com>  3.2.0-14
+- Update XMLs from the upstream
+
 * Wed Sep 19 2017 Andrei Kopats <andrei.kopats@gmail.com>  3.1.0-13
 - Improve margins
 - Minor bug fixes
