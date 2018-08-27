@@ -1,5 +1,5 @@
 Name:           python3-qutepart
-Version:        3.1.0
+Version:        3.2.0
 Release:        1%{?dist}
 Summary:        Code editor widget for PyQt
 Group:          Development/Libraries/Python
