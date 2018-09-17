@@ -3,11 +3,11 @@
 # ****************************************
 environment:
   matrix:
-    # We only have a pre-compiled PyQt5 for Python 3.5+, so only test on that.
-    - PYTHON: "C:\\Python35"
+    # We only have a pre-compiled PyQt5 with QtWebEgnine for Python 3.5+ x64, so
+    # only test on that.
     - PYTHON: "C:\\Python35-x64"
-    - PYTHON: "C:\\Python36"
     - PYTHON: "C:\\Python36-x64"
+    - PYTHON: "C:\\Python37-x64"
 
 install:
   # Add the correct Python to the path.
