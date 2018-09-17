@@ -257,7 +257,7 @@ class BaseCommandMode(Mode):
         try:
             self._processCharCoroutine.send(ev)
         except StopIteration as ex:
-            retVal = ex.args[0]
+            retVal = ex.value
             self._reset()
         else:
             retVal = True
@@ -518,31 +518,31 @@ class BaseVisual(BaseCommandMode):
             if self._vim.mode() is self:  # if the command didn't switch the mode
                 self.switchMode(Normal)
 
-            raise StopIteration(True)
+            return True
         elif action == _Esc:
             self._resetSelection()
             self.switchMode(Normal)
-            raise StopIteration(True)
+            return True
         elif action == _g:
             ev = yield
             if code(ev) == _g:
                 self._moveCursor('gg', 1, select=True)
                 if self._selectLines:
                     self._expandSelection()
-            raise StopIteration(True)
+            return True
         elif action in (_f, _F, _t, _T):
             ev = yield
             if not isChar(ev):
-                raise StopIteration(True)
+                return True
 
             searchChar = ev.text()
             self._moveCursor(action, typedCount, searchChar=searchChar, select=True)
-            raise StopIteration(True)
+            return True
         elif action == _z:
             ev = yield
             if code(ev) == _z:
                 self._qpart.centerCursor()
-            raise StopIteration(True)
+            return True
         elif action in self._MOTIONS:
             if self._selectLines and action in (_k, _Up, _j, _Down):
                 """ There is a bug in visual mode:
@@ -561,7 +561,7 @@ class BaseVisual(BaseCommandMode):
 
             if self._selectLines:
                 self._expandSelection()
-            raise StopIteration(True)
+            return True
         elif action == _r:
             ev = yield
             newChar = ev.text()
@@ -572,11 +572,11 @@ class BaseVisual(BaseCommandMode):
                 newText = ''.join(newChars)
                 self._qpart.selectedText = newText
             self.switchMode(Normal)
-            raise StopIteration(True)
+            return True
         elif isChar(ev):
-            raise StopIteration(True)  # ignore unknown character
+            return True  # ignore unknown character
         else:
-            raise StopIteration(False)  # but do not ignore not-a-character keys
+            return False  # but do not ignore not-a-character keys
 
         assert 0  # must StopIteration on if
 
@@ -831,31 +831,31 @@ class Normal(BaseCommandMode):
         if action in self._SIMPLE_COMMANDS:
             cmdFunc = self._SIMPLE_COMMANDS[action]
             cmdFunc(self, action, effectiveCount)
-            raise StopIteration(True)
+            return True
         elif action == _g:
             ev = yield
             if code(ev) == _g:
                 self._moveCursor('gg', 1)
 
-            raise StopIteration(True)
+            return True
         elif action in (_f, _F, _t, _T):
             ev = yield
             if not isChar(ev):
-                raise StopIteration(True)
+                return True
 
             searchChar = ev.text()
             self._moveCursor(action, effectiveCount, searchChar=searchChar, select=False)
-            raise StopIteration(True)
+            return True
         elif action == _Period:  # repeat command
             if self._vim.lastEditCmdFunc is not None:
                 if typedCount:
                     self._vim.lastEditCmdFunc(typedCount)
                 else:
                     self._vim.lastEditCmdFunc()
-            raise StopIteration(True)
+            return True
         elif action in self._MOTIONS:
             self._moveCursor(action, typedCount, select=False)
-            raise StopIteration(True)
+            return True
         elif action in self._COMPOSITE_COMMANDS:
             moveCount = 0
             ev = yield
@@ -882,11 +882,11 @@ class Normal(BaseCommandMode):
                 if code(ev) == _g:
                     motion = 'gg'
                 else:
-                    raise StopIteration(True)
+                    return True
             elif motion in (_f, _F, _t, _T):
                 ev = yield
                 if not isChar(ev):
-                    raise StopIteration(True)
+                    return True
 
                 searchChar = ev.text()
 
@@ -900,11 +900,11 @@ class Normal(BaseCommandMode):
                 cmdFunc = self._COMPOSITE_COMMANDS[action]
                 cmdFunc(self, action, motion, searchChar, count)
 
-            raise StopIteration(True)
+            return True
         elif isChar(ev):
-            raise StopIteration(True)  # ignore unknown character
+            return True  # ignore unknown character
         else:
-            raise StopIteration(False)  # but do not ignore not-a-character keys
+            return False  # but do not ignore not-a-character keys
 
 
         assert 0  # must StopIteration on if
