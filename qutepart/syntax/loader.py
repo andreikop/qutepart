@@ -294,6 +294,7 @@ def _loadRegExpr(parentContext, xmlElement, attributeToFormatMap, formatConverte
         return re.sub(r"\\0\d\d\d", replFunc, text)
 
     insensitive = _parseBoolAttribute(xmlElement.attrib.get('insensitive', 'false'))
+    minimal = _parseBoolAttribute(xmlElement.attrib.get('minimal', 'false'))
     string = _safeGetRequiredAttribute(xmlElement, 'String', None)
 
     if string is not None:
@@ -312,7 +313,7 @@ def _loadRegExpr(parentContext, xmlElement, attributeToFormatMap, formatConverte
 
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)
     return _parserModule.RegExpr(abstractRuleParams,
-                                 string, insensitive, wordStart, lineStart)
+                                 string, insensitive, minimal, wordStart, lineStart)
 
 def _loadAbstractNumberRule(rule, parentContext, xmlElement):
     abstractRuleParams = _loadAbstractRuleParams(parentContext, xmlElement, attributeToFormatMap, formatConverterFunction)

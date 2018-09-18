@@ -376,25 +376,24 @@ class keyword(AbstractRule):
 
 
 class RegExpr(AbstractRule):
-    """TODO support "minimal" flag
-
-    Public attributes:
+    """ Public attributes:
         regExp
         wordStart
         lineStart
     """
     def __init__(self, abstractRuleParams,
-                 string, insensitive, wordStart, lineStart):
+                 string, insensitive, minimal, wordStart, lineStart):
         AbstractRule.__init__(self, abstractRuleParams)
         self.string = string
         self.insensitive = insensitive
+        self.minimal = minimal
         self.wordStart = wordStart
         self.lineStart = lineStart
 
         if self.dynamic:
             self.regExp = None
         else:
-            self.regExp = self._compileRegExp(string, insensitive)
+            self.regExp = self._compileRegExp(string, insensitive, minimal)
 
 
     def shortId(self):
@@ -405,7 +404,7 @@ class RegExpr(AbstractRule):
         """
         if self.dynamic:
             string = self._makeDynamicSubsctitutions(self.string, textToMatchObject.contextData)
-            regExp = self._compileRegExp(string, self.insensitive)
+            regExp = self._compileRegExp(string, self.insensitive, self.minimal)
         else:
             regExp = self.regExp
 
@@ -447,9 +446,11 @@ class RegExpr(AbstractRule):
         return _numSeqReplacer.sub(_replaceFunc, string)
 
     @staticmethod
-    def _compileRegExp(string, insensitive):
+    def _compileRegExp(string, insensitive, minimal):
         """Compile regular expression.
         Python function, used by C code
+
+        NOTE minimal flag is not supported here, but supported on PCRE
         """
         flags = 0
         if insensitive:

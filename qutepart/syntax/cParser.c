@@ -1537,6 +1537,7 @@ typedef struct {
     char* utf8String;
     size_t stringLen;
     bool insensitive;
+    bool minimal;
     bool wordStart;
     bool lineStart;
     pcre* regExp;
@@ -1555,7 +1556,7 @@ RegExpr_dealloc_fields(RegExpr* self)
 }
 
 static pcre*
-_compileRegExp(const char* utf8String, bool insensitive, pcre_extra** pExtra)
+_compileRegExp(const char* utf8String, bool insensitive, bool minimal, pcre_extra** pExtra)
 {
     const char* errptr = NULL;
     int erroffset = 0;
@@ -1564,6 +1565,9 @@ _compileRegExp(const char* utf8String, bool insensitive, pcre_extra** pExtra)
     int options = PCRE_ANCHORED | PCRE_UTF8 | PCRE_NO_UTF8_CHECK;
     if (insensitive)
         options |= PCRE_CASELESS;
+
+    if (minimal)
+        options |= PCRE_UNGREEDY;  // NOTE this flag works correctly only if reg exp patterns are greedy by default
 
     regExp = pcre_compile(utf8String,
                           options,
@@ -1648,7 +1652,7 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
         if (stringLen <= 0)
             return MakeEmptyTryMatchResult();
 
-        regExp = _compileRegExp(buffer, self->insensitive, NULL);
+        regExp = _compileRegExp(buffer, self->insensitive, self->minimal, NULL);
     }
     else
     {
@@ -1673,25 +1677,28 @@ RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
     PyObject* abstractRuleParams = NULL;
     PyObject* string = NULL;
     PyObject* insensitive = NULL;
+    PyObject* minimal = NULL;
     PyObject* wordStart = NULL;
     PyObject* lineStart = NULL;
     PyObject* utf8String;
 
     self->_tryMatch = RegExpr_tryMatch;
 
-    if (! PyArg_ParseTuple(args, "|OOOOO", &abstractRuleParams,
-                           &string, &insensitive, &wordStart, &lineStart))
+    if (! PyArg_ParseTuple(args, "|OOOOOO", &abstractRuleParams,
+                           &string, &insensitive, &minimal, &wordStart, &lineStart))
         return -1;
 
     TYPE_CHECK(abstractRuleParams, AbstractRuleParams, -1);
     UNICODE_CHECK(string, -1);
     BOOL_CHECK(insensitive, -1);
+    BOOL_CHECK(minimal, -1);
     BOOL_CHECK(wordStart, -1);
     BOOL_CHECK(lineStart, -1);
 
     ASSIGN_FIELD(AbstractRuleParams, abstractRuleParams);
 
     ASSIGN_BOOL_FIELD(insensitive);
+    ASSIGN_BOOL_FIELD(minimal);
     ASSIGN_BOOL_FIELD(wordStart);
     ASSIGN_BOOL_FIELD(lineStart);
 
@@ -1704,7 +1711,7 @@ RegExpr_init(RegExpr *self, PyObject *args, PyObject *kwds)
     }
     else
     {
-        self->regExp = _compileRegExp(PyBytes_AsString(utf8String), self->insensitive, &(self->extra));
+        self->regExp = _compileRegExp(PyBytes_AsString(utf8String), self->insensitive, self->minimal, &(self->extra));
     }
     Py_DECREF(utf8String);
 

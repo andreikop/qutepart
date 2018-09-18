@@ -30,8 +30,10 @@ def _fixSysPath(binaryQutepart):
         if binaryQutepart:
             sys.path.insert(0, qutepartDir + '/build/lib.linux-i686-3.3/')  # use built modules
             sys.path.insert(0, qutepartDir + '/build/lib.linux-i686-3.4/')  # use built modules
+            sys.path.insert(0, qutepartDir + '/build/lib.linux-i686-3.5/')  # use built modules
             sys.path.insert(0, qutepartDir + '/build/lib.linux-x86_64-3.3/')  # use built modules
             sys.path.insert(0, qutepartDir + '/build/lib.linux-x86_64-3.4/')  # use built modules
+            sys.path.insert(0, qutepartDir + '/build/lib.linux-x86_64-3.5/')  # use built modules
 
 
 def main():
