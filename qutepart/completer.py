@@ -343,6 +343,7 @@ class Completer(QObject):
         self._completionOpenedManually = False
 
         self._keywords = set()
+        self._customCompletions = set()
         self._wordSet = None
 
         qpart.textChanged.connect(self._onTextChanged)
@@ -356,6 +357,9 @@ class Completer(QObject):
     def setKeywords(self, keywords):
         self._keywords = keywords
         self._updateWordSet()
+
+    def setCustomCompletions(self, wordSet):
+        self._customCompletions = wordSet
 
     def isVisible(self):
         return self._widget is not None
@@ -371,7 +375,7 @@ class Completer(QObject):
     def _updateWordSet(self):
         """Make a set of words, which shall be completed, from text
         """
-        self._wordSet = set(self._keywords)
+        self._wordSet = set(self._keywords) | set(self._customCompletions)
 
         start = time.time()
 

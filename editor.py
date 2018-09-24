@@ -17,6 +17,8 @@ def _parseCommandLine():
     parser.add_argument('-q, --quit', action='store_true', dest='quit', help='Quit just after start')
     parser.add_argument('-l, --language', action='store_true', dest='show_language',
                         help='Print detected language when starting')
+    parser.add_argument('-c, --completions', dest='completions',
+                        help='A comma separated list of additional word completions')
     parser.add_argument('file', help='File to open')
 
     return parser.parse_args()
@@ -83,6 +85,9 @@ def main():
     qpart.detectSyntax(sourceFilePath=ns.file, firstLine=firstLine)
     if ns.show_language:
         print("Language:", qpart.language())
+
+    completions = {c.strip() for c in ns.completions.split(',')}
+    qpart.setCustomCompletions(completions)
 
     qpart.lineLengthEdge = 20
 

@@ -798,6 +798,17 @@ class Qutepart(QPlainTextEdit):
         else:
             return self._highlighter.syntax().name
 
+    def setCustomCompletions(self, wordSet):
+        """Add a set of custom completions to the editors completions.
+
+        This set is managed independently of the set of keywords and words from
+        the current document, and can thus be changed at any time.
+
+        """
+        if not isinstance(wordSet, set):
+            raise TypeError('"wordSet" is not a set: %s' % type(wordSet))
+        self._completer.setCustomCompletions(wordSet)
+
     def isHighlightingInProgress(self):
         """Check if text highlighting is still in progress
         """
