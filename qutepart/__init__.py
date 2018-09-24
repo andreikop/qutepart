@@ -770,6 +770,8 @@ class Qutepart(QPlainTextEdit):
         if syntax is not None:
             self._highlighter = SyntaxHighlighter(syntax, self)
             self._indenter.setSyntax(syntax)
+            keywords = {kw for kwList in syntax.parser.lists.values() for kw in kwList}
+            self._completer.setKeywords(keywords)
 
         newLanguage = self.language()
         if oldLanguage != newLanguage:
