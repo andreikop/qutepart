@@ -32,7 +32,7 @@ def install(should_identify=True):
         mkdir(DOWNLOADS)
 
     # Download and compile PCRE.
-    pcre_raw_ver = '8.39'
+    pcre_raw_ver = '8.42'
     pcre_ver = 'pcre-' + pcre_raw_ver
     pcre_zip = pcre_ver + '.zip'
     pcre_zip_path = os.path.join(DOWNLOADS, pcre_zip)

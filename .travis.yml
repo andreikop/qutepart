@@ -19,6 +19,7 @@ language: python
 python:
   - 3.5
   - 3.6
+  - 3.7
 
 # See https://docs.travis-ci.com/user/customizing-the-build/#Build-Matrix. This
 # manually includes additional OS X tests to the matrix of Linux tests defined
@@ -28,10 +29,13 @@ matrix:
   - os: osx
     # Since Travis's OS X doesn't natively support Python, use some workarounds.
     language: generic
-    env: INSTALL_TYPE=macpython VERSION=3.5.2 VENV=venv
+    env: INSTALL_TYPE=macpython VERSION=3.5.6 VENV=venv
   - os: osx
     language: generic
-    env: INSTALL_TYPE=macpython VERSION=3.6.1 VENV=venv
+    env: INSTALL_TYPE=macpython VERSION=3.6.6 VENV=venv
+  - os: osx
+    language: generic
+    env: INSTALL_TYPE=macpython VERSION=3.7.0 VENV=venv
 
 # Travis complains if tests are run during install, or if installation is done
 # during script (the tests). So, break the script into two pieces.
