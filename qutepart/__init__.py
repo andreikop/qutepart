@@ -54,8 +54,11 @@ binaryParserAvailable = qutepart.syntax.loader.binaryParserAvailable
 _ICONS_PATH = os.path.join(os.path.dirname(__file__), 'icons')
 
 def getIcon(iconFileName):
-    fallback = QIcon(os.path.join(_ICONS_PATH, iconFileName))
-    return QIcon.fromTheme(iconFileName, fallback)
+    icon = QIcon.fromTheme(iconFileName)
+    if icon.name() != iconFileName:
+        # Use bundled fallback icon
+        icon = QIcon(os.path.join(_ICONS_PATH, iconFileName))
+    return icon
 
 
 #Define for old Qt versions methods, which appeared in 4.7
