@@ -103,18 +103,18 @@ class MarkArea(QWidget):
 
         self.setMouseTracking(True)
 
-        self._bookmarkPixmap = self._loadIcon('bookmark.png')
-        self._lintPixmaps = {qpart.LINT_ERROR: self._loadIcon('lint-error.png'),
-                             qpart.LINT_WARNING: self._loadIcon('lint-warning.png'),
-                             qpart.LINT_NOTE: self._loadIcon('lint-note.png')}
+        self._bookmarkPixmap = self._loadIcon('emblem-favorite')
+        self._lintPixmaps = {qpart.LINT_ERROR: self._loadIcon('emblem-error'),
+                             qpart.LINT_WARNING: self._loadIcon('emblem-warning'),
+                             qpart.LINT_NOTE: self._loadIcon('emblem-information')}
 
         self._bookmarks = Bookmarks(qpart, self)
 
     def _loadIcon(self, fileName):
-        defaultSizePixmap = QPixmap(qutepart.getIconPath(fileName))
-        iconSize = self._qpart.cursorRect().height()
-        return defaultSizePixmap.scaled(iconSize, iconSize, transformMode=Qt.SmoothTransformation)
-
+        icon = qutepart.getIcon(fileName)
+        size = self._qpart.cursorRect().height() - 6
+        pixmap = icon.pixmap(size, size)  # This also works with Qt.AA_UseHighDpiPixmaps
+        return pixmap
 
     def sizeHint(self, ):
         """QWidget.sizeHint() implementation

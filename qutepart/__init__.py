@@ -53,8 +53,12 @@ binaryParserAvailable = qutepart.syntax.loader.binaryParserAvailable
 
 _ICONS_PATH = os.path.join(os.path.dirname(__file__), 'icons')
 
-def getIconPath(iconFileName):
-    return os.path.join(_ICONS_PATH, iconFileName)
+def getIcon(iconFileName):
+    icon = QIcon.fromTheme(iconFileName)
+    if icon.name() != iconFileName:
+        # Use bundled fallback icon
+        icon = QIcon(os.path.join(_ICONS_PATH, iconFileName))
+    return icon
 
 
 #Define for old Qt versions methods, which appeared in 4.7
@@ -352,7 +356,7 @@ class Qutepart(QPlainTextEdit):
             """
             action = QAction(text, self)
             if iconFileName is not None:
-                action.setIcon(QIcon(getIconPath(iconFileName)))
+                action.setIcon(getIcon(iconFileName))
 
             keySeq = shortcut if isinstance(shortcut, QKeySequence) else QKeySequence(shortcut)
             action.setShortcut(keySeq)
@@ -366,10 +370,10 @@ class Qutepart(QPlainTextEdit):
         # scrolling
         self.scrollUpAction = createAction('Scroll up', 'Ctrl+Up',
                                            lambda: self._onShortcutScroll(down = False),
-                                           'up.png')
+                                           'go-up')
         self.scrollDownAction = createAction('Scroll down', 'Ctrl+Down',
                                              lambda: self._onShortcutScroll(down = True),
-                                             'down.png')
+                                             'go-down')
         self.selectAndScrollUpAction = createAction('Select and scroll Up', 'Ctrl+Shift+Up',
                                                     lambda: self._onShortcutSelectAndScroll(down = False))
         self.selectAndScrollDownAction = createAction('Select and scroll Down', 'Ctrl+Shift+Down',
@@ -378,10 +382,10 @@ class Qutepart(QPlainTextEdit):
         # indentation
         self.increaseIndentAction = createAction('Increase indentation', 'Tab',
                                                  self._onShortcutIndent,
-                                                 'indent.png')
+                                                 'format-indent-more')
         self.decreaseIndentAction = createAction('Decrease indentation', 'Shift+Tab',
                             lambda: self._indenter.onChangeSelectedBlocksIndent(increase = False),
-                            'unindent.png')
+                            'format-indent-less')
         self.autoIndentLineAction = createAction('Autoindent line', 'Ctrl+I',
                                                   self._indenter.onAutoIndentTriggered)
         self.indentWithSpaceAction = createAction('Indent with 1 space', 'Ctrl+Shift+Space',
@@ -393,23 +397,23 @@ class Qutepart(QPlainTextEdit):
 
         # editing
         self.undoAction = createAction('Undo', QKeySequence.Undo,
-                                       self.undo, 'undo.png')
+                                       self.undo, 'edit-undo')
         self.redoAction = createAction('Redo', QKeySequence.Redo,
-                                       self.redo, 'redo.png')
+                                       self.redo, 'edit-redo')
 
         self.moveLineUpAction = createAction('Move line up', 'Alt+Up',
-                                             lambda: self._onShortcutMoveLine(down = False), 'up.png')
+                                             lambda: self._onShortcutMoveLine(down = False), 'go-up')
         self.moveLineDownAction = createAction('Move line down', 'Alt+Down',
-                                               lambda: self._onShortcutMoveLine(down = True), 'down.png')
-        self.deleteLineAction = createAction('Delete line', 'Alt+Del', self._onShortcutDeleteLine, 'deleted.png')
-        self.copyLineAction = createAction('Copy line', 'Alt+C', self._onShortcutCopyLine, 'copy.png')
-        self.pasteLineAction = createAction('Paste line', 'Alt+V', self._onShortcutPasteLine, 'paste.png')
-        self.cutLineAction = createAction('Cut line', 'Alt+X', self._onShortcutCutLine, 'cut.png')
+                                               lambda: self._onShortcutMoveLine(down = True), 'go-down')
+        self.deleteLineAction = createAction('Delete line', 'Alt+Del', self._onShortcutDeleteLine, 'edit-delete')
+        self.cutLineAction = createAction('Cut line', 'Alt+X', self._onShortcutCutLine, 'edit-cut')
+        self.copyLineAction = createAction('Copy line', 'Alt+C', self._onShortcutCopyLine, 'edit-copy')
+        self.pasteLineAction = createAction('Paste line', 'Alt+V', self._onShortcutPasteLine, 'edit-paste')
         self.duplicateLineAction = createAction('Duplicate line', 'Alt+D', self._onShortcutDuplicateLine)
         self.invokeCompletionAction = createAction('Invoke completion', 'Ctrl+Space', self._completer.invokeCompletion)
 
         # other
-        self.printAction = createAction('Print', 'Ctrl+P', self._onShortcutPrint, 'print.png')
+        self.printAction = createAction('Print', 'Ctrl+P', self._onShortcutPrint, 'document-print')
 
     def __enter__(self):
         """Context management method.

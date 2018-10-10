@@ -2,7 +2,7 @@
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QAction
-from PyQt5.QtGui import QIcon, QKeySequence, QTextCursor
+from PyQt5.QtGui import QKeySequence, QTextCursor
 
 import qutepart
 
@@ -13,11 +13,11 @@ class Bookmarks:
     def __init__(self, qpart, markArea):
         self._qpart = qpart
         self._markArea = markArea
-        qpart.toggleBookmarkAction = self._createAction(qpart, "bookmark.png", "Toogle bookmark", 'Ctrl+B',
+        qpart.toggleBookmarkAction = self._createAction(qpart, "emblem-favorite", "Toogle bookmark", 'Ctrl+B',
                                                         self._onToggleBookmark)
-        qpart.prevBookmarkAction = self._createAction(qpart, "up.png", "Previous bookmark", 'Alt+PgUp',
+        qpart.prevBookmarkAction = self._createAction(qpart, "go-up", "Previous bookmark", 'Alt+PgUp',
                                                       self._onPrevBookmark)
-        qpart.nextBookmarkAction = self._createAction(qpart, "down.png", "Next bookmark", 'Alt+PgDown',
+        qpart.nextBookmarkAction = self._createAction(qpart, "go-down", "Next bookmark", 'Alt+PgDown',
                                                       self._onNextBookmark)
 
         markArea.blockClicked.connect(self._toggleBookmark)
@@ -25,7 +25,7 @@ class Bookmarks:
     def _createAction(self, widget, iconFileName, text, shortcut, slot):
         """Create QAction with given parameters and add to the widget
         """
-        icon = QIcon(qutepart.getIconPath(iconFileName))
+        icon = qutepart.getIcon(iconFileName)
         action = QAction(icon, text, widget)
         action.setShortcut(QKeySequence(shortcut))
         action.setShortcutContext(Qt.WidgetShortcut)
