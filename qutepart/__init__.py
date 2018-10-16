@@ -774,6 +774,8 @@ class Qutepart(QPlainTextEdit):
         if syntax is not None:
             self._highlighter = SyntaxHighlighter(syntax, self)
             self._indenter.setSyntax(syntax)
+            keywords = {kw for kwList in syntax.parser.lists.values() for kw in kwList}
+            self._completer.setKeywords(keywords)
 
         newLanguage = self.language()
         if oldLanguage != newLanguage:
@@ -799,6 +801,17 @@ class Qutepart(QPlainTextEdit):
             return None
         else:
             return self._highlighter.syntax().name
+
+    def setCustomCompletions(self, wordSet):
+        """Add a set of custom completions to the editors completions.
+
+        This set is managed independently of the set of keywords and words from
+        the current document, and can thus be changed at any time.
+
+        """
+        if not isinstance(wordSet, set):
+            raise TypeError('"wordSet" is not a set: %s' % type(wordSet))
+        self._completer.setCustomCompletions(wordSet)
 
     def isHighlightingInProgress(self):
         """Check if text highlighting is still in progress
