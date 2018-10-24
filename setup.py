@@ -80,18 +80,6 @@ extension = Extension('qutepart.syntax.cParser',
                       define_macros=macros)
 
 
-def _checkRuntimeDependencies():
-    try:
-        import PyQt5
-    except:
-        print("Qutepart requires PyQt5. Install it with your package manager.")
-        print("On Debian and Debian based")
-        print("\tapt-get install python3-pyqt5")
-        print("On Fedora")
-        print("\tdnf install python3-qt5")
-        return False
-
-
 def _checkBuildDependencies():
     compiler = distutils.ccompiler.new_compiler()
     """check if function without parameters from stdlib can be called
@@ -147,14 +135,6 @@ if ('build' in sys.argv or
     if '--force' not in sys.argv and '--help' not in sys.argv:
         if not onWindows():
             if not _checkBuildDependencies():
-                sys.exit(-1)
-
-
-# Check Runtime dependencies
-if ('install' in sys.argv):
-    if '--force' not in sys.argv and '--help' not in sys.argv:
-        if not onWindows():
-            if not _checkRuntimeDependencies():
                 sys.exit(-1)
 
 
