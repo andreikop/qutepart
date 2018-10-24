@@ -13,7 +13,7 @@ export PYBUILD_NAME = qutepart
 
 
 %:
-	dh $@ --with python3 --buildsystem=pybuild
+	dh $@ --with python3 --buildsystem=pybuild --disable test
 
 #override_dh_auto_clean:
 #	for v in $(PY3VERSIONS); do \
