@@ -86,8 +86,9 @@ def main():
     if ns.show_language:
         print("Language:", qpart.language())
 
-    completions = {c.strip() for c in ns.completions.split(',')}
-    qpart.setCustomCompletions(completions)
+    if ns.completions:
+        completions = {c.strip() for c in ns.completions.split(',')}
+        qpart.setCustomCompletions(completions)
 
     qpart.lineLengthEdge = 20
 
