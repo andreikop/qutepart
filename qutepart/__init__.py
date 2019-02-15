@@ -764,8 +764,7 @@ class Qutepart(QPlainTextEdit):
 
         self.clearSyntax()
 
-        syntax = self._globalSyntaxManager.getSyntax(SyntaxHighlighter.formatConverterFunction,
-                                                     xmlFileName=xmlFileName,
+        syntax = self._globalSyntaxManager.getSyntax(xmlFileName=xmlFileName,
                                                      mimeType=mimeType,
                                                      languageName=language,
                                                      sourceFilePath=sourceFilePath,
