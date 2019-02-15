@@ -30,12 +30,10 @@ def _fixSysPath(binaryQutepart):
         qutepartDir = os.path.dirname(executablePath)
         sys.path.insert(0, qutepartDir)  # do not import installed modules
         if binaryQutepart:
-            sys.path.insert(0, qutepartDir + '/build/lib.linux-i686-3.3/')  # use built modules
-            sys.path.insert(0, qutepartDir + '/build/lib.linux-i686-3.4/')  # use built modules
-            sys.path.insert(0, qutepartDir + '/build/lib.linux-i686-3.5/')  # use built modules
-            sys.path.insert(0, qutepartDir + '/build/lib.linux-x86_64-3.3/')  # use built modules
-            sys.path.insert(0, qutepartDir + '/build/lib.linux-x86_64-3.4/')  # use built modules
-            sys.path.insert(0, qutepartDir + '/build/lib.linux-x86_64-3.5/')  # use built modules
+            for arch in ('i686', 'x86_64'):
+                for versionMinor in range(3, 10):
+                    dirPath = '{}/build/lib.linux-{}-3.{}/'.format(qutepartDir, arch, versionMinor)
+                    sys.path.insert(0, dirPath)  # use built modules
 
 
 def main():
@@ -43,6 +41,10 @@ def main():
     _fixSysPath(ns.binary)
 
     import qutepart  # after correct sys.path has been set
+    if ns.binary and (not qutepart.binaryParserAvailable):
+        print("Failed to load binary parser")
+        return
+
 
     with open(ns.file, encoding='utf-8') as file:
         text = file.read()
