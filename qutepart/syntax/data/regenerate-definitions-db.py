@@ -72,11 +72,12 @@ def main():
     # Fix up php first line pattern. It contains <?php, but it is generated from html, and html doesn't contain it
     firstLineToXmlFileName['<?php*'] = 'html-php.xml'
 
-    result = {}
-    result['syntaxNameToXmlFileName'] = syntaxNameToXmlFileName
-    result['mimeTypeToXmlFileName'] = mimeTypeToXmlFileName
-    result['extensionToXmlFileName'] = extensionToXmlFileName
-    result['firstLineToXmlFileName'] = firstLineToXmlFileName
+    result = {
+        'syntaxNameToXmlFileName' : syntaxNameToXmlFileName,
+        'mimeTypeToXmlFileName' : mimeTypeToXmlFileName,
+        'extensionToXmlFileName' : extensionToXmlFileName,
+        'firstLineToXmlFileName' : firstLineToXmlFileName,
+    }
 
     with open('syntax_db.json', 'w', encoding='utf-8') as syntaxDbFile:
         json.dump(result, syntaxDbFile, sort_keys=True, indent=4)

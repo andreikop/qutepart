@@ -196,11 +196,7 @@ class AbstractRule:
            (not textToMatchObject.firstNonSpace):
             return None
 
-        ruleTryMatchResult = self._tryMatch(textToMatchObject)
-        if ruleTryMatchResult is None:  # no match
-            return None
-
-        return ruleTryMatchResult
+        return self._tryMatch(textToMatchObject)
 
 
 class DetectChar(AbstractRule):
