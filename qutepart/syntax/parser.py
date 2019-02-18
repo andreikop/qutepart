@@ -453,7 +453,7 @@ class RegExpr(AbstractRule):
             flags = re.IGNORECASE
 
         try:
-            return re.compile(string)
+            return re.compile(string, flags)
         except (re.error, AssertionError) as ex:
             _logger.warning("Invalid pattern '%s': %s", string, str(ex))
             return None
