@@ -290,6 +290,8 @@ class StringDetect(AbstractRule):
 
         if self.dynamic:
             string = self._makeDynamicSubsctitutions(self.string, textToMatchObject.contextData)
+            if not string:
+                return None
         else:
             string = self.string
 
