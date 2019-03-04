@@ -454,6 +454,10 @@ class RegExpr(AbstractRule):
         if insensitive:
             flags = re.IGNORECASE
 
+        string = string.replace('[_[:alnum:]]', '[\\w\\d]') # ad-hoc fix for C++ parser
+        string = string.replace('[:digit:]', '\\d')
+        string = string.replace('[:blank:]', '\\s')
+
         try:
             return re.compile(string, flags)
         except (re.error, AssertionError) as ex:
