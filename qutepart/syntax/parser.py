@@ -400,15 +400,6 @@ class RegExpr(AbstractRule):
     def _tryMatch(self, textToMatchObject):
         """Tries to parse text. If matched - saves data for dynamic context
         """
-        if self.dynamic:
-            string = self._makeDynamicSubsctitutions(self.string, textToMatchObject.contextData)
-            regExp = self._compileRegExp(string, self.insensitive, self.minimal)
-        else:
-            regExp = self.regExp
-
-        if regExp is None:
-            return None
-
         # Special case. if pattern starts with \b, we have to check it manually,
         # because string is passed to .match(..) without beginning
         if self.wordStart and \
@@ -418,6 +409,15 @@ class RegExpr(AbstractRule):
         #Special case. If pattern starts with ^ - check column number manually
         if self.lineStart and \
            textToMatchObject.currentColumnIndex > 0:
+            return None
+
+        if self.dynamic:
+            string = self._makeDynamicSubsctitutions(self.string, textToMatchObject.contextData)
+            regExp = self._compileRegExp(string, self.insensitive, self.minimal)
+        else:
+            regExp = self.regExp
+
+        if regExp is None:
             return None
 
         wholeMatch, groups = self._matchPattern(regExp, textToMatchObject.text)
@@ -600,7 +600,7 @@ class HlCOct(AbstractRule):
             return None
 
         index = 1
-        while index < len(textToMatchObject.text) and textToMatchObject.text[index] in '1234567':
+        while index < len(textToMatchObject.text) and textToMatchObject.text[index] in '01234567':
             index += 1
 
         if index == 1:
@@ -958,7 +958,6 @@ class Parser:
         while currentColumnIndex < len(text):
             _logger.debug('In context %s', contextStack.currentContext().name)
 
-            textType = contextStack.currentContext().textType
             length, newContextStack, segments, textTypeMapPart, lineContinue = \
                         contextStack.currentContext().parseBlock(contextStack, currentColumnIndex, text)
 
