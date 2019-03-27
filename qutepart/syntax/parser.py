@@ -705,7 +705,7 @@ class RangeDetect(AbstractRule):
 
     def _tryMatch(self, textToMatchObject):
         if textToMatchObject.text.startswith(self.char):
-            end = textToMatchObject.text.find(self.char1)
+            end = textToMatchObject.text.find(self.char1, 1)
             if end > 0:
                 return RuleTryMatchResult(self, end + 1)
 

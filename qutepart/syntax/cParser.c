@@ -2275,7 +2275,7 @@ RangeDetect_tryMatch(RangeDetect* self, TextToMatchObject_internal* textToMatchO
     {
         int end = -1;
         int i;
-        for (i = 0; i < textToMatchObject->textLen; i++)
+        for (i = 1; i < textToMatchObject->textLen; i++)
         {
             if (textToMatchObject->unicodeText[i] == self->char1_)
             {
