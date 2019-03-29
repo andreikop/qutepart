@@ -1085,7 +1085,11 @@
 			<context name="_profile_transition" attribute="Transition Profile Name" lineEndContext="#stay" fallthrough="true" fallthroughContext="#pop">
 				<DetectSpaces context="#stay" attribute="Normal Text"/>
 				<!-- Not highlighting paths and paths quoted -->
-				<RegExpr context="#pop!_default_rule_with_comments" attribute="Path" String="([^\s/\[\(]*|\[[^\s\]]*\])*/($|[^/])" lookAhead="true"/>
+				<!--
+					AK: this rule has been disabled because it freezes Python reg exp engine.
+					See #79
+					<RegExpr context="#pop!_default_rule_with_comments" attribute="Path" String="([^\s/\[\(]*|\[[^\s\]]*\])*/($|[^/])" lookAhead="true"/>
+				-->
 				<RegExpr context="#pop!_default_rule_with_comments" attribute="Normal Text" String="&quot;([^/\[]*|\[[^\s\]]*\])*/($|[^/])" lookAhead="true"/>
 				
 				<DetectChar context="#pop!_t_profile_name_quoted" attribute="Transition Profile Name" char="&quot;"/>
