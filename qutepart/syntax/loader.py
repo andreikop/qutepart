@@ -437,8 +437,10 @@ def _loadContext(context, xmlElement, attributeToFormatMap):
 
     lineEndContextText = xmlElement.attrib.get('lineEndContext', '#stay')
     lineEndContext = _makeContextSwitcher(lineEndContextText,  context.parser)
-    lineBeginContextText = xmlElement.attrib.get('lineEndContext', '#stay')
+    lineBeginContextText = xmlElement.attrib.get('lineBeginContext', '#stay')
     lineBeginContext = _makeContextSwitcher(lineBeginContextText, context.parser)
+    lineEmptyContextText = xmlElement.attrib.get('lineEmptyContext', '#stay')
+    lineEmptyContext = _makeContextSwitcher(lineEmptyContextText, context.parser)
 
     if _parseBoolAttribute(xmlElement.attrib.get('fallthrough', 'false')):
         fallthroughContextText = _safeGetRequiredAttribute(xmlElement, 'fallthroughContext', '#stay')
@@ -448,7 +450,7 @@ def _loadContext(context, xmlElement, attributeToFormatMap):
 
     dynamic = _parseBoolAttribute(xmlElement.attrib.get('dynamic', 'false'))
 
-    context.setValues(attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic, textType)
+    context.setValues(attribute, format, lineEndContext, lineBeginContext, lineEmptyContext, fallthroughContext, dynamic, textType)
 
     # load rules
     rules = _loadChildRules(context, xmlElement, attributeToFormatMap)

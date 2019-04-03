@@ -284,6 +284,7 @@ typedef struct {
     PyObject* format;
     PyObject* lineEndContext;
     PyObject* lineBeginContext;
+    PyObject* lineEmptyContext;
     ContextSwitcher* fallthroughContext;
     PyObject* rulesPython;
     AbstractRule** rulesC;
@@ -2662,6 +2663,7 @@ Context_dealloc(Context* self)
     Py_XDECREF(self->format);
     Py_XDECREF(self->lineEndContext);
     Py_XDECREF(self->lineBeginContext);
+    Py_XDECREF(self->lineEmptyContext);
     Py_XDECREF(self->fallthroughContext);
     Py_XDECREF(self->rulesPython);
     Py_XDECREF(self->textTypePython);
@@ -2697,13 +2699,15 @@ Context_setValues(Context *self, PyObject *args)
     PyObject* format = NULL;
     PyObject* lineEndContext = NULL;
     PyObject* lineBeginContext = NULL;
+    PyObject* lineEmptyContext = NULL;
     PyObject* fallthroughContext = NULL;
     PyObject* dynamic = NULL;
     PyObject* textTypePython = NULL;
 
-    if (! PyArg_ParseTuple(args, "|OOOOOOO",
-                           &attribute, &format, &lineEndContext,
-                           &lineBeginContext, &fallthroughContext,
+    if (! PyArg_ParseTuple(args, "|OOOOOOOO",
+                           &attribute, &format,
+                           &lineEndContext, &lineBeginContext,
+                           &lineEmptyContext, &fallthroughContext,
                            &dynamic, &textTypePython))
         Py_RETURN_NONE;
 
@@ -2711,6 +2715,8 @@ Context_setValues(Context *self, PyObject *args)
         TYPE_CHECK(lineEndContext, ContextSwitcher, NULL);
     if (Py_None != lineBeginContext)
         TYPE_CHECK(lineBeginContext, ContextSwitcher, NULL);
+    if (Py_None != lineEmptyContext)
+        TYPE_CHECK(lineEmptyContext, ContextSwitcher, NULL);
     if (Py_None != fallthroughContext)
         TYPE_CHECK(fallthroughContext, ContextSwitcher, NULL);
     BOOL_CHECK(dynamic, NULL);
@@ -2719,6 +2725,7 @@ Context_setValues(Context *self, PyObject *args)
     ASSIGN_PYOBJECT_FIELD(format);
     ASSIGN_PYOBJECT_FIELD(lineEndContext);
     ASSIGN_PYOBJECT_FIELD(lineBeginContext);
+    ASSIGN_PYOBJECT_FIELD(lineEmptyContext);
     ASSIGN_FIELD(ContextSwitcher, fallthroughContext);
     ASSIGN_BOOL_FIELD(dynamic);
     ASSIGN_PYOBJECT_FIELD(textTypePython);
@@ -2794,106 +2801,123 @@ Context_parseBlock(Context* self,
 
     *pLineContinue = false;
 
-    while (currentColumnIndex < wholeLineLen)
+    if (wholeLineLen == 0)
     {
-        size_t i;
-        RuleTryMatchResult_internal result;
-
-        Parser* parentParser = (Parser*)self->parser;
-        TextToMatchObject_internal_update(&textToMatchObject, currentColumnIndex, &parentParser->deliminatorSet);
-
-        result.rule = NULL;
-
-        for (i = 0; i < self->rulesSize; i++)
+        if ((PyObject*)self->lineEmptyContext != Py_None)
         {
-            result = AbstractRule_tryMatch_internal((AbstractRule*)self->rulesC[i], &textToMatchObject);
-
-            if (NULL != result.rule)
-                break;
-        }
-
-        if (NULL != result.rule)  // if something matched
-        {
-            PyObject* format;
-            Py_UNICODE textType;
-            *pLineContinue = result.lineContinue;
-
-            if (parentParser->debugOutputEnabled)
-            {
-                fprintf(stderr, "qutepart: \t");
-                PyObject_Print(self->name, stderr, 0);
-                fprintf(stderr, ": matched rule %zu at %zu\n", i, currentColumnIndex);
-            }
-
-            if (countOfNotMatchedSymbols > 0)
-            {
-                Context_appendSegment(segmentList, countOfNotMatchedSymbols, self->format);
-                Context_appendTextType(currentColumnIndex - countOfNotMatchedSymbols, countOfNotMatchedSymbols,
-                                       textTypeMap, self->textType);
-                countOfNotMatchedSymbols = 0;
-            }
-
-            if (Py_None != result.rule->abstractRuleParams->attribute)
-                format = result.rule->abstractRuleParams->format;
-            else
-                format = self->format;
-
-            if ('\0' != result.rule->abstractRuleParams->textType)
-                textType = result.rule->abstractRuleParams->textType;
-            else
-                textType = self->textType;
-
-            Context_appendSegment(segmentList,
-                                  result.length,
-                                  format);
-            Context_appendTextType(currentColumnIndex, result.length,
-                                   textTypeMap,
-                                   textType);
-            currentColumnIndex += result.length;
-
-            if (Py_None != (PyObject*)result.rule->abstractRuleParams->context)
-            {
-                ContextStack* newContextStack =
-                    ContextSwitcher_getNextContextStack(result.rule->abstractRuleParams->context,
+            ContextStack* newContextStack =
+                    ContextSwitcher_getNextContextStack((ContextSwitcher*)self->lineEmptyContext,
                                                         *pContextStack,
-                                                        result.data);
-
-                RuleTryMatchResult_internal_free(&result);
-
-                if (newContextStack != *pContextStack)
-                {
-                    ASSIGN_VALUE(ContextStack, *pContextStack, newContextStack);
-                    break; // while
-                }
-                else if (0 == result.length)
-                {
-                    // Parsed didn't switch context or consume character. The same situation will occur on next step
-                    fprintf(stderr, "qutepart: loop detected\n");
-                    currentColumnIndex ++;  // parsing bug. But avoid freeze
-                    countOfNotMatchedSymbols ++;
-                }
-            }
-        }
-        else // no match
-        {
-            *pLineContinue = false;
-            if ((PyObject*)self->fallthroughContext != Py_None)
+                                                        NULL);
+            if (newContextStack != *pContextStack)
             {
-                ContextStack* newContextStack =
-                        ContextSwitcher_getNextContextStack(self->fallthroughContext,
-                                                            *pContextStack,
-                                                            NULL);
-                if (newContextStack != *pContextStack)
-                {
-                    ASSIGN_VALUE(ContextStack, *pContextStack, newContextStack);
-                    break; // while
-                }
+                ASSIGN_VALUE(ContextStack, *pContextStack, newContextStack);
+            }
+        }
+    }
+    else
+    {
+        while (currentColumnIndex < wholeLineLen)
+        {
+            size_t i;
+            RuleTryMatchResult_internal result;
+
+            Parser* parentParser = (Parser*)self->parser;
+            TextToMatchObject_internal_update(&textToMatchObject, currentColumnIndex, &parentParser->deliminatorSet);
+
+            result.rule = NULL;
+
+            for (i = 0; i < self->rulesSize; i++)
+            {
+                result = AbstractRule_tryMatch_internal((AbstractRule*)self->rulesC[i], &textToMatchObject);
+
+                if (NULL != result.rule)
+                    break;
             }
 
-            countOfNotMatchedSymbols++;
-            currentColumnIndex++;
-        }
+            if (NULL != result.rule)  // if something matched
+            {
+                PyObject* format;
+                Py_UNICODE textType;
+                *pLineContinue = result.lineContinue;
 
+                if (parentParser->debugOutputEnabled)
+                {
+                    fprintf(stderr, "qutepart: \t");
+                    PyObject_Print(self->name, stderr, 0);
+                    fprintf(stderr, ": matched rule %zu at %zu\n", i, currentColumnIndex);
+                }
+
+                if (countOfNotMatchedSymbols > 0)
+                {
+                    Context_appendSegment(segmentList, countOfNotMatchedSymbols, self->format);
+                    Context_appendTextType(currentColumnIndex - countOfNotMatchedSymbols, countOfNotMatchedSymbols,
+                                           textTypeMap, self->textType);
+                    countOfNotMatchedSymbols = 0;
+                }
+
+                if (Py_None != result.rule->abstractRuleParams->attribute)
+                    format = result.rule->abstractRuleParams->format;
+                else
+                    format = self->format;
+
+                if ('\0' != result.rule->abstractRuleParams->textType)
+                    textType = result.rule->abstractRuleParams->textType;
+                else
+                    textType = self->textType;
+
+                Context_appendSegment(segmentList,
+                                      result.length,
+                                      format);
+                Context_appendTextType(currentColumnIndex, result.length,
+                                       textTypeMap,
+                                       textType);
+                currentColumnIndex += result.length;
+
+                if (Py_None != (PyObject*)result.rule->abstractRuleParams->context)
+                {
+                    ContextStack* newContextStack =
+                        ContextSwitcher_getNextContextStack(result.rule->abstractRuleParams->context,
+                                                            *pContextStack,
+                                                            result.data);
+
+                    RuleTryMatchResult_internal_free(&result);
+
+                    if (newContextStack != *pContextStack)
+                    {
+                        ASSIGN_VALUE(ContextStack, *pContextStack, newContextStack);
+                        break; // while
+                    }
+                    else if (0 == result.length)
+                    {
+                        // Parsed didn't switch context or consume character. The same situation will occur on next step
+                        fprintf(stderr, "qutepart: loop detected\n");
+                        currentColumnIndex ++;  // parsing bug. But avoid freeze
+                        countOfNotMatchedSymbols ++;
+                    }
+                }
+            }
+            else // no match
+            {
+                *pLineContinue = false;
+                if ((PyObject*)self->fallthroughContext != Py_None)
+                {
+                    ContextStack* newContextStack =
+                            ContextSwitcher_getNextContextStack(self->fallthroughContext,
+                                                                *pContextStack,
+                                                                NULL);
+                    if (newContextStack != *pContextStack)
+                    {
+                        ASSIGN_VALUE(ContextStack, *pContextStack, newContextStack);
+                        break; // while
+                    }
+                }
+
+                countOfNotMatchedSymbols++;
+                currentColumnIndex++;
+            }
+
+        }
     }
 
     if (countOfNotMatchedSymbols > 0)
@@ -3051,8 +3075,7 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
     if (textLen > 0)
         PyUnicode_Fill(textTypeMap, 0, textLen, ' ');
 
-    while (currentColumnIndex < textLen)
-    {
+    do {
         size_t length;
 
         if (self->debugOutputEnabled)
@@ -3071,7 +3094,7 @@ Parser_parseBlock_internal(Parser *self, PyObject *args, bool returnSegments)
                                      &lineContinue);
         currentColumnIndex += length;
         currentContext = ContextStack_currentContext(contextStack);
-    }
+    } while (currentColumnIndex < textLen);
 
     if ( ! lineContinue)
     {

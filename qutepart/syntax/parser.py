@@ -798,11 +798,12 @@ class Context:
         self.parser = parser
         self.name = name
 
-    def setValues(self, attribute, format, lineEndContext, lineBeginContext, fallthroughContext, dynamic, textType):
+    def setValues(self, attribute, format, lineEndContext, lineBeginContext, lineEmptyContext, fallthroughContext, dynamic, textType):
         self.attribute = attribute
         self.format = format
         self.lineEndContext = lineEndContext
         self.lineBeginContext = lineBeginContext
+        self.lineEmptyContext = lineEmptyContext
         self.fallthroughContext = fallthroughContext
         self.dynamic = dynamic
         self.textType = textType
@@ -818,6 +819,7 @@ class Context:
         res += '\t\t%s: %s\n' % ('attribute', self.attribute)
         res += '\t\t%s: %s\n' % ('lineEndContext', self.lineEndContext)
         res += '\t\t%s: %s\n' % ('lineBeginContext', self.lineBeginContext)
+        res += '\t\t%s: %s\n' % ('lineEmptyContext', self.lineEmptyContext)
         if self.fallthroughContext is not None:
             res += '\t\t%s: %s\n' % ('fallthroughContext', self.fallthroughContext)
         res += '\t\t%s: %s\n' % ('dynamic', self.dynamic)
@@ -959,27 +961,31 @@ class Parser:
         lineContinue = False
         currentColumnIndex = 0
         textTypeMap = []
-        while currentColumnIndex < len(text):
-            _logger.debug('In context %s', contextStack.currentContext().name)
 
-            length, newContextStack, segments, textTypeMapPart, lineContinue = \
-                        contextStack.currentContext().parseBlock(contextStack, currentColumnIndex, text)
+        if len(text) > 0:
+            while currentColumnIndex < len(text):
+                _logger.debug('In context %s', contextStack.currentContext().name)
 
-            highlightedSegments += segments
-            contextStack = newContextStack
-            textTypeMap += textTypeMapPart
-            currentColumnIndex += length
+                length, newContextStack, segments, textTypeMapPart, lineContinue = \
+                    contextStack.currentContext().parseBlock(contextStack, currentColumnIndex, text)
 
-        if not lineContinue:
-            while contextStack.currentContext().lineEndContext is not None:
-                oldStack = contextStack
-                contextStack = contextStack.currentContext().lineEndContext.getNextContextStack(contextStack)
-                if oldStack == contextStack:  # avoid infinite while loop if nothing to switch
-                    break
+                highlightedSegments += segments
+                contextStack = newContextStack
+                textTypeMap += textTypeMapPart
+                currentColumnIndex += length
 
-            # this code is not tested, because lineBeginContext is not defined by any xml file
-            if contextStack.currentContext().lineBeginContext is not None:
-                contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
+            if not lineContinue:
+                while contextStack.currentContext().lineEndContext is not None:
+                    oldStack = contextStack
+                    contextStack = contextStack.currentContext().lineEndContext.getNextContextStack(contextStack)
+                    if oldStack == contextStack:  # avoid infinite while loop if nothing to switch
+                        break
+
+                # this code is not tested, because lineBeginContext is not defined by any xml file
+                if contextStack.currentContext().lineBeginContext is not None:
+                    contextStack = contextStack.currentContext().lineBeginContext.getNextContextStack(contextStack)
+        elif contextStack.currentContext().lineEmptyContext is not None:
+            contextStack = contextStack.currentContext().lineEmptyContext.getNextContextStack(contextStack)
 
         lineData = (contextStack, textTypeMap)
         return lineData, highlightedSegments
