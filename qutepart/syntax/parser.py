@@ -852,21 +852,25 @@ class Context:
                         textTypeMap += [self.textType for i in range(countOfNotMatchedSymbols)]
                         countOfNotMatchedSymbols = 0
 
-                    format = ruleTryMatchResult.rule.format if ruleTryMatchResult.rule.attribute else self.format
-                    textType = ruleTryMatchResult.rule.textType or self.textType
+                    if ruleTryMatchResult.rule.context is not None:
+                        newContextStack = ruleTryMatchResult.rule.context.getNextContextStack(contextStack,
+                                                                                              ruleTryMatchResult.data)
+                    else:
+                        newContextStack = contextStack
+
+                    format = ruleTryMatchResult.rule.format if ruleTryMatchResult.rule.attribute else newContextStack.currentContext().format
+                    textType = ruleTryMatchResult.rule.textType or newContextStack.currentContext().textType
 
                     highlightedSegments.append((ruleTryMatchResult.length,
                                                 format))
                     textTypeMap += textType * ruleTryMatchResult.length
 
                     currentColumnIndex += ruleTryMatchResult.length
-                    if ruleTryMatchResult.rule.context is not None:
-                        newContextStack = ruleTryMatchResult.rule.context.getNextContextStack(contextStack,
-                                                                                              ruleTryMatchResult.data)
-                        if newContextStack != contextStack:
-                            lineContinue = isinstance(ruleTryMatchResult.rule, LineContinue)
 
-                            return currentColumnIndex - startColumnIndex, newContextStack, highlightedSegments, textTypeMap, lineContinue
+                    if newContextStack != contextStack:
+                        lineContinue = isinstance(ruleTryMatchResult.rule, LineContinue)
+
+                        return currentColumnIndex - startColumnIndex, newContextStack, highlightedSegments, textTypeMap, lineContinue
 
                     break  # for loop
             else:  # no matched rules
