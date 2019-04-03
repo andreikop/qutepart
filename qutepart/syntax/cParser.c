@@ -2856,15 +2856,27 @@ Context_parseBlock(Context* self,
                     countOfNotMatchedSymbols = 0;
                 }
 
+                ContextStack* newContextStack = NULL;
+                if (Py_None != (PyObject*)result.rule->abstractRuleParams->context)
+                {
+                    newContextStack =
+                        ContextSwitcher_getNextContextStack(result.rule->abstractRuleParams->context,
+                                                            *pContextStack,
+                                                            result.data);
+                } else
+                {
+                    newContextStack = *pContextStack;
+                }
+
                 if (Py_None != result.rule->abstractRuleParams->attribute)
                     format = result.rule->abstractRuleParams->format;
                 else
-                    format = self->format;
+                    format = ContextStack_currentContext(newContextStack)->format;
 
                 if ('\0' != result.rule->abstractRuleParams->textType)
                     textType = result.rule->abstractRuleParams->textType;
                 else
-                    textType = self->textType;
+                    textType = ContextStack_currentContext(newContextStack)->textType;
 
                 Context_appendSegment(segmentList,
                                       result.length,
@@ -2876,11 +2888,6 @@ Context_parseBlock(Context* self,
 
                 if (Py_None != (PyObject*)result.rule->abstractRuleParams->context)
                 {
-                    ContextStack* newContextStack =
-                        ContextSwitcher_getNextContextStack(result.rule->abstractRuleParams->context,
-                                                            *pContextStack,
-                                                            result.data);
-
                     RuleTryMatchResult_internal_free(&result);
 
                     if (newContextStack != *pContextStack)
