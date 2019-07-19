@@ -4,9 +4,9 @@ Uses syntax module for doing the job
 
 import time
 
-from PyQt5.QtCore import QObject, QTimer, pyqtSlot
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QTextBlockUserData, QTextLayout
+from qtpy.QtCore import QObject, QTimer, Slot
+from qtpy.QtWidgets import QApplication
+from qtpy.QtGui import QTextBlockUserData, QTextLayout
 
 import qutepart.syntax
 
@@ -180,7 +180,7 @@ class SyntaxHighlighter(QObject):
         """Check if ANY Qutepart instance was changed just before"""
         return time.time() <= _gLastChangeTime + 1
 
-    @pyqtSlot(int, int, int)
+    @Slot(int, int, int)
     def _onContentsChange(self, from_, charsRemoved, charsAdded, zeroTimeout=False):
         global _gLastChangeTime
         firstBlock = self._document.findBlock(from_)

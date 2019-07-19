@@ -10,8 +10,8 @@ import logging
 from qutepart.syntax.colortheme import ColorTheme
 from qutepart.syntax import TextFormat
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QTextCharFormat, QColor, QFont
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QTextCharFormat, QColor, QFont
 
 
 _logger = logging.getLogger('qutepart')

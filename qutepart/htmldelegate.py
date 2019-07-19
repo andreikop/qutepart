@@ -3,11 +3,11 @@ htmldelegate --- QStyledItemDelegate delegate. Draws HTML
 =========================================================
 """
 
-from PyQt5.QtWidgets import QApplication, QStyle, QStyledItemDelegate, \
+from qtpy.QtWidgets import QApplication, QStyle, QStyledItemDelegate, \
                             QStyleOptionViewItem
-from PyQt5.QtGui import QAbstractTextDocumentLayout, \
+from qtpy.QtGui import QAbstractTextDocumentLayout, \
                         QTextDocument, QPalette
-from PyQt5.QtCore import QSize
+from qtpy.QtCore import QSize
 
 _HTML_ESCAPE_TABLE = \
 {

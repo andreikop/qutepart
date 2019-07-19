@@ -1,9 +1,9 @@
 """Line numbers and bookmarks areas
 """
 
-from PyQt5.QtCore import QPoint, Qt, pyqtSignal, QSize
-from PyQt5.QtWidgets import QWidget, QToolTip
-from PyQt5.QtGui import QPainter, QPalette, QPixmap, QTextBlock
+from qtpy.QtCore import QPoint, Qt, Signal, QSize
+from qtpy.QtWidgets import QWidget, QToolTip
+from qtpy.QtGui import QPainter, QPalette, QPixmap, QTextBlock
 
 import qutepart
 from qutepart.bookmarks import Bookmarks

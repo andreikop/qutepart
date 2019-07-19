@@ -15,7 +15,7 @@ addons:
 os: linux
 # See https://docs.travis-ci.com/user/languages/python.
 language: python
-# We only support Python 3.5+ (where there are PyQt5 wheels available).
+# We only support Python 3.5+ (where there are qtpy wheels available).
 python:
   - 3.5
   - 3.6

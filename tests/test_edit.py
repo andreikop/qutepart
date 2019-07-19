@@ -4,9 +4,9 @@ import unittest
 
 import base
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtTest import QTest
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QKeySequence
+from qtpy.QtTest import QTest
 
 from qutepart import Qutepart
 

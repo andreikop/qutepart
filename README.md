@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/andreikop/qutepart.svg?branch=master)](https://travis-ci.org/andreikop/qutepart)
 
-# Code editor component for PyQt5
+# Code editor component for qtpy
 
 Component has been created for [Enki editor](http://enki-editor.org) as replacement for [QScintilla](http://www.riverbankcomputing.com/software/qscintilla/intro)
 
@@ -23,7 +23,7 @@ Component has been created for [Enki editor](http://enki-editor.org) as replacem
 Qutepart depends on:
 
 * Python 3
-* PyQt5
+* qtpy
 * pcre
 
 _Versions up to `2.2.3` used to work on Python 2 and PyQt4._

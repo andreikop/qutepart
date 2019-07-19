@@ -13,7 +13,7 @@ sys.path.insert(0, 'qutepart')
 import version
 
 
-howToInstallMsg = """Qutepart installation fails to find PyQt5
+howToInstallMsg = """Qutepart installation fails to find qtpy
 if run as `python3 setup.py install`.
 Evidently, setuptools doesn't support installing from wheel.
 Therefore, only invoke this as:
@@ -140,15 +140,15 @@ if ('build' in sys.argv or
 
 install_requires = []
 if onWindows():
-    """ On Windows we install PyQt5 from pip
-    On Linux we ask user to install PyQt5 from package manager
+    """ On Windows we install qtpy from pip
+    On Linux we ask user to install qtpy from package manager
     """
-    install_requires.append('PyQt5')
+    install_requires.append('qtpy')
 
 
 setup(name='qutepart',
     version='%s.%s.%s' % version.VERSION,
-    description='Code editor component for PyQt5',
+    description='Code editor component for qtpy',
     author='Andrei Kopats',
     author_email='andrei.kopats@gmail.com',
     url='https://github.com/andreikop/qutepart',
