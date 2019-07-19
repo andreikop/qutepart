@@ -4,9 +4,9 @@
 import re
 import time
 
-from PyQt5.QtCore import pyqtSignal, QAbstractItemModel, QEvent, QModelIndex, QObject, QSize, Qt, QTimer
-from PyQt5.QtWidgets import QListView
-from PyQt5.QtGui import QCursor
+from qtpy.QtCore import Signal, QAbstractItemModel, QEvent, QModelIndex, QObject, QSize, Qt, QTimer
+from qtpy.QtWidgets import QListView
+from qtpy.QtGui import QCursor
 
 from qutepart.htmldelegate import HTMLDelegate
 
@@ -152,9 +152,9 @@ class _CompletionModel(QAbstractItemModel):
 class _CompletionList(QListView):
     """Completion list widget
     """
-    closeMe = pyqtSignal()
-    itemSelected = pyqtSignal(int)
-    tabPressed = pyqtSignal()
+    closeMe = Signal()
+    itemSelected = Signal(int)
+    tabPressed = Signal()
 
     _MAX_VISIBLE_ROWS = 20  # no any technical reason, just for better UI
 

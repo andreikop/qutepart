@@ -8,9 +8,9 @@ import unittest
 
 import base
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtTest import QTest
-from PyQt5.QtGui import QKeySequence
+from qtpy.QtCore import Qt
+from qtpy.QtTest import QTest
+from qtpy.QtGui import QKeySequence
 
 from qutepart import Qutepart
 

@@ -1,8 +1,8 @@
 """Bookmarks functionality implementation"""
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QAction
-from PyQt5.QtGui import QKeySequence, QTextCursor
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QAction
+from qtpy.QtGui import QKeySequence, QTextCursor
 
 import qutepart
 

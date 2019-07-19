@@ -2,7 +2,7 @@
 list-like object for access text document lines
 """
 
-from PyQt5.QtGui import QTextCursor
+from qtpy.QtGui import QTextCursor
 
 
 def _iterateBlocksFrom(block):

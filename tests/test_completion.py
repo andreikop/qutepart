@@ -5,9 +5,9 @@ import os
 
 import base
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtTest import QTest
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QMainWindow
+from qtpy.QtTest import QTest
 
 from qutepart import Qutepart
 import qutepart.completer

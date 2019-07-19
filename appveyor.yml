@@ -3,7 +3,7 @@
 # ****************************************
 environment:
   matrix:
-    # We only have a pre-compiled PyQt5 with QtWebEgnine for Python 3.5+ x64, so
+    # We only have a pre-compiled qtpy with QtWebEgnine for Python 3.5+ x64, so
     # only test on that.
     - PYTHON: "C:\\Python35-x64"
     - PYTHON: "C:\\Python36-x64"

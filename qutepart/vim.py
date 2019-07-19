@@ -1,8 +1,8 @@
 import sys
 
-from PyQt5.QtCore import Qt, pyqtSignal, QObject
-from PyQt5.QtWidgets import QTextEdit
-from PyQt5.QtGui import QColor, QTextCursor
+from qtpy.QtCore import Qt, Signal, QObject
+from qtpy.QtWidgets import QTextEdit
+from qtpy.QtGui import QColor, QTextCursor
 
 
 """ This magic code sets variables like _a and _A in the global scope
@@ -84,7 +84,7 @@ class Vim(QObject):
     """Vim mode implementation.
     Listens events and does actions
     """
-    modeIndicationChanged = pyqtSignal(QColor, str)
+    modeIndicationChanged = Signal(QColor, str)
 
     def __init__(self, qpart):
         QObject.__init__(self)

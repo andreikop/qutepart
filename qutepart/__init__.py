@@ -7,10 +7,10 @@ import os.path
 import logging
 import platform
 
-from PyQt5.QtCore import QRect, Qt, pyqtSignal
-from PyQt5.QtWidgets import QAction, QApplication, QDialog, QPlainTextEdit, QTextEdit, QWidget
-from PyQt5.QtPrintSupport import QPrintDialog
-from PyQt5.QtGui import QColor, QBrush, \
+from qtpy.QtCore import QRect, Qt, Signal
+from qtpy.QtWidgets import QAction, QApplication, QDialog, QPlainTextEdit, QTextEdit, QWidget
+from qtpy.QtPrintSupport import QPrintDialog
+from qtpy.QtGui import QColor, QBrush, \
                         QFont, \
                         QIcon, QKeySequence, QPainter, QPen, QPalette, \
                         QTextCharFormat, QTextCursor, \
@@ -237,13 +237,13 @@ class Qutepart(QPlainTextEdit):
     **Public methods**
     '''
 
-    userWarning = pyqtSignal(str)
-    languageChanged = pyqtSignal(str)
-    indentWidthChanged = pyqtSignal(int)
-    indentUseTabsChanged = pyqtSignal(bool)
-    eolChanged = pyqtSignal(str)
-    vimModeIndicationChanged = pyqtSignal(QColor, str)
-    vimModeEnabledChanged = pyqtSignal(bool)
+    userWarning = Signal(str)
+    languageChanged = Signal(str)
+    indentWidthChanged = Signal(int)
+    indentUseTabsChanged = Signal(bool)
+    eolChanged = Signal(str)
+    vimModeIndicationChanged = Signal(QColor, str)
+    vimModeEnabledChanged = Signal(bool)
 
     LINT_ERROR = 'e'
     LINT_WARNING = 'w'

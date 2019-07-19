@@ -2,9 +2,9 @@
 """
 
 
-from PyQt5.QtCore import QPoint, pyqtSignal
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QTextBlock
+from qtpy.QtCore import QPoint, Signal
+from qtpy.QtWidgets import QWidget
+from qtpy.QtGui import QTextBlock
 
 
 class MarginBase:
@@ -13,7 +13,7 @@ class MarginBase:
 
     # The parent class derives from QWidget and mixes MarginBase in at
     # run-time. Thus the signal declaration and emmitting works here too.
-    blockClicked = pyqtSignal(QTextBlock)
+    blockClicked = Signal(QTextBlock)
 
     def __init__(self, parent, name, bit_count):
         """qpart: reference to the editor

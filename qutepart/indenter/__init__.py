@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger('qutepart')
 
 
-from PyQt5.QtGui import QTextCursor
+from qtpy.QtGui import QTextCursor
 
 
 def _getSmartIndenter(indenterName, qpart, indenter):
