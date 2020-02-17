@@ -234,6 +234,20 @@ class Qutepart(QPlainTextEdit):
     * ``vimModeEnabledChanged(enabled)            Vim mode has been enabled or disabled.
     * ``vimModeIndicationChanged(color, text)``   Vim mode changed. Parameters contain color and text to be displayed on an indicator. See also ``vimModeIndication``
 
+    **Syntax parser**
+
+    Qutepart supports two syntax parsers. One of them is written in C (faster) and the
+    other in Python (slower). By default qutepart tries to load the faster parser and
+    falls back to the slower one if there are import errors.
+    If by some reasons a slower Python parser is preferred then qutepart can be
+    instructed not to try to import the C parser. In order to do so an environment
+    variable can be used (it needs to be set before the first import of qutepart), e.g.::
+
+        import os
+        os.environ['QPART_CPARSER'] = 'N'   # Python written syntax parser to be used
+
+        import qutepart
+
     **Public methods**
     '''
 
@@ -256,7 +270,11 @@ class Qutepart(QPlainTextEdit):
 
     _globalSyntaxManager = SyntaxManager()
 
-    def __init__(self, *args):
+    def __init__(self,
+                 need_mark_area=True,
+                 need_line_numbers=True,
+                 need_completer=True,
+                 *args):
         QPlainTextEdit.__init__(self, *args)
 
         self.setAttribute(Qt.WA_KeyCompression, False)  # vim can't process compressed keys
@@ -299,7 +317,9 @@ class Qutepart(QPlainTextEdit):
 
         self.completionThreshold = self._DEFAULT_COMPLETION_THRESHOLD
         self.completionEnabled = self._DEFAULT_COMPLETION_ENABLED
-        self._completer = Completer(self)
+        self._completer = None
+        if need_completer:
+            self._completer = Completer(self)
 
         self._vim = None
 
@@ -308,10 +328,10 @@ class Qutepart(QPlainTextEdit):
         self._margins = []
         self._totalMarginWidth = -1
 
-        self.addMargin(qutepart.sideareas.LineNumberArea(self))
-        self._markArea = qutepart.sideareas.MarkArea(self)
-
-        self.addMargin(self._markArea)
+        if need_line_numbers:
+            self.addMargin(qutepart.sideareas.LineNumberArea(self))
+        if need_mark_area:
+            self.addMargin(qutepart.sideareas.MarkArea(self))
 
         self._nonVimExtraSelections = []
         self._userExtraSelections = []  # we draw bracket highlighting, current line and extra selections by user
@@ -339,7 +359,8 @@ class Qutepart(QPlainTextEdit):
         Call it on close to free memory and stop background highlighting
         """
         self.text = ''
-        self._completer.terminate()
+        if self._completer:
+            self._completer.terminate()
 
         if self._highlighter is not None:
             self._highlighter.terminate()
@@ -410,7 +431,7 @@ class Qutepart(QPlainTextEdit):
         self.copyLineAction = createAction('Copy line', 'Alt+C', self._onShortcutCopyLine, 'edit-copy')
         self.pasteLineAction = createAction('Paste line', 'Alt+V', self._onShortcutPasteLine, 'edit-paste')
         self.duplicateLineAction = createAction('Duplicate line', 'Alt+D', self._onShortcutDuplicateLine)
-        self.invokeCompletionAction = createAction('Invoke completion', 'Ctrl+Space', self._completer.invokeCompletion)
+        self.invokeCompletionAction = createAction('Invoke completion', 'Ctrl+Space', self._onCompletion)
 
         # other
         self.printAction = createAction('Print', 'Ctrl+P', self._onShortcutPrint, 'document-print')
@@ -773,8 +794,9 @@ class Qutepart(QPlainTextEdit):
         if syntax is not None:
             self._highlighter = SyntaxHighlighter(syntax, self)
             self._indenter.setSyntax(syntax)
-            keywords = {kw for kwList in syntax.parser.lists.values() for kw in kwList}
-            self._completer.setKeywords(keywords)
+            if self._completer:
+                keywords = {kw for kwList in syntax.parser.lists.values() for kw in kwList}
+                self._completer.setKeywords(keywords)
 
         newLanguage = self.language()
         if oldLanguage != newLanguage:
@@ -810,7 +832,8 @@ class Qutepart(QPlainTextEdit):
         """
         if not isinstance(wordSet, set):
             raise TypeError('"wordSet" is not a set: %s' % type(wordSet))
-        self._completer.setCustomCompletions(wordSet)
+        if self._completer:
+            self._completer.setCustomCompletions(wordSet)
 
     def isHighlightingInProgress(self):
         """Check if text highlighting is still in progress
@@ -1076,7 +1099,7 @@ class Qutepart(QPlainTextEdit):
                     super(Qutepart, self).keyPressEvent(event)
 
     def keyReleaseEvent(self, event):
-        if self._lastKeyPressProcessedByParent:
+        if self._lastKeyPressProcessedByParent and self._completer is not None:
             """ A hacky way to do not show completion list after a event, processed by vim
             """
 
@@ -1518,6 +1541,13 @@ class Qutepart(QPlainTextEdit):
         if dialog.exec_() == QDialog.Accepted:
             printer = dialog.printer()
             self.print_(printer)
+
+    def _onCompletion(self):
+        """Ctrl+Space handler.
+        Invoke completer if so configured
+        """
+        if self._completer:
+            self._completer.invokeCompletion()
 
     def insertFromMimeData(self, source):
         pass # suppress docstring for non-public method

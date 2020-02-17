@@ -1,6 +1,7 @@
 """This module is a set of functions, which load Parser from Kate XML files
 """
 
+import os
 import copy
 import sys
 import xml.etree.ElementTree
@@ -16,13 +17,17 @@ from PyQt5.QtGui import QTextCharFormat, QColor, QFont
 
 _logger = logging.getLogger('qutepart')
 
-try:
-    import qutepart.syntax.cParser as _parserModule
-    binaryParserAvailable = True
-except ImportError:
-    _logger.warning('Failed to import quick parser in C. Using slow parser for syntax highlighting')
+# See the Qutepart.__init__() documentation about the syntax parser selection
+binaryParserAvailable = False
+if os.environ.get('QPART_CPARSER', 'Y') == 'Y':
+    try:
+        import qutepart.syntax.cParser as _parserModule
+        binaryParserAvailable = True
+    except ImportError:
+        _logger.warning('Failed to import quick parser in C. Using slow parser for syntax highlighting')
+
+if binaryParserAvailable == False:
     import qutepart.syntax.parser as _parserModule
-    binaryParserAvailable = False
 
 
 _seqReplacer = re.compile('\\\\.')
