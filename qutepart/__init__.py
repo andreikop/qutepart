@@ -271,9 +271,9 @@ class Qutepart(QPlainTextEdit):
     _globalSyntaxManager = SyntaxManager()
 
     def __init__(self,
-                 need_mark_area=True,
-                 need_line_numbers=True,
-                 need_completer=True,
+                 needMarkArea=True,
+                 needLineNumbers=True,
+                 needCompleter=True,
                  *args):
         QPlainTextEdit.__init__(self, *args)
 
@@ -318,7 +318,7 @@ class Qutepart(QPlainTextEdit):
         self.completionThreshold = self._DEFAULT_COMPLETION_THRESHOLD
         self.completionEnabled = self._DEFAULT_COMPLETION_ENABLED
         self._completer = None
-        if need_completer:
+        if needCompleter:
             self._completer = Completer(self)
 
         self._vim = None
@@ -328,9 +328,9 @@ class Qutepart(QPlainTextEdit):
         self._margins = []
         self._totalMarginWidth = -1
 
-        if need_line_numbers:
+        if needLineNumbers:
             self.addMargin(qutepart.sideareas.LineNumberArea(self))
-        if need_mark_area:
+        if needMarkArea:
             self.addMargin(qutepart.sideareas.MarkArea(self))
 
         self._nonVimExtraSelections = []
