@@ -19,7 +19,7 @@ _logger = logging.getLogger('qutepart')
 
 # See the Qutepart.__init__() documentation about the syntax parser selection
 binaryParserAvailable = False
-if os.environ.get('QPART_CPARSER', 'Y') in ('Y', 'y', 1):
+if os.environ.get('QPART_CPARSER', 'Y') in ('Y', 'y', '1'):
     try:
         import qutepart.syntax.cParser as _parserModule
         binaryParserAvailable = True
