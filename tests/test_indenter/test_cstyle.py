@@ -16,11 +16,13 @@ class Top(BaseTestClass):
     def test_top1(self):
         origin = [
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -33,12 +35,14 @@ class Top(BaseTestClass):
         origin = [
             "",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -51,12 +55,14 @@ class Top(BaseTestClass):
         origin = [
             "// should always indent after opening brace",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "// should always indent after opening brace",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -70,13 +76,15 @@ class Top(BaseTestClass):
             "// should always indent after opening brace",
             "",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "// should always indent after opening brace",
             "",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -89,12 +97,14 @@ class Top(BaseTestClass):
         origin = [
             ";",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             ";",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -107,12 +117,14 @@ class Top(BaseTestClass):
         origin = [
             ":",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             ":",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -125,12 +137,14 @@ class Top(BaseTestClass):
         origin = [
             "}",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "}",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -143,12 +157,14 @@ class Top(BaseTestClass):
         origin = [
             "{",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "{",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -161,12 +177,14 @@ class Top(BaseTestClass):
         origin = [
             ")",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             ")",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -179,12 +197,14 @@ class Top(BaseTestClass):
         origin = [
             "(",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "(",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -197,12 +217,14 @@ class Top(BaseTestClass):
         origin = [
             "n",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "n",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -216,13 +238,15 @@ class Top(BaseTestClass):
             ";",
             "",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             ";",
             "",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -236,13 +260,15 @@ class Top(BaseTestClass):
             ":",
             "",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             ":",
             "",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -256,13 +282,15 @@ class Top(BaseTestClass):
             "}",
             "",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "}",
             "",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -276,13 +304,15 @@ class Top(BaseTestClass):
             "{",
             "",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "{",
             "",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -296,13 +326,15 @@ class Top(BaseTestClass):
             ")",
             "",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             ")",
             "",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -316,13 +348,15 @@ class Top(BaseTestClass):
             "(",
             "",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "(",
             "",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -336,13 +370,15 @@ class Top(BaseTestClass):
             "n",
             "",
             "int {",
-            ""]
+            ""
+        ]
         expected = [
             "n",
             "",
             "int {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -354,11 +390,13 @@ class Top(BaseTestClass):
     def test_top19(self):
         origin = [
             "// leading comment should not cause second line to be indented",
-            ""]
+            ""
+        ]
         expected = [
             "// leading comment should not cause second line to be indented",
             "ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -374,12 +412,14 @@ class If(BaseTestClass):
         origin = [
             "int fla() {",
             "  if (0<x)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  if (0<x)",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -394,13 +434,15 @@ class If(BaseTestClass):
             "int fla() {",
             "  if (0<x)",
             "    x = 0;",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  if (0<x)",
             "    x = 0;",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -416,14 +458,16 @@ class If(BaseTestClass):
             "  if (0<x)",
             "    x = 0;",
             "  else",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  if (0<x)",
             "    x = 0;",
             "  else",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -440,7 +484,8 @@ class If(BaseTestClass):
             "    x = 0;",
             "  else",
             "    x = -x;",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  if (0<x)",
@@ -448,7 +493,8 @@ class If(BaseTestClass):
             "  else",
             "    x = -x;",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -464,14 +510,16 @@ class If(BaseTestClass):
             "  if (0<x)",
             "    x = 0;",
             "  else if (y<x)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  if (0<x)",
             "    x = 0;",
             "  else if (y<x)",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -485,12 +533,14 @@ class If(BaseTestClass):
         origin = [
             "int fla() {",
             "  if (0<x) x(0);",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  if (0<x) x(0);",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -506,14 +556,16 @@ class If(BaseTestClass):
             "  if (0<x)",
             "    x = 0;",
             "  else x(-1);",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  if (0<x)",
             "    x = 0;",
             "  else x(-1);",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -530,7 +582,8 @@ class If(BaseTestClass):
             "    x = 0;",
             "  else if (y<x)",
             "    y = x;",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  if (0<x)",
@@ -538,7 +591,8 @@ class If(BaseTestClass):
             "  else if (y<x)",
             "    y = x;",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -554,14 +608,16 @@ class If(BaseTestClass):
             "  if (0<x)",
             "    x = 0;",
             "  else if (y<x) y = x;",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  if (0<x)",
             "    x = 0;",
             "  else if (y<x) y = x;",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -592,7 +648,8 @@ class If(BaseTestClass):
             "  }",
             "",
             "text;",
-            ""]
+            ""
+        ]
         expected = [
             "  if (0<x) {",
             "    x = 0;",
@@ -600,7 +657,8 @@ class If(BaseTestClass):
             "",
             "",
             "  text;",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -634,12 +692,14 @@ class While(BaseTestClass):
         origin = [
             "int fla() {",
             "  while (0<x)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  while (0<x)",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -654,13 +714,15 @@ class While(BaseTestClass):
             "int fla() {",
             "  while (0<x)",
             "    x--;",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  while (0<x)",
             "    x--;",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -674,12 +736,14 @@ class While(BaseTestClass):
         origin = [
             "int fla() {",
             "  while (0<x) x();",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  while (0<x) x();",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -696,12 +760,14 @@ class For(BaseTestClass):
         origin = [
             "int main() {",
             "  for (int a = 0;",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "  for (int a = 0;",
             "       b",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -717,14 +783,16 @@ class For(BaseTestClass):
             "  for (int a = 0;",
             "       b;",
             "       c)",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "  for (int a = 0;",
             "       b;",
             "       c) {",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -739,12 +807,14 @@ class For(BaseTestClass):
         origin = [
             "int fla() {",
             "  for (;0<x;)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  for (;0<x;)",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -759,13 +829,15 @@ class For(BaseTestClass):
             "int fla() {",
             "  for (;0<x;)",
             "    x--;",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  for (;0<x;)",
             "    x--;",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -779,12 +851,14 @@ class For(BaseTestClass):
         origin = [
             "int fla() {",
             "  for (;0<x;) x();",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  for (;0<x;) x();",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -800,12 +874,14 @@ class Do(BaseTestClass):
         origin = [
             "int fla() {",
             "  do",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  do",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -820,13 +896,15 @@ class Do(BaseTestClass):
             "int fla() {",
             "  do",
             "    x--;",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  do",
             "    x--;",
             "  while",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -840,12 +918,14 @@ class Do(BaseTestClass):
         origin = [
             "int fla() {",
             "  do x();",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  do x();",
             "  while",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -861,12 +941,14 @@ class Switch(BaseTestClass):
         origin = [
             "  int foo() {",
             "    switch (x) {",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    switch (x) {",
             "      case 0:",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -881,13 +963,15 @@ class Switch(BaseTestClass):
             "  int foo() {",
             "    switch (x) {",
             "      case 0:",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    switch (x) {",
             "      case 0:",
             "        ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -903,14 +987,16 @@ class Switch(BaseTestClass):
             "    switch (x) {",
             "      case 0:",
             "        ok;",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    switch (x) {",
             "      case 0:",
             "        ok;",
             "      case 1:",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -927,7 +1013,8 @@ class Switch(BaseTestClass):
             "      case 0:",
             "        ok;",
             "      case 1:",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    switch (x) {",
@@ -935,7 +1022,8 @@ class Switch(BaseTestClass):
             "        ok;",
             "      case 1:;",
             "    }",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -951,13 +1039,15 @@ class Switch(BaseTestClass):
             "  int foo() {",
             "    switch (x) {",
             "      case 0:",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    switch (x) {",
             "      case 0:",
             "      case 1:",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -973,13 +1063,15 @@ class Switch(BaseTestClass):
             "    switch (x) {",
             "      case 0:",
             "      case 1:",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    switch (x) {",
             "      case 0:",
             "      case 1: // bla",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -995,7 +1087,8 @@ class Switch(BaseTestClass):
             "      case 0:",
             "        ok;",
             "      case 1:",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    switch (x) {",
@@ -1004,7 +1097,8 @@ class Switch(BaseTestClass):
             "      case 1:",
             "      default:",
             "        ;",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1023,14 +1117,16 @@ class Switch(BaseTestClass):
             "    switch (x) {",
             "      case '.':",
             "        ok;",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    switch (x) {",
             "      case '.':",
             "        ok;",
             "        case ':'",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1048,14 +1144,16 @@ class Switch(BaseTestClass):
             "      case '.':",
             "        ok;",
             "        case ':'",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    switch (x) {",
             "      case '.':",
             "        ok;",
             "      case ':':",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1070,12 +1168,14 @@ class Switch(BaseTestClass):
             "  int foo() {",
             "    switch (x) { // only first symbolic colon may reindent",
             "    case '0':",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    switch (x) { // only first symbolic colon may reindent",
             "    case '0': case '1':",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1089,12 +1189,14 @@ class Switch(BaseTestClass):
             "  int foo() {",
             "    switch (x) { // only first symbolic colon may reindent",
             "    case '0': case '1':",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    switch (x) { // only first symbolic colon may reindent",
             "    case '0': case '1': case '2':",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1108,12 +1210,14 @@ class Switch(BaseTestClass):
         origin = [
             "int fla() {",
             "  switch (x)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  switch (x)",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1129,13 +1233,15 @@ class Switch(BaseTestClass):
             "int fla() {",
             "  switch (x)",
             "    x--;",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  switch (x)",
             "    x--;",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1150,12 +1256,14 @@ class Switch(BaseTestClass):
         origin = [
             "int fla() {",
             "  switch (x) x();",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  switch (x) x();",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1171,12 +1279,14 @@ class Visib(BaseTestClass):
         origin = [
             "class A {",
             "  public:",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "  public:",
             "    A()",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1191,13 +1301,15 @@ class Visib(BaseTestClass):
             "class A {",
             "  public:",
             "    A();",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "  public:",
             "    A();",
             "  protected:",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1211,12 +1323,14 @@ class Visib(BaseTestClass):
         origin = [
             "class A {",
             "  public:",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "  public:",
             "  protected:",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1230,11 +1344,13 @@ class Visib(BaseTestClass):
         origin = [
             "class A {",
             "             public:",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "             public: // :",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1247,11 +1363,13 @@ class Visib(BaseTestClass):
         origin = [
             "class A {",
             "             public:",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             '             public: x(":");',
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1264,11 +1382,13 @@ class Visib(BaseTestClass):
         origin = [
             "class A {",
             "             public:",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "             public: x(':');",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1281,11 +1401,13 @@ class Visib(BaseTestClass):
         origin = [
             "class A {",
             "             public:",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "             public: X::x();",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1298,11 +1420,13 @@ class Visib(BaseTestClass):
         origin = [
             "class A {",
             "             public:",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "             public: private:",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1318,13 +1442,15 @@ class Comment(BaseTestClass):
             "  int foo() {",
             "    x;",
             "//     y;",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    x;",
             "//     y;",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1337,11 +1463,13 @@ class Comment(BaseTestClass):
     def test_comment2(self):
         origin = [
             'foo(); // "comment"',
-            ""]
+            ""
+        ]
         expected = [
             'foo(); // "comment"',
             "ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1356,12 +1484,14 @@ class Aplist(BaseTestClass):
         origin = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1375,13 +1505,15 @@ class Aplist(BaseTestClass):
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   ok,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   ok,",
             "                   argv[0]",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1396,14 +1528,16 @@ class Aplist(BaseTestClass):
             "  somefunctioncall(argc,",
             "                   ok,",
             "                   argv[0]",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   ok,",
             "                   argv[0]);",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1419,13 +1553,15 @@ class Aplist(BaseTestClass):
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   nestedcall(var,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   nestedcall(var,",
             "                              ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1441,14 +1577,16 @@ class Aplist(BaseTestClass):
             "  f1(argc,",
             "     f2(var,",
             "        ok",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  f1(argc,",
             "     f2(var,",
             "        ok),",
             "     argv",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1465,14 +1603,16 @@ class Aplist(BaseTestClass):
             "  f1(argc,",
             "     f2(var,",
             "        ok",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  f1(argc,",
             "     f2(var,",
             "        ok));",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1487,12 +1627,14 @@ class Aplist(BaseTestClass):
         origin = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(nestedcall(var,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(nestedcall(var,",
             "                              ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1507,13 +1649,15 @@ class Aplist(BaseTestClass):
             "int main(int argc, char **argv) {",
             "  f1(f2(var,",
             "        ok",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  f1(f2(var,",
             "        ok),",
             "     var",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1528,12 +1672,14 @@ class Aplist(BaseTestClass):
         origin = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1547,13 +1693,15 @@ class Aplist(BaseTestClass):
             "int main(int argc, char **argv) {",
             "  somefunctioncall(",
             "    ok",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(",
             "    ok",
             "  )",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1568,14 +1716,16 @@ class Aplist(BaseTestClass):
             "  somefunctioncall(",
             "                   ok",
             "                  )",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(",
             "                   ok",
             "                  );",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1591,13 +1741,15 @@ class Aplist(BaseTestClass):
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,argv,",
             "                   ok,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   argv,",
             "                   ok,",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1611,13 +1763,15 @@ class Aplist(BaseTestClass):
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc, argv,",
             "                   ok,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   argv,",
             "                   ok,",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1632,14 +1786,16 @@ class Aplist(BaseTestClass):
             "  somefunctioncall(argc,",
             "                   argv,argx,",
             "                   ok,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   argv,",
             "                   argx,",
             "                   ok,",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1654,14 +1810,16 @@ class Aplist(BaseTestClass):
             "  somefunctioncall(argc,",
             "                   argv, argx,",
             "                   ok,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   argv,",
             "                   argx,",
             "                   ok,",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1675,13 +1833,15 @@ class Aplist(BaseTestClass):
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   nestedcall(var,argv,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   nestedcall(var,",
             "                              argv,",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1695,13 +1855,15 @@ class Aplist(BaseTestClass):
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   nestedcall(var, argv,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   nestedcall(var,",
             "                              argv,",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1716,14 +1878,16 @@ class Aplist(BaseTestClass):
             "  somefunctioncall(argc,",
             "                   nestedcall(var,",
             "                              argv,argx,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   nestedcall(var,",
             "                              argv,",
             "                              argx,",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1738,14 +1902,16 @@ class Aplist(BaseTestClass):
             "  somefunctioncall(argc,",
             "                   nestedcall(var,",
             "                              argv, argx,",
-            ""]
+            ""
+        ]
         expected = [
             "int main(int argc, char **argv) {",
             "  somefunctioncall(argc,",
             "                   nestedcall(var,",
             "                              argv,",
             "                              argx,",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1758,11 +1924,13 @@ class Aplist(BaseTestClass):
         """ Tabs are used """
         origin = [
             "\t\t fu1(argc,",
-            ""]
+            ""
+        ]
         expected = [
             "\t\t fu1(argc,",
             "         argv",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1777,11 +1945,13 @@ class OpenPar(BaseTestClass):
     def test_openpar1(self):
         origin = [
             "int main() {",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1794,12 +1964,14 @@ class OpenPar(BaseTestClass):
     def test_openpar2(self):
         origin = [
             "int main()",
-            ""]
+            ""
+        ]
         expected = [
             "int main()",
             "{",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1814,11 +1986,13 @@ class OpenPar(BaseTestClass):
     def test_openpar3(self):
         origin = [
             "int main() {bla",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "  bla",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1830,11 +2004,13 @@ class OpenPar(BaseTestClass):
     def test_openpar4(self):
         origin = [
             "int main() {    bla",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "  bla",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1846,11 +2022,13 @@ class OpenPar(BaseTestClass):
     def test_openpar5(self):
         origin = [
             "int main() {foo();",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "  foo();",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1879,12 +2057,14 @@ class OpenPar(BaseTestClass):
         origin = [
             "int main()",
             "{    bla",
-            ""]
+            ""
+        ]
         expected = [
             "int main()",
             "{",
             "  bla",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1897,12 +2077,14 @@ class OpenPar(BaseTestClass):
         origin = [
             "int main()",
             "{foo();",
-            ""]
+            ""
+        ]
         expected = [
             "int main()",
             "{",
             "  foo();",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1917,14 +2099,16 @@ class OpenPar(BaseTestClass):
             "  if (x) {",
             "    a;",
             "  } else",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "  if (x) {",
             "    a;",
             "  } else {",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1941,14 +2125,16 @@ class OpenPar(BaseTestClass):
             "  if (x) {",
             "    a;",
             "  } else if (y, z)",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "  if (x) {",
             "    a;",
             "  } else if (y, z) {",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1964,12 +2150,14 @@ class ClosPar(BaseTestClass):
         origin = [
             "int main() {",
             "  ok;",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "  ok;",
             "}",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -1984,13 +2172,15 @@ class ClosPar(BaseTestClass):
             "int main()",
             "{",
             "  ok;",
-            ""]
+            ""
+        ]
         expected = [
             "int main()",
             "{",
             "  ok;",
             "}",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2004,13 +2194,15 @@ class ClosPar(BaseTestClass):
         origin = [
             "int main() {",
             "  ok;}",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "  ok;",
             "  ",
             "}",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2024,14 +2216,16 @@ class ClosPar(BaseTestClass):
             "int main() {",
             "  for() {",
             "    x;}",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "  for() {",
             "    x;",
             "    ",
             "  }",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2044,11 +2238,13 @@ class PList(BaseTestClass):
     def test_plist1(self):
         origin = [
             "int fla(int x,",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(int x,",
             "        short u",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2062,11 +2258,13 @@ class PList(BaseTestClass):
         origin = [
             "int fla(int x,",
             "        short u",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(int x,",
             "        short u,",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2079,12 +2277,14 @@ class PList(BaseTestClass):
         origin = [
             "int fla(int x,",
             "        short u,",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(int x,",
             "        short u,",
             "        char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2099,13 +2299,15 @@ class PList(BaseTestClass):
             "int fla(int x,",
             "        short u,",
             "        char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(int x,",
             "        short u,",
             "        char c)",
             "{",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2120,13 +2322,15 @@ class PList(BaseTestClass):
             "int fla(int x,",
             "        short u,",
             "        char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(int x,",
             "        short u,",
             "        char c) {",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2139,11 +2343,13 @@ class PList(BaseTestClass):
     def test_plist6(self):
         origin = [
             "uint8_t func( uint8_t p1, uint8_t p2)",
-            ""]
+            ""
+        ]
         expected = [
             "uint8_t func( uint8_t p1,",
             "              uint8_t p2)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2157,12 +2363,14 @@ class PList(BaseTestClass):
         origin = [
             "",
             "uint8_t func( uint8_t p1, uint8_t p2)",
-            ""]
+            ""
+        ]
         expected = [
             "",
             "uint8_t func( uint8_t p1,",
             "              uint8_t p2)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2175,11 +2383,13 @@ class PList(BaseTestClass):
     def test_plist8(self):
         origin = [
             "int fla(int x,short u,char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(int x,",
             "        short u,char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2192,12 +2402,14 @@ class PList(BaseTestClass):
         origin = [
             "int fla(int x,",
             "        short u,char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(int x,",
             "        short u,",
             "        char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2210,11 +2422,13 @@ class PList(BaseTestClass):
     def test_plist10(self):
         origin = [
             "int fla(int x,short u,char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(",
             "        int x,short u,char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2228,12 +2442,14 @@ class PList(BaseTestClass):
         origin = [
             "int fla(",
             "        int x,short u,char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(",
             "        int x,",
             "        short u,char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2247,13 +2463,15 @@ class PList(BaseTestClass):
             "int fla(",
             "        int x,",
             "        short u,char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(",
             "        int x,",
             "        short u,",
             "        char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2268,14 +2486,16 @@ class PList(BaseTestClass):
             "        int x,",
             "        short u,",
             "        char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(",
             "        int x,",
             "        short u,",
             "        char c",
             "       )",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2290,13 +2510,15 @@ class PList(BaseTestClass):
             "int b() {",
             "}",
             "int fla(int x,short u,char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int b() {",
             "}",
             "int fla(",
             "        int x,short u,char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2311,13 +2533,15 @@ class PList(BaseTestClass):
             "int fla(",
             "        int x,short u,char c",
             "       )",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(",
             "        int x,",
             "        short u,char c",
             "       )",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2330,12 +2554,14 @@ class PList(BaseTestClass):
         origin = [
             "int fla(",
             "        int x,short long_var_name,char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(",
             "        int x,",
             "        short long_var_name,char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2349,13 +2575,15 @@ class PList(BaseTestClass):
             "int fla(",
             "        int x,short long_var_name,",
             "        char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(",
             "        int x,",
             "        short long_var_name,",
             "        char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2372,7 +2600,8 @@ class PList(BaseTestClass):
             "int fla(",
             "        int x,short long_var_name,",
             "        char c)",
-            ""]
+            ""
+        ]
         expected = [
             "void flp() {",
             "}",
@@ -2381,7 +2610,8 @@ class PList(BaseTestClass):
             "        int x,",
             "        short long_var_name,",
             "        char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2397,7 +2627,8 @@ class PList(BaseTestClass):
             "int fla(",
             "        int x,short u,char c",
             "       )",
-            ""]
+            ""
+        ]
         expected = [
             "int x() {",
             "}",
@@ -2405,7 +2636,8 @@ class PList(BaseTestClass):
             "        int x,",
             "        short u,char c",
             "       )",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2422,7 +2654,8 @@ class PList(BaseTestClass):
             "        int x,",
             "        short u,",
             "        char c)",
-            ""]
+            ""
+        ]
         expected = [
             "void x() {",
             "}",
@@ -2431,7 +2664,8 @@ class PList(BaseTestClass):
             "        short u,",
             "        char c",
             "       )",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2447,7 +2681,8 @@ class PList(BaseTestClass):
             "int fla(",
             "        int x,",
             "        short u,char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int x() {",
             "}",
@@ -2455,7 +2690,8 @@ class PList(BaseTestClass):
             "        int x,",
             "        short u,",
             "        char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2470,14 +2706,16 @@ class PList(BaseTestClass):
             "}",
             "int fla(",
             "        int x,short u,char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int b() {",
             "}",
             "int fla(",
             "        int x,",
             "        short u,char c)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2492,14 +2730,16 @@ class PList(BaseTestClass):
             "}",
             "int flablabberwabber(",
             "                     int lonng,short lonngearr,char shrt)",
-            ""]
+            ""
+        ]
         expected = [
             "int b() {",
             "}",
             "int flablabberwabber(",
             "                     int lonng,",
             "                     short lonngearr,char shrt)",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2514,14 +2754,16 @@ class PList(BaseTestClass):
             "  int x,",
             "  short u,",
             "  char c)",
-            ""]
+            ""
+        ]
         expected = [
             "int fla(",
             "  int x,",
             "  short u,",
             "  char c",
             ")",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2536,12 +2778,14 @@ class Comma(BaseTestClass):
         origin = [
             "int fla() {",
             "  double x,",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  double x,",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2554,12 +2798,14 @@ class Comma(BaseTestClass):
         origin = [
             "int fla() {",
             "  double x,y;",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  double x,",
             "  y;",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2572,12 +2818,14 @@ class Comma(BaseTestClass):
         origin = [
             "int fla() {",
             "  b = 1,",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  b = 1,",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2590,12 +2838,14 @@ class Comma(BaseTestClass):
         origin = [
             "int fla() {",
             "  b = 1,c = 2;",
-            ""]
+            ""
+        ]
         expected = [
             "int fla() {",
             "  b = 1,",
             "  c = 2;",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2607,11 +2857,13 @@ class Comma(BaseTestClass):
     def test_comma5(self):
         origin = [
             "double x,",
-            ""]
+            ""
+        ]
         expected = [
             "double x,",
             "ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2624,11 +2876,13 @@ class Comma(BaseTestClass):
     def test_comma6(self):
         origin = [
             "double x,y;",
-            ""]
+            ""
+        ]
         expected = [
             "double x,",
             "y;",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2675,12 +2929,14 @@ class Normal(BaseTestClass):
         origin = [
             "int main() {",
             "    bla;  blu;",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "    bla;",
             "    blu;",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2694,11 +2950,13 @@ class Using(BaseTestClass):
     def test_using1(self):
         origin = [
             "using",
-            ""]
+            ""
+        ]
         expected = [
             "using",
             "  ok;",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2712,12 +2970,14 @@ class Using(BaseTestClass):
         origin = [
             "using",
             "  std::vector;",
-            ""]
+            ""
+        ]
         expected = [
             "using",
             "  std::vector;",
             "ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2731,11 +2991,13 @@ class Using(BaseTestClass):
     def test_using3(self):
         origin = [
             "using std::vector;",
-            ""]
+            ""
+        ]
         expected = [
             "using std::vector;",
             "ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2751,12 +3013,14 @@ class Doxygen(BaseTestClass):
         origin = [
             "class A {",
             "  /**",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "  /**",
             "   * constructor",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2771,13 +3035,15 @@ class Doxygen(BaseTestClass):
             "class A {",
             "  /**",
             "   * constructor",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "  /**",
             "   * constructor",
             "   * @param x foo",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2793,14 +3059,16 @@ class Doxygen(BaseTestClass):
             "  /**",
             "   * constructor",
             "   * @param x foo",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "  /**",
             "   * constructor",
             "   * @param x foo",
             "   */",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2817,7 +3085,8 @@ class Doxygen(BaseTestClass):
             "   * constructor",
             "   * @param x foo",
             "   */",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "  /**",
@@ -2825,7 +3094,8 @@ class Doxygen(BaseTestClass):
             "   * @param x foo",
             "   */",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2839,11 +3109,13 @@ class Doxygen(BaseTestClass):
         origin = [
             "class A {",
             "  /**",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "  /** constructor */",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2856,12 +3128,14 @@ class Doxygen(BaseTestClass):
         origin = [
             "class A {",
             "  /** constructor */",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "  /** constructor */",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2875,12 +3149,14 @@ class Doxygen(BaseTestClass):
         origin = [
             "class A {",
             "  int foo(); /** unorthodox doxygen comment */",
-            ""]
+            ""
+        ]
         expected = [
             "class A {",
             "  int foo(); /** unorthodox doxygen comment */",
             "  ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2893,11 +3169,13 @@ class Doxygen(BaseTestClass):
     def test_doxygen8(self):
         origin = [
             "/** unorthodox doxygen comment */ a;",
-            ""]
+            ""
+        ]
         expected = [
             "/** unorthodox doxygen comment */ a;",
             "ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2913,12 +3191,14 @@ class Prep(BaseTestClass):
         origin = [
             "  int foo() {",
             "    x;",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    x;",
             "#ifdef FLA",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2934,13 +3214,15 @@ class Prep(BaseTestClass):
             "  int foo() {",
             "    x;",
             "#ifdef FLA",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    x;",
             "#ifdef FLA",
             "    ok",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2955,12 +3237,14 @@ class Prep(BaseTestClass):
         origin = [
             "  int foo() {",
             "    x;",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    x;",
             "    #region FLA",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2974,12 +3258,14 @@ class Prep(BaseTestClass):
         origin = [
             "  int foo() {",
             "    x;",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    x;",
             "    #endregion FLA",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -2995,12 +3281,14 @@ class Prep(BaseTestClass):
             "  int foo() {",
             "    x;",
             "#endregion FLA",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    x;",
             "#endregion FLA // n",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -3014,12 +3302,14 @@ class Prep(BaseTestClass):
             "  int foo() {",
             "    x;",
             "#endregion",
-            ""]
+            ""
+        ]
         expected = [
             "  int foo() {",
             "    x;",
             "#endregion daten",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -3034,12 +3324,14 @@ class Forein(BaseTestClass):
         origin = [
             "// indent-width is 2 but we want to maintain an indentation of 4",
             "int main() {",
-            ""]
+            ""
+        ]
         expected = [
             "// indent-width is 2 but we want to maintain an indentation of 4",
             "int main() {",
             "    bla();",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -3053,13 +3345,15 @@ class Forein(BaseTestClass):
             "// indent-width is 2 but we want to maintain an indentation of 4",
             "int main() {",
             "    bla;",
-            ""]
+            ""
+        ]
         expected = [
             "// indent-width is 2 but we want to maintain an indentation of 4",
             "int main() {",
             "    bla;",
             "    bli();",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -3072,12 +3366,14 @@ class Forein(BaseTestClass):
         origin = [
             "int main() {",
             "// indent-width is 2 but we want to maintain an indentation of 4",
-            ""]
+            ""
+        ]
         expected = [
             "int main() {",
             "    ok",
             "// indent-width is 2 but we want to maintain an indentation of 4",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
@@ -3093,12 +3389,14 @@ class Other(BaseTestClass):
             "  if ( true ) {",
             "    ",
             "}",
-            ""]
+            ""
+        ]
         expected = [
             "  if ( true ) {",
             "    ",
             "  }",
-            ""]
+            ""
+        ]
 
         self.setOrigin(origin)
 
