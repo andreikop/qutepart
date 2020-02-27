@@ -1,3 +1,13 @@
+python3-qutepart (3.3.0-1~ubuntuseries1) ubuntuseries; urgency=medium
+
+  Making the editor component more configurable:
+  * on/off mark area
+  * on/off line numbers
+  * on/off completer
+  * c/python syntax parser
+
+ -- Andrei Kopats <andrei.kopats@gmail.com>  Thu, 27 Feb 2020 19:30:06 +0300
+
 python3-qutepart (3.2.0-1~ubuntuseries1) ubuntuseries; urgency=medium
 
   * Update XMLs from the upstream

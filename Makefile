@@ -20,14 +20,14 @@ all install:
 	@exit 1
 
 bump-version:
-	enki qutepart/version.py
-	enki rpm/python3-qutepart.spec +2
+	enki-ng qutepart/version.py
+	enki-ng rpm/python3-qutepart.spec +2
 
 changelog-update:
-	enki ChangeLog
+	enki-ng ChangeLog
 	cd debian && \
 		$(ENV) dch --check-dirname-regex qutepart -v $(VERSION)-1~ubuntuseries1 -b --distribution ubuntuseries
-	enki rpm/python3-qutepart.spec +60
+	enki-ng rpm/python3-qutepart.spec +60
 
 dist/${ARCHIVE}:
 	rm -rf dist
