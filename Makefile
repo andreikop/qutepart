@@ -62,6 +62,13 @@ put-obs: ${OBS_REPO_DIR} deb-obs
 sdist:
 	./setup.py sdist --formats=gztar,zip
 
+wheels:
+	-rm dist/*.whl
+	./setup.py bdist_wheel --skip-extension
+
+push-wheels-to-test:
+	 python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*.tar.gz dist/*.whl
+
 help:
 	@echo 'bump-version                Open version file to edit'
 	@echo 'changelog-update            Update Debian and RedHat changelogs'

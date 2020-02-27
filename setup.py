@@ -48,38 +48,6 @@ def runningOnPip():
   return 'pip' in __file__
 
 
-if onWindows() and (not runningOnPip()) and 'install' in sys.argv:
-  print(howToInstallMsg)
-  sys.exit(0)
-
-
-packages = ['qutepart', 'qutepart/syntax', 'qutepart/indenter']
-
-package_data = {'qutepart': ['icons/*.png'],
-                'qutepart/syntax': ['data/xml/*.xml', 'data/syntax_db.json']
-                }
-
-
-include_dirs = parse_arg_list('--include-dir=')
-if not include_dirs:
-    include_dirs = ['/usr/include', '/usr/local/include', '/opt/local/include']
-
-library_dirs = parse_arg_list('--lib-dir=')
-if not library_dirs:
-    library_dirs = ['/usr/lib', '/usr/local/lib', '/opt/local/lib']
-
-macros = []
-if platform.system() == 'Windows':
-    macros.append(('HAVE_PCRE_CONFIG_H', None))
-
-extension = Extension('qutepart.syntax.cParser',
-                      sources=['qutepart/syntax/cParser.c'],
-                      libraries=['pcre'],
-                      include_dirs=include_dirs,
-                      library_dirs=library_dirs,
-                      define_macros=macros)
-
-
 def _checkBuildDependencies():
     compiler = distutils.ccompiler.new_compiler()
     """check if function without parameters from stdlib can be called
@@ -117,6 +85,38 @@ def _checkBuildDependencies():
     return True
 
 
+if onWindows() and (not runningOnPip()) and 'install' in sys.argv:
+  print(howToInstallMsg)
+  sys.exit(0)
+
+
+packages = ['qutepart', 'qutepart/syntax', 'qutepart/indenter']
+
+package_data = {'qutepart': ['icons/*.png'],
+                'qutepart/syntax': ['data/xml/*.xml', 'data/syntax_db.json']
+                }
+
+
+include_dirs = parse_arg_list('--include-dir=')
+if not include_dirs:
+    include_dirs = ['/usr/include', '/usr/local/include', '/opt/local/include']
+
+library_dirs = parse_arg_list('--lib-dir=')
+if not library_dirs:
+    library_dirs = ['/usr/lib', '/usr/local/lib', '/opt/local/lib']
+
+macros = []
+if platform.system() == 'Windows':
+    macros.append(('HAVE_PCRE_CONFIG_H', None))
+
+extension = Extension('qutepart.syntax.cParser',
+                      sources=['qutepart/syntax/cParser.c'],
+                      libraries=['pcre'],
+                      include_dirs=include_dirs,
+                      library_dirs=library_dirs,
+                      define_macros=macros)
+
+
 """ A hack to set compiler version for distutils on Windows.
 See https://github.com/andreikop/qutepart/issues/52
 """
@@ -129,13 +129,24 @@ else:
         os.remove(cfgPath)
 
 
+skipExtension = False
+if '--skip-extension' in sys.argv:
+    skipExtension = True
+    sys.argv.remove('--skip-extension')
+
+
 # Check build dependencies
-if ('build' in sys.argv or
-    'build_ext' in sys.argv):
+if (('build' in sys.argv or
+    'build_ext' in sys.argv) and
+    (not skipExtension)):
     if '--force' not in sys.argv and '--help' not in sys.argv:
         if not onWindows():
             if not _checkBuildDependencies():
                 sys.exit(-1)
+
+ext_modules = []
+if not skipExtension:
+    ext_modules.append(extension)
 
 
 install_requires = []
@@ -154,7 +165,7 @@ setup(name='qutepart',
     url='https://github.com/andreikop/qutepart',
     packages=packages,
     package_data=package_data,
-    ext_modules=[extension],
+    ext_modules=ext_modules,
     python_requires = '>=3.5',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
