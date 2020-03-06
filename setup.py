@@ -156,10 +156,15 @@ if onWindows():
     """
     install_requires.append('PyQt5')
 
+with open("pip-description.md", "r") as fh:
+    long_description = fh.read()
+
 
 setup(name='qutepart',
     version='%s.%s.%s' % version.VERSION,
     description='Code editor component for PyQt5',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Andrei Kopats',
     author_email='andrei.kopats@gmail.com',
     url='https://github.com/andreikop/qutepart',

@@ -67,7 +67,10 @@ wheels:
 	./setup.py bdist_wheel --skip-extension
 
 push-wheels-to-test:
-	 python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*.tar.gz dist/*.whl
+	python3 -m twine upload --verbose --repository testpypi dist/*.tar.gz dist/*.whl
+
+push-wheels-to-prod:
+	python3 -m twine upload dist/*.tar.gz dist/*.whl
 
 help:
 	@echo 'bump-version                Open version file to edit'
