@@ -61,6 +61,11 @@ It will probably be gcc
     python3 setup.py build_ext --include-dir=../pcre-8.37/build --lib-dir=../pcre-8.37/build/Release
     python3 -m pip install -e .
 
+## Tests status
+Qutepart contains a lot of tests. See `tests/` directory. This tests are very useful to verify correctness of highlighting, indentation, Vim mode, etc. The tests often fail on CI because of hard-to-track PyQt bugs. Many issues were workarounded, but new issues appear on new OSes and software envinronments.
+If we try to run tests on CI, more time are spent on finding workarounds than saved by tests.
+It is not recommended to run the tests automatically now, hovewer the tests still live in the repository for manual execution by developers.
+
 ## Qutepart and Katepart
 [Kate](http://kate-editor.org/) and Katepart (an editor component) is really cool software. The Kate authors and community have created, probably, the biggest set of highlighters and indenters for programming languages.
 
