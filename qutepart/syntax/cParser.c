@@ -1664,10 +1664,21 @@ RegExpr_tryMatch(RegExpr* self, TextToMatchObject_internal* textToMatchObject)
     if (NULL == regExp)
         return MakeEmptyTryMatchResult();
 
-    matchLen = _matchRegExp(regExp, extra, textToMatchObject->utf8Text, textToMatchObject->textLen, &groups);
+    int matchLenUtf8 = _matchRegExp(
+        regExp, extra,
+        textToMatchObject->utf8Text, textToMatchObject->textLen,
+        &groups);
 
-    if (matchLen != 0)
+    PyObject* unicodeText = PyUnicode_DecodeUTF8(textToMatchObject->utf8Text, matchLenUtf8, NULL);
+    if (unicodeText == NULL) {
+        return MakeEmptyTryMatchResult();
+    }
+    matchLen = PyUnicode_GET_SIZE(unicodeText);
+    Py_DECREF(unicodeText);
+
+    if (matchLen != 0) {
         return MakeTryMatchResult(self, matchLen, groups);
+    }
     else
         return MakeEmptyTryMatchResult();
 }
