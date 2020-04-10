@@ -1,3 +1,9 @@
+python3-qutepart (3.3.1-1~ubuntuseries1) ubuntuseries; urgency=medium
+
+  * Fix crash on wide characters parsing with regular expressions
+
+ -- Andrei Kopats <andrei.kopats@gmail.com>  Fri, 10 Apr 2020 17:15:35 +0300
+
 python3-qutepart (3.3.0-1~ubuntuseries1) ubuntuseries; urgency=medium
 
   Making the editor component more configurable:

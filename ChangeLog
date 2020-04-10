@@ -1,3 +1,6 @@
+3.3.1   Apr 10 2020
+    Fix crash on wide characters parsing with regular expressions
+
 3.3.0   Feb 27 2020
     Making the editor component more configurable: on/off mark area, on/off line numbers, on/off completer, c/python syntax parser
 
