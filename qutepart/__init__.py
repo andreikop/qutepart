@@ -1130,6 +1130,11 @@ class Qutepart(QPlainTextEdit):
         else:
             super(Qutepart, self).mouseMoveEvent(mouseEvent)
 
+    def setDocument(self, document):
+        self._completer.terminate()
+        self._lines.setDocument(document)
+        super().setDocument(document)
+
     def _chooseVisibleWhitespace(self, text):
         result = [False for _ in range(len(text))]
 

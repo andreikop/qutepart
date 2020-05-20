@@ -18,6 +18,9 @@ class Lines:
         self._qpart = qpart
         self._doc = qpart.document()
 
+    def setDocument(self, document):
+        self._doc = document
+
     def _atomicModification(func):
         """Decorator
         Make document modification atomic
