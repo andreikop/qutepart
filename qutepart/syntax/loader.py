@@ -202,7 +202,7 @@ def _loadChildRules(context, xmlElement, attributeToFormatMap):
     """Extract rules from Context or Rule xml element
     """
     rules = []
-    for ruleElement in xmlElement.getchildren():
+    for ruleElement in xmlElement:
         if not ruleElement.tag in _ruleClassDict:
             raise ValueError("Not supported rule '%s'" % ruleElement.tag)
         rule = _ruleClassDict[ruleElement.tag](context, ruleElement, attributeToFormatMap)
