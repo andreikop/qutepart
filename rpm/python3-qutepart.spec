@@ -1,5 +1,5 @@
 Name:           python3-qutepart
-Version:        3.3.1
+Version:        3.3.2
 Release:        1%{?dist}
 Summary:        Code editor widget for PyQt
 Group:          Development/Libraries/Python
@@ -51,6 +51,9 @@ Qutepart is a code editor widget for PyQt. Features:
 
 
 %changelog
+
+* Mon Nov 15 2021 Andrei Kopats <andrei.kopats@gmail.com>  3.3.2-17
+- Fix compatibility with Python 3.10
 
 * Thu Apr 10 2020 Andrei Kopats <andrei.kopats@gmail.com>  3.3.1-16
 - Fix crash on wide characters parsing

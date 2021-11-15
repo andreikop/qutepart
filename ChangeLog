@@ -1,3 +1,6 @@
+3.3.2   Nov 15 2021
+    Fix compatibility with Python 3.10
+
 3.3.1   Apr 10 2020
     Fix crash on wide characters parsing with regular expressions
 
