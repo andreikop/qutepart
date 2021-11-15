@@ -75,7 +75,7 @@ class MarginBase:
             # if block height not added to rect, last line number sometimes is not drawn
             blockHeight = self._qpart.blockBoundingRect(self._qpart.firstVisibleBlock()).height()
 
-            self.update(0, rect.y(), self.width(), rect.height() + blockHeight)
+            self.update(0, rect.y(), self.width(), int(rect.height() + blockHeight))
             self._countCache = (self._qpart.blockCount(), self._qpart.textCursor().block().lineCount())
 
         if rect.contains(self._qpart.viewport().rect()):
