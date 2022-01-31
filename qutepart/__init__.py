@@ -1195,7 +1195,7 @@ class Qutepart(QPlainTextEdit):
                     painter.setPen(Qt.transparent)
                     painter.setBrush(QBrush(Qt.gray))
                     xPos = (leftCursorRect.x() + rightCursorRect.x()) / 2
-                    painter.drawRect(QRect(xPos, middleHeight, 2, 2))
+                    painter.drawRect(QRect(int(xPos), int(middleHeight), 2, 2))
                 else:
                     painter.setPen(QColor(Qt.gray).lighter(factor=120))
                     painter.drawLine(leftCursorRect.x() + 3, middleHeight,

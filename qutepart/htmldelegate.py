@@ -80,5 +80,5 @@ class HTMLDelegate(QStyledItemDelegate):
         doc.setDocumentMargin(1)
         #  bad long (multiline) strings processing doc.setTextWidth(options.rect.width())
         doc.setHtml(options.text)
-        return QSize(doc.idealWidth(),
-                     QStyledItemDelegate.sizeHint(self, option, index).height())
+        return QSize(int(doc.idealWidth()),
+                     int(QStyledItemDelegate.sizeHint(self, option, index).height()))

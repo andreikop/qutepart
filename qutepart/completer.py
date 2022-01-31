@@ -230,7 +230,7 @@ class _CompletionList(QListView):
         rowCount = min(self.model().rowCount(), self._MAX_VISIBLE_ROWS)
         height = self.sizeHintForRow(0) * (rowCount + 0.5)  # + 0.5 row margin
 
-        return QSize(width, height)
+        return QSize(int(width), int(height))
 
     def minimumHeight(self):
         """QWidget.minimumSizeHint implementation
