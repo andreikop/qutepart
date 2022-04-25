@@ -66,8 +66,8 @@ class LineNumberArea(QWidget):
                                  Qt.AlignRight, number)
                 if boundingRect.height() >= singleBlockHeight * 2:  # wrapped block
                     painter.fillRect(1, top + singleBlockHeight,
-                                     self.__width - 2, boundingRect.height() - singleBlockHeight - 2,
-                                     Qt.darkGreen)
+                                     self.__width - 2, int(boundingRect.height()) - singleBlockHeight - 2,
+                                     Qt.lightGray)
 
             block = block.next()
             boundingRect = self._qpart.blockBoundingRect(block)
