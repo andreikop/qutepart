@@ -1,3 +1,9 @@
+python3-qutepart (3.3.3-1~ubuntuseries1) ubuntuseries; urgency=medium
+
+  * Fix compatibility with Python 3.10
+
+ -- Andrei Kopats <andrei.kopats@gmail.com>  Wed, 10 Aug 2022 13:14:02 +0300
+
 python3-qutepart (3.3.1-1~ubuntuseries1) ubuntuseries; urgency=medium
 
   * Fix crash on wide characters parsing with regular expressions
