@@ -22,7 +22,7 @@ class XmlParsingTestCase(unittest.TestCase):
         xmlFilesPath = os.path.join(os.path.dirname(__file__), '..', '..', 'qutepart', 'syntax', 'data', 'xml')
         for xmlFileName in os.listdir(xmlFilesPath):
             if xmlFileName.endswith('.xml'):
-                syntax = SyntaxManager().getSyntax(None, xmlFileName = xmlFileName)
+                syntax = SyntaxManager().getSyntax(xmlFileName = xmlFileName)
 
 
 if __name__ == '__main__':
