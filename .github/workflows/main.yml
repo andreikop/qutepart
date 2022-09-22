@@ -1,0 +1,38 @@
+name: qutepart tests
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        os:
+          - ubuntu-20.04
+        python-version:
+          - 3.6
+          - 3.7
+          - 3.8
+    steps:
+      - name: Install dependencies
+        run: |-
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+              libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install PyQt5
+        run: python -m pip install pyqt5
+      - uses: actions/checkout@v2
+      - name: Install `qutepart` in editable mode
+        run: python -m pip install -e .
+      - name: Run tests
+        run: |
+          cd tests
+          xvfb-run --auto-servernum python3 run_all.py
