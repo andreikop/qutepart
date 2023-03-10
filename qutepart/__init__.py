@@ -1198,8 +1198,8 @@ class Qutepart(QPlainTextEdit):
                     painter.drawRect(QRect(int(xPos), int(middleHeight), 2, 2))
                 else:
                     painter.setPen(QColor(Qt.gray).lighter(factor=120))
-                    painter.drawLine(leftCursorRect.x() + 3, middleHeight,
-                                     rightCursorRect.x() - 3, middleHeight)
+                    painter.drawLine(leftCursorRect.x() + 3, int(middleHeight),
+                                     rightCursorRect.x() - 3, int(middleHeight))
 
         def effectiveEdgePos(text):
             """Position of edge in a block.
